@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
-import '@/app/reset.scss';
-import '@/app/globals.scss';
-import notoSansKr from '@/app/fonts/notoSansKr';
+import notoSansKr from '@/fonts/notoSansKr';
+import '@/styles/reset.scss';
+import '@/styles/globals.scss';
+import Header from '@/components/Common/Header/Header';
+import Main from '@/components/Common/Main/Main';
+import Footer from '@/components/Common/Footer/Footer';
 
 export const metadata: Metadata = {
   title: {
@@ -9,6 +12,9 @@ export const metadata: Metadata = {
     default: '문화산책',
   },
   description: '서울시의 문화행사 정보를 제공',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -18,7 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko'>
-      <body className={notoSansKr.className}>{children}</body>
+      <body className={notoSansKr.className}>
+        <Header />
+        <Main>{children}</Main>
+        <Footer />
+      </body>
     </html>
   );
 }

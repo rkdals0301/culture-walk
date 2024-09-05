@@ -1,0 +1,51 @@
+@import './variables.scss';
+@import './light-theme.scss';
+@import './dark-theme.scss';
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden; /* 수평 스크롤을 방지 */
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  // font-family: $font-family;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+/* 라이트 모드 기본 설정 */
+@media (prefers-color-scheme: light) {
+  :root {
+    --background-color: #{$background-color-light};
+    --text-color: #{$text-color-light};
+    --map-element-color: #{$map-element-color-light};
+    --path-highlight-color: #{$path-highlight-color-light};
+    --button-color: #{$button-color-light};
+  }
+}
+
+/* 다크 모드 기본 설정 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #{$background-color-dark};
+    --text-color: #{$text-color-dark};
+    --map-element-color: #{$map-element-color-dark};
+    --path-highlight-color: #{$path-highlight-color-dark};
+    --button-color: #{$button-color-dark};
+  }
+}

@@ -1,0 +1,11 @@
+@import './variables.scss';
+
+:root[data-theme='dark'] {
+  --background-color: #{$background-color-dark};
+  --text-color: #{$text-color-dark};
+  --map-element-color: #{$map-element-color-dark};
+  --path-highlight-color: #{$path-highlight-color-dark};
+  --button-color: #{$button-color-dark};
+  --button-background-color: #{$button-background-color-dark};
+  --button-text-color: #{$button-text-color-dark};
+}

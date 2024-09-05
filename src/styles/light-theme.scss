@@ -1,0 +1,11 @@
+@import './variables.scss';
+
+:root[data-theme='light'] {
+  --background-color: #{$background-color-light};
+  --text-color: #{$text-color-light};
+  --map-element-color: #{$map-element-color-light};
+  --path-highlight-color: #{$path-highlight-color-light};
+  --button-color: #{$button-color-light};
+  --button-background-color: #{$button-background-color-light};
+  --button-text-color: #{$button-text-color-light};
+}

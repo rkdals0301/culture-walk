@@ -1,0 +1,35 @@
+/* 색상 변수 */
+$background-color-light: #ffffff;
+$background-color-dark: #121212;
+$text-color-light: #333333;
+$text-color-dark: #e0e0e0;
+
+/* 폰트 변수 */
+$font-family: 'Noto Sans KR', 'Arial', sans-serif;
+
+/* 여백 변수 */
+$spacing-small: 8px;
+$spacing-medium: 16px;
+$spacing-large: 24px;
+
+/* 버튼 색상 변수 */
+$button-color-light: #00c853; /* 라이트 모드 버튼 배경색 */
+$button-color-dark: #ff5722; /* 다크 모드 버튼 배경색 */
+
+/* 버튼 배경색과 테두리 반경 변수 */
+$button-background-color-light: #00c853; /* 라이트 모드 버튼 배경색 */
+$button-background-color-dark: #ff5722; /* 다크 모드 버튼 배경색 */
+$button-border-radius: 4px; /* 버튼 테두리 반경 */
+$button-padding: $spacing-medium; /* 버튼 여백 */
+$button-text-color-light: #ffffff; /* 라이트 모드 버튼 텍스트 색상 */
+$button-text-color-dark: #ffffff; /* 다크 모드 버튼 텍스트 색상 */
+
+/* 기타 변수 */
+$map-element-color-light: #e0e0e0;
+$map-element-color-dark: #3d3d3d;
+$path-highlight-color-light: #ff5722;
+$path-highlight-color-dark: #1e90ff;
+
+:export {
+  primaryColor: $background-color-light;
+}
