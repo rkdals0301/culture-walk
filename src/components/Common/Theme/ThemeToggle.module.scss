@@ -1,15 +1,11 @@
 @import '@/styles/variables.scss';
 
 .button {
-  background-color: var(--button-background-color);
-  color: var(--button-text-color);
   border: none;
   border-radius: $button-border-radius;
-  padding: $button-padding;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: var(--button-background-color);
-  }
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }

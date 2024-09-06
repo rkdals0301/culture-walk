@@ -1,10 +1,6 @@
 import styles from '@/app/page.module.scss';
-import ThemeToggle from '@/components/Common/Theme/ThemeToggle';
+import Map from '@/components/Map/Map';
 
-const Home = () => (
-  <div className={styles.home}>
-    <ThemeToggle />
-  </div>
-);
+const Home = () => <Map />;
 
 export default Home;
