@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/navermaps": "^3.7.6",
     "leaflet": "^1.9.4",
     "next": "14.2.8",
     "react": "^18",
