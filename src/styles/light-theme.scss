@@ -1,11 +1,52 @@
 @import './variables.scss';
 
+/* 라이트 모드 기본 설정 */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* 기본 색상 변수 */
+    --background-color: #{$background-color-light};
+    --text-color: #{$text-color-light};
+    --point-color: #{$point-color-light};
+
+    // 폰트 변수
+    --font-size-base: #{$font-size-base};
+    --font-size-large: #{$font-size-large};
+    --font-weight-normal: #{$font-weight-normal};
+    --font-weight-bold: #{$font-weight-bold};
+
+    /* 버튼 색상 변수 */
+    --button-background-color: #{$button-background-color-light};
+    --button-text-color: #{$button-text-color-light};
+    --button-border-radius: #{$button-border-radius};
+    --button-padding: #{$spacing-medium};
+
+    /* 간격 변수 */
+    --spacing-small: #{$spacing-small};
+    --spacing-medium: #{$spacing-medium};
+    --spacing-large: #{$spacing-large};
+  }
+}
+
 :root[data-theme='light'] {
+  /* 기본 색상 변수 */
   --background-color: #{$background-color-light};
   --text-color: #{$text-color-light};
-  --map-element-color: #{$map-element-color-light};
-  --path-highlight-color: #{$path-highlight-color-light};
-  --button-color: #{$button-color-light};
+  --point-color: #{$point-color-light};
+
+  // 폰트 변수
+  --font-size-base: #{$font-size-base};
+  --font-size-large: #{$font-size-large};
+  --font-weight-normal: #{$font-weight-normal};
+  --font-weight-bold: #{$font-weight-bold};
+
+  /* 버튼 색상 변수 */
   --button-background-color: #{$button-background-color-light};
   --button-text-color: #{$button-text-color-light};
+  --button-border-radius: #{$button-border-radius};
+  --button-padding: #{$spacing-medium};
+
+  /* 간격 변수 */
+  --spacing-small: #{$spacing-small};
+  --spacing-medium: #{$spacing-medium};
+  --spacing-large: #{$spacing-large};
 }

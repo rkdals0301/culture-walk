@@ -6,7 +6,7 @@ const Header = () => (
   <header className={styles.header}>
     <div className={styles.logo}>
       <Image src='/assets/logo.svg' width={32} height={32} alt='logo' />
-      <span>문화산책</span>
+      <span className={styles['logo-text']}>문화산책</span>
     </div>
     {/* <nav>
       <form>

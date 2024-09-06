@@ -10,7 +10,6 @@
   justify-content: center;
   background-color: var(--background-color);
   color: var(--text-color);
-  transition:
-    background-color 0.3s,
-    color 0.3s;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
 }

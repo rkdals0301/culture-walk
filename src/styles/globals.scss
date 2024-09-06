@@ -17,35 +17,19 @@ body {
   overflow-x: hidden; /* 수평 스크롤을 방지 */
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
   display: flex;
   flex-direction: column;
   // font-family: $font-family;
   background-color: var(--background-color);
   color: var(--text-color);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-base);
   transition:
     background-color 0.3s,
     color 0.3s;
-}
-
-/* 라이트 모드 기본 설정 */
-@media (prefers-color-scheme: light) {
-  :root {
-    --background-color: #{$background-color-light};
-    --text-color: #{$text-color-light};
-    --map-element-color: #{$map-element-color-light};
-    --path-highlight-color: #{$path-highlight-color-light};
-    --button-color: #{$button-color-light};
-  }
-}
-
-/* 다크 모드 기본 설정 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #{$background-color-dark};
-    --text-color: #{$text-color-dark};
-    --map-element-color: #{$map-element-color-dark};
-    --path-highlight-color: #{$path-highlight-color-dark};
-    --button-color: #{$button-color-dark};
-  }
 }
