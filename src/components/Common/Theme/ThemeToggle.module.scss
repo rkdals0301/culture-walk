@@ -1,9 +1,8 @@
 .button {
-  padding: var(--button-padding);
-  border: 0;
+  width: 60px;
+  height: 60px;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
   background-color: var(--background-color);
-  outline: none;
 }

@@ -5,17 +5,17 @@ import logo from '/public/assets/logo.svg';
 
 const Header = () => (
   <header className={styles.header}>
-    <div className={styles.logo}>
-      <Image src={logo} width={32} height={32} alt='logo' priority />
+    <div className={styles['logo-wrapper']}>
+      <Image src={logo} width={32} height={32} alt='logo' />
       <span className={styles['logo-text']}>문화산책</span>
     </div>
-    {/* <nav>
+    {/* <nav className={styles['search-wrapper']}>
       <form>
         <label htmlFor='search'></label>
         <input type='text' id='search' name='search' placeholder='Search events' />
       </form>
     </nav> */}
-    <div className='theme-toggle'>
+    <div className={styles['theme-toggle-wrapper']}>
       <ThemeToggle />
     </div>
   </header>
