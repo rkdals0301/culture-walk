@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React from 'react';
+// import React, { useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 const containerStyle = {
@@ -21,15 +22,15 @@ const MyComponent: React.FC = () => {
     region: 'KR', // 한국 지역 설정
   });
 
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  // const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
-  }, []);
+  // const onLoad = useCallback((map: google.maps.Map) => {
+  //   setMap(map);
+  // }, []);
 
-  const onUnmount = useCallback(() => {
-    setMap(null);
-  }, []);
+  // const onUnmount = useCallback(() => {
+  //   setMap(null);
+  // }, []);
 
   if (!isLoaded) return <div>Loading...</div>;
 
@@ -37,15 +38,13 @@ const MyComponent: React.FC = () => {
     <GoogleMap
       mapContainerStyle={containerStyle}
       options={{
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
+        disableDefaultUI: true, // 기본 UI 요소 모두 숨김
+        zoomControl: true, // 줌 컨트롤만 표시
       }}
       center={center}
       zoom={12}
-      onLoad={onLoad}
-      onUnmount={onUnmount}
+      // onLoad={onLoad}
+      // onUnmount={onUnmount}
     >
       {/* 자식 컴포넌트, 예를 들어 마커, 정보 창 등을 추가하세요 */}
     </GoogleMap>
