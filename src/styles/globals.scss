@@ -1,13 +1,13 @@
-@import './variables.scss';
-@import './light-theme.scss';
-@import './dark-theme.scss';
+@import './variables';
+@import './light-theme';
+@import './dark-theme';
 
 *,
 *::before,
 *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html,
@@ -22,13 +22,14 @@ html {
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  // font-family: $font-family;
-  background-color: var(--background-color);
-  color: var(--text-color);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-base);
+  color: var(--text-color);
+
+  // font-family: $font-family;
+  background-color: var(--background-color);
+  display: flex;
+  flex-direction: column;
   transition:
     background-color 0.3s,
     color 0.3s;

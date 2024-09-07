@@ -21,12 +21,12 @@ $spacing-large: 2rem; // 32px
 
 // 상수
 $border-radius: 4px;
-$box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+$box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 
 /* 색상 변수 */
 $background-color-light: #f5f5f5;
 $background-color-dark: #1e1e1e;
-$text-color-light: #333333;
+$text-color-light: #333;
 $text-color-dark: #e0e0e0;
 $point-color-light: #007bff;
 $point-color-dark: #61dafb;
@@ -39,25 +39,21 @@ $spacing-large: 24px;
 /* 버튼 색상 변수 */
 // Light mode buttons
 $button-background-color-light: $point-color-light; // #007bff
-$button-text-color-light: #ffffff; // 흰색 텍스트
+$button-text-color-light: #fff; // 흰색 텍스트
 $button-hover-background-color-light: #0056b3; // 더 어두운 파란색 (호버 시)
 
 $button-secondary-background-color-light: #e0e0e0; // 서브 버튼: 밝은 회색
-$button-secondary-text-color-light: #333333; // 서브 버튼: 어두운 회색 텍스트
-$button-secondary-hover-background-color-light: #cccccc; // 서브 버튼 호버
+$button-secondary-text-color-light: #333; // 서브 버튼: 어두운 회색 텍스트
+$button-secondary-hover-background-color-light: #ccc; // 서브 버튼 호버
 
 // Dark mode buttons
 $button-background-color-dark: $point-color-dark; // #61dafb
 $button-text-color-dark: #1e1e1e; // 어두운 텍스트
 $button-hover-background-color-dark: #4da6d3; // 더 어두운 민트 (호버 시)
 
-$button-secondary-background-color-dark: #333333; // 서브 버튼: 어두운 회색
+$button-secondary-background-color-dark: #333; // 서브 버튼: 어두운 회색
 $button-secondary-text-color-dark: #e0e0e0; // 서브 버튼: 밝은 회색 텍스트
 $button-secondary-hover-background-color-dark: #4a4a4a; // 서브 버튼 호버
 
 $button-border-radius: 4px; /* 버튼 테두리 반경 */
 $button-padding: $spacing-medium; /* 버튼 여백 */
-
-:export {
-  primaryColor: $background-color-light;
-}

@@ -1,0 +1,71 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-order"],
+  "rules": {
+    "order/properties-order": [
+      {
+        "groupName": "reset",
+        "properties": ["all", "box-sizing"]
+      },
+      {
+        "groupName": "position",
+        "properties": ["position", "top", "right", "bottom", "left", "z-index"]
+      },
+      {
+        "groupName": "box-model",
+        "properties": ["width", "height", "margin", "padding", "border", "overflow"]
+      },
+      {
+        "groupName": "typography",
+        "properties": [
+          "font",
+          "font-size",
+          "font-weight",
+          "line-height",
+          "text-align",
+          "text-transform",
+          "letter-spacing",
+          "word-spacing"
+        ]
+      },
+      {
+        "groupName": "color",
+        "properties": ["color", "background", "background-color", "border-color"]
+      },
+      {
+        "groupName": "flexbox-grid",
+        "properties": [
+          "display",
+          "flex",
+          "flex-direction",
+          "flex-wrap",
+          "justify-content",
+          "align-items",
+          "align-content",
+          "grid",
+          "grid-template",
+          "grid-area",
+          "grid-column",
+          "grid-row"
+        ]
+      },
+      {
+        "groupName": "transitions",
+        "properties": [
+          "transition",
+          "transition-property",
+          "transition-duration",
+          "transition-timing-function",
+          "animation",
+          "animation-name",
+          "animation-duration",
+          "animation-timing-function"
+        ]
+      },
+      {
+        "groupName": "misc",
+        "properties": ["opacity", "visibility", "transform", "box-shadow", "filter"]
+      }
+    ]
+  }
+}

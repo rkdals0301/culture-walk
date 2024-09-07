@@ -4,24 +4,27 @@
   left: 0;
   width: 100%;
   height: 60px; // 또는 70px
+  padding: 0 16px;
   line-height: 60px; // 텍스트 수직 정렬을 위한 설정
+  color: var(--text-color);
+  background-color: var(--background-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
-  background-color: var(--background-color);
-  color: var(--text-color);
 
   .logo {
     display: flex;
     align-items: center;
     gap: 5px;
+
     .logo-text {
       font-weight: var(--font-weight-bold);
     }
   }
+
   .search {
   }
+
   .theme {
     width: 30px;
   }
