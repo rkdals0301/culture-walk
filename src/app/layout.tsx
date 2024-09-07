@@ -17,18 +17,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
-    <html lang='ko'>
-      <body className={notoSansKr.className}>
-        <Header />
-        <Main>{children}</Main>
-        <Footer />
-      </body>
-    </html>
-  );
-}
+}>) => (
+  <html lang='ko'>
+    <body className={notoSansKr.className}>
+      <Header />
+      <Main>{children}</Main>
+      <Footer />
+    </body>
+  </html>
+);
+
+export default RootLayout;
