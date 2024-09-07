@@ -1,36 +1,55 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
-const Map = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Naver 지도 스크립트 로드
-    const script = document.createElement('script');
-    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=7r4k992itu`;
-    script.onload = () => {
-      if (mapContainer.current) {
-        const map = new window.naver.maps.Map(mapContainer.current, {
-          center: new window.naver.maps.LatLng(37.5665, 126.978), // 서울의 좌표
-          zoom: 10,
-        });
-
-        new window.naver.maps.Marker({
-          position: new window.naver.maps.LatLng(37.5665, 126.978),
-          map: map,
-        });
-      }
-    };
-    document.head.appendChild(script);
-
-    // Cleanup on component unmount
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />;
+const containerStyle = {
+  width: '100%',
+  height: '100%',
 };
 
-export default Map;
+const center = {
+  lat: 37.715133,
+  lng: 126.734086,
+};
+
+const MyComponent: React.FC = () => {
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
+    language: 'ko',
+    region: 'KR', // 한국 지역 설정
+  });
+
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+
+  const onLoad = useCallback((map: google.maps.Map) => {
+    setMap(map);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
+  if (!isLoaded) return <div>Loading...</div>;
+
+  return (
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      options={{
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      }}
+      center={center}
+      zoom={12}
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+    >
+      {/* 자식 컴포넌트, 예를 들어 마커, 정보 창 등을 추가하세요 */}
+    </GoogleMap>
+  );
+};
+
+export default React.memo(MyComponent);
