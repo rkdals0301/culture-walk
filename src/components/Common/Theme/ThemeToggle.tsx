@@ -41,7 +41,7 @@ const ThemeToggle = () => {
 
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [isInitialRender, theme]);
 
   return (
     <button className={styles.button} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>

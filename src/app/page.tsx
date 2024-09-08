@@ -1,6 +1,7 @@
-// import styles from '@/app/page.module.scss';
-import Map from '@/components/Map/Map';
+import { redirect } from 'next/navigation';
 
-const Home = () => <Map />;
+const Home = () => {
+  redirect('/map');
+};
 
 export default Home;
