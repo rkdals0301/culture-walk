@@ -4,24 +4,13 @@ import React from 'react';
 // import React, { useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-};
-
-const center = {
-  lat: 37.715133,
-  lng: 126.734086,
-};
-
-const MyComponent: React.FC = () => {
+const Map = () => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
     language: 'ko',
     region: 'KR', // 한국 지역 설정
   });
-
   // const [map, setMap] = useState<google.maps.Map | null>(null);
 
   // const onLoad = useCallback((map: google.maps.Map) => {
@@ -36,12 +25,15 @@ const MyComponent: React.FC = () => {
 
   return (
     <GoogleMap
-      mapContainerStyle={containerStyle}
+      mapContainerStyle={{ width: '100%', height: '100%' }}
       options={{
         disableDefaultUI: true, // 기본 UI 요소 모두 숨김
         zoomControl: true, // 줌 컨트롤만 표시
       }}
-      center={center}
+      center={{
+        lat: 37.715133,
+        lng: 126.734086,
+      }}
       zoom={12}
       // onLoad={onLoad}
       // onUnmount={onUnmount}
@@ -51,4 +43,4 @@ const MyComponent: React.FC = () => {
   );
 };
 
-export default React.memo(MyComponent);
+export default React.memo(Map);
