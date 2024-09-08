@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import notoSansKr from '@/fonts/notoSansKr';
 import '@/styles/reset.scss';
 import '@/styles/globals.scss';
+import notoSansKr from '@/fonts/notoSansKr';
 import Header from '@/components/Common/Header/Header';
 import Main from '@/components/Common/Main/Main';
 import Footer from '@/components/Common/Footer/Footer';

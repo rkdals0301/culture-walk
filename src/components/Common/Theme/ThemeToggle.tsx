@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from '@/components/Common/Theme/ThemeToggle.module.scss';
 
-export default function ThemeToggle() {
+const ThemeToggle = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isInitialRender, setIsInitialRender] = useState(true);
 
@@ -48,4 +48,6 @@ export default function ThemeToggle() {
       {theme === 'light' ? '다크' : '라이트'}
     </button>
   );
-}
+};
+
+export default ThemeToggle;

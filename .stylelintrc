@@ -65,6 +65,48 @@
       {
         "groupName": "misc",
         "properties": ["opacity", "visibility", "transform", "box-shadow", "filter"]
+      },
+      {
+        "groupName": "misc",
+        "properties": ["opacity", "visibility", "transform", "box-shadow", "filter"]
+      },
+      {
+        "groupName": "layout",
+        "properties": ["align-self", "justify-self", "grid-template-rows", "grid-template-columns"]
+      },
+      {
+        "groupName": "spacing",
+        "properties": [
+          "margin-top",
+          "margin-right",
+          "margin-bottom",
+          "margin-left",
+          "padding-top",
+          "padding-right",
+          "padding-bottom",
+          "padding-left"
+        ]
+      },
+      {
+        "groupName": "background",
+        "properties": ["background-image", "background-repeat", "background-position", "background-size"]
+      },
+      {
+        "groupName": "border",
+        "properties": [
+          "border",
+          "border-top",
+          "border-right",
+          "border-bottom",
+          "border-left",
+          "border-radius",
+          "border-style",
+          "border-width"
+        ]
+      },
+      {
+        "groupName": "typography-extended",
+        "properties": ["text-shadow", "font-family", "text-indent", "text-overflow", "white-space"]
       }
     ]
   }

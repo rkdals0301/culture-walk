@@ -35,6 +35,7 @@ const Map = () => {
         lng: 126.734086,
       }}
       zoom={12}
+      clickableIcons={false}
       // onLoad={onLoad}
       // onUnmount={onUnmount}
     >
