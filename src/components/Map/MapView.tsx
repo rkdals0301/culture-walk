@@ -1,10 +1,11 @@
 'use client';
 
+// import styles from './MapView.module.scss';
 import React from 'react';
 // import React, { useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
-const Map = () => {
+const MapView = () => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
@@ -44,4 +45,4 @@ const Map = () => {
   );
 };
 
-export default React.memo(Map);
+export default React.memo(MapView);

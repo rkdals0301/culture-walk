@@ -1,0 +1,24 @@
+.search-input-wrapper {
+  height: 100%;
+
+  .search-input {
+    width: 100%;
+    height: 100%;
+    color: #fff;
+    background-color: var(--background-color);
+    border: none;
+    border-radius: 10px 0 0 10px;
+  }
+}
+
+// .search-btn {
+//   width: 24px;
+//   height: 24px;
+//   background-color: transparent;
+//   border: none;
+
+//   .search-img {
+//     width: 100%;
+//     height: 100%;
+//   }
+// }

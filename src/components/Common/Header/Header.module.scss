@@ -3,33 +3,36 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px; // 또는 70px
+  height: 90px;
   padding: 0 16px;
-  line-height: 60px; // 텍스트 수직 정렬을 위한 설정
   color: var(--text-color);
   background-color: var(--background-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 
-  .logo-wrapper {
-    height: 100%;
+  .header-top {
+    height: 45px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 5px;
 
-    .logo-text {
-      font-weight: var(--font-weight-bold);
+    .logo-wrapper {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .logo-text {
+        font-weight: var(--font-weight-bold);
+      }
+    }
+
+    .theme-toggle-wrapper {
+      height: 100%;
+      display: flex;
+      align-items: center;
     }
   }
 
-  .search-wrapper {
-    height: 100%;
-  }
-
-  .theme-toggle-wrapper {
-    height: 100%;
-    display: flex;
-    align-items: center;
+  .header-bottom {
+    height: 45px;
   }
 }

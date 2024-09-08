@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from '@/components/Common/Theme/ThemeToggle.module.scss';
+import styles from './ThemeToggle.module.scss';
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -40,7 +40,7 @@ const ThemeToggle = () => {
   }, [theme]);
 
   return (
-    <button className={styles.button} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+    <button type='button' className={styles.button} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
       {theme === 'light' ? '다크' : '라이트'}
     </button>
   );
