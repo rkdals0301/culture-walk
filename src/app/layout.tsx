@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 import notoSansKr from '@/fonts/notoSansKr';
@@ -48,6 +48,25 @@ export const metadata: Metadata = {
     creator: '@yourtwitterhandle', // Twitter 크리에이터 핸들 추가
   },
   robots: 'index, follow',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    {
+      media: '(prefers-color-scheme: dark)',
+      color: '#1e1e1e',
+    },
+    {
+      media: '(prefers-color-scheme: light)',
+      color: '#f5f5f5',
+    },
+  ],
+  colorScheme: 'dark light',
 };
 
 const RootLayout = ({

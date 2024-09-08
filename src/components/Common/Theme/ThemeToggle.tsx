@@ -35,7 +35,7 @@ const ThemeToggle = () => {
     // theme-color 메타 태그 업데이트
     const metaThemeColor = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
     if (metaThemeColor) {
-      metaThemeColor.content = theme === 'light' ? '#FFFFFF' : '#000000'; // 다크 모드 색상
+      metaThemeColor.content = theme === 'light' ? '#f5f5f5' : '#1e1e1e'; // 다크 모드 색상
     }
   }, [theme]);
 
