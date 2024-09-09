@@ -16,11 +16,11 @@ const Header = () => {
       <div className={styles['header-top']}>
         <div className={styles['gnb-wrapper']}>
           <button type='button' className={styles['gnb-button']}>
-            <Image src={gnbIconSrc} width={32} height={32} alt='gnb' className={styles.gnb} />
+            <Image src={gnbIconSrc} width={25} height={25} alt='gnb' />
           </button>
         </div>
         <div className={styles['logo-wrapper']}>
-          <Image src='/assets/logo.svg' width={32} height={32} alt='logo' />
+          <Image src='/assets/logo.svg' width={25} height={25} alt='logo' />
           <span className={styles['logo-text']}>문화산책</span>
         </div>
         <div className={styles['theme-toggle-wrapper']}>

@@ -5,7 +5,7 @@ import notoSansKr from '@fonts/notoSansKr';
 import ThemeProvider from '@components/Common/Theme/ThemeProvider';
 import Header from '@components/Common/Header/Header';
 import Main from '@components/Common/Main/Main';
-import Footer from '@components/Common/Footer/Footer';
+// import Footer from '@components/Common/Footer/Footer';
 
 export const metadata: Metadata = {
   title: {
@@ -81,7 +81,7 @@ const RootLayout = ({
       <ThemeProvider>
         <Header />
         <Main>{children}</Main>
-        <Footer />
+        {/* <Footer /> */}
       </ThemeProvider>
     </body>
   </html>

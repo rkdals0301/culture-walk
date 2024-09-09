@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://culturewalk.vercel.app/
+Host: https://culturewalk.vercel.app
 
 # Sitemaps
 Sitemap: https://culturewalk.vercel.app/sitemap.xml
