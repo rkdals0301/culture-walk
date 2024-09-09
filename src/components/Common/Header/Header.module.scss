@@ -4,35 +4,48 @@
   left: 0;
   width: 100%;
   height: 90px;
-  padding: 0 16px;
+  padding: 8px 16px;
   color: var(--text-color);
   background-color: var(--background-color);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 
   .header-top {
-    height: 45px;
+    position: relative;
+    height: 35px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+
+    .gnb-wrapper {
+      position: absolute;
+      left: 0;
+      height: 100%;
+
+      .gnb-button {
+      }
+    }
 
     .logo-wrapper {
       height: 100%;
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 5px;
 
       .logo-text {
         font-weight: var(--font-weight-bold);
       }
     }
 
-    .theme-toggle-wrapper {
-      height: 100%;
-      display: flex;
-      align-items: center;
-    }
+    // .theme-toggle-wrapper {
+    //   height: 100%;
+    //   display: flex;
+    //   align-items: center;
+    // }
   }
 
   .header-bottom {
-    height: 45px;
+    height: calc(100% - 40px);
   }
 }

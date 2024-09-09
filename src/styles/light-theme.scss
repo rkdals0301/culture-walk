@@ -26,6 +26,12 @@
     --spacing-small: #{$spacing-small};
     --spacing-medium: #{$spacing-medium};
     --spacing-large: #{$spacing-large};
+
+    /* 검색바 변수 */
+    --search-bar-background-color: #{$search-bar-background-color-light};
+    --search-bar-border-color: #{$search-bar-border-color-light};
+    --search-bar-text-color: #{$search-bar-text-color-light};
+    --search-bar-placeholder-color: #{$search-bar-placeholder-color-light};
   }
 }
 
@@ -51,4 +57,10 @@
   --spacing-small: #{$spacing-small};
   --spacing-medium: #{$spacing-medium};
   --spacing-large: #{$spacing-large};
+
+  /* 검색바 변수 */
+  --search-bar-background-color: #{$search-bar-background-color-light};
+  --search-bar-border-color: #{$search-bar-border-color-light};
+  --search-bar-text-color: #{$search-bar-text-color-light};
+  --search-bar-placeholder-color: #{$search-bar-placeholder-color-light};
 }
