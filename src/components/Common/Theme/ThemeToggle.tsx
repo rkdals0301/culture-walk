@@ -9,7 +9,6 @@ const ThemeToggle = () => {
 
   useEffect(() => {
     const metaThemeColor = document.querySelector("meta[name='theme-color']") as HTMLMetaElement;
-    console.log(metaThemeColor);
     if (metaThemeColor) {
       metaThemeColor.content = theme === 'dark' ? '#1e1e1e' : '#f5f5f5';
     }

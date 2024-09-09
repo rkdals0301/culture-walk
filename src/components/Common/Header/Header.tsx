@@ -17,12 +17,12 @@ const Header = () => {
       <div className={styles['header-top']}>
         <div className={styles['gnb-wrapper']}>
           <button type='button' className={styles['gnb-button']}>
-            <Image src={gnbIconSrc} width={25} height={25} alt='gnb' />
+            <Image src={gnbIconSrc} width={24} height={24} alt='gnb' />
           </button>
         </div>
         <Link href='/'>
           <div className={styles['logo-wrapper']}>
-            <Image src='/assets/logo.svg' width={25} height={25} alt='logo' />
+            <Image src='/assets/logo.svg' width={24} height={24} alt='logo' />
             <span className={styles['logo-text']}>문화산책</span>
           </div>
         </Link>
