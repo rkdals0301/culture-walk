@@ -57,17 +57,18 @@ export const viewport: Viewport = {
   minimumScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: [
-    {
-      media: '(prefers-color-scheme: dark)',
-      color: '#1e1e1e',
-    },
-    {
-      media: '(prefers-color-scheme: light)',
-      color: '#f5f5f5',
-    },
-  ],
-  colorScheme: 'dark light',
+  // themeColor: [
+  //   {
+  //     media: '(prefers-color-scheme: light)',
+  //     color: '#f5f5f5',
+  //   },
+  //   {
+  //     media: '(prefers-color-scheme: dark)',
+  //     color: '#1e1e1e',
+  //   },
+  // ],
+  themeColor: '#f5f5f5',
+  colorScheme: 'light dark',
 };
 
 const RootLayout = ({
