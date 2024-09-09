@@ -9,7 +9,7 @@
   background-color: var(--background-color);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 30%); // 더 강조된 그림자
 
   .header-top {
@@ -60,6 +60,6 @@
   }
 
   .header-bottom {
-    height: calc(100% - 35px);
+    height: calc(100% - 38px);
   }
 }

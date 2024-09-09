@@ -11,7 +11,7 @@ const SearchBar = () => {
     <>
       <div className={styles['search-bar-wrapper']}>
         <label htmlFor='search'></label>
-        <input type='text' id='search' placeholder='검색어를 입력하세요' className={styles['search-bar']} />
+        <input type='text' id='search' placeholder='문화행사명을 입력해보세요' className={styles['search-bar']} />
         <button type='button' className={styles['search-btn']}>
           <Image src={gnbIconSrc} width={24} height={24} alt='search_icon' />
         </button>
