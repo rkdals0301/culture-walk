@@ -16,7 +16,7 @@ $spacing-large: 2rem; // 32px
 $border-radius: 4px;
 $box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 
-/* 배경 및 텍스트 색상 */
+// 배경 및 텍스트 색상
 $background-color-light: #f5f5f5;
 $background-color-dark: #1e1e1e;
 $text-color-light: #333;
@@ -24,47 +24,43 @@ $text-color-dark: #e0e0e0;
 $point-color-light: #007bff;
 $point-color-dark: #61dafb;
 
-/* 여백 변수 */
-$spacing-small: 8px;
-$spacing-medium: 16px;
-$spacing-large: 24px;
-
-/* 버튼 색상 */
+// 버튼 색상
 // Light mode buttons
-$button-background-color-light: $point-color-light; // #007bff
-$button-text-color-light: #fff; // 흰색 텍스트
-$button-hover-background-color-light: #0056b3; // 더 어두운 파란색 (호버 시)
+$button-background-color-light: $point-color-light;
+$button-text-color-light: #fff;
+$button-hover-background-color-light: #0056b3; // 호버 시 색상
 
-$button-secondary-background-color-light: #e0e0e0; // 서브 버튼: 밝은 회색
-$button-secondary-text-color-light: #333; // 서브 버튼: 어두운 회색 텍스트
-$button-secondary-hover-background-color-light: #ccc; // 서브 버튼 호버
+$button-secondary-background-color-light: #e0e0e0;
+$button-secondary-text-color-light: #333;
+$button-secondary-hover-background-color-light: #ccc;
 
 // Dark mode buttons
-$button-background-color-dark: $point-color-dark; // #61dafb
-$button-text-color-dark: #1e1e1e; // 어두운 텍스트
-$button-hover-background-color-dark: #4da6d3; // 더 어두운 민트 (호버 시)
+$button-background-color-dark: $point-color-dark;
+$button-text-color-dark: #1e1e1e;
+$button-hover-background-color-dark: #4da6d3; // 호버 시 색상
 
-$button-secondary-background-color-dark: #333; // 서브 버튼: 어두운 회색
-$button-secondary-text-color-dark: #e0e0e0; // 서브 버튼: 밝은 회색 텍스트
-$button-secondary-hover-background-color-dark: #4a4a4a; // 서브 버튼 호버
+$button-secondary-background-color-dark: #333;
+$button-secondary-text-color-dark: #e0e0e0;
+$button-secondary-hover-background-color-dark: #4a4a4a;
 
-$button-border-radius: 4px; /* 버튼 테두리 반경 */
-$button-padding: $spacing-medium; /* 버튼 여백 */
+// 버튼 테두리 반경과 패딩
+$button-border-radius: 4px;
+$button-padding: $spacing-medium;
 
-/* 검색 바 색상 */
+// 검색 바 색상
+// 라이트 모드
+$search-bar-background-color-light: #e0e0e0;
+$search-bar-border-color-light: #6c757d;
+$search-bar-text-color-light: $text-color-light;
+$search-bar-placeholder-color-light: #6c757d;
 
-/* 라이트 모드 */
-$search-bar-background-color-light: #e0e0e0; // 배경색: 밝은 회색
-$search-bar-border-color-light: #6c757d; // 테두리: #6c757d
-$search-bar-text-color-light: $text-color-light; // 텍스트: #333
-$search-bar-placeholder-color-light: #6c757d; // 플레이스홀더: #6c757d
+// 다크 모드
+$search-bar-background-color-dark: #2c2c2c;
+$search-bar-border-color-dark: #333;
+$search-bar-text-color-dark: $text-color-dark;
+$search-bar-placeholder-color-dark: $button-secondary-text-color-dark;
 
-/* 다크 모드 */
-$search-bar-background-color-dark: #2c2c2c; // 배경색: 짙은 회색
-$search-bar-border-color-dark: #333; // 테두리: #333
-$search-bar-text-color-dark: $text-color-dark; // 텍스트: #e0e0e0
-$search-bar-placeholder-color-dark: $button-secondary-text-color-dark; // 플레이스홀더: #e0e0e0
-
+// CSS 변환
 html.light {
   --background-color: #{$background-color-light};
   --text-color: #{$text-color-light};
@@ -82,7 +78,7 @@ html.light {
   --button-background-color: #{$button-background-color-light};
   --button-text-color: #{$button-text-color-light};
   --button-border-radius: #{$button-border-radius};
-  --button-padding: #{$spacing-medium};
+  --button-padding: #{$button-padding};
 
   /* 간격 변수 */
   --spacing-small: #{$spacing-small};
@@ -101,7 +97,7 @@ html.dark {
   --text-color: #{$text-color-dark};
   --point-color: #{$point-color-dark};
 
-  /* 폰트 변수 */
+  // 폰트 변수
   --font-size-tiny: #{$font-size-tiny};
   --font-size-small: #{$font-size-small};
   --font-size-base: #{$font-size-base};

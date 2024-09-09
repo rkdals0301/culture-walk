@@ -11,7 +11,12 @@
     font-weight: var(--font-weight-bold);
     color: var(--search-bar-text-color);
     background-color: var(--search-bar-background-color);
+    border: 1px solid var(--search-bar-border-color);
     border-radius: 4px;
+
+    &::placeholder {
+      color: var(--search-bar-placeholder-color);
+    }
   }
 }
 
