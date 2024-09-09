@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import '@styles/reset.scss';
 import '@styles/globals.scss';
 import notoSansKr from '@fonts/notoSansKr';
+import ThemeProvider from '@components/Common/Theme/ThemeProvider';
 import Header from '@components/Common/Header/Header';
 import Main from '@components/Common/Main/Main';
 import Footer from '@components/Common/Footer/Footer';
@@ -76,9 +77,11 @@ const RootLayout = ({
 }>) => (
   <html lang='ko'>
     <body className={notoSansKr.className}>
-      <Header />
-      <Main>{children}</Main>
-      <Footer />
+      <ThemeProvider>
+        <Header />
+        <Main>{children}</Main>
+        <Footer />
+      </ThemeProvider>
     </body>
   </html>
 );
