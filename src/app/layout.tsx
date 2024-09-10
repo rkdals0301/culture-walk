@@ -76,29 +76,37 @@ const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) => (
-  <html lang='ko'>
-    <Script
-      id='google-analytics'
-      strategy='afterInteractive'
-      src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
-    />
-    <Script id='google-analytics-init' strategy='afterInteractive'>
-      {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-Y4XKZDK818');
-          `}
-    </Script>
-    <body className={notoSansKr.className}>
-      <ThemeProvider>
-        <Header />
-        <Main>{children}</Main>
-        {/* <Footer /> */}
-      </ThemeProvider>
-    </body>
-  </html>
-);
+}>) => {
+  const isProduction = process.env.NEXT_PUBLIC_ENV === 'production';
+
+  return (
+    <html lang='ko'>
+      {isProduction && (
+        <head>
+          <Script
+            id='google-analytics'
+            strategy='afterInteractive'
+            src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
+          />
+          <Script id='google-analytics-init' strategy='afterInteractive'>
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-Y4XKZDK818');
+            `}
+          </Script>
+        </head>
+      )}
+      <body className={notoSansKr.className}>
+        <ThemeProvider>
+          <Header />
+          <Main>{children}</Main>
+          {/* <Footer /> */}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+};
 
 export default RootLayout;
