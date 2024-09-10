@@ -9,7 +9,6 @@ const SearchBar = () => {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   const handleSearchClick = () => {
-    console.log(handleSearchClick);
     setIsOverlayVisible(true); // 클릭 시 오버레이 표시/숨김 토글
   };
 

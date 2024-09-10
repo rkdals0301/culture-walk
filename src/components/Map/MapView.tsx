@@ -65,7 +65,7 @@ const MapView = () => {
     return <div>Error loading maps</div>;
   }
 
-  if (!isLoaded) return <div>Loading...</div>;
+  if (!isLoaded) return <div></div>;
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
