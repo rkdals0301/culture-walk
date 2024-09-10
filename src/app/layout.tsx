@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import '@styles/reset.scss';
 import '@styles/globals.scss';
 import notoSansKr from '@fonts/notoSansKr';
@@ -77,6 +78,19 @@ const RootLayout = ({
   children: React.ReactNode;
 }>) => (
   <html lang='ko'>
+    <Script
+      id='google-analytics'
+      strategy='afterInteractive'
+      src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
+    />
+    <Script id='google-analytics-init' strategy='afterInteractive'>
+      {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Y4XKZDK818');
+          `}
+    </Script>
     <body className={notoSansKr.className}>
       <ThemeProvider>
         <Header />
