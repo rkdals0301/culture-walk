@@ -1,0 +1,14 @@
+.search-results-overlay {
+  position: fixed;
+  top: 85px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 85px);
+  font-size: var(--font-size-large);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
