@@ -80,6 +80,8 @@ const RootLayout = ({
   return (
     <html lang='ko'>
       <head>
+        {/* 네이버 사이트 인증 메타 태그 추가 */}
+        <meta name='naver-site-verification' content='9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5' />
         <Script
           id='google-analytics'
           strategy='beforeInteractive'
