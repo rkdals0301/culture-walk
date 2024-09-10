@@ -26,19 +26,17 @@ $point-color-dark: #61dafb;
 
 // 버튼 색상
 // Light mode buttons
-$button-background-color-light: $point-color-light;
+$button-background-color-light: #007bff;
 $button-text-color-light: #fff;
-$button-hover-background-color-light: #0056b3; // 호버 시 색상
-
+$button-hover-background-color-light: #0056b3;
 $button-secondary-background-color-light: #e0e0e0;
 $button-secondary-text-color-light: #333;
 $button-secondary-hover-background-color-light: #ccc;
 
 // Dark mode buttons
-$button-background-color-dark: $point-color-dark;
+$button-background-color-dark: #61dafb;
 $button-text-color-dark: #1e1e1e;
-$button-hover-background-color-dark: #4da6d3; // 호버 시 색상
-
+$button-hover-background-color-dark: #4da6d3;
 $button-secondary-background-color-dark: #333;
 $button-secondary-text-color-dark: #e0e0e0;
 $button-secondary-hover-background-color-dark: #4a4a4a;
@@ -51,13 +49,13 @@ $button-padding: $spacing-medium;
 // 라이트 모드
 $search-bar-background-color-light: #e0e0e0;
 $search-bar-border-color-light: #6c757d;
-$search-bar-text-color-light: $text-color-light;
+$search-bar-text-color-light: #333;
 $search-bar-placeholder-color-light: #6c757d;
 
 // 다크 모드
 $search-bar-background-color-dark: #2c2c2c;
 $search-bar-border-color-dark: #333;
-$search-bar-text-color-dark: $text-color-dark;
+$search-bar-text-color-dark: #e0e0e0;
 $search-bar-placeholder-color-dark: #e0e0e0;
 
 // 카드
