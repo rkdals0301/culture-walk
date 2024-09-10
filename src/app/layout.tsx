@@ -82,10 +82,10 @@ const RootLayout = ({
       <head>
         <Script
           id='google-analytics'
-          strategy='afterInteractive'
+          strategy='beforeInteractive'
           src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
         />
-        <Script id='google-analytics-init' strategy='afterInteractive'>
+        <Script id='google-analytics-init' strategy='beforeInteractive'>
           {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
