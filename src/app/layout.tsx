@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     template: '%s | 문화산책',
   },
   icons: [
-    { rel: 'icon', url: 'https://culturewalk.vercel.app/favicon.ico' },
-    { rel: 'apple-touch-icon', url: 'https://culturewalk.vercel.app/assets/apple-touch-icon-180x180.png' },
+    { rel: 'icon', url: '/favicon.ico' },
+    { rel: 'apple-touch-icon', url: '/assets/apple-touch-icon-180x180.png' },
   ],
   description:
     '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
@@ -26,6 +26,11 @@ export const metadata: Metadata = {
     languages: {
       ko: 'https://culturewalk.vercel.app/ko',
       en: 'https://culturewalk.vercel.app/en',
+    },
+  },
+  verification: {
+    other: {
+      'naver-site-verification': '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5',
     },
   },
   // manifest: 'https://culturewalk.vercel.app/manifest.json',
@@ -92,7 +97,6 @@ const RootLayout = ({
     <html lang='ko'>
       <head>
         {/* 네이버 사이트 인증 메타 태그 추가 */}
-        <meta name='naver-site-verification' content='9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5' />
         <Script
           id='google-analytics'
           strategy='beforeInteractive'
