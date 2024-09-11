@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styles from './MapFindMyLocationControl.module.scss';
 
 interface MapFindMyLocationControlProps {
-  map: google.maps.Map | null; // Google Map 객체를 받을 prop
+  map: google.maps.Map | null;
 }
 
 const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
@@ -24,15 +24,33 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         const currentLocation = new google.maps.LatLng(latitude, longitude);
 
         if (map) {
-          map.setZoom(14); // 줌 레벨 조정 (필요에 따라 조정 가능)
-          map.panTo(currentLocation); // 사용자의 위치로 지도를 이동
+          map.setZoom(14);
+          map.panTo(currentLocation);
         }
 
         setLoading(false);
       },
       error => {
-        console.error('Error getting location: ', error);
         setLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert('Location access denied by user.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert('Location information is unavailable.');
+            break;
+          case error.TIMEOUT:
+            alert('Request to get user location timed out.');
+            break;
+          default:
+            alert('An unknown error occurred.');
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true, // 정확도를 높이기 위한 옵션
+        timeout: 10000, // 10초 후 타임아웃
+        maximumAge: 0, // 캐시된 위치 정보 사용 금지
       }
     );
   };
