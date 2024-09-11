@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from './MapFindMyLocationControl.module.scss';
+import Image from 'next/image';
 
 interface MapFindMyLocationControlProps {
   map: google.maps.Map | null;
@@ -69,9 +70,7 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
       }}
     >
-      <span role='img' aria-label='locate'>
-        📍
-      </span>
+      <Image src='/assets/map-my-location-icon.svg' alt='map-my-location-icon' width={20} height={20} />
     </button>
   );
 };

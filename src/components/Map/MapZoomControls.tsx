@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import styles from './MapZoomControls.module.scss';
 
 interface MapZoomControlsProps {
@@ -30,33 +31,33 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   };
   return (
     <div className={styles['map-zoom-controls']}>
-      <button className={styles['zoom-in-button']} onClick={handleZoomIn}>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          style={{ width: '24px', height: '24px' }}
-        >
-          <path d='M12 5v14m7-7H5' />
-        </svg>
+      <button
+        className={styles['zoom-in-button']}
+        onClick={handleZoomIn}
+        onMouseEnter={e => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+          e.currentTarget.style.boxShadow = '0 6px 8px rgba(0, 0, 0, 0.2)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+          e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        }}
+      >
+        <Image src='/assets/map-zoom-plus-icon.svg' alt='map-zoom-plus-icon' width={12} height={12} />
       </button>
-      <button className={styles['zoom-out-button']} onClick={handleZoomOut}>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          style={{ width: '24px', height: '24px' }}
-        >
-          <path d='M5 12h14' />
-        </svg>
+      <button
+        className={styles['zoom-out-button']}
+        onClick={handleZoomOut}
+        onMouseEnter={e => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+          e.currentTarget.style.boxShadow = '0 6px 8px rgba(0, 0, 0, 0.2)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+          e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        }}
+      >
+        <Image src='/assets/map-zoom-minus-icon.svg' alt='map-zoom-minus-icon' width={12} height={12} />
       </button>
     </div>
   );
