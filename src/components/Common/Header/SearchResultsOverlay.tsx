@@ -1,9 +1,13 @@
 import Image from 'next/image';
 import styles from './SearchResultsOverlay.module.scss';
 
-const SearchResultsOverlay = () => {
+interface SearchResultsOverlayProps {
+  isOpen: boolean;
+}
+
+const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
   return (
-    <div className={styles['search-results-overlay']}>
+    <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
       <ul className={styles['item-list-wrapper']}>
         {Array.from({ length: 20 }, (_, index) => (
           <li key={index} className={styles['item-wrapper']}>
@@ -20,7 +24,7 @@ const SearchResultsOverlay = () => {
                 width={100}
                 height={100}
                 className={styles['image']}
-                alt='culture_main_img'
+                alt='culture-img'
               />
             </div>
           </li>

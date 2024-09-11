@@ -1,0 +1,32 @@
+// src/components/Common/Header/SideMenu.module.scss
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(0 0 0 / 50%); /* 반투명 배경 */
+}
+
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px; /* 사이드 메뉴의 너비 */
+  height: 100%;
+  background-color: var(--background-color); /* 사이드 메뉴의 배경색 */
+  transition: transform 0.3s ease;
+  transform: translateX(-100%); /* 사이드 메뉴가 화면 밖에 위치하도록 */
+
+  &.open {
+    transform: translateX(0); /* 사이드 메뉴를 화면에 보이도록 */
+  }
+
+  .close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+}

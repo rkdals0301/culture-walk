@@ -12,6 +12,12 @@
   color: var(--text-color);
   background-color: var(--background-color);
   overflow-y: auto;
+  transition: opacity 0.3s ease; /* 부드러운 애니메이션 */
+  opacity: 0;
+
+  &.open {
+    opacity: 1;
+  }
 
   .item-list-wrapper {
     display: flex;

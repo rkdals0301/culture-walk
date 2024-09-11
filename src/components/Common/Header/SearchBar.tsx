@@ -38,7 +38,7 @@ const SearchBar = () => {
         <button type='button' className={styles['search-btn']}>
           <Image src={searchIconSrc} width={24} height={24} alt='search_icon' />
         </button>
-        {isOverlayVisible && <SearchResultsOverlay />}
+        <SearchResultsOverlay isOpen={isOverlayVisible} />
       </div>
     </>
   );
