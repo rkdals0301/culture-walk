@@ -1,3 +1,5 @@
+@import '@styles/mixins';
+
 .search-results-overlay {
   // --card-title-color: #{$card-title-color-dark};
   // --card-text-color: #{$card-text-color-dark};
@@ -7,7 +9,7 @@
   left: 0;
   width: 100%;
   height: calc(100% - 85px);
-  padding: 0.5rem 1rem; // 전체 컨테이너 여백
+  padding: var(--spacing-xs) var(spacing-medium); // 전체 컨테이너 여백
   font-size: var(--font-size-large);
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
@@ -15,22 +17,21 @@
   overflow-y: auto;
 
   .item-list-wrapper {
+    padding: var(--spacing-small) var(--spacing-medium);
     display: flex;
-    gap: 0.5rem; // 카드 간격
     flex-direction: column;
+    gap: var(--spacing-small);
 
     .item-wrapper {
-      // margin: 0 10px 10px;
-      // padding: var(--spacing-medium);
       width: 100%;
-      padding: 0.5rem;
+      padding: var(--spacing-small) var(--spacing-medium);
       color: var(--card-text-color);
-      background-color: var(--card-background);
+      background-color: var(--card-background-color);
       display: flex;
-      box-shadow: 0 2px 4px var(--card-shadow);
-      border: 1px solid var(--card-border);
+      box-shadow: var(--card-box-shadow);
+      border: 1px solid var(--card-border-color);
       border-radius: var(--border-radius);
-      gap: 0.5rem;
+      gap: var(--spacing-small);
 
       .content-wrapper {
         width: calc(100% - 110px);
@@ -39,26 +40,19 @@
         display: flex;
         flex-direction: column;
 
-        // & > * {
-        //   @include ellipsis;
-        // }
-
         .content-title {
-          overflow: hidden; /* 넘치는 부분 숨기기 */
+          @include text-ellipsis;
+
           font-size: var(--font-size-small);
           font-weight: var(--font-weight-bold);
           color: var(--card-title-color); // 제목과 다른 내용 사이의 간격
-          text-overflow: ellipsis; /* 넘치는 부분을 ...로 표시 */
-          white-space: nowrap; /* 텍스트를 한 줄로 유지 */
         }
 
         .content-place,
         .content-date,
         .content-target,
         .content-price {
-          overflow: hidden; /* 넘치는 부분 숨기기 */
-          text-overflow: ellipsis; /* 넘치는 부분을 ...로 표시 */
-          white-space: nowrap; /* 텍스트를 한 줄로 유지 */
+          @include text-ellipsis;
         }
       }
 
@@ -66,7 +60,7 @@
         .image {
           width: 100px;
           height: 100px;
-          border-radius: 8px;
+          border-radius: var(--border-radius);
           object-fit: cover; // 이미지를 잘라서 컨테이너에 맞게 조정
         }
       }

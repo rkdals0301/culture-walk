@@ -1,2 +1,6 @@
-.mixins {
+// 텍스트 생략 처리용 믹스인
+@mixin text-ellipsis {
+  overflow: hidden; // 넘치는 부분 숨기기
+  text-overflow: ellipsis; // 넘치는 부분을 ...로 표시
+  white-space: nowrap; // 텍스트를 한 줄로 유지
 }
