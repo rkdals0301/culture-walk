@@ -13,10 +13,10 @@ export const metadata: Metadata = {
     default: '문화산책',
     template: '%s | 문화산책',
   },
-  icons: [
-    { rel: 'icon', url: '/favicon.ico' },
-    { rel: 'apple-touch-icon', url: '/assets/apple-touch-icon-180x180.png' },
-  ],
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/assets/apple-touch-icon.png',
+  },
   description:
     '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
   keywords:
