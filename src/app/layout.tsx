@@ -112,14 +112,18 @@ const RootLayout = ({
           strategy='beforeInteractive'
           src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
         />
-        <Script id='google-analytics-init' strategy='beforeInteractive'>
-          {`
+        <Script
+          id='google-analytics-init'
+          strategy='beforeInteractive'
+          dangerouslySetInnerHTML={{
+            __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', 'G-Y4XKZDK818');
-            `}
-        </Script>
+            `,
+          }}
+        />
         <Script
           id='channel-talk-script'
           strategy='afterInteractive'
@@ -129,7 +133,8 @@ const RootLayout = ({
 
   ChannelIO('boot', {
     "pluginKey": "4ef79cde-b936-48a0-a501-2ccda61855e4",
-    "zIndex": 1,
+    "zIndex": 2,
+    "appearance": "system"
   });
             `,
           }}
