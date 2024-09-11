@@ -1,15 +1,12 @@
 @import '@styles/mixins';
 
 .search-results-overlay {
-  // --card-title-color: #{$card-title-color-dark};
-  // --card-text-color: #{$card-text-color-dark};
-
   position: fixed;
   top: 85px;
   left: 0;
   width: 100%;
   height: calc(100% - 85px);
-  padding: var(--spacing-xs) var(spacing-medium); // 전체 컨테이너 여백
+  padding: var(--spacing-small) var(--spacing-medium); // 전체 컨테이너 여백
   font-size: var(--font-size-large);
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
@@ -17,7 +14,6 @@
   overflow-y: auto;
 
   .item-list-wrapper {
-    padding: var(--spacing-small) var(--spacing-medium);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-small);
@@ -41,13 +37,12 @@
         flex-direction: column;
 
         .content-title {
-          @include text-ellipsis;
-
           font-size: var(--font-size-small);
           font-weight: var(--font-weight-bold);
           color: var(--card-title-color); // 제목과 다른 내용 사이의 간격
         }
 
+        .content-title,
         .content-place,
         .content-date,
         .content-target,
@@ -58,8 +53,6 @@
 
       .image-wrapper {
         .image {
-          width: 100px;
-          height: 100px;
           border-radius: var(--border-radius);
           object-fit: cover; // 이미지를 잘라서 컨테이너에 맞게 조정
         }

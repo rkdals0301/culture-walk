@@ -5,7 +5,7 @@ const SearchResultsOverlay = () => {
   return (
     <div className={styles['search-results-overlay']}>
       <ul className={styles['item-list-wrapper']}>
-        {Array.from({ length: 10 }, (_, index) => (
+        {Array.from({ length: 20 }, (_, index) => (
           <li key={index} className={styles['item-wrapper']}>
             <div className={styles['content-wrapper']}>
               <p className={styles['content-title']}>[성동문화재단] 2024년 한국의 디카시 전</p>

@@ -38,8 +38,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: 'https://culturewalk.vercel.app/assets/logo.svg',
-        width: 200,
-        height: 200,
+        width: 1200,
+        height: 630,
         alt: 'culturewalk',
         type: 'image/svg+xml',
       },
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: 'https://culturewalk.vercel.app/assets/logo.svg',
-        width: 200,
-        height: 200,
+        width: 1200,
+        height: 675,
         alt: 'culturewalk',
         type: 'image/svg+xml',
       },

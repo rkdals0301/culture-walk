@@ -1,0 +1,19 @@
+.find-my-location-control {
+  position: absolute;
+  right: 10px;
+  bottom: 100px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: rgb(255 255 255 / 90%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition:
+    background-color 0.3s,
+    box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
