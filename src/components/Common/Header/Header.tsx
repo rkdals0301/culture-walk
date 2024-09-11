@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import styles from './Header.module.scss';
 import ThemeToggle from '@/components/Common/Theme/ThemeToggle';
 import SearchBar from '@/components/Common/Header/SearchBar';
-import Link from 'next/link';
 
 const Header = () => {
   const { theme } = useTheme();

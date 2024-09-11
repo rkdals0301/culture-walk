@@ -33,12 +33,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: 'https://culturewalk.vercel.app',
+    title: '문화산책',
     siteName: '문화산책',
     images: [
       {
         url: 'https://culturewalk.vercel.app/assets/logo.svg',
-        width: 1200,
-        height: 630,
+        width: 200,
+        height: 200,
         alt: 'culturewalk',
         type: 'image/svg+xml',
       },
@@ -46,8 +47,18 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@yourtwitterhandle', // Twitter 핸들을 추가
-    creator: '@yourtwitterhandle', // Twitter 크리에이터 핸들 추가
+    title: '문화산책',
+    description:
+      '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
+    images: [
+      {
+        url: 'https://culturewalk.vercel.app/assets/logo.svg',
+        width: 200,
+        height: 200,
+        alt: 'culturewalk',
+        type: 'image/svg+xml',
+      },
+    ],
   },
   robots: 'index, follow',
 };
