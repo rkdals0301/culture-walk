@@ -8,7 +8,7 @@ interface SideMenuProps {
 const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
   return (
     <>
-      {isOpen && <div className={styles.overlay} onClick={onClose}></div>}
+      {isOpen && <div className={`${styles['overlay']} ${isOpen ? styles.open : ''}`} onClick={onClose}></div>}
       <div className={`${styles['side-menu']} ${isOpen ? styles.open : ''}`}>
         <button className={styles['close-button']} onClick={onClose}>
           &times;
