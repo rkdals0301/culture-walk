@@ -11,15 +11,10 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
   background-color: var(--background-color);
-  transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
-  opacity: 0;
   visibility: hidden;
   overflow-y: auto;
 
   &.open {
-    opacity: 1;
     visibility: visible; /* 오버레이가 열릴 때 보이도록 설정 */
   }
 
