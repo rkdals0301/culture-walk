@@ -61,6 +61,15 @@
   }
 
   .header-bottom {
+    width: 100%;
     height: calc(100% - 38px);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+
+    .back-btn {
+      width: 24px;
+      height: 24px;
+    }
   }
 }
