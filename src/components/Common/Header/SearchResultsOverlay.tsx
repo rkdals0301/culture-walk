@@ -1,31 +1,57 @@
 import Image from 'next/image';
 import styles from './SearchResultsOverlay.module.scss';
+import { useEffect, useState } from 'react';
+import { fetchCultures } from '@/utils/api/culture';
+import { FormattedCulture } from '@/types/culture';
+import { formatCultureData } from '@/utils/cultureUtils';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
 }
 
 const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
+  const [cultures, setCultures] = useState<FormattedCulture[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
+
+    const fetchData = async () => {
+      try {
+        const data = await fetchCultures();
+        console.log(data);
+        if (!data) return;
+        const cultures = formatCultureData(data);
+        console.log(cultures);
+        setCultures(cultures || []);
+      } catch (err) {
+        console.log(err);
+        setError('Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // if (isOpen && loading) return <div>Loading...</div>;
+  // if (isOpen && error) return <div>{error}</div>;
+
   return (
     <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
       <ul className={styles['item-list-wrapper']}>
-        {Array.from({ length: 20 }, (_, index) => (
+        {cultures.map((culture, index) => (
           <li key={index} className={styles['item-wrapper']}>
             <div className={styles['content-wrapper']}>
-              <p className={styles['content-title']}>[성동문화재단] 2024년 한국의 디카시 전</p>
-              <p className={styles['content-place']}>전시/미술 / 성동구 / 소월아트홀 1층 소월전시실</p>
-              <p className={styles['content-date']}>2024-09-09 ~ 2024-09-13</p>
-              <p className={styles['content-target']}>누구나</p>
-              <p className={styles['content-price']}>무료</p>
+              <p className={styles['content-title']}>{culture.title}</p>
+              <p className={styles['content-place']}>{culture.displayPlace}</p>
+              <p className={styles['content-date']}>{culture.displayDate}</p>
+              <p className={styles['content-target']}>{culture.useTarget}</p>
+              <p className={styles['content-price']}>{culture.displayPrice}</p>
             </div>
             <div className={styles['image-wrapper']}>
-              <Image
-                src='https://culture.seoul.go.kr/cmmn/file/getImage.do?atchFileId=e841eeba9c7d4a07b1fdde44c5c69c77&thumb=Y'
-                width={100}
-                height={100}
-                className={styles['image']}
-                alt='culture-img'
-              />
+              <Image src={culture.mainImage} width={100} height={100} className={styles['image']} alt='culture-img' />
             </div>
           </li>
         ))}
