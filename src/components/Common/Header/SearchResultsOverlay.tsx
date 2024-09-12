@@ -24,6 +24,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
         const cultures = formatCultureData(data);
         setCultures(cultures || []);
       } catch (err) {
+        console.log(err);
         // setError('Failed to fetch data');
       } finally {
         // setLoading(false);
