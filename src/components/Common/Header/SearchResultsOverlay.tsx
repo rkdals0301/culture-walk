@@ -20,13 +20,10 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
     const fetchData = async () => {
       try {
         const data = await fetchCultures();
-        console.log(data);
         if (!data) return;
         const cultures = formatCultureData(data);
-        console.log(cultures);
         setCultures(cultures || []);
       } catch (err) {
-        console.log(err);
         // setError('Failed to fetch data');
       } finally {
         // setLoading(false);
