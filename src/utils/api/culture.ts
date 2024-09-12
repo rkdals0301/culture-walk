@@ -1,6 +1,6 @@
 import { RawCulture } from '@/types/culture';
 
-const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo';
+const BASE_URL = '/api/684e537944726b643635534d756b47/json/culturalEventInfo';
 
 export const fetchCultures = async () => {
   try {
