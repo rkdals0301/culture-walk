@@ -11,8 +11,8 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
   const [cultures, setCultures] = useState<FormattedCulture[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [loading, setLoading] = useState<boolean>(true);
+  // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
@@ -27,9 +27,9 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
         setCultures(cultures || []);
       } catch (err) {
         console.log(err);
-        setError('Failed to fetch data');
+        // setError('Failed to fetch data');
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     fetchData();
