@@ -3,7 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['culture.seoul.go.kr'], // 허용할 도메인 추가
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'culture.seoul.go.kr',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   async rewrites() {
     return [

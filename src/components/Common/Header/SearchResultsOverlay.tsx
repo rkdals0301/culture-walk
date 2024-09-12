@@ -15,7 +15,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
   // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
+    if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
 
     const fetchData = async () => {
       try {
@@ -33,7 +33,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
       }
     };
     fetchData();
-  }, []);
+  }, [isOpen]);
 
   // if (isOpen && loading) return <div>Loading...</div>;
   // if (isOpen && error) return <div>{error}</div>;
