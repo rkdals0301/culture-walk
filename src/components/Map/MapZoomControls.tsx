@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import styles from './MapZoomControls.module.scss';
+import React from 'react';
 
 interface MapZoomControlsProps {
   map: google.maps.Map | null; // Google Map 객체를 받을 prop
@@ -63,4 +64,4 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   );
 };
 
-export default MapZoomControls;
+export default React.memo(MapZoomControls);

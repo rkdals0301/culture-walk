@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import styles from './MapFindMyLocationControl.module.scss';
 import Image from 'next/image';
 
@@ -75,4 +75,4 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
   );
 };
 
-export default MapFindMyLocationControl;
+export default React.memo(MapFindMyLocationControl);
