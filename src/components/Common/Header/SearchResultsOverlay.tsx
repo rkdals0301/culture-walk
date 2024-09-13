@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchCultures } from '@/utils/api/culture';
 import { FormattedCulture } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
+import Loader from '@/components/Common/Loader/Loader';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -11,36 +12,51 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
   const [cultures, setCultures] = useState<FormattedCulture[]>([]);
-  // const [loading, setLoading] = useState<boolean>(true);
-  // const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
 
     const fetchData = async () => {
+      setLoading(true); // 로딩 시작
+      setError(null); // Reset error state before fetching
+
       try {
         const data = await fetchCultures();
-        if (!data) return;
-        const cultures = formatCultureData(data);
-        setCultures(cultures || []);
+        const formattedCultures = formatCultureData(data);
+        setCultures(formattedCultures);
       } catch (err) {
-        console.log(err);
-        // setError('Failed to fetch data');
+        console.error('Error fetching cultures:', err);
+        setError('Failed to fetch data');
       } finally {
-        // setLoading(false);
+        setLoading(false);
       }
     };
     fetchData();
   }, [isOpen]);
 
-  // if (isOpen && loading) return <div>Loading...</div>;
-  // if (isOpen && error) return <div>{error}</div>;
+  if (loading) {
+    return (
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
       <ul className={styles['item-list-wrapper']}>
-        {cultures.map((culture, index) => (
-          <li key={index} className={styles['item-wrapper']}>
+        {cultures.map(culture => (
+          <li key={culture.id} className={styles['item-wrapper']}>
             <div className={styles['content-wrapper']}>
               <p className={styles['content-title']}>{culture.title}</p>
               <p className={styles['content-place']}>{culture.displayPlace}</p>
@@ -49,7 +65,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
               <p className={styles['content-price']}>{culture.displayPrice}</p>
             </div>
             <div className={styles['image-wrapper']}>
-              <Image src={culture.mainImage} width={100} height={100} className={styles['image']} alt='culture-img' />
+              <Image src={culture.mainImage} width={100} height={100} className={styles['image']} alt='Culture Image' />
             </div>
           </li>
         ))}

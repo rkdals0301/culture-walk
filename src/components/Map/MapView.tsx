@@ -29,7 +29,7 @@ const MapView = () => {
         options={{
           disableDefaultUI: true, // 기본 UI 요소 모두 숨김
         }}
-        center={{ lat: 37.7749, lng: -122.4194 }} // 기본 위치 설정
+        center={{ lat: 37.566535, lng: 126.9779692 }} // 기본 위치 설정
         zoom={12}
         clickableIcons={false}
         onLoad={mapInstance => setMap(mapInstance)}
