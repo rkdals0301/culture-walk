@@ -11,12 +11,15 @@ import SideMenu from '@components/Common/Header/SideMenu';
 import SearchResultsOverlay from '@components/Common/Header/SearchResultsOverlay';
 
 const Header = () => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
-  const gnbIconSrc = theme === 'dark' ? '/assets/gnb-icon-dark.svg' : '/assets/gnb-icon-light.svg';
-  const leftArrowIconSrc = theme === 'dark' ? '/assets/left-arrow-icon-dark.svg' : '/assets/left-arrow-icon-light.svg';
+  // 초기값이 'system'이거나 로드되지 않았을 때 처리
+
+  const gnbIconSrc = resolvedTheme === 'dark' ? '/assets/gnb-icon-dark.svg' : '/assets/gnb-icon-light.svg';
+  const leftArrowIconSrc =
+    resolvedTheme === 'dark' ? '/assets/left-arrow-icon-dark.svg' : '/assets/left-arrow-icon-light.svg';
 
   const toggleSideMenu = () => {
     setIsSideMenuOpen(!isSideMenuOpen);

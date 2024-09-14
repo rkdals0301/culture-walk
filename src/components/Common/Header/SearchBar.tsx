@@ -7,9 +7,9 @@ interface SearchBarProps {
 }
 
 const SearchBar = ({ onSearchClick }: SearchBarProps) => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
-  const searchIconSrc = theme === 'dark' ? '/assets/search-icon-dark.svg' : '/assets/search-icon-light.svg';
+  const searchIconSrc = resolvedTheme === 'dark' ? '/assets/search-icon-dark.svg' : '/assets/search-icon-light.svg';
 
   return (
     <div className={styles['search-bar-wrapper']}>

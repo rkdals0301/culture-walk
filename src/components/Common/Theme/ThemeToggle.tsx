@@ -5,22 +5,22 @@ import { useTheme } from 'next-themes';
 import styles from './ThemeToggle.module.scss';
 
 const ThemeToggle = () => {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     const metaThemeColor = document.querySelector("meta[name='theme-color']") as HTMLMetaElement;
     if (metaThemeColor) {
-      metaThemeColor.content = theme === 'dark' ? '#1e1e1e' : '#f5f5f5';
+      metaThemeColor.content = resolvedTheme === 'dark' ? '#1e1e1e' : '#f5f5f5';
     }
-  }, [theme]);
+  }, [resolvedTheme]);
 
   return (
     <button
       type='button'
       className={styles['theme-toggle-button']}
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
     >
-      {theme === 'dark' ? '🌞' : '🌙'}
+      {resolvedTheme === 'dark' ? '🌞' : '🌙'}
     </button>
   );
 };
