@@ -65,7 +65,14 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
               <p className={styles['content-price']}>{culture.displayPrice}</p>
             </div>
             <div className={styles['image-wrapper']}>
-              <Image src={culture.mainImage} width={100} height={100} className={styles['image']} alt='Culture Image' />
+              <Image
+                src={culture.mainImage}
+                width={100}
+                height={100}
+                className={styles['image']}
+                alt='Culture Image'
+                placeholder='blur'
+              />
             </div>
           </li>
         ))}

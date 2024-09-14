@@ -1,6 +1,6 @@
 import { RawCulture, FormattedCulture } from '@/types/culture';
 
-const formatString = (object: Record<string, any>, keys: string[], separate = ', ') => {
+const formatString = (object: RawCulture, keys: (keyof RawCulture)[], separate = ', '): string => {
   const values = keys.map(key => object[key]);
   const result = values.filter(val => val !== undefined && val !== null).join(separate);
 

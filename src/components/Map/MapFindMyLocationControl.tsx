@@ -70,7 +70,7 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
       }}
     >
-      <Image src='/assets/map-my-location-icon.svg' alt='map-my-location-icon' width={20} height={20} />
+      <Image src='/assets/map-my-location-icon.svg' alt='map-my-location-icon' width={20} height={20} priority />
     </button>
   );
 };

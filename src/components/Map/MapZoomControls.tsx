@@ -44,7 +44,7 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
           e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
         }}
       >
-        <Image src='/assets/map-zoom-plus-icon.svg' alt='map-zoom-plus-icon' width={12} height={12} />
+        <Image src='/assets/map-zoom-plus-icon.svg' alt='map-zoom-plus-icon' width={12} height={12} priority />
       </button>
       <button
         className={styles['zoom-out-button']}
@@ -58,7 +58,7 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
           e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
         }}
       >
-        <Image src='/assets/map-zoom-minus-icon.svg' alt='map-zoom-minus-icon' width={12} height={12} />
+        <Image src='/assets/map-zoom-minus-icon.svg' alt='map-zoom-minus-icon' width={12} height={12} priority />
       </button>
     </div>
   );

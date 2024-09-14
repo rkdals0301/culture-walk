@@ -35,12 +35,12 @@ const Header = () => {
       <div className={styles['header-top']}>
         <div className={styles['gnb-wrapper']}>
           <button type='button' className={styles['gnb-button']} onClick={toggleSideMenu}>
-            <Image src={gnbIconSrc} width={24} height={24} alt='gnb' />
+            <Image src={gnbIconSrc} width={24} height={24} alt='gnb' priority />
           </button>
         </div>
         <Link href='/'>
           <div className={styles['logo-wrapper']}>
-            <Image src='/assets/logo.svg' width={24} height={24} alt='logo' />
+            <Image src='/assets/logo.svg' width={24} height={24} alt='logo' priority />
             <span className={styles['logo-text']}>문화산책</span>
           </div>
         </Link>
@@ -51,7 +51,7 @@ const Header = () => {
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
           <button type='button' className={styles['back-btn']} onClick={handleBackClick}>
-            <Image src={leftArrowIconSrc} width={24} height={24} alt='back_icon' />
+            <Image src={leftArrowIconSrc} width={24} height={24} alt='back_icon' priority />
           </button>
         )}
         <SearchBar onSearchClick={handleSearchClick} />

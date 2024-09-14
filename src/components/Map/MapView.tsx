@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import styles from './MapView.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { fetchCultures } from '@/utils/api/culture';
 import Loader from '@/components/Common/Loader/Loader';
-import MapZoomControls from '@components/Map/MapZoomControls';
-import MapFindMyLocationControl from '@components/Map/MapFindMyLocationControl';
+import MapZoomControls from '@/components/Map/MapZoomControls';
+import MapFindMyLocationControl from '@/components/Map/MapFindMyLocationControl';
 import MapMarkerClusterer from '@/components/Map/MapMarkerClusterer';
 
 const MapView = () => {
@@ -39,6 +39,18 @@ const MapView = () => {
     fetchData();
   }, []);
 
+  const handleLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+  }, []);
+
+  const mapOptions = useMemo(
+    () => ({
+      disableDefaultUI: true,
+      clickableIcons: false,
+    }),
+    []
+  );
+
   if (loadError) {
     return <div>Error loading maps</div>;
   }
@@ -54,13 +66,11 @@ const MapView = () => {
     <div className={styles['map-view']}>
       <GoogleMap
         mapContainerClassName={styles.map}
-        options={{
-          disableDefaultUI: true,
-        }}
+        options={mapOptions}
         center={{ lat: 37.5665, lng: 126.978 }}
         zoom={12}
         clickableIcons={false}
-        onLoad={mapInstance => setMap(mapInstance)}
+        onLoad={handleLoad}
       >
         <MapMarkerClusterer cultures={cultures} />
         <MapFindMyLocationControl map={map} />

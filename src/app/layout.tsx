@@ -83,8 +83,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   // themeColor: [
   //   {
   //     media: '(prefers-color-scheme: light)',
@@ -109,12 +109,12 @@ const RootLayout = ({
       <head>
         <Script
           id='google-analytics'
-          strategy='beforeInteractive'
+          strategy='lazyOnload'
           src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
         />
         <Script
           id='google-analytics-init'
-          strategy='beforeInteractive'
+          strategy='lazyOnload'
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -126,17 +126,17 @@ const RootLayout = ({
         />
         <Script
           id='channel-talk-script'
-          strategy='afterInteractive'
+          strategy='lazyOnload'
           dangerouslySetInnerHTML={{
             __html: `
-  (function(){var w=window;if(w.ChannelIO){return w.console.error("ChannelIO script included twice.");}var ch=function(){ch.c(arguments);};ch.q=[];ch.c=function(args){ch.q.push(args);};w.ChannelIO=ch;function l(){if(w.ChannelIOInitialized){return;}w.ChannelIOInitialized=true;var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";var x=document.getElementsByTagName("script")[0];if(x.parentNode){x.parentNode.insertBefore(s,x);}}if(document.readyState==="complete"){l();}else{w.addEventListener("DOMContentLoaded",l);w.addEventListener("load",l);}})();
+              (function(){var w=window;if(w.ChannelIO){return w.console.error("ChannelIO script included twice.");}var ch=function(){ch.c(arguments);};ch.q=[];ch.c=function(args){ch.q.push(args);};w.ChannelIO=ch;function l(){if(w.ChannelIOInitialized){return;}w.ChannelIOInitialized=true;var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";var x=document.getElementsByTagName("script")[0];if(x.parentNode){x.parentNode.insertBefore(s,x);}}if(document.readyState==="complete"){l();}else{w.addEventListener("DOMContentLoaded",l);w.addEventListener("load",l);}})();
 
-  ChannelIO('boot', {
-    "pluginKey": "4ef79cde-b936-48a0-a501-2ccda61855e4",
-    "zIndex": 2,
-    "appearance": "system"
-  });
-            `,
+              ChannelIO('boot', {
+                "pluginKey": "4ef79cde-b936-48a0-a501-2ccda61855e4",
+                "zIndex": 2,
+                "appearance": "system"
+              });
+    `,
           }}
         />
       </head>

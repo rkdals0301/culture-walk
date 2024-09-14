@@ -1,5 +1,7 @@
+import dynamic from 'next/dynamic';
 // import styles from './page.module.scss';
-import MapView from '@components/Map/MapView';
+
+const MapView = dynamic(() => import('@/components/Map/MapView'), { ssr: false });
 
 const Map = () => <MapView />;
 

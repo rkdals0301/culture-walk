@@ -22,7 +22,7 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
         onFocus={onSearchClick}
       />
       <button type='button' className={styles['search-btn']}>
-        <Image src={searchIconSrc} width={24} height={24} alt='search_icon' />
+        <Image src={searchIconSrc} width={24} height={24} alt='search_icon' priority />
       </button>
     </div>
   );
