@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import styles from './MapView.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { fetchCultures } from '@/utils/api/culture';
 import Loader from '@/components/Common/Loader/Loader';
-import MapZoomControls from '@/components/Map/MapZoomControls';
-import MapFindMyLocationControl from '@/components/Map/MapFindMyLocationControl';
-import MapMarkerClusterer from '@/components/Map/MapMarkerClusterer';
+const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
+const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
+const MapMarkerClusterer = dynamic(() => import('@/components/Map/MapMarkerClusterer'), { ssr: false });
 
 const MapView = () => {
   const [map, setMap] = useState<google.maps.Map | null>(null);

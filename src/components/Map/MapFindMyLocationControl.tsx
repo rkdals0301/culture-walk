@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import styles from './MapFindMyLocationControl.module.scss';
 import Image from 'next/image';
 
@@ -11,7 +11,7 @@ interface MapFindMyLocationControlProps {
 const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
   const [loading, setLoading] = useState(false);
 
-  const handleFindMyLocation = () => {
+  const handleFindMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser');
       return;
@@ -33,20 +33,19 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
       },
       error => {
         setLoading(false);
+        let errorMessage = 'An unknown error occurred.';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            alert('Location access denied by user.');
+            errorMessage = 'Location access denied by user.';
             break;
           case error.POSITION_UNAVAILABLE:
-            alert('Location information is unavailable.');
+            errorMessage = 'Location information is unavailable.';
             break;
           case error.TIMEOUT:
-            alert('Request to get user location timed out.');
-            break;
-          default:
-            alert('An unknown error occurred.');
+            errorMessage = 'Request to get user location timed out.';
             break;
         }
+        alert(errorMessage);
       },
       {
         enableHighAccuracy: true, // 정확도를 높이기 위한 옵션
@@ -54,23 +53,11 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         maximumAge: 0, // 캐시된 위치 정보 사용 금지
       }
     );
-  };
+  }, [map]);
 
   return (
-    <button
-      className={styles['find-my-location-control']}
-      onClick={handleFindMyLocation}
-      disabled={loading}
-      onMouseEnter={e => {
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
-        e.currentTarget.style.boxShadow = '0 6px 8px rgba(0, 0, 0, 0.2)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-      }}
-    >
-      <Image src='/assets/map-my-location-icon.svg' alt='map-my-location-icon' width={20} height={20} priority />
+    <button className={styles['find-my-location-control']} onClick={handleFindMyLocation} disabled={loading}>
+      <Image src='/assets/map-my-location-icon.svg' alt='Find my location' width={20} height={20} priority />
     </button>
   );
 };

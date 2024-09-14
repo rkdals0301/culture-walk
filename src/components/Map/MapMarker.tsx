@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
 import { MarkerClusterer } from '@googlemaps/markerclusterer'; // 클러스터러 타입
@@ -19,14 +19,18 @@ const MapMarker = ({ culture, clusterer }: MapMarkerProps) => {
     lng: +culture.lng + offset,
   };
 
+  // Memoized callback functions
+  const handleMouseOver = useCallback(() => setShowInfoWindow(true), []);
+  const handleMouseOut = useCallback(() => setShowInfoWindow(false), []);
+  const handleClick = useCallback(() => console.log(culture.title), [culture.title]);
+
   return (
     <MarkerF
-      cursor='12'
+      title={culture.title}
       position={position}
-      title='123'
-      onMouseOver={() => setShowInfoWindow(true)}
-      onMouseOut={() => setShowInfoWindow(false)}
-      onClick={() => console.log(culture.title)}
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      onClick={handleClick}
       // icon={{
       //   url: '/path/to/custom-icon.png', // 커스텀 아이콘 사용 (필요할 경우)
       //   scaledSize: new google.maps.Size(30, 30), // 아이콘 크기 조정 (옵션)

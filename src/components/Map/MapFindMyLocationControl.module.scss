@@ -12,6 +12,18 @@
     background-color 0.3s,
     box-shadow 0.3s;
   box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+  border: 1px solid #ddd;
   border-radius: 50%;
   cursor: pointer;
+
+  &:disabled {
+    background-color: rgb(255 255 255 / 50%);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  &:hover {
+    background-color: rgb(255 255 255 / 100%);
+    box-shadow: 0 6px 8px rgb(0 0 0 / 20%);
+  }
 }
