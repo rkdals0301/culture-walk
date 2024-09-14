@@ -32,13 +32,6 @@ export const metadata: Metadata = {
     '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
   keywords:
     '서울시 문화행사, 서울 문화 행사, 서울 공연, 서울 전시회, 서울시 이벤트, 서울 문화 축제, 서울 시내 행사, 서울 문화 지도, 서울 문화 활동, 서울 시민 문화',
-  alternates: {
-    canonical: 'https://culturewalk.vercel.app',
-    languages: {
-      ko: 'https://culturewalk.vercel.app/ko',
-      en: 'https://culturewalk.vercel.app/en',
-    },
-  },
   verification: {
     other: {
       'naver-site-verification': '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5',
@@ -136,7 +129,7 @@ const RootLayout = ({
                 "zIndex": 2,
                 "appearance": "system"
               });
-    `,
+            `,
           }}
         />
       </head>
