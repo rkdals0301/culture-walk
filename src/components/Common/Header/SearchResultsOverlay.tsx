@@ -71,7 +71,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
                 height={100}
                 className={styles['image']}
                 alt='Culture Image'
-                placeholder='blur'
+                blurDataURL={culture.mainImage}
               />
             </div>
           </li>

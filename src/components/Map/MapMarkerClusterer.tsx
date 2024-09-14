@@ -20,8 +20,17 @@ const MapMarkerClusterer: React.FC<MapMarkerClustererProps> = ({ cultures }) => 
 
   return (
     <MarkerClustererF options={clusterOptions}>
-      {/* @ts-expect-error Async Server Component */}
-      {clusterer => cultures.map(culture => <MapMarker key={culture.id} culture={culture} clusterer={clusterer} />)}
+      {clusterer => (
+        <>
+          {cultures.map(culture => (
+            <MapMarker
+              key={culture.id}
+              culture={culture}
+              clusterer={clusterer as any} // 타입 캐스팅
+            />
+          ))}
+        </>
+      )}
     </MarkerClustererF>
   );
 };
