@@ -1,24 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+// import { useState } from 'react';
 import BottomSheet from '@/components/Map/BottomSheet';
-import Backdrop from '@/components/Map/BottomSheetBackdrop';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 
 const MapDetail = () => {
-  const router = useRouter();
-  const [isSheetOpen, setIsSheetOpen] = useState(true);
+  // const router = useRouter();
+  // const [isSheetOpen, setIsSheetOpen] = useState(true);
+  // setIsSheetOpen(false);
 
-  const handlerOnClose = () => {
-    setIsSheetOpen(false);
-    router.push('/map');
-  };
+  // const handlerOnClose = () => {
+  // router.push('/map');
+  // };
 
   return (
-    <div>
-      <Backdrop isOpen={isSheetOpen} onClick={handlerOnClose} />
-      <BottomSheet isOpen={isSheetOpen} />
-    </div>
+    <>
+      <BottomSheet></BottomSheet>
+    </>
   );
 };
 

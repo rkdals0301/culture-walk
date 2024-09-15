@@ -3,7 +3,6 @@ import { RawCulture, FormattedCulture } from '@/types/culture';
 const formatString = (object: RawCulture, keys: (keyof RawCulture)[], separate = ', '): string => {
   const values = keys.map(key => object[key]);
   const result = values.filter(val => val !== undefined && val !== null).join(separate);
-
   return result;
 };
 
@@ -26,14 +25,18 @@ export const formatCultureData = (cultures: RawCulture[]): FormattedCulture[] =>
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // startDate와 endDate가 현재 날짜 범위 내에 있는지 확인 후 필터링
-  const filteredCultures = cultures.filter(culture => {
-    const startDate = new Date(culture['STRTDATE'].split(' ')[0]);
-    const endDate = new Date(culture['END_DATE'].split(' ')[0]);
-    return today >= startDate && today <= endDate;
-  });
+  // 필터링을 위한 날짜 변환 함수
+  const isWithinRange = (startDate: string, endDate: string): boolean => {
+    const start = new Date(startDate.split(' ')[0]);
+    const end = new Date(endDate.split(' ')[0]);
+    return today >= start && today <= end;
+  };
 
-  return filteredCultures.map((culture: RawCulture, index: number) => {
+  // 필터링된 문화 데이터
+  const filteredCultures = cultures.filter(culture => isWithinRange(culture['STRTDATE'], culture['END_DATE']));
+
+  // 데이터 매핑
+  const mappedCultures = filteredCultures.map((culture: RawCulture, index: number) => {
     const {
       CODENAME,
       DATE,
@@ -61,7 +64,7 @@ export const formatCultureData = (cultures: RawCulture[]): FormattedCulture[] =>
 
     return {
       id: index,
-      classification: CODENAME, //분류
+      classification: CODENAME, // 분류
       date: DATE, // 날짜/시간
       endDate: END_DATE, // 종료일
       etcDescription: ETC_DESC, // 기타내용
@@ -77,7 +80,7 @@ export const formatCultureData = (cultures: RawCulture[]): FormattedCulture[] =>
       performerInformation: PLAYER, // 출연자정보
       programIntroduction: PROGRAM, // 프로그램소개
       registrationDate: RGSTDATE, // 신청일
-      startDate: STRTDATE, //시작일
+      startDate: STRTDATE, // 시작일
       themeClassification: THEMECODE, // 테마분류
       register: TICKET, // 시민/기관
       title: TITLE, // 공연/행사명
@@ -88,4 +91,6 @@ export const formatCultureData = (cultures: RawCulture[]): FormattedCulture[] =>
       displayPrice: IS_FREE === '유료' ? formatString(culture, ['IS_FREE', 'USE_FEE']) : IS_FREE,
     };
   });
+
+  return mappedCultures;
 };

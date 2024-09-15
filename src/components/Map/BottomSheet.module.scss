@@ -1,32 +1,32 @@
-.bottom-sheet {
+// src/components/BottomSheet.module.scss
+.sheet {
   position: fixed;
-  right: 0;
   bottom: 0;
   left: 0;
-  z-index: 100;
+  right: 0;
+  background-color: #fff;
+  transition: height 0.3s ease;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
   overflow: hidden;
-  background-color: #ffff;
-  box-shadow: 0 -5px 10px rgb(0 0 0 / 30%);
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+}
 
-  .sheet-header {
-    height: 32px;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.open {
+  height: 500px;
+}
 
-    .grip-bar {
-      width: 40px;
-      height: 4px;
-      background-color: #ccc;
-      margin-bottom: 8px;
-      border-radius: 2px;
-    }
-  }
+.closed {
+  height: 250px;
+}
 
-  .sheet-content {
-    height: calc(100% - 32px);
-  }
+.handle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: #ccc;
+  border-radius: 2px;
+  cursor: pointer;
 }
