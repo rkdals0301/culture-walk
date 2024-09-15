@@ -1,5 +1,6 @@
 // src/components/BottomSheet.tsx
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './BottomSheet.module.scss';
 
 const BOTTOM_SHEET_STAGES = [250, 500]; // 높이 단계 정의
@@ -9,8 +10,10 @@ const BottomSheet: React.FC = () => {
   const [height, setHeight] = useState(BOTTOM_SHEET_STAGES[0]);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
+  const [closing, setClosing] = useState(false); // 애니메이션 종료 플래그
   const sheetRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false); // 드래그 중인지 확인하는 플래그
+  const router = useRouter();
 
   // 드래그 시작
   const startDrag = (e: TouchEvent | MouseEvent) => {
@@ -50,7 +53,7 @@ const BottomSheet: React.FC = () => {
           setIsOpen(true);
         } else if (height === BOTTOM_SHEET_STAGES[0]) {
           // 250에서 아래로 드래그하면 닫기
-          setIsOpen(false);
+          setClosing(true);
         }
       }
 
@@ -93,11 +96,33 @@ const BottomSheet: React.FC = () => {
     };
   }, [startY, currentY, height]);
 
+  useEffect(() => {
+    const sheetElement = sheetRef.current;
+
+    if (closing && sheetElement) {
+      const handleTransitionEnd = () => {
+        // 애니메이션이 완료된 후에 페이지 이동
+        router.push('/map');
+      };
+
+      // 애니메이션 종료 시점 감지
+      sheetElement.addEventListener('transitionend', handleTransitionEnd);
+
+      // 닫기 애니메이션 시작
+      setHeight(0); // 애니메이션으로 height를 0으로 설정하여 닫기
+
+      // 이벤트 리스너 제거
+      return () => {
+        sheetElement.removeEventListener('transitionend', handleTransitionEnd);
+      };
+    }
+  }, [closing]);
+
   return (
     <div
       ref={sheetRef}
-      className={`${styles.sheet} ${isOpen ? styles.open : styles.closed}`}
-      style={{ height: `${height}px` }}
+      className={`${styles.sheet} ${isOpen ? styles.open : styles.closed} ${closing ? styles.closing : ''}`}
+      style={{ height: `${height}px`, transition: 'height 0.3s ease-out' }}
     >
       <div className={styles.handle} />
       {/* 바텀 시트 내용 */}
