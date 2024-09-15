@@ -6,7 +6,6 @@ import styles from './BottomSheet.module.scss';
 const BOTTOM_SHEET_STAGES = [250, 500]; // 높이 단계 정의
 
 const BottomSheet: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [height, setHeight] = useState(BOTTOM_SHEET_STAGES[0]);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
@@ -43,14 +42,12 @@ const BottomSheet: React.FC = () => {
         if (currentStageIndex < BOTTOM_SHEET_STAGES.length - 1) {
           // 다음 단계로 이동
           setHeight(BOTTOM_SHEET_STAGES[currentStageIndex + 1]);
-          setIsOpen(true);
         }
       } else if (currentY > threshold) {
         // 아래로 드래그 (높이 감소)
         if (currentStageIndex > 0) {
           // 이전 단계로 이동
           setHeight(BOTTOM_SHEET_STAGES[currentStageIndex - 1]);
-          setIsOpen(true);
         } else if (height === BOTTOM_SHEET_STAGES[0]) {
           // 250에서 아래로 드래그하면 닫기
           setClosing(true);
@@ -119,11 +116,7 @@ const BottomSheet: React.FC = () => {
   }, [closing]);
 
   return (
-    <div
-      ref={sheetRef}
-      className={`${styles.sheet} ${isOpen ? styles.open : styles.closed} ${closing ? styles.closing : ''}`}
-      style={{ height: `${height}px`, transition: 'height 0.3s ease-out' }}
-    >
+    <div ref={sheetRef} className={styles.sheet} style={{ height: `${height}px` }}>
       <div className={styles.handle} />
       {/* 바텀 시트 내용 */}
     </div>
