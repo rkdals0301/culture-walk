@@ -1,17 +1,19 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { MarkerF } from '@react-google-maps/api';
+import { useParams } from 'next/navigation';
 import { FormattedCulture } from '@/types/culture';
-import { MarkerClusterer } from '@googlemaps/markerclusterer'; // 클러스터러 타입
 import { useRouter } from 'next/navigation';
 
 interface MapMarkerProps {
   culture: FormattedCulture;
-  clusterer?: MarkerClusterer;
+  // clusterer?: MarkerClusterer;
 }
 
-const MapMarker = ({ culture, clusterer }: MapMarkerProps) => {
+// const MapMarker = ({ culture, clusterer }: MapMarkerProps) => {
+const MapMarker = ({ culture }: MapMarkerProps) => {
+  const { id } = useParams(); // URL에서 ID 추출
   const router = useRouter();
   const offset = 0.00005 * (culture.id % 10); // index에 따라 오프셋을 조정 (10개의 그룹으로 나누어 각 그룹 내에서 위치 조정)
   const position = {
@@ -19,7 +21,7 @@ const MapMarker = ({ culture, clusterer }: MapMarkerProps) => {
     lng: +culture.lng + offset,
   };
 
-  const handlerOnClick = useCallback(() => {
+  const handleOnClick = useCallback(() => {
     router.push(`/map/${culture.id}`);
   }, []);
 
@@ -27,12 +29,12 @@ const MapMarker = ({ culture, clusterer }: MapMarkerProps) => {
     <MarkerF
       title={culture.title}
       position={position}
-      onClick={() => handlerOnClick()}
-      // icon={{
-      //   url: '/path/to/custom-icon.png', // 커스텀 아이콘 사용 (필요할 경우)
-      //   scaledSize: new google.maps.Size(30, 30), // 아이콘 크기 조정 (옵션)
-      // }}
-      clusterer={clusterer}
+      onClick={handleOnClick}
+      icon={{
+        url: +id === culture.id ? '/assets/marker-selected-icon.svg' : '/assets/marker-default-icon.svg', // 선택 시와 기본 상태의 아이콘 설정
+        scaledSize: new google.maps.Size(40, 40), // 아이콘 크기 조정 (옵션)
+      }}
+      // clusterer={clusterer}
     />
   );
 };

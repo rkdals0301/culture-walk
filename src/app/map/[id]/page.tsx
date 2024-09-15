@@ -1,14 +1,25 @@
 'use client';
 
-import React from 'react';
-// import { useRouter } from 'next/navigation';
-// import { FormattedCulture } from '@/types/culture';
-// import styles from './page.module.scss'; // 스타일 파일
+import { useState } from 'react';
+import BottomSheet from '@/components/Map/BottomSheet';
+import Backdrop from '@/components/Map/BottomSheetBackdrop';
+import { useRouter } from 'next/navigation';
 
-const BottomSheet = () => {
-  // const router = useRouter();
+const HomePage: React.FC = () => {
+  const router = useRouter();
+  const [isSheetOpen, setIsSheetOpen] = useState(true);
 
-  return <></>;
+  const handlerOnClose = () => {
+    setIsSheetOpen(false);
+    router.push('/map');
+  };
+
+  return (
+    <div>
+      <Backdrop isOpen={isSheetOpen} onClick={handlerOnClose} />
+      <BottomSheet isOpen={isSheetOpen} onClose={handlerOnClose} />
+    </div>
+  );
 };
 
-export default BottomSheet;
+export default HomePage;

@@ -5,10 +5,10 @@ import styles from './MapFindMyLocationControl.module.scss';
 import Image from 'next/image';
 
 interface MapFindMyLocationControlProps {
-  map: google.maps.Map | null;
+  onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백
 }
 
-const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
+const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControlProps) => {
   const [loading, setLoading] = useState(false);
 
   const handleFindMyLocation = useCallback(() => {
@@ -22,13 +22,7 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
     navigator.geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
-        const currentLocation = new google.maps.LatLng(latitude, longitude);
-
-        if (map) {
-          map.setZoom(14);
-          map.panTo(currentLocation);
-        }
-
+        onLocationUpdate(latitude, longitude); // 부모 컴포넌트로 위치 전달
         setLoading(false);
       },
       error => {
@@ -36,7 +30,11 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         let errorMessage = 'An unknown error occurred.';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied by user.';
+            errorMessage = 'Location access denied by user. Please enable location services.';
+            // 위치 권한이 거부되었을 때 다시 요청하도록 유도
+            if (window.confirm('Location access was denied. Do you want to try again?')) {
+              handleFindMyLocation(); // 다시 요청
+            }
             break;
           case error.POSITION_UNAVAILABLE:
             errorMessage = 'Location information is unavailable.';
@@ -48,12 +46,12 @@ const MapFindMyLocationControl = ({ map }: MapFindMyLocationControlProps) => {
         alert(errorMessage);
       },
       {
-        enableHighAccuracy: true, // 정확도를 높이기 위한 옵션
-        timeout: 10000, // 10초 후 타임아웃
-        maximumAge: 0, // 캐시된 위치 정보 사용 금지
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
       }
     );
-  }, [map]);
+  }, [onLocationUpdate]);
 
   return (
     <button className={styles['find-my-location-control']} onClick={handleFindMyLocation} disabled={loading}>
