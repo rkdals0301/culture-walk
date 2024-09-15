@@ -3,10 +3,9 @@ import { motion } from 'framer-motion';
 
 interface BottomSheetProps {
   isOpen: boolean;
-  onClose: () => void;
 }
 
-const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose }) => {
+const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen }) => {
   return (
     <motion.div
       initial={{ height: 0, opacity: 0 }}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { MarkerF } from '@react-google-maps/api';
 import { useParams } from 'next/navigation';
 import { FormattedCulture } from '@/types/culture';
