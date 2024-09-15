@@ -8,9 +8,10 @@ import styles from './MapView.module.scss';
 import { RootState, AppDispatch } from '@/store';
 import { loadCultures } from '@/slices/culturesSlice';
 import Loader from '@/components/Common/Loader/Loader';
-import MapMarker from './MapMarker';
+
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
+const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: false });
 
 const MapView = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,7 +19,6 @@ const MapView = () => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
-
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
@@ -34,8 +34,7 @@ const MapView = () => {
 
   useEffect(() => {
     if (map && location) {
-      const currentLocation = new google.maps.LatLng(location.lat, location.lng);
-      map.panTo(currentLocation);
+      map.panTo(new google.maps.LatLng(location.lat, location.lng));
       map.setZoom(12);
     }
   }, [map, location]);

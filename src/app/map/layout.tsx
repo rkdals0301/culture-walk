@@ -1,6 +1,5 @@
 'use client';
 
-// src/app/map/layout.tsx
 import dynamic from 'next/dynamic';
 import React from 'react';
 

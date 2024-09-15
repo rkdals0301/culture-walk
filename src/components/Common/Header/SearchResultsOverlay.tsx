@@ -1,11 +1,12 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import React, { useEffect } from 'react';
 import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Common/Loader/Loader';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { RootState, AppDispatch } from '@/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { loadCultures } from '@/slices/culturesSlice';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -14,7 +15,16 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const { filteredCultures, loading, error } = useSelector((state: RootState) => state.culture);
+  const dispatch = useDispatch<AppDispatch>();
+  const { cultures, filteredCultures, loading, error } = useSelector((state: RootState) => state.culture);
+
+  useEffect(() => {
+    if (!isOpen) return; // isOpen이 false이면 바로 리턴
+    if (cultures.length === 0) {
+      // cultures 배열이 비었을 때만 로딩
+      dispatch(loadCultures());
+    }
+  }, [isOpen, cultures.length, dispatch]); // isOpen을 의존성에 추가
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
