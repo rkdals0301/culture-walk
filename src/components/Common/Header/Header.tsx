@@ -60,7 +60,7 @@ const Header = () => {
         <SearchBar onSearchClick={handleSearchClick} />
       </div>
       <SideMenu isOpen={isSideMenuOpen} onClose={toggleSideMenu} />
-      <SearchResultsOverlay isOpen={isOverlayVisible} />
+      <SearchResultsOverlay isOpen={isOverlayVisible} onClose={handleBackClick} />
     </header>
   );
 };

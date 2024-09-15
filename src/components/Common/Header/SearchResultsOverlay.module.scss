@@ -34,6 +34,10 @@
       border-radius: var(--border-radius);
       gap: var(--spacing-small);
 
+      &:hover {
+        cursor: pointer;
+      }
+
       .content-wrapper {
         width: calc(100% - 110px);
         height: 100%;

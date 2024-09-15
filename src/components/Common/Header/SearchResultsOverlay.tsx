@@ -5,12 +5,15 @@ import { fetchCultures } from '@/utils/api/culture';
 import { FormattedCulture } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 import Loader from '@/components/Common/Loader/Loader';
+import { useRouter } from 'next/navigation';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
+  onClose: () => void;
 }
 
-const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
+const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
+  const router = useRouter();
   const [cultures, setCultures] = useState<FormattedCulture[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +39,11 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
     fetchData();
   }, [isOpen]);
 
+  const handlerOnClick = (culture: FormattedCulture) => {
+    onClose();
+    router.push(`/map/${culture.id}`);
+  };
+
   if (loading) {
     return (
       <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
@@ -56,7 +64,7 @@ const SearchResultsOverlay = ({ isOpen }: SearchResultsOverlayProps) => {
     <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
       <ul className={styles['item-list-wrapper']}>
         {cultures.map(culture => (
-          <li key={culture.id} className={styles['item-wrapper']}>
+          <li key={culture.id} className={styles['item-wrapper']} onClick={() => handlerOnClick(culture)}>
             <div className={styles['content-wrapper']}>
               <p className={styles['content-title']}>{culture.title}</p>
               <p className={styles['content-place']}>{culture.displayPlace}</p>
