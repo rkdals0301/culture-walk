@@ -17,6 +17,7 @@ const MapView = () => {
   const [cultures, setCultures] = useState<FormattedCulture[]>([]); // 문화 리스트 상태
   const [loadingData, setLoadingData] = useState<boolean>(true); // 데이터 로딩 상태
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null); // 현재 위치 상태
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 }); // 기본 위치 설정
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -45,17 +46,18 @@ const MapView = () => {
     setMap(mapInstance);
   }, []);
 
-  const handleLocationUpdate = useCallback(
-    (lat: number, lng: number) => {
-      const currentLocation = new google.maps.LatLng(lat, lng);
-      setLocation({ lat, lng }); // 위치 상태 업데이트
-      if (map) {
-        map.setZoom(14);
-        map.panTo(currentLocation);
-      }
-    },
-    [map]
-  );
+  const handleLocationUpdate = useCallback((lat: number, lng: number) => {
+    setLocation({ lat, lng });
+    setMapCenter({ lat, lng }); // 위치 업데이트와 함께 지도 중심도 업데이트
+  }, []);
+
+  useEffect(() => {
+    if (map && location) {
+      const currentLocation = new google.maps.LatLng(location.lat, location.lng);
+      map.panTo(currentLocation);
+      map.setZoom(12); // Optional: Set zoom level
+    }
+  }, [map, location]);
 
   const mapOptions = useMemo(
     () => ({
@@ -81,7 +83,7 @@ const MapView = () => {
       <GoogleMap
         mapContainerClassName={styles.map}
         options={mapOptions}
-        center={{ lat: 37.5665, lng: 126.978 }}
+        center={mapCenter} // 동적으로 업데이트되는 지도 중심
         zoom={12}
         clickableIcons={false}
         onLoad={handleLoad}
