@@ -3,9 +3,11 @@ import Script from 'next/script';
 import '@styles/reset.scss';
 import '@styles/globals.scss';
 import notoSansKr from '@fonts/notoSansKr';
-import ThemeProvider from '@components/Common/Theme/ThemeProvider';
+const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
+import ReduxProvider from '@/providers/ReduxProvider';
 import Header from '@components/Common/Header/Header';
 import Main from '@components/Common/Main/Main';
+import dynamic from 'next/dynamic';
 // import Footer from '@components/Common/Footer/Footer';
 
 export const metadata: Metadata = {
@@ -135,9 +137,11 @@ const RootLayout = ({
       </head>
       <body className={notoSansKr.className}>
         <ThemeProvider>
-          <Header />
-          <Main>{children}</Main>
-          {/* <Footer /> */}
+          <ReduxProvider>
+            <Header />
+            <Main>{children}</Main>
+            {/* <Footer /> */}
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>

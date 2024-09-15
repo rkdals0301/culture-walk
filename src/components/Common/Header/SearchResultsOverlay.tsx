@@ -1,10 +1,10 @@
-import Image from 'next/image';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import styles from './SearchResultsOverlay.module.scss';
-import { useEffect, useState } from 'react';
-import { fetchCultures } from '@/utils/api/culture';
 import { FormattedCulture } from '@/types/culture';
-import { formatCultureData } from '@/utils/cultureUtils';
 import Loader from '@/components/Common/Loader/Loader';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 interface SearchResultsOverlayProps {
@@ -14,32 +14,9 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const [cultures, setCultures] = useState<FormattedCulture[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { filteredCultures, loading, error } = useSelector((state: RootState) => state.culture);
 
-  useEffect(() => {
-    if (!isOpen) return; // isOpen이 false일 때는 데이터를 요청하지 않음
-
-    const fetchData = async () => {
-      setLoading(true); // 로딩 시작
-      setError(null); // Reset error state before fetching
-
-      try {
-        const data = await fetchCultures();
-        const formattedCultures = formatCultureData(data);
-        setCultures(formattedCultures);
-      } catch (err) {
-        console.error('Error fetching cultures:', err);
-        setError('Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [isOpen]);
-
-  const handlerOnClick = (culture: FormattedCulture) => {
+  const handleOnClick = (culture: FormattedCulture) => {
     onClose();
     router.push(`/map/${culture.id}`);
   };
@@ -55,7 +32,15 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
   if (error) {
     return (
       <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
-        <p>{error}</p>
+        <div className={styles['error-message']}>오류: {error}</div>
+      </div>
+    );
+  }
+
+  if (filteredCultures.length === 0) {
+    return (
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+        <div className={styles['no-results']}>검색 결과가 없습니다.</div>
       </div>
     );
   }
@@ -63,8 +48,8 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
   return (
     <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
       <ul className={styles['item-list-wrapper']}>
-        {cultures.map(culture => (
-          <li key={culture.id} className={styles['item-wrapper']} onClick={() => handlerOnClick(culture)}>
+        {filteredCultures.map(culture => (
+          <li key={culture.id} className={styles['item-wrapper']} onClick={() => handleOnClick(culture)}>
             <div className={styles['content-wrapper']}>
               <p className={styles['content-title']}>{culture.title}</p>
               <p className={styles['content-place']}>{culture.displayPlace}</p>

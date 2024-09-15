@@ -11,20 +11,18 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
   let totalDataCount = 0;
 
   try {
-    // 첫 번째 요청으로 전체 데이터 수 확인
     const firstResponse = await fetch(`${BASE_URL}/${startIndex}/${endIndex}`);
     if (!firstResponse.ok) {
       throw new Error('Failed to fetch initial cultures data');
     }
 
     const firstData = await firstResponse.json();
-    totalDataCount = firstData?.culturalEventInfo?.list_total_count || 0; // 전체 데이터 수
+    totalDataCount = firstData?.culturalEventInfo?.list_total_count || 0;
     const firstCultures = firstData?.culturalEventInfo?.row || [];
-    allCultures.push(...firstCultures); // 첫 번째 데이터를 누적
+    allCultures.push(...firstCultures);
     startIndex += PAGE_SIZE;
     endIndex += PAGE_SIZE;
 
-    // 총 데이터를 기반으로 다음 요청 리스트 생성
     const requests = [];
     while (startIndex <= totalDataCount) {
       requests.push(
@@ -39,10 +37,7 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
       endIndex += PAGE_SIZE;
     }
 
-    // 모든 요청을 병렬로 처리
     const responses = await Promise.all(requests);
-
-    // 응답 데이터를 누적
     for (const data of responses) {
       const cultures = data?.culturalEventInfo?.row || [];
       allCultures.push(...cultures);
