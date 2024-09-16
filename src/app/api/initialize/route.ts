@@ -7,7 +7,7 @@ const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 
-export const fetchCultures = async (): Promise<RawCulture[]> => {
+const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
   let startIndex = INITIAL_START_INDEX;
   let endIndex = PAGE_SIZE;
@@ -48,12 +48,11 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
   } catch (error) {
     console.error('Error fetching cultures:', error);
   }
-  console.log(allCultures);
   return allCultures;
 };
 
-// 기존 `updateDatabase` 함수에서 `fetchCultures` 사용
-const updateDatabase = async () => {
+// API 요청을 처리하는 함수 (POST 메서드 사용)
+export async function POST() {
   try {
     // 외부 API 데이터 가져오기
     const externalData = await fetchCultures();
@@ -67,19 +66,9 @@ const updateDatabase = async () => {
       await prisma.culture.create({ data: culture });
     }
 
-    console.log('Database updated successfully');
-  } catch (error) {
-    console.error('Failed to update database:', error);
-  }
-};
-
-// API 요청을 처리하는 함수 (POST 메서드 사용)
-export async function POST() {
-  try {
-    await updateDatabase(); // 데이터베이스 업데이트 호출
     return NextResponse.json({ message: 'Database updated successfully' }, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error('Failed to update database:', error);
     return NextResponse.json({ error: 'Failed to update database' }, { status: 500 });
   }
 }
