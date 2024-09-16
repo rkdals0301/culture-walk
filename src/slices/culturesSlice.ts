@@ -9,6 +9,7 @@ interface CultureState {
   searchQuery: string;
   loading: boolean;
   error: string | null;
+  isLoaded: boolean; // 데이터가 로드되었는지 확인하는 상태
 }
 
 const initialState: CultureState = {
@@ -17,6 +18,7 @@ const initialState: CultureState = {
   searchQuery: '',
   loading: false,
   error: null,
+  isLoaded: false, // 초기 상태에서는 데이터가 로드되지 않았다고 가정
 };
 
 // 비동기 액션 생성자
@@ -48,15 +50,18 @@ const cultureSlice = createSlice({
       .addCase(loadCultures.pending, state => {
         state.loading = true;
         state.error = null;
+        state.isLoaded = false; // 로딩 중에는 false
       })
       .addCase(loadCultures.fulfilled, (state, action) => {
         state.loading = false;
         state.cultures = action.payload;
         state.filteredCultures = action.payload; // 초기에는 전체 목록을 표시
+        state.isLoaded = true; // 데이터 로드 완료
       })
       .addCase(loadCultures.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch data';
+        state.isLoaded = false; // 로딩 중에는 false
       });
   },
 });
