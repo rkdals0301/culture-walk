@@ -76,8 +76,8 @@ const updateDatabase = async () => {
   }
 };
 
-// API 요청을 처리하는 함수
-export async function GET() {
+// API 요청을 처리하는 함수 (POST 메서드 사용)
+export async function POST() {
   try {
     await updateDatabase(); // 데이터베이스 업데이트 호출
     return NextResponse.json({ message: 'Database updated successfully' }, { status: 200 });
