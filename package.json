@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
-    "stylelint": "stylelint \"**/*.{scss,css}\" --fix"
+    "stylelint": "stylelint \"**/*.{scss,css}\" --fix",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.5.3",
