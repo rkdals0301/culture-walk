@@ -1,0 +1,18 @@
+{
+  "builds": [
+    {
+      "src": "api/initialize.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/initialize",
+      "dest": "/api/initialize.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.ts"
+    }
+  ]
+}
