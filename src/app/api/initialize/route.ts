@@ -6,6 +6,8 @@ import { RawCulture } from '@/types/culture';
 const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo';
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
+const BATCH_SIZE = 100; // 배치 크기
+const CONCURRENT_BATCHES = 10; // 동시 배치 수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -51,21 +53,39 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   return allCultures;
 };
 
-// API 요청을 처리하는 함수 (POST 메서드 사용)
-export async function POST() {
+const updateDatabase = async () => {
   try {
-    // 외부 API 데이터 가져오기
     const externalData = await fetchCultures();
 
     // 데이터베이스의 모든 데이터를 삭제
-    await prisma.culture.deleteMany({});
+    await prisma.$transaction(async prisma => {
+      await prisma.culture.deleteMany({});
 
-    // 새로운 데이터를 데이터베이스에 저장
-    for (const item of externalData) {
-      const culture = mapRawCultureToCulture(item);
-      await prisma.culture.create({ data: culture });
-    }
+      // 데이터를 배치로 나누어 저장
+      const batchedData = [];
+      for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
+        const batch = externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture);
+        batchedData.push(batch);
+      }
 
+      const batchPromises = [];
+      while (batchedData.length > 0) {
+        const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
+        batchPromises.push(Promise.all(currentBatches.map(batch => prisma.culture.createMany({ data: batch }))));
+      }
+
+      await Promise.all(batchPromises);
+    });
+
+    console.log('Database updated successfully');
+  } catch (error) {
+    console.error('Failed to update database:', error);
+  }
+};
+
+export async function POST() {
+  try {
+    await updateDatabase(); // 데이터베이스 업데이트 호출
     return NextResponse.json({ message: 'Database updated successfully' }, { status: 200 });
   } catch (error) {
     console.error('Failed to update database:', error);
