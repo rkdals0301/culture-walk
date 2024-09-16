@@ -3,7 +3,7 @@ import { mapRawCultureToCulture } from '@/services/cultureService';
 import prisma from '@/lib/prisma';
 import { RawCulture } from '@/types/culture';
 
-const BASE_URL = '/api/684e537944726b643635534d756b47/json/culturalEventInfo';
+const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo';
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 
@@ -14,10 +14,9 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
   let totalDataCount = 0;
 
   try {
-    // 첫 번째 페이지 요청
     const firstResponse = await fetch(`${BASE_URL}/${startIndex}/${endIndex}`);
     if (!firstResponse.ok) {
-      throw new Error('Failed to fetch initial cultures data');
+      throw new Error(`Failed to fetch initial cultures data: ${firstResponse.statusText}`);
     }
 
     const firstData = await firstResponse.json();
@@ -27,13 +26,12 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
     startIndex += PAGE_SIZE;
     endIndex += PAGE_SIZE;
 
-    // 추가 페이지 요청을 위한 배열
     const requests = [];
     while (startIndex <= totalDataCount) {
       requests.push(
         fetch(`${BASE_URL}/${startIndex}/${endIndex}`).then(response => {
           if (!response.ok) {
-            throw new Error('Failed to fetch cultures data');
+            throw new Error(`Failed to fetch cultures data: ${response.statusText}`);
           }
           return response.json();
         })
@@ -42,7 +40,6 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
       endIndex += PAGE_SIZE;
     }
 
-    // 모든 요청의 응답을 기다림
     const responses = await Promise.all(requests);
     for (const data of responses) {
       const cultures = data?.culturalEventInfo?.row || [];
@@ -51,7 +48,7 @@ export const fetchCultures = async (): Promise<RawCulture[]> => {
   } catch (error) {
     console.error('Error fetching cultures:', error);
   }
-
+  console.log(allCultures);
   return allCultures;
 };
 
