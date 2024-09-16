@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { mapRawCultureToCulture } from '@/services/cultureService';
 import prisma from '@/lib/prisma';
-import { RawCulture } from '@/types/culture';
+import { RawCulture, Culture } from '@/types/culture';
 
 const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo';
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기
-const CONCURRENT_BATCHES = 5; // 동시 배치 수
+const CONCURRENT_BATCHES = 10; // 동시 배치 수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -55,27 +55,26 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
 
 const updateDatabase = async () => {
   try {
-    const externalData = await fetchCultures();
-    const batchedData: RawCulture[][] = [];
-
-    for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
-      batchedData.push(externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture));
-    }
+    const externalData: RawCulture[] = await fetchCultures();
 
     // 데이터베이스의 모든 데이터를 삭제
-    await prisma.$transaction(async prisma => {
-      await prisma.culture.deleteMany({});
+    await prisma.culture.deleteMany({});
 
-      // 데이터베이스에 배치 데이터 추가
-      const batchPromises = [];
-      while (batchedData.length > 0) {
-        const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
-        batchPromises.push(...currentBatches.map(batch => prisma.culture.createMany({ data: batch })));
-      }
+    // 데이터를 배치로 나누어 저장
+    const batchedData: Omit<Culture, 'id'>[][] = [];
+    for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
+      const batch = externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture);
+      batchedData.push(batch);
+    }
 
-      await Promise.all(batchPromises);
-    });
+    // 동시 배치 처리를 위한 Promise 배열
+    const batchPromises = [];
+    while (batchedData.length > 0) {
+      const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
+      batchPromises.push(...currentBatches.map(batch => prisma.culture.createMany({ data: batch })));
+    }
 
+    await Promise.all(batchPromises);
     console.log('Database updated successfully');
   } catch (error) {
     console.error('Failed to update database:', error);
