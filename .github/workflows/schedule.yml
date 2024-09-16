@@ -1,0 +1,13 @@
+name: Scheduled Task
+
+on:
+  schedule:
+    - cron: '0 22 * * *' # 매일 오후 10시에 실행
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel API
+        run: |
+          curl -X POST https://culturewalk.vercel.app/api/initialize

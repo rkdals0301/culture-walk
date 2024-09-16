@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/initialize.ts": {
-      "schedule": "0 22 * * *"
-    }
-  },
   "builds": [
     {
       "src": "api/initialize.ts",
