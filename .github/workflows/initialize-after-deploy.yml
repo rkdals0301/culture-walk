@@ -1,17 +1,16 @@
-name: Initialize Database After Deploy
+name: Initialize Database on Deploy Success
 
 on:
-  workflow_run:
-    workflows: ['Deploy'] # GitHub Actions에서 사용하는 배포 워크플로우 이름
-    types:
-      - completed
+  deployment_status:
 
 jobs:
-  call-api:
+  initialize-database:
     runs-on: ubuntu-latest
+    if: github.event.deployment_status.state == 'success'
+
     steps:
-      - name: Trigger Vercel Webhook
+      - name: Initialize Database
         run: |
-          curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_CY1GIYZNm2dxLxyVhnDc7Eql1Jqs/fCZUhGD6fF/api/initialize
+          curl -X POST https://your-vercel-deployment-url/api/initialize
         env:
-          API_KEY: ${{ secrets.VERCEL_API_TOKEN }} # 필요 시 API 키 설정
+          API_KEY: ${{ secrets.VERCEL_API_TOKEN }}
