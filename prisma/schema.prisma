@@ -1,11 +1,11 @@
-datasource db {
-  provider = "postgresql"  // 또는 사용 중인 DB에 맞게 설정
-  url      = env("DATABASE_URL")
-}
-
-
 generator client {
   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Culture {

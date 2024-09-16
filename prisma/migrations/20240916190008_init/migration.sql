@@ -1,0 +1,30 @@
+-- CreateTable
+CREATE TABLE "Culture" (
+    "id" SERIAL NOT NULL,
+    "classification" TEXT,
+    "date" TEXT,
+    "endDate" TEXT,
+    "etcDescription" TEXT,
+    "guName" TEXT,
+    "homepageDetailAddress" TEXT,
+    "isFree" TEXT,
+    "lat" TEXT,
+    "lng" TEXT,
+    "mainImage" TEXT,
+    "homepageAddress" TEXT,
+    "organizationName" TEXT,
+    "place" TEXT,
+    "performerInformation" TEXT,
+    "programIntroduction" TEXT,
+    "registrationDate" TEXT,
+    "startDate" TEXT,
+    "themeClassification" TEXT,
+    "register" TEXT,
+    "title" TEXT,
+    "useFee" TEXT,
+    "useTarget" TEXT,
+    "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Culture_pkey" PRIMARY KEY ("id")
+);
