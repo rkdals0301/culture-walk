@@ -10,8 +10,5 @@ jobs:
 
     steps:
       - name: Initialize Database
-        env:
-          VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
-          curl -X POST https://culturewalk.vercel.app/api/initialize \
-            -H "Authorization: Bearer $VERCEL_API_TOKEN"
+          curl -X POST https://culturewalk.vercel.app/api/initialize

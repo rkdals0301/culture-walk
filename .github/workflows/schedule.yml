@@ -9,8 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Vercel API
-        env:
-          VERCEL_API_TOKEN: ${{ secrets.VERCEL_API_TOKEN }}
         run: |
-          curl -X POST https://culturewalk.vercel.app/api/initialize \
-            -H "Authorization: Bearer $VERCEL_API_TOKEN"
+          curl -X POST https://culturewalk.vercel.app/api/initialize

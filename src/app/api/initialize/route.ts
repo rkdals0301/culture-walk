@@ -56,23 +56,24 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
 const updateDatabase = async () => {
   try {
     const externalData = await fetchCultures();
+
+    // 데이터를 배치로 나누어 저장
+    const batchedData: Array<Array<ReturnType<typeof mapRawCultureToCulture>>> = [];
+    for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
+      const batch = externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture);
+      batchedData.push(batch);
+    }
+
     // 데이터베이스의 모든 데이터를 삭제
+    await prisma.culture.deleteMany({});
+
+    // 트랜잭션 내에서 모든 배치 데이터를 처리
     await prisma.$transaction(async prisma => {
-      await prisma.culture.deleteMany({});
-
-      // 데이터를 배치로 나누어 저장
-      const batchedData = [];
-      for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
-        const batch = externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture);
-        batchedData.push(batch);
-      }
-
       const batchPromises = [];
       while (batchedData.length > 0) {
         const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
         batchPromises.push(Promise.all(currentBatches.map(batch => prisma.culture.createMany({ data: batch }))));
       }
-
       await Promise.all(batchPromises);
     });
 
