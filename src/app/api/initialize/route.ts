@@ -57,6 +57,9 @@ const updateDatabase = async () => {
   try {
     const externalData = await fetchCultures();
 
+    // 데이터베이스의 모든 데이터를 삭제
+    await prisma.culture.deleteMany({});
+
     // 데이터를 배치로 나누어 저장
     const batchedData: Array<Array<ReturnType<typeof mapRawCultureToCulture>>> = [];
     for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
@@ -64,18 +67,15 @@ const updateDatabase = async () => {
       batchedData.push(batch);
     }
 
-    // 데이터베이스의 모든 데이터를 삭제
-    await prisma.culture.deleteMany({});
-
-    // 트랜잭션 내에서 모든 배치 데이터를 처리
-    await prisma.$transaction(async prisma => {
-      const batchPromises = [];
-      while (batchedData.length > 0) {
-        const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
-        batchPromises.push(Promise.all(currentBatches.map(batch => prisma.culture.createMany({ data: batch }))));
-      }
-      await Promise.all(batchPromises);
-    });
+    // 각 배치에 대해 개별적으로 트랜잭션을 사용
+    const batchPromises = [];
+    while (batchedData.length > 0) {
+      const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
+      batchPromises.push(
+        ...currentBatches.map(batch => prisma.$transaction(() => prisma.culture.createMany({ data: batch })))
+      );
+    }
+    await Promise.all(batchPromises);
 
     console.log('Database updated successfully');
   } catch (error) {
