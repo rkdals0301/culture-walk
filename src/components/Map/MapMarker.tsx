@@ -21,6 +21,8 @@ const MapMarker = ({ culture }: MapMarkerProps) => {
     lng: +culture.lng + offset,
   };
 
+  console.log(position);
+
   const handleOnClick = useCallback(() => {
     router.push(`/map/${culture.id}`);
   }, []);

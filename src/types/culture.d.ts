@@ -47,6 +47,8 @@ export interface Culture {
   title: string; // 공연/행사명
   useFee: string; // 이용 요금
   useTarget: string; // 이용 대상
+  createdAt?: Date; // 생성일
+  updatedAt?: Date; // 수정일
 }
 
 export interface FormattedCulture extends Culture {

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { FormattedCulture, RawCulture } from '@/types/culture';
+import { FormattedCulture, RawCulture } from '@/types/culture'; // RawCulture 사용 예시
 import { fetchCultures } from '@/utils/api/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 
@@ -21,8 +21,13 @@ const initialState: CultureState = {
 
 // 비동기 액션 생성자
 export const loadCultures = createAsyncThunk('cultures/loadCultures', async () => {
-  const data: RawCulture[] = await fetchCultures();
-  return formatCultureData(data);
+  try {
+    const data: RawCulture[] = await fetchCultures();
+    const formattedData = formatCultureData(data);
+    return formattedData;
+  } catch (error) {
+    throw new Error('Failed to load cultures');
+  }
 });
 
 const cultureSlice = createSlice({
