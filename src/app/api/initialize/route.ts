@@ -7,7 +7,6 @@ const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기
-const CONCURRENT_BATCHES = 10; // 동시 배치 수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -61,21 +60,10 @@ const updateDatabase = async () => {
     await prisma.culture.deleteMany({});
 
     // 데이터를 배치로 나누어 저장
-    const batchedData: Array<Array<ReturnType<typeof mapRawCultureToCulture>>> = [];
     for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
       const batch = externalData.slice(i, i + BATCH_SIZE).map(mapRawCultureToCulture);
-      batchedData.push(batch);
+      await prisma.culture.createMany({ data: batch });
     }
-
-    // 각 배치에 대해 개별적으로 트랜잭션을 사용
-    const batchPromises = [];
-    while (batchedData.length > 0) {
-      const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
-      batchPromises.push(
-        ...currentBatches.map(batch => prisma.$transaction(() => prisma.culture.createMany({ data: batch })))
-      );
-    }
-    await Promise.all(batchPromises);
 
     console.log('Database updated successfully');
   } catch (error) {
