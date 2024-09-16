@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Initialize Database
         run: |
-          curl -X POST https://your-vercel-deployment-url/api/initialize
+          curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_CY1GIYZNm2dxLxyVhnDc7Eql1Jqs/adLgbm9F07/api/initialize
         env:
           API_KEY: ${{ secrets.VERCEL_API_TOKEN }}
