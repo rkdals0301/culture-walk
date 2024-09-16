@@ -12,3 +12,5 @@ jobs:
       - name: Initialize Database
         run: |
           curl -X POST https://culturewalk.vercel.app/api/initialize
+        env:
+          API_KEY: ${{ secrets.VERCEL_API_TOKEN }} # 필요 시 API 키 설정
