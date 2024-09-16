@@ -1,0 +1,37 @@
+datasource db {
+  provider = "postgresql"  // 또는 사용 중인 DB에 맞게 설정
+  url      = env("DATABASE_URL")
+}
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Culture {
+  id                   Int      @id @default(autoincrement()) // 고유 ID
+  classification       String?   // 분류 (nullable)
+  date                 String?   // 날짜/시간 (nullable)
+  endDate              String?  // 종료일 (nullable)
+  etcDescription       String?  // 기타 내용 (nullable)
+  guName               String?   // 자치구 (nullable)
+  homepageDetailAddress String? // 문화포털 상세 URL (nullable)
+  isFree               String?   // 유/무료 (nullable)
+  lat                  Float?    // 위도 (nullable)
+  lng                  Float?    // 경도 (nullable)
+  mainImage            String?  // 대표 이미지 (nullable)
+  homepageAddress      String?  // 홈페이지 주소 (nullable)
+  organizationName     String?  // 기관명 (nullable)
+  place                String?  // 장소 (nullable)
+  performerInformation String?  // 출연자 정보 (nullable)
+  programIntroduction  String?  // 프로그램 소개 (nullable)
+  registrationDate     String?   // 신청일 (nullable)
+  startDate            String?   // 시작일 (nullable)
+  themeClassification  String?  // 테마 분류 (nullable)
+  register             String?  // 시민/기관 (nullable)
+  title                String?   // 공연/행사명 (nullable)
+  useFee               String?  // 이용 요금 (nullable)
+  useTarget            String?  // 이용 대상 (nullable)
+  createdAt            DateTime? @default(now()) // 생성일시
+  updatedAt            DateTime? @updatedAt      // 업데이트일시
+}
