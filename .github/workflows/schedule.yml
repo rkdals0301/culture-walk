@@ -2,7 +2,7 @@ name: Scheduled Task
 
 on:
   schedule:
-    - cron: '0 22 * * *' # 매일 오후 10시에 실행
+    - cron: '1 1 * * *' # 매일 UTC 오전 1시에 실행 (한국 시간 오후 10시)
 
 jobs:
   call-api:
