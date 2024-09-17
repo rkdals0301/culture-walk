@@ -28,7 +28,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
-    router.push(`/map/${culture.id}`);
+    router.push(`/map/${culture.id}`, { scroll: false });
   };
 
   if (loading) {

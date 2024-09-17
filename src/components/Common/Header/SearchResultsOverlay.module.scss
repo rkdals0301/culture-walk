@@ -11,11 +11,11 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-color);
   background-color: var(--background-color);
-  visibility: hidden;
+  display: none;
   overflow-y: auto;
 
   &.open {
-    visibility: visible; /* 오버레이가 열릴 때 보이도록 설정 */
+    display: block; /* 오버레이가 열릴 때 보이도록 설정 */
   }
 
   .item-list-wrapper {

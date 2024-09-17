@@ -1,15 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React from 'react';
+// import styles from './page.module.scss';
 
 const MapView = dynamic(() => import('@/components/Map/MapView'), { ssr: false });
 
-const MapLayout = ({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) => {
+const MapLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <MapView />

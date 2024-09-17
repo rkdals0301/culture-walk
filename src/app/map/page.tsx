@@ -3,6 +3,6 @@
 
 // const MapView = dynamic(() => import('@/components/Map/MapView'), { ssr: false });
 
-const Map = () => <></>;
+const Map = () => null;
 
 export default Map;

@@ -100,8 +100,7 @@ const BottomSheet: React.FC = () => {
 
     if (closing && sheetElement) {
       const handleTransitionEnd = () => {
-        // 애니메이션이 완료된 후에 페이지 이동
-        router.push('/map');
+        router.push('/map', { scroll: false });
       };
 
       // 닫기 애니메이션 시작
@@ -120,7 +119,6 @@ const BottomSheet: React.FC = () => {
   return (
     <div ref={sheetRef} className={styles.sheet} style={{ height: `${height}px` }}>
       <div className={styles.handle} />
-      {/* 바텀 시트 내용 */}
     </div>
   );
 };

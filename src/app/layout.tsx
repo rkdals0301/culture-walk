@@ -134,6 +134,7 @@ const RootLayout = ({
             `,
           }}
         />
+        <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
       <body className={notoSansKr.className}>
         <ThemeProvider>
