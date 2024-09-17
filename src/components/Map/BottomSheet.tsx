@@ -1,5 +1,4 @@
-// src/components/BottomSheet.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './BottomSheet.module.scss';
 
@@ -15,24 +14,27 @@ const BottomSheet: React.FC = () => {
   const router = useRouter();
 
   // 드래그 시작
-  const startDrag = (e: TouchEvent | MouseEvent) => {
+  const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
     e.preventDefault();
     setStartY('touches' in e ? e.touches[0].clientY : e.clientY);
     setCurrentY(0); // 드래그 시작 시 현재 Y 위치 초기화
     isDragging.current = true; // 드래그 시작
-  };
+  }, []);
 
   // 드래그 중
-  const drag = (e: TouchEvent | MouseEvent) => {
-    e.preventDefault();
-    if (isDragging.current) {
-      const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      setCurrentY(y - startY); // 드래그 방향 계산
-    }
-  };
+  const drag = useCallback(
+    (e: TouchEvent | MouseEvent) => {
+      e.preventDefault();
+      if (isDragging.current) {
+        const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        setCurrentY(y - startY); // 드래그 방향 계산
+      }
+    },
+    [startY]
+  );
 
   // 드래그 종료
-  const endDrag = () => {
+  const endDrag = useCallback(() => {
     if (isDragging.current) {
       const threshold = 20; // 임계값을 줄여서 더 민감하게 반응
       const currentStageIndex = BOTTOM_SHEET_STAGES.findIndex(h => height === h);
@@ -58,7 +60,7 @@ const BottomSheet: React.FC = () => {
       setCurrentY(0);
       isDragging.current = false;
     }
-  };
+  }, [currentY, height]);
 
   useEffect(() => {
     const sheetElement = sheetRef.current;
@@ -91,7 +93,7 @@ const BottomSheet: React.FC = () => {
         document.removeEventListener('mouseup', handleMouseUp);
       }
     };
-  }, [startY, currentY, height]);
+  }, [startDrag, drag, endDrag]);
 
   useEffect(() => {
     const sheetElement = sheetRef.current;
@@ -102,18 +104,18 @@ const BottomSheet: React.FC = () => {
         router.push('/map');
       };
 
-      // 애니메이션 종료 시점 감지
-      sheetElement.addEventListener('transitionend', handleTransitionEnd);
-
       // 닫기 애니메이션 시작
       setHeight(0); // 애니메이션으로 height를 0으로 설정하여 닫기
+
+      // 애니메이션 종료 시점 감지
+      sheetElement.addEventListener('transitionend', handleTransitionEnd);
 
       // 이벤트 리스너 제거
       return () => {
         sheetElement.removeEventListener('transitionend', handleTransitionEnd);
       };
     }
-  }, [closing]);
+  }, [closing, router]);
 
   return (
     <div ref={sheetRef} className={styles.sheet} style={{ height: `${height}px` }}>

@@ -23,7 +23,7 @@ const MapMarker = ({ culture }: MapMarkerProps) => {
 
   const handleOnClick = useCallback(() => {
     router.push(`/map/${culture.id}`);
-  }, []);
+  }, [culture.id, router]);
 
   return (
     <MarkerF
