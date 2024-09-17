@@ -27,7 +27,7 @@ export interface Culture {
   id: number; // 고유 ID
   classification: string; // 분류
   date: string; // 날짜/시간
-  endDate: string; // 종료일
+  endDate: Date; // 종료일
   etcDescription: string; // 기타내용
   guName: string; // 자치구
   homepageDetailAddress: string; // 문화포털상세URL
@@ -41,7 +41,7 @@ export interface Culture {
   performerInformation: string; // 출연자 정보
   programIntroduction: string; // 프로그램 소개
   registrationDate: string; // 신청일
-  startDate: string; // 시작일
+  startDate: Date; // 시작일
   themeClassification: string; // 테마 분류
   register: string; // 시민/기관
   title: string; // 공연/행사명

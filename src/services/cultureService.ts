@@ -4,7 +4,7 @@ export function mapRawCultureToCulture(rawCulture: RawCulture): Omit<Culture, 'i
   return {
     classification: rawCulture.CODENAME ?? null,
     date: rawCulture.DATE ?? null,
-    endDate: rawCulture.END_DATE ?? null,
+    endDate: new Date(rawCulture.END_DATE) ?? null,
     etcDescription: rawCulture.ETC_DESC ?? null,
     guName: rawCulture.GUNAME ?? null,
     homepageDetailAddress: rawCulture.ORG_LINK ?? null,
@@ -18,7 +18,7 @@ export function mapRawCultureToCulture(rawCulture: RawCulture): Omit<Culture, 'i
     performerInformation: rawCulture.PLAYER ?? null,
     programIntroduction: rawCulture.PROGRAM ?? null,
     registrationDate: rawCulture.RGSTDATE ?? null,
-    startDate: rawCulture.STRTDATE ?? null,
+    startDate: new Date(rawCulture.STRTDATE) ?? null,
     themeClassification: rawCulture.THEMECODE ?? null,
     register: rawCulture.TICKET ?? null,
     title: rawCulture.TITLE ?? null,
