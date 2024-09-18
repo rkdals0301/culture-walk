@@ -119,7 +119,7 @@ const RootLayout = ({
             `,
           }}
         />
-        <Script
+        {/* <Script
           id='channel-talk-script'
           strategy='lazyOnload'
           dangerouslySetInnerHTML={{
@@ -133,7 +133,7 @@ const RootLayout = ({
               });
             `,
           }}
-        />
+        /> */}
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
       <body className={notoSansKr.className}>
