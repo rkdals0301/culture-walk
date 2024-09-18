@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import styles from './Header.module.scss';
-import ThemeToggle from '@components/Common/Theme/ThemeToggle';
 import SearchBar from '@components/Common/Header/SearchBar';
 import SideMenu from '@components/Common/Header/SideMenu';
 import SearchResultsOverlay from '@components/Common/Header/SearchResultsOverlay';
@@ -16,8 +15,6 @@ const Header = () => {
   const { resolvedTheme } = useTheme();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-
-  // 초기값이 'system'이거나 로드되지 않았을 때 처리
 
   const gnbIconSrc = resolvedTheme === 'dark' ? '/assets/gnb-icon-dark.svg' : '/assets/gnb-icon-light.svg';
   const leftArrowIconSrc =
