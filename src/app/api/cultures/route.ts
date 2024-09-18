@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 
 // 현재 날짜 구하기
 const today = new Date();
+const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
 
 export async function GET() {
   try {
@@ -10,10 +11,10 @@ export async function GET() {
     const cultures = await prisma.culture.findMany({
       where: {
         startDate: {
-          lte: today, // startDate가 오늘과 같거나 이전인 경우
+          lte: utcToday, // startDate가 오늘과 같거나 이전인 경우
         },
         endDate: {
-          gte: today, // endDate가 오늘과 같거나 이후인 경우
+          gte: utcToday, // endDate가 오늘과 같거나 이후인 경우
         },
       },
     });
