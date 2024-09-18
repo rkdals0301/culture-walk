@@ -1,4 +1,4 @@
-import { Culture } from '@/types/culture';
+// import { Culture } from '@/types/culture';
 
 // const BASE_URL = '/api/684e537944726b643635534d756b47/json/culturalEventInfo';
 // const INITIAL_START_INDEX = 1;
@@ -49,20 +49,33 @@ import { Culture } from '@/types/culture';
 //   return allCultures;
 // };
 
-export const fetchCultures = async (): Promise<Culture[]> => {
+export const fetchCultures = async () => {
   try {
     const response = await fetch('/api/cultures');
-
     if (!response.ok) {
-      // 추가적인 에러 정보가 있는 경우를 고려
       const errorMessage = await response.text();
       throw new Error(`Failed to fetch cultures: ${response.statusText} - ${errorMessage}`);
     }
 
-    const data: Culture[] = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error fetching cultures:', error);
-    throw error; // 에러를 다시 던져서 호출하는 쪽에서 처리할 수 있게 함
+    throw error;
+  }
+};
+
+// utils/api.ts
+export const fetchCultureById = async (id: number) => {
+  try {
+    const response = await fetch(`/api/cultures/${id}`);
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Failed to fetch cultures: ${response.statusText} - ${errorMessage}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching culture:', error);
+    throw error;
   }
 };

@@ -1,0 +1,63 @@
+@import '@styles/mixins';
+
+.bottom-sheet-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-small);
+
+  .item-wrapper {
+    width: 100%;
+    padding: var(--spacing-small) var(--spacing-medium);
+    color: var(--card-text-color);
+    background-color: var(--card-background-color);
+    display: flex;
+    box-shadow: var(--card-box-shadow);
+    border: 1px solid var(--card-border-color);
+    border-radius: var(--border-radius-small);
+    gap: var(--spacing-small);
+
+    .content-wrapper {
+      width: calc(100% - 110px);
+      height: 100%;
+      font-size: var(--font-size-tiny);
+      display: flex;
+      flex-direction: column;
+
+      .content-title {
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-bold);
+        color: var(--card-title-color); // 제목과 다른 내용 사이의 간격
+      }
+
+      .content-title,
+      .content-place,
+      .content-date,
+      .content-target,
+      .content-price {
+        @include text-ellipsis;
+      }
+    }
+
+    .image-wrapper {
+      .image {
+        border-radius: var(--border-radius-small);
+        object-fit: cover; // 이미지를 잘라서 컨테이너에 맞게 조정
+      }
+    }
+  }
+
+  .button-wrapper {
+    height: 80px;
+    display: flex;
+    gap: 10px;
+
+    .button {
+      font-weight: var(--font-weight-bold);
+      color: var(--text-color);
+      background-color: var(--card-background-color);
+      flex: 1;
+      border-radius: 12px;
+    }
+  }
+}

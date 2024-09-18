@@ -12,14 +12,6 @@ const nextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `http://openapi.seoul.go.kr:8088/:path*`,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

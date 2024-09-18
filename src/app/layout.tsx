@@ -94,11 +94,11 @@ export const viewport: Viewport = {
   colorScheme: 'light dark',
 };
 
-const RootLayout = ({
-  children,
-}: Readonly<{
+interface RootLayoutProps {
   children: React.ReactNode;
-}>) => {
+}
+
+const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko'>
       <head>

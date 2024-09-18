@@ -13,7 +13,7 @@
     font-weight: var(--font-weight-bold);
     color: var(--searchbar-text-color);
     background-color: var(--searchbar-background-color);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-small);
 
     &::placeholder {
       font-weight: var(--font-weight-normal);

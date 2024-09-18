@@ -1,17 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import styles from './BottomSheet.module.scss';
 
 const BOTTOM_SHEET_STAGES = [250, 500]; // 높이 단계 정의
 
-const BottomSheet: React.FC = () => {
+interface BottomSheetProps {
+  onClose: () => void; // 닫기 콜백
+  children: React.ReactNode;
+}
+
+const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
   const [height, setHeight] = useState(BOTTOM_SHEET_STAGES[0]);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [closing, setClosing] = useState(false); // 애니메이션 종료 플래그
   const sheetRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false); // 드래그 중인지 확인하는 플래그
-  const router = useRouter();
 
   // 드래그 시작
   const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
@@ -100,7 +103,7 @@ const BottomSheet: React.FC = () => {
 
     if (closing && sheetElement) {
       const handleTransitionEnd = () => {
-        router.push('/map', { scroll: false });
+        onClose();
       };
 
       // 닫기 애니메이션 시작
@@ -114,11 +117,14 @@ const BottomSheet: React.FC = () => {
         sheetElement.removeEventListener('transitionend', handleTransitionEnd);
       };
     }
-  }, [closing, router]);
+  }, [closing, onClose]); // onClose 추가
 
   return (
     <div ref={sheetRef} className={styles.sheet} style={{ height: `${height}px` }}>
-      <div className={styles.handle} />
+      <div className={styles['sheet-header']}>
+        <div className={styles.handle} />
+      </div>
+      <div className={styles['sheet-content']}>{children}</div>
     </div>
   );
 };

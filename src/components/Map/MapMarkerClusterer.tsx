@@ -11,7 +11,7 @@ interface MapMarkerClustererProps {
 }
 
 // const MapMarkerClusterer: React.FC<MapMarkerClustererProps> = ({ cultures }) => {
-const MapMarkerClusterer: React.FC<MapMarkerClustererProps> = ({}) => {
+const MapMarkerClusterer = ({}: MapMarkerClustererProps) => {
   // const clusterOptions = useMemo(
   //   () => ({
   //     imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',

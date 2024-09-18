@@ -31,7 +31,7 @@
       display: flex;
       box-shadow: var(--card-box-shadow);
       border: 1px solid var(--card-border-color);
-      border-radius: var(--border-radius);
+      border-radius: var(--border-radius-small);
       gap: var(--spacing-small);
 
       &:hover {
@@ -62,7 +62,7 @@
 
       .image-wrapper {
         .image {
-          border-radius: var(--border-radius);
+          border-radius: var(--border-radius-small);
           object-fit: cover; // 이미지를 잘라서 컨테이너에 맞게 조정
         }
       }
