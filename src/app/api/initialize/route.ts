@@ -7,7 +7,7 @@ const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기
-const CONCURRENT_BATCHES = 3; // 동시 처리 배치 수
+const CONCURRENT_BATCHES = 1; // 동시 처리 배치 수
 const RETRY_LIMIT = 3; // 재시도 횟수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
