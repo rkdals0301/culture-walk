@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import styles from './BottomSheet.module.scss';
 
-const BOTTOM_SHEET_STAGES = [250, 500]; // 높이 단계 정의
+const BOTTOM_SHEET_STAGES = [215]; // 높이 단계 정의
 
 interface BottomSheetProps {
   onClose: () => void; // 닫기 콜백
@@ -18,7 +18,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
 
   // 드래그 시작
   const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
-    e.preventDefault();
     setStartY('touches' in e ? e.touches[0].clientY : e.clientY);
     setCurrentY(0); // 드래그 시작 시 현재 Y 위치 초기화
     isDragging.current = true; // 드래그 시작
@@ -27,7 +26,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
   // 드래그 중
   const drag = useCallback(
     (e: TouchEvent | MouseEvent) => {
-      e.preventDefault();
       if (isDragging.current) {
         const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
         setCurrentY(y - startY); // 드래그 방향 계산

@@ -14,14 +14,23 @@ const ThemeToggle = () => {
     }
   }, [resolvedTheme]);
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTheme(event.target.checked ? 'dark' : 'light');
+  };
+
   return (
-    <button
-      type='button'
-      className={styles['theme-toggle-button']}
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-    >
-      {resolvedTheme === 'dark' ? '🌞' : '🌙'}
-    </button>
+    <div className={styles['toggle-switch']}>
+      <input
+        className={styles['switch-input']}
+        id='theme-toggle'
+        type='checkbox'
+        checked={resolvedTheme === 'dark'}
+        onChange={handleChange}
+      />
+      <label htmlFor='theme-toggle' className={styles['switch-label']}>
+        <span className={styles.slider}></span>
+      </label>
+    </div>
   );
 };
 

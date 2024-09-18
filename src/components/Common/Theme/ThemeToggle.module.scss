@@ -1,8 +1,47 @@
-.theme-toggle-button {
-  width: 18px;
-  height: 18px;
-  font-weight: var(--font-weight-bold);
+/* src/components/ThemeToggleSwitch.module.scss */
+.toggle-switch {
   display: flex;
-  justify-content: center;
   align-items: center;
+}
+
+.switch-label {
+  position: relative;
+  width: 60px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+  cursor: pointer;
+}
+
+.slider::before {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  background-color: #fff;
+  transition: 0.2s;
+  border-radius: 50%;
+  content: '';
+}
+
+.switch-input[type='checkbox'] {
+  display: none;
+}
+
+.switch-input:checked + .switch-label .slider {
+  background-color: var(--primary-color);
+}
+
+.switch-input:checked + .switch-label .slider::before {
+  transform: translateX(26px);
 }

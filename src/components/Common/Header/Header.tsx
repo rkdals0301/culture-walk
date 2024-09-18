@@ -51,9 +51,6 @@ const Header = () => {
             <span className={styles['logo-text']}>문화산책</span>
           </div>
         </Link>
-        <div className={styles['theme-toggle-wrapper']}>
-          <ThemeToggle />
-        </div>
       </div>
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
