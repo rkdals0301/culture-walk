@@ -15,7 +15,7 @@ const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: fal
 
 const MapView = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { cultures, isLoaded, loading: loadingData, error } = useSelector((state: RootState) => state.culture);
+  const { cultures, isLoading, error } = useSelector((state: RootState) => state.culture);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
@@ -27,10 +27,8 @@ const MapView = () => {
   });
 
   useEffect(() => {
-    if (!isLoaded) {
-      dispatch(loadCultures());
-    }
-  }, [isLoaded, dispatch]);
+    dispatch(loadCultures());
+  }, [dispatch]);
 
   useEffect(() => {
     if (map && location) {
@@ -60,7 +58,7 @@ const MapView = () => {
     return <div>Error loading maps</div>;
   }
 
-  if (!mapLoaded || loadingData) {
+  if (!mapLoaded || isLoading) {
     return (
       <div className={styles['map-view']}>
         <Loader />
@@ -69,7 +67,7 @@ const MapView = () => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className={styles['map-view']}>Error: {error}</div>;
   }
 
   return (

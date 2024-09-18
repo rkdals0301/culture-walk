@@ -6,23 +6,23 @@ import { formatCultureData } from '@/utils/cultureUtils';
 interface CultureState {
   cultures: FormattedCulture[];
   filteredCultures: FormattedCulture[];
-  selectedCulture: FormattedCulture | null; // 추가된 상태
   searchQuery: string;
-  loading: boolean; // 전체 로딩 상태
-  selectedCultureLoading: boolean; // 추가된 상태
+  isLoading: boolean; // 전체 로딩 상태
   error: string | null;
-  isLoaded: boolean; // 데이터가 로드되었는지 확인하는 상태
+  selectedCulture: FormattedCulture | null; // 추가된 상태
+  isSelectedCultureLoading: boolean; // 선택된 문화 로딩 상태
+  selectedCultureError: string | null;
 }
 
 const initialState: CultureState = {
   cultures: [],
   filteredCultures: [],
-  selectedCulture: null,
   searchQuery: '',
-  loading: false,
-  selectedCultureLoading: false, // 추가된 상태
+  isLoading: false,
   error: null,
-  isLoaded: false,
+  selectedCulture: null,
+  isSelectedCultureLoading: false,
+  selectedCultureError: null,
 };
 
 // 비동기 액션 생성자
@@ -60,32 +60,29 @@ const cultureSlice = createSlice({
   extraReducers: builder => {
     builder
       .addCase(loadCultures.pending, state => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
-        state.isLoaded = false;
       })
       .addCase(loadCultures.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.cultures = action.payload;
         state.filteredCultures = action.payload;
-        state.isLoaded = true;
       })
       .addCase(loadCultures.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Failed to fetch cultures';
-        state.isLoaded = false;
       })
       .addCase(loadCultureById.pending, state => {
-        state.selectedCultureLoading = true; // 로딩 시작
-        state.error = null;
+        state.isSelectedCultureLoading = true; // 로딩 시작
+        state.selectedCultureError = null;
       })
       .addCase(loadCultureById.fulfilled, (state, action) => {
-        state.selectedCultureLoading = false; // 로딩 종료
+        state.isSelectedCultureLoading = false; // 로딩 종료
         state.selectedCulture = action.payload;
       })
       .addCase(loadCultureById.rejected, (state, action) => {
-        state.selectedCultureLoading = false; // 로딩 종료
-        state.error = action.error.message || 'Failed to fetch culture details';
+        state.isSelectedCultureLoading = false; // 로딩 종료
+        state.selectedCultureError = action.error.message || 'Failed to fetch culture details';
       });
   },
 });

@@ -20,7 +20,9 @@ interface MapDetailProps {
 const MapDetail = ({ params }: MapDetailProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { selectedCulture, selectedCultureLoading, error } = useSelector((state: RootState) => state.culture);
+  const { selectedCulture, isSelectedCultureLoading, selectedCultureError } = useSelector(
+    (state: RootState) => state.culture
+  );
   const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
 
   useEffect(() => {
@@ -37,15 +39,15 @@ const MapDetail = ({ params }: MapDetailProps) => {
     window.open(url, '_blank');
   };
 
-  if (selectedCultureLoading)
+  if (isSelectedCultureLoading)
     return (
       <BottomSheet onClose={handleBottomSheetClose}>
         <Loader />
       </BottomSheet>
     );
 
-  if (error) {
-    return <div>Error: {error}</div>;
+  if (selectedCultureError) {
+    return <BottomSheet onClose={handleBottomSheetClose}>Error: {selectedCultureError}</BottomSheet>;
   }
 
   return (
