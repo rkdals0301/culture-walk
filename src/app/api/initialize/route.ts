@@ -7,7 +7,8 @@ const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기
-const CONCURRENT_BATCHES = 3; // 동시 배치 수
+const CONCURRENT_BATCHES = 3; // 동시 처리 배치 수
+const RETRY_LIMIT = 3; // 재시도 횟수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -71,13 +72,30 @@ const updateDatabase = async () => {
     const batchPromises = [];
     while (batchedData.length > 0) {
       const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
-      batchPromises.push(...currentBatches.map(batch => prisma.culture.createMany({ data: batch })));
+      batchPromises.push(
+        ...currentBatches.map(batch => retryCreateMany(batch, RETRY_LIMIT)) // 재시도 로직 추가
+      );
     }
 
     await Promise.all(batchPromises);
     console.log('Database updated successfully');
   } catch (error) {
     console.error('Failed to update database:', error);
+  }
+};
+
+// 재시도 로직 추가
+const retryCreateMany = async (batch: Omit<Culture, 'id'>[], retries: number): Promise<void> => {
+  try {
+    await prisma.culture.createMany({ data: batch });
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying... attempts left: ${retries}`);
+      await retryCreateMany(batch, retries - 1);
+    } else {
+      console.error('Failed after multiple retries:', error);
+      throw error;
+    }
   }
 };
 
