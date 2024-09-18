@@ -16,22 +16,23 @@ interface SearchResultsOverlayProps {
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoaded, filteredCultures, loading, error } = useSelector((state: RootState) => state.culture);
+  const { cultures, filteredCultures, isLoading, error } = useSelector((state: RootState) => state.culture);
 
   useEffect(() => {
     // isOpen이 false일 때는 아무 것도 하지 않음
-    if (!isOpen || isLoaded) return;
+    if (!isOpen) return;
 
-    // cultures 배열이 비어 있을 때만 로딩
-    dispatch(loadCultures());
-  }, [isOpen, isLoaded, dispatch]); // isLoaded를 의존성에 추가
+    if (cultures.length === 0) {
+      dispatch(loadCultures());
+    }
+  }, [isOpen, dispatch, cultures.length]);
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
     router.push(`/map/${culture.id}`, { scroll: false });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
         <Loader />
