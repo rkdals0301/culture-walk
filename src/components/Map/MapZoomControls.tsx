@@ -1,15 +1,15 @@
 'use client';
 
+import React, { useCallback } from 'react';
 import Image from 'next/image';
 import styles from './MapZoomControls.module.scss';
-import React from 'react';
 
 interface MapZoomControlsProps {
   map: google.maps.Map | null; // Google Map 객체를 받을 prop
 }
 
 const MapZoomControls = ({ map }: MapZoomControlsProps) => {
-  const handleZoomIn = () => {
+  const handleZoomIn = useCallback(() => {
     if (map) {
       const zoomLevel = map.getZoom();
       if (typeof zoomLevel === 'number') {
@@ -18,18 +18,19 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
         console.error('Zoom level is undefined or not a number');
       }
     }
-  };
+  }, [map]);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     if (map) {
       const zoomLevel = map.getZoom();
       if (typeof zoomLevel === 'number') {
-        map.setZoom(zoomLevel - 1); // Zoom in by increasing zoom level
+        map.setZoom(zoomLevel - 1); // Zoom out by decreasing zoom level
       } else {
         console.error('Zoom level is undefined or not a number');
       }
     }
-  };
+  }, [map]);
+
   return (
     <div className={styles['map-zoom-controls']}>
       <button className={styles['zoom-in-button']} onClick={handleZoomIn}>

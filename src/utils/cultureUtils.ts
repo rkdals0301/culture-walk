@@ -1,11 +1,11 @@
 import { format } from 'date-fns';
 import { Culture, FormattedCulture } from '@/types/culture';
 
-const formatString = (object: Culture, keys: (keyof Culture)[], separate = ', '): string => {
-  const values = keys.map(key => object[key]);
-  const result = values.filter(val => val !== undefined && val !== null).join(separate);
-
-  return result;
+const formatString = (object: Culture, keys: (keyof Culture)[], separator = ', '): string => {
+  return keys
+    .map(key => object[key])
+    .filter(val => val != null) // `null`과 `undefined`를 함께 처리
+    .join(separator);
 };
 
 const formatDisplayDate = (startDate: Date, endDate: Date) => {
@@ -16,10 +16,15 @@ const formatDisplayDate = (startDate: Date, endDate: Date) => {
 };
 
 export const formatCultureData = (cultures: Culture[]): FormattedCulture[] => {
-  return cultures.map((culture: Culture) => ({
-    ...culture,
-    displayDate: formatDisplayDate(culture.startDate, culture.endDate),
-    displayPlace: formatString(culture, ['classification', 'guName', 'place'], ' / '),
-    displayPrice: culture.isFree === '유료' ? formatString(culture, ['isFree', 'useFee']) : culture.isFree,
-  }));
+  return cultures.map(culture => {
+    const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');
+    const displayPrice = culture.isFree === '유료' ? formatString(culture, ['isFree', 'useFee']) : culture.isFree;
+
+    return {
+      ...culture,
+      displayDate: formatDisplayDate(culture.startDate, culture.endDate),
+      displayPlace,
+      displayPrice,
+    };
+  });
 };

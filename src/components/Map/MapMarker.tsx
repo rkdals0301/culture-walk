@@ -37,8 +37,8 @@ const MapMarker = ({
   //   lng: +culture.lng + offset,
   // };
   const position = {
-    lat: parseFloat(culture.lat),
-    lng: parseFloat(culture.lng),
+    lat: culture.lat,
+    lng: culture.lng,
   };
 
   const handleMarkerClick = useCallback(() => {

@@ -51,7 +51,7 @@ const MapView = () => {
       const selectedCulture = cultures.find(culture => culture.id === parseInt(id, 10));
       if (selectedCulture) {
         const { lat, lng } = selectedCulture;
-        setCenterPosition({ lat: parseFloat(lat), lng: parseFloat(lng) });
+        setCenterPosition({ lat, lng });
         setActiveMarkerId(parseInt(id, 10));
       }
     }
@@ -69,7 +69,7 @@ const MapView = () => {
   const handleMarkerClick = useCallback(
     (culture: FormattedCulture) => {
       const { lat, lng } = culture;
-      const newCenter = { lat: parseFloat(lat), lng: parseFloat(lng) };
+      const newCenter = { lat, lng };
       setCenterPosition(newCenter);
       setActiveMarkerId(culture.id);
 
@@ -79,7 +79,7 @@ const MapView = () => {
   );
 
   const isMarkerDuplicated = useCallback(
-    (lat: string, lng: string) => {
+    (lat: number, lng: number) => {
       return cultures.filter(culture => culture.lat === lat && culture.lng === lng).length > 1;
     },
     [cultures]

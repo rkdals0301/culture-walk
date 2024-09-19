@@ -5,6 +5,7 @@ export const store = configureStore({
   reducer: {
     culture: cultureReducer,
   },
+  devTools: process.env.NODE_ENV !== 'production', // 개발 환경에서만 DevTools 활성화
 });
 
 export type RootState = ReturnType<typeof store.getState>;

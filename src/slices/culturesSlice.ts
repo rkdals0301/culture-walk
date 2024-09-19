@@ -27,23 +27,13 @@ const initialState: CultureState = {
 
 // 비동기 액션 생성자
 export const loadCultures = createAsyncThunk('cultures/loadCultures', async () => {
-  try {
-    const data: Culture[] = await fetchCultures();
-    return formatCultureData(data);
-  } catch (error) {
-    console.error('Failed to load cultures', error);
-    throw new Error('Failed to load cultures');
-  }
+  const data: Culture[] = await fetchCultures();
+  return formatCultureData(data);
 });
 
 export const loadCultureById = createAsyncThunk('cultures/loadCultureById', async (id: number) => {
-  try {
-    const data: Culture = await fetchCultureById(id);
-    return formatCultureData([data])[0]; // 데이터 포맷팅 후 반환
-  } catch (error) {
-    console.error('Failed to load culture by ID', error);
-    throw new Error('Failed to load culture by ID');
-  }
+  const data: Culture = await fetchCultureById(id);
+  return formatCultureData([data])[0]; // 데이터 포맷팅 후 반환
 });
 
 const cultureSlice = createSlice({
@@ -52,9 +42,8 @@ const cultureSlice = createSlice({
   reducers: {
     setSearchQuery(state, action) {
       state.searchQuery = action.payload;
-      state.filteredCultures = state.cultures.filter(culture =>
-        culture.title.toLowerCase().includes(state.searchQuery.toLowerCase())
-      );
+      const query = state.searchQuery.toLowerCase();
+      state.filteredCultures = state.cultures.filter(culture => culture.title.toLowerCase().includes(query));
     },
   },
   extraReducers: builder => {

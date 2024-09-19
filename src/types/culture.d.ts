@@ -32,8 +32,8 @@ export interface Culture {
   guName: string; // 자치구
   homepageDetailAddress: string; // 문화포털상세URL
   isFree: string; // 유무료
-  lat: string; // 위도
-  lng: string; // 경도
+  lat: number; // 위도
+  lng: number; // 경도
   mainImage: string; // 대표이미지
   homepageAddress: string; // 홈페이지 주소
   organizationName: string; // 기관명
