@@ -2,24 +2,33 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { useRouter, useParams } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import styles from './MapView.module.scss';
 import { RootState, AppDispatch } from '@/store';
 import { loadCultures } from '@/slices/culturesSlice';
+import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 import Loader from '@/components/Common/Loader/Loader';
+import styles from './MapView.module.scss';
+import { FormattedCulture } from '@/types/culture';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
 const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: false });
 
 const MapView = () => {
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { id } = useParams(); // URL의 id 가져오기
+
   const { cultures, isLoading, error } = useSelector((state: RootState) => state.culture);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
-  const { isLoaded: mapLoaded, loadError } = useJsApiLoader({
+
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [centerPosition, setCenterPosition] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
+  const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
+  const [activeInfoWindowId, setActiveInfoWindowId] = useState<number | null>(null);
+
+  const { isLoaded: mapLoaded, loadError: mapLoadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
     language: 'ko',
@@ -31,31 +40,62 @@ const MapView = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (map && location) {
-      map.panTo(new google.maps.LatLng(location.lat, location.lng));
-      map.setZoom(12);
+    if (mapInstance) {
+      mapInstance.panTo(centerPosition);
     }
-  }, [map, location]);
+  }, [mapInstance, centerPosition]);
 
-  const handleLoad = useCallback((mapInstance: google.maps.Map) => {
-    setMap(mapInstance);
+  // URL에서 가져온 id로 중심 설정
+  useEffect(() => {
+    if (id && typeof id === 'string' && cultures.length > 0) {
+      const selectedCulture = cultures.find(culture => culture.id === parseInt(id, 10));
+      if (selectedCulture) {
+        const { lat, lng } = selectedCulture;
+        setCenterPosition({ lat: parseFloat(lat), lng: parseFloat(lng) });
+        setActiveMarkerId(parseInt(id, 10));
+      }
+    }
+  }, [id, cultures]);
+
+  const handleMapLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMapInstance(mapInstance);
   }, []);
 
   const handleLocationUpdate = useCallback((lat: number, lng: number) => {
-    setLocation({ lat, lng });
-    setMapCenter({ lat, lng });
+    setCurrentLocation({ lat, lng });
+    setCenterPosition({ lat, lng });
   }, []);
+
+  const handleMarkerClick = useCallback(
+    (culture: FormattedCulture) => {
+      const { lat, lng } = culture;
+      const newCenter = { lat: parseFloat(lat), lng: parseFloat(lng) };
+      setCenterPosition(newCenter);
+      setActiveMarkerId(culture.id);
+
+      router.push(`/map/${culture.id}`, { scroll: false });
+    },
+    [router]
+  );
+
+  const isMarkerDuplicated = useCallback(
+    (lat: string, lng: string) => {
+      return cultures.filter(culture => culture.lat === lat && culture.lng === lng).length > 1;
+    },
+    [cultures]
+  );
 
   const mapOptions = useMemo(
     () => ({
       disableDefaultUI: true,
       clickableIcons: false,
+      zoom: 12,
     }),
     []
   );
 
-  if (loadError) {
-    return <div>Error loading maps</div>;
+  if (mapLoadError) {
+    return <div className={styles['map-view']}>Error loading maps</div>;
   }
 
   if (!mapLoaded || isLoading) {
@@ -72,20 +112,23 @@ const MapView = () => {
 
   return (
     <div className={styles['map-view']}>
-      <GoogleMap
-        mapContainerClassName={styles.map}
-        options={mapOptions}
-        center={mapCenter}
-        zoom={12}
-        clickableIcons={false}
-        onLoad={handleLoad}
-      >
+      <GoogleMap mapContainerClassName={styles.map} options={mapOptions} center={centerPosition} onLoad={handleMapLoad}>
         {cultures.map(culture => (
-          <MapMarker key={culture.id} culture={culture} />
+          <MapMarker
+            key={culture.id}
+            cultures={cultures}
+            culture={culture}
+            isSelected={activeMarkerId === culture.id}
+            isDuplicated={isMarkerDuplicated(culture.lat, culture.lng)}
+            activeInfoWindowId={activeInfoWindowId}
+            onClick={handleMarkerClick}
+            setActiveInfoWindowId={setActiveInfoWindowId}
+          />
         ))}
-        {location && (
+        {currentLocation && (
           <MarkerF
-            position={location}
+            title='현재 위치'
+            position={currentLocation}
             icon={{
               url: '/assets/marker-current-location-icon.svg',
               scaledSize: new google.maps.Size(40, 40),
@@ -93,7 +136,7 @@ const MapView = () => {
           />
         )}
         <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
-        <MapZoomControls map={map} />
+        <MapZoomControls map={mapInstance} />
       </GoogleMap>
     </div>
   );

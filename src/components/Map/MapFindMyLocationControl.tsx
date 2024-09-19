@@ -43,9 +43,9 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
         alert(errorMessage);
       },
       {
-        enableHighAccuracy: false, // GPS보다 Wi-Fi, 셀룰러 데이터 사용
-        timeout: 5000, // 5초 타임아웃 설정
-        maximumAge: 0, // 캐시된 위치 사용 안 함
+        enableHighAccuracy: true, // GPS 사용
+        timeout: 5000,
+        maximumAge: 60000, // 캐시된 위치 사용 1분간
       }
     );
   }, [onLocationUpdate]);
