@@ -64,7 +64,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
             </div>
             <div className={styles['image-wrapper']}>
               <Image
-                src={selectedCulture?.mainImage || 'assets/logo.svg'}
+                src={selectedCulture?.mainImage || '/assets/logo.svg'}
                 width={100}
                 height={100}
                 className={styles['image']}

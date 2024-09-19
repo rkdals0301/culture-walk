@@ -102,23 +102,28 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko'>
       <head>
-        <Script
-          id='google-analytics'
-          strategy='lazyOnload'
-          src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
-        />
-        <Script
-          id='google-analytics-init'
-          strategy='lazyOnload'
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-Y4XKZDK818');
-            `,
-          }}
-        />
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Script
+              id='google-analytics'
+              strategy='lazyOnload'
+              src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
+            />
+            <Script
+              id='google-analytics-init'
+              strategy='lazyOnload'
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-Y4XKZDK818');
+                `,
+              }}
+            />
+          </>
+        )}
+
         {/* <Script
           id='channel-talk-script'
           strategy='lazyOnload'
