@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useCultureById } from '@/hooks/cultureHooks';
-import BottomSheet from '@/components/Common/BottomSheet/BottomSheet';
-import Loader from '@/components/Common/Loader/Loader';
+import BottomSheet from '@/components/BottomSheet/BottomSheet';
+import Loader from '@/components/Loader/Loader';
 import styles from './page.module.scss';
 import { CultureItem } from '@/components/CultureList';
 

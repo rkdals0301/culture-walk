@@ -3,7 +3,7 @@ import { mapRawCultureToCulture } from '@/services/cultureService';
 import prisma from '@/lib/prisma';
 import { RawCulture, Culture } from '@/types/culture';
 
-const BASE_URL = 'http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo';
+const BASE_URL = process.env.NEXT_PUBLIC_SEOUL_API_CULTURAL_EVENT_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기

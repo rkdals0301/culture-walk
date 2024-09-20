@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import dynamic from 'next/dynamic';
-import '@styles/reset.scss';
-import '@styles/globals.scss';
-import notoSansKr from '@fonts/notoSansKr';
+import '@/styles/reset.scss';
+import '@/styles/globals.scss';
+import notoSansKr from '@/fonts/notoSansKr';
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
 import ReduxProvider from '@/providers/ReduxProvider';
 import QueryClientProvider from '@/providers/QueryClientProvider';
-import Header from '@components/Common/Header/Header';
-import Main from '@components/Common/Main/Main';
-// import Footer from '@components/Common/Footer/Footer';
-import CustomToastContainer from '@/components/Common/Toast/ToastContainer';
-import SideMenu from '@/components/Common/SideMenu/SideMenu';
+import Header from '@/components/Header/Header';
+import Main from '@/components/Main/Main';
+// import Footer from '@/components/Common/Footer/Footer';
+import CustomToastContainer from '@/components/Toast/ToastContainer';
+import SideMenu from '@/components/SideMenu/SideMenu';
 
 export const metadata: Metadata = {
   title: {

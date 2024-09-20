@@ -7,13 +7,15 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
-import Loader from '@/components/Common/Loader/Loader';
+import Loader from '@/components/Loader/Loader';
 import styles from './MapView.module.scss';
 import { useCultures } from '@/hooks/cultureHooks';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
 const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: false });
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapView = () => {
   const router = useRouter();
@@ -29,7 +31,7 @@ const MapView = () => {
   const [activeInfoWindowId, setActiveInfoWindowId] = useState<number | null>(null);
   const { isLoaded: mapLoaded, loadError: mapLoadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     language: 'ko',
     region: 'KR',
   });

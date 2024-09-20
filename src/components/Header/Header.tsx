@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useDispatch } from 'react-redux';
 import styles from './Header.module.scss';
-import SearchBar from '@components/Common/Header/SearchBar';
-import SearchResultsOverlay from '@components/Common/Header/SearchResultsOverlay';
+import SearchBar from '@/components/Header/SearchBar';
+import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
 import { toggleSideMenu } from '@/slices/sideMenuSlice';
 
 const Header = () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
-import Loader from '@/components/Common/Loader/Loader';
+import Loader from '@/components/Loader/Loader';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';

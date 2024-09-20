@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { closeSideMenu } from '@/slices/sideMenuSlice';
-import ThemeSwitcher from '@/components/Common/Theme/ThemeSwitcher';
+import ThemeSwitcher from '@/components/Theme/ThemeSwitcher';
 import styles from './SideMenu.module.scss';
 
 const SideMenu = () => {
