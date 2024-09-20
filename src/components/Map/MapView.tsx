@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '@/store';
-import { loadCultures } from '@/slices/culturesSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Common/Loader/Loader';
 import styles from './MapView.module.scss';
-import { FormattedCulture } from '@/types/culture';
+import { useCultures } from '@/utils/api/culture';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
@@ -17,27 +17,22 @@ const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: fal
 
 const MapView = () => {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error } = useCultures();
   const { id } = useParams(); // URL의 id 가져오기
 
-  const { cultures, isLoading, error } = useSelector((state: RootState) => state.culture);
+  const { cultures } = useSelector((state: RootState) => state.culture);
 
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [centerPosition, setCenterPosition] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [activeInfoWindowId, setActiveInfoWindowId] = useState<number | null>(null);
-
   const { isLoaded: mapLoaded, loadError: mapLoadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCeYUfoW9AIjh0ZAAwC1AeY6JBvl78omI4',
     language: 'ko',
     region: 'KR',
   });
-
-  useEffect(() => {
-    dispatch(loadCultures());
-  }, [dispatch]);
 
   useEffect(() => {
     if (mapInstance) {
@@ -54,6 +49,9 @@ const MapView = () => {
         setCenterPosition({ lat, lng });
         setActiveMarkerId(parseInt(id, 10));
       }
+    } else {
+      setActiveMarkerId(null);
+      setActiveInfoWindowId(null);
     }
   }, [id, cultures]);
 
@@ -107,7 +105,7 @@ const MapView = () => {
   }
 
   if (error) {
-    return <div className={styles['map-view']}>Error: {error}</div>;
+    return <div className={styles['map-view']}>에러: {error.message}</div>;
   }
 
   return (

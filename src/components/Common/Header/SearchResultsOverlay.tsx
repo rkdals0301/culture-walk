@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Common/Loader/Loader';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { RootState, AppDispatch } from '@/store';
-import { useSelector, useDispatch } from 'react-redux';
-import { loadCultures } from '@/slices/culturesSlice';
+import { RootState } from '@/store';
+import { useSelector } from 'react-redux';
+import { useCultures } from '@/utils/api/culture';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -15,17 +15,8 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { cultures, filteredCultures, isLoading, error } = useSelector((state: RootState) => state.culture);
-
-  useEffect(() => {
-    // isOpen이 false일 때는 아무 것도 하지 않음
-    if (!isOpen) return;
-
-    if (cultures.length === 0) {
-      dispatch(loadCultures());
-    }
-  }, [isOpen, dispatch, cultures.length]);
+  const { isLoading, error } = useCultures(isOpen);
+  const { filteredCultures } = useSelector((state: RootState) => state.culture);
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
@@ -43,7 +34,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
   if (error) {
     return (
       <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
-        <div className={styles['error-message']}>오류: {error}</div>
+        <div className={styles['error-message']}>오류: {error.message}</div>
       </div>
     );
   }

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import dynamic from 'next/dynamic';
 import '@styles/reset.scss';
 import '@styles/globals.scss';
 import notoSansKr from '@fonts/notoSansKr';
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
 import ReduxProvider from '@/providers/ReduxProvider';
+import QueryClientProvider from '@/providers/QueryClientProvider';
 import Header from '@components/Common/Header/Header';
 import Main from '@components/Common/Main/Main';
-import dynamic from 'next/dynamic';
 // import Footer from '@components/Common/Footer/Footer';
+import CustomToastContainer from '@/components/Common/Toast/ToastContainer';
 
 export const metadata: Metadata = {
   title: {
@@ -141,13 +143,16 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
       <body className={notoSansKr.className}>
-        <ThemeProvider>
-          <ReduxProvider>
-            <Header />
-            <Main>{children}</Main>
-            {/* <Footer /> */}
-          </ReduxProvider>
-        </ThemeProvider>
+        <QueryClientProvider>
+          <ThemeProvider>
+            <ReduxProvider>
+              <Header />
+              <Main>{children}</Main>
+              {/* <Footer /> */}
+              <CustomToastContainer /> {/* 여기에서 ToastContainer 추가 */}
+            </ReduxProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

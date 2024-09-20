@@ -8,10 +8,8 @@ import styles from './Header.module.scss';
 import SearchBar from '@components/Common/Header/SearchBar';
 import SideMenu from '@components/Common/Header/SideMenu';
 import SearchResultsOverlay from '@components/Common/Header/SearchResultsOverlay';
-import { useRouter } from 'next/navigation';
 
 const Header = () => {
-  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
@@ -25,8 +23,6 @@ const Header = () => {
   };
 
   const handleSearchClick = () => {
-    router.push('/map', { scroll: false });
-
     setIsOverlayVisible(true); // 클릭 시 오버레이 표시/숨김 토글
   };
 
