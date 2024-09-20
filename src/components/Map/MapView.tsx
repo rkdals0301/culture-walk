@@ -48,6 +48,7 @@ const MapView = () => {
         const { lat, lng } = selectedCulture;
         setCenterPosition({ lat, lng });
         setActiveMarkerId(parseInt(id, 10));
+        setActiveInfoWindowId(null);
       }
     } else {
       setActiveMarkerId(null);
