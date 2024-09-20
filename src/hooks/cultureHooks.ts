@@ -1,11 +1,11 @@
 import { Culture } from '@/types/culture';
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { setCultures, setCulture } from '@/slices/culturesSlice';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { toast } from 'react-toastify';
 
-export const useCultures = (enabled: boolean = true): UseQueryResult<Culture[], Error> => {
+export const useCultures = (enabled: boolean = true) => {
   const dispatch = useDispatch();
 
   return useQuery<Culture[], Error>({
@@ -23,11 +23,10 @@ export const useCultures = (enabled: boolean = true): UseQueryResult<Culture[], 
       return formattedCultures;
     },
     enabled,
-    // ... 추가 옵션 설정 가능
   });
 };
 
-export const useCultureById = (id: number): UseQueryResult<Culture, Error> => {
+export const useCultureById = (id: number) => {
   const dispatch = useDispatch();
 
   return useQuery<Culture, Error>({
@@ -37,7 +36,7 @@ export const useCultureById = (id: number): UseQueryResult<Culture, Error> => {
       if (!response.ok) {
         const errorMessage = await response.text();
         toast.error(`오류: ${errorMessage}`); // 훅에서 직접 에러 표시
-        throw new Error(`Error ${response.status}: ${errorMessage}`);
+        throw new Error(`오류: ${response.status}: ${errorMessage}`);
       }
 
       const data = await response.json(); // 비동기 처리

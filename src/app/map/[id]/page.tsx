@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { useCultureById } from '@/utils/api/culture';
+import { useCultureById } from '@/hooks/cultureHooks';
 import BottomSheet from '@/components/Map/BottomSheet';
 import Loader from '@/components/Common/Loader/Loader';
 import styles from './page.module.scss';

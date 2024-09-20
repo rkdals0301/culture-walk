@@ -9,7 +9,7 @@ import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Common/Loader/Loader';
 import styles from './MapView.module.scss';
-import { useCultures } from '@/utils/api/culture';
+import { useCultures } from '@/hooks/cultureHooks';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });

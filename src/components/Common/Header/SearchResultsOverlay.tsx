@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
-import { useCultures } from '@/utils/api/culture';
+import { useCultures } from '@/hooks/cultureHooks';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -15,8 +15,8 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const { isLoading, error } = useCultures(isOpen);
-  const { filteredCultures } = useSelector((state: RootState) => state.culture);
+  const { cultures, filteredCultures } = useSelector((state: RootState) => state.culture);
+  const { isLoading, error } = useCultures(isOpen && cultures.length === 0);
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
