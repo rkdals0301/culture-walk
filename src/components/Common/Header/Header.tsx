@@ -4,22 +4,23 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useDispatch } from 'react-redux';
 import styles from './Header.module.scss';
 import SearchBar from '@components/Common/Header/SearchBar';
-import SideMenu from '@components/Common/Header/SideMenu';
 import SearchResultsOverlay from '@components/Common/Header/SearchResultsOverlay';
+import { toggleSideMenu } from '@/slices/sideMenuSlice';
 
 const Header = () => {
   const { resolvedTheme } = useTheme();
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const dispatch = useDispatch();
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   const gnbIconSrc = resolvedTheme === 'dark' ? '/assets/gnb-icon-dark.svg' : '/assets/gnb-icon-light.svg';
   const leftArrowIconSrc =
     resolvedTheme === 'dark' ? '/assets/left-arrow-icon-dark.svg' : '/assets/left-arrow-icon-light.svg';
 
-  const toggleSideMenu = () => {
-    setIsSideMenuOpen(!isSideMenuOpen);
+  const handleOpenSideMenu = () => {
+    dispatch(toggleSideMenu());
   };
 
   const handleSearchClick = () => {
@@ -34,7 +35,7 @@ const Header = () => {
     <header className={styles.header}>
       <div className={styles['header-top']}>
         <div className={styles['gnb-wrapper']}>
-          <button type='button' className={styles['gnb-button']} onClick={toggleSideMenu}>
+          <button type='button' className={styles['gnb-button']} onClick={handleOpenSideMenu}>
             <Image src={gnbIconSrc} width={24} height={24} alt='gnb' priority />
           </button>
         </div>
@@ -53,7 +54,6 @@ const Header = () => {
         )}
         <SearchBar onSearchClick={handleSearchClick} />
       </div>
-      <SideMenu isOpen={isSideMenuOpen} onClose={toggleSideMenu} />
       <SearchResultsOverlay isOpen={isOverlayVisible} onClose={handleBackClick} />
     </header>
   );

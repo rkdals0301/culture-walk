@@ -11,6 +11,7 @@ import Header from '@components/Common/Header/Header';
 import Main from '@components/Common/Main/Main';
 // import Footer from '@components/Common/Footer/Footer';
 import CustomToastContainer from '@/components/Common/Toast/ToastContainer';
+import SideMenu from '@/components/Common/SideMenu/SideMenu';
 
 export const metadata: Metadata = {
   title: {
@@ -147,6 +148,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           <ThemeProvider>
             <ReduxProvider>
               <Header />
+              <SideMenu />
               <Main>{children}</Main>
               {/* <Footer /> */}
               <CustomToastContainer /> {/* 여기에서 ToastContainer 추가 */}

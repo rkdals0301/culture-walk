@@ -2,9 +2,9 @@
 
 import React, { useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import styles from './ThemeToggle.module.scss';
+import styles from './ThemeSwitcher.module.scss';
 
-const ThemeToggle = () => {
+const ThemeSwitcher = () => {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -34,4 +34,4 @@ const ThemeToggle = () => {
   );
 };
 
-export default ThemeToggle;
+export default ThemeSwitcher;
