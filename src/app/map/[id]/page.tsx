@@ -1,7 +1,6 @@
 'use client';
 
 // import { useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -9,6 +8,7 @@ import { useCultureById } from '@/hooks/cultureHooks';
 import BottomSheet from '@/components/Common/BottomSheet/BottomSheet';
 import Loader from '@/components/Common/Loader/Loader';
 import styles from './page.module.scss';
+import { CultureItem } from '@/components/CultureList';
 
 interface MapDetailProps {
   params: {
@@ -45,25 +45,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
     <>
       <BottomSheet onClose={handleBottomSheetClose}>
         <div className={styles['bottom-sheet-container']}>
-          <div className={styles['item-wrapper']}>
-            <div className={styles['content-wrapper']}>
-              <p className={styles['content-title']}>{culture?.title}</p>
-              <p className={styles['content-place']}>{culture?.displayPlace}</p>
-              <p className={styles['content-date']}>{culture?.displayDate}</p>
-              <p className={styles['content-target']}>{culture?.useTarget}</p>
-              <p className={styles['content-price']}>{culture?.displayPrice}</p>
-            </div>
-            <div className={styles['image-wrapper']}>
-              <Image
-                src={culture?.mainImage || '/assets/logo.svg'}
-                width={100}
-                height={100}
-                className={styles['image']}
-                alt='Culture Image'
-                blurDataURL={culture?.mainImage}
-              />
-            </div>
-          </div>
+          {culture && <CultureItem culture={culture} />}
           <div className={styles['button-wrapper']}>
             <button
               type='button'

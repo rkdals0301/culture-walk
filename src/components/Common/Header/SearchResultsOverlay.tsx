@@ -2,11 +2,11 @@ import React from 'react';
 import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Common/Loader/Loader';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
 import { useCultures } from '@/hooks/cultureHooks';
+import { CultureList } from '@/components/CultureList';
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -49,29 +49,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
 
   return (
     <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
-      <ul className={styles['item-list-wrapper']}>
-        {filteredCultures.map(culture => (
-          <li key={culture.id} className={styles['item-wrapper']} onClick={() => handleOnClick(culture)}>
-            <div className={styles['content-wrapper']}>
-              <p className={styles['content-title']}>{culture.title}</p>
-              <p className={styles['content-place']}>{culture.displayPlace}</p>
-              <p className={styles['content-date']}>{culture.displayDate}</p>
-              <p className={styles['content-target']}>{culture.useTarget}</p>
-              <p className={styles['content-price']}>{culture.displayPrice}</p>
-            </div>
-            <div className={styles['image-wrapper']}>
-              <Image
-                src={culture.mainImage}
-                width={100}
-                height={100}
-                className={styles['image']}
-                alt='Culture Image'
-                blurDataURL={culture.mainImage}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
+      <CultureList cultures={filteredCultures} onItemClick={handleOnClick} />
     </div>
   );
 };
