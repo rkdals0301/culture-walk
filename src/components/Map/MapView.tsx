@@ -29,6 +29,11 @@ const MapView = () => {
   const [centerPosition, setCenterPosition] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [activeInfoWindowId, setActiveInfoWindowId] = useState<number | null>(null);
+
+  if (!GOOGLE_MAPS_API_KEY) {
+    throw new Error('Google Maps API key is missing in the environment variables');
+  }
+
   const { isLoaded: mapLoaded, loadError: mapLoadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
