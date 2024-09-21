@@ -7,8 +7,8 @@ const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 50; // 배치 크기
-const CONCURRENT_BATCHES = 5; // 동시 처리 배치 수
-const RETRY_LIMIT = 3; // 재시도 횟수
+const CONCURRENT_BATCHES = 3; // 동시 처리 배치 수
+const RETRY_LIMIT = 5; // 재시도 횟수
 
 export const revalidate = 0;
 
@@ -19,6 +19,7 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   let totalDataCount = 0;
 
   try {
+    console.time('fetchCultures');
     const firstResponse = await fetch(`${BASE_URL}/${startIndex}/${endIndex}`);
     if (!firstResponse.ok) {
       throw new Error(`Failed to fetch initial cultures data: ${firstResponse.statusText}`);
@@ -53,16 +54,18 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   } catch (error) {
     console.error('Error fetching cultures:', error);
   }
+  console.timeEnd('fetchCultures');
   return allCultures;
 };
 
 const updateDatabase = async () => {
   try {
     const externalData: RawCulture[] = await fetchCultures();
-
+    console.time('delete');
     // 데이터베이스의 모든 데이터를 삭제
     await prisma.culture.deleteMany({});
-
+    console.timeEnd('delete');
+    console.time('batchPromises');
     // 데이터를 배치로 나누어 저장
     const batchedData: Omit<Culture, 'id'>[][] = [];
     for (let i = 0; i < externalData.length; i += BATCH_SIZE) {
@@ -80,6 +83,7 @@ const updateDatabase = async () => {
     }
 
     await Promise.all(batchPromises);
+    console.timeEnd('batchPromises');
     console.log('Database updated successfully');
   } catch (error) {
     console.error('Failed to update database:', error);
@@ -103,7 +107,9 @@ const retryCreateMany = async (batch: Omit<Culture, 'id'>[], retries: number): P
 
 export async function POST() {
   try {
+    console.time('updateDatabase');
     await updateDatabase(); // 데이터베이스 업데이트 호출
+    console.timeEnd('updateDatabase');
     return NextResponse.json({ message: 'Database updated successfully' }, { status: 200 });
   } catch (error) {
     console.error('Failed to update database:', error);
