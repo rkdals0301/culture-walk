@@ -7,8 +7,8 @@ const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 100; // 배치 크기
-const CONCURRENT_BATCHES = 1; // 동시 처리 배치 수
-const RETRY_LIMIT = 3; // 재시도 횟수
+// const CONCURRENT_BATCHES = 1; // 동시 처리 배치 수
+// const RETRY_LIMIT = 3; // 재시도 횟수
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -58,8 +58,8 @@ const updateDatabase = async () => {
   try {
     const externalData: RawCulture[] = await fetchCultures();
 
-    // 데이터베이스의 모든 데이터를 삭제
-    await prisma.culture.deleteMany({});
+    // 기존 데이터베이스의 모든 데이터를 삭제하는 대신 비교
+    const existingCultures = await prisma.culture.findMany();
 
     // 데이터를 배치로 나누어 저장
     const batchedData: Omit<Culture, 'id'>[][] = [];
@@ -68,16 +68,31 @@ const updateDatabase = async () => {
       batchedData.push(batch);
     }
 
-    // 동시 배치 처리를 위한 Promise 배열
-    const batchPromises = [];
-    while (batchedData.length > 0) {
-      const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
-      batchPromises.push(
-        ...currentBatches.map(batch => retryCreateMany(batch, RETRY_LIMIT)) // 재시도 로직 추가
-      );
+    for (const batch of batchedData) {
+      const upsertPromises = batch.map(async rawCulture => {
+        const uniqueKey = `${rawCulture.title}-${rawCulture.homepageAddress}`;
+        const existingCulture = existingCultures.find(
+          culture => `${culture.title}-${culture.homepageAddress}` === uniqueKey
+        );
+
+        // rawCulture를 Culture 형태로 매핑
+        const mappedCulture = rawCulture;
+
+        if (existingCulture) {
+          await prisma.culture.update({
+            where: { id: existingCulture.id }, // 존재할 경우 업데이트
+            data: { ...mappedCulture },
+          });
+        } else {
+          await prisma.culture.create({
+            data: { ...mappedCulture }, // 존재하지 않을 경우 생성
+          });
+        }
+      });
+
+      await Promise.all(upsertPromises);
     }
 
-    await Promise.all(batchPromises);
     console.log('Database updated successfully');
   } catch (error) {
     console.error('Failed to update database:', error);
@@ -85,19 +100,19 @@ const updateDatabase = async () => {
 };
 
 // 재시도 로직 추가
-const retryCreateMany = async (batch: Omit<Culture, 'id'>[], retries: number): Promise<void> => {
-  try {
-    await prisma.culture.createMany({ data: batch });
-  } catch (error) {
-    if (retries > 0) {
-      console.log(`Retrying... attempts left: ${retries}`);
-      await retryCreateMany(batch, retries - 1);
-    } else {
-      console.error('Failed after multiple retries:', error);
-      throw error;
-    }
-  }
-};
+// const retryCreateMany = async (batch: Omit<Culture, 'id'>[], retries: number): Promise<void> => {
+//   try {
+//     await prisma.culture.createMany({ data: batch });
+//   } catch (error) {
+//     if (retries > 0) {
+//       console.log(`Retrying... attempts left: ${retries}`);
+//       await retryCreateMany(batch, retries - 1);
+//     } else {
+//       console.error('Failed after multiple retries:', error);
+//       throw error;
+//     }
+//   }
+// };
 
 export async function POST() {
   try {

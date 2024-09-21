@@ -34,4 +34,6 @@ model Culture {
   useTarget            String?  // 이용 대상 (nullable)
   createdAt            DateTime? @default(now()) // 생성일시
   updatedAt            DateTime? @updatedAt      // 업데이트일시
+
+  @@unique([title, homepageAddress]) // title과 homepageAddress의 조합으로 유니크 제약 조건 추가
 }
