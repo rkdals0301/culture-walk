@@ -17,6 +17,7 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   let totalDataCount = 0;
 
   try {
+    console.log('fetch initial cultures data start');
     const firstResponse = await fetch(`${BASE_URL}/${startIndex}/${endIndex}`);
     if (!firstResponse.ok) {
       throw new Error(`Failed to fetch initial cultures data: ${firstResponse.statusText}`);
@@ -51,11 +52,13 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   } catch (error) {
     console.error('Error fetching cultures:', error);
   }
+  console.log('fetch initial cultures data successfully');
   return allCultures;
 };
 
 const updateDatabase = async () => {
   try {
+    console.log('Database updated start');
     const externalData: RawCulture[] = await fetchCultures();
 
     // 기존 데이터베이스의 모든 데이터를 삭제하는 대신 비교
