@@ -156,6 +156,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             </ReduxProvider>
           </ThemeProvider>
         </QueryClientProvider>
+        <Analytics />
       </body>
     </html>
   );
