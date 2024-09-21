@@ -84,12 +84,18 @@ const MapView = () => {
     [router]
   );
 
-  const isMarkerDuplicated = useCallback(
-    (lat: number, lng: number) => {
-      return cultures.filter(culture => culture.lat === lat && culture.lng === lng).length > 1;
-    },
-    [cultures]
-  );
+  // 중복된 마커를 미리 계산하여 캐싱
+  const duplicateCulturesMap = useMemo(() => {
+    const duplicates: { [key: string]: FormattedCulture[] } = {};
+    cultures.forEach(culture => {
+      const key = `${culture.lat}-${culture.lng}`;
+      if (!duplicates[key]) {
+        duplicates[key] = [];
+      }
+      duplicates[key].push(culture);
+    });
+    return duplicates;
+  }, [cultures]);
 
   const mapOptions = useMemo(
     () => ({
@@ -100,16 +106,16 @@ const MapView = () => {
     []
   );
 
-  if (mapLoadError) {
-    return <div className={styles['map-view']}>Error loading maps</div>;
-  }
-
   if (!mapLoaded || isLoading) {
     return (
       <div className={styles['map-view']}>
         <Loader />
       </div>
     );
+  }
+
+  if (mapLoadError) {
+    return <div className={styles['map-view']}>Error loading maps</div>;
   }
 
   if (error) {
@@ -122,10 +128,9 @@ const MapView = () => {
         {cultures.map(culture => (
           <MapMarker
             key={culture.id}
-            cultures={cultures}
+            duplicateCultures={duplicateCulturesMap[`${culture.lat}-${culture.lng}`]}
             culture={culture}
             isSelected={activeMarkerId === culture.id}
-            isDuplicated={isMarkerDuplicated(culture.lat, culture.lng)}
             activeInfoWindowId={activeInfoWindowId}
             onClick={handleMarkerClick}
             setActiveInfoWindowId={setActiveInfoWindowId}

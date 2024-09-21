@@ -15,17 +15,23 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
   const [searchQuery, setSearchQueryState] = useState<string>('');
 
   const searchIconSrc = resolvedTheme === 'dark' ? '/assets/search-icon-dark.svg' : '/assets/search-icon-light.svg';
+  const searchResetIconSrc =
+    resolvedTheme === 'dark' ? '/assets/search-reset-icon-dark.svg' : '/assets/search-reset-icon-light.svg';
 
   // 검색 처리 함수 (useCallback으로 메모이제이션)
   const handleSearch = useCallback(() => {
     dispatch(setSearchQuery(searchQuery));
   }, [dispatch, searchQuery]);
 
+  const handleReset = () => {
+    setSearchQueryState(''); // 검색 입력 필드 초기화
+    dispatch(setSearchQuery('')); // Redux 상태에서 검색 쿼리 초기화
+  };
+
   // 폼 제출 핸들러
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // 기본 폼 제출 방지
     handleSearch(); // 검색 실행
-    onSearchClick(); // onSearchClick 호출
   };
 
   return (
@@ -38,11 +44,16 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
         onChange={e => setSearchQueryState(e.target.value)} // 상태 업데이트
         onFocus={onSearchClick}
       />
+      {searchQuery.length > 0 && (
+        <button type='button' className={styles['search-reset-button']} onClick={handleReset}>
+          <Image src={searchResetIconSrc} width={24} height={24} alt='Search Reset' priority />
+        </button>
+      )}
       <button
         type='submit' // 폼 제출 버튼
-        className={styles['search-btn']}
+        className={styles['search-button']}
       >
-        <Image src={searchIconSrc} width={24} height={24} alt='search_icon' priority />
+        <Image src={searchIconSrc} width={24} height={24} alt='Search' priority />
       </button>
     </form>
   );

@@ -23,11 +23,11 @@ const Header = () => {
     dispatch(toggleSideMenu());
   };
 
-  const handleSearchClick = () => {
+  const handleOpenOverlay = () => {
     setIsOverlayVisible(true); // 클릭 시 오버레이 표시/숨김 토글
   };
 
-  const handleBackClick = () => {
+  const handleCloseOverlay = () => {
     setIsOverlayVisible(false); // 클릭 시 오버레이 표시/숨김 토글
   };
 
@@ -48,13 +48,13 @@ const Header = () => {
       </div>
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
-          <button type='button' className={styles['back-btn']} onClick={handleBackClick}>
+          <button type='button' className={styles['back-btn']} onClick={handleCloseOverlay}>
             <Image src={leftArrowIconSrc} width={24} height={24} alt='back_icon' priority />
           </button>
         )}
-        <SearchBar onSearchClick={handleSearchClick} />
+        <SearchBar onSearchClick={handleOpenOverlay} />
       </div>
-      <SearchResultsOverlay isOpen={isOverlayVisible} onClose={handleBackClick} />
+      <SearchResultsOverlay isOpen={isOverlayVisible} onClose={handleCloseOverlay} />
     </header>
   );
 };

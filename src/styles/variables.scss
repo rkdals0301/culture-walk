@@ -13,6 +13,9 @@ $spacing-xs: 0.25rem; // 4px
 $spacing-small: 0.5rem; // 8px
 $spacing-medium: 1rem; // 16px
 $spacing-large: 2rem; // 32px
+$spacing-xl: 3rem; // 48px
+$spacing-xxl: 4rem; // 64px
+$spacing-xxxl: 5rem; // 80px
 
 // 상수
 $border-radius-xxs: $spacing-xxs; // 2px
@@ -45,12 +48,10 @@ $button-background-color-dark: $primary-color-dark;
 // 검색 바 색상
 $searchbar-background-color-light: #e0e0e0;
 $searchbar-border-color-light: #6c757d;
-$searchbar-text-color-light: $text-color-light;
-$searchbar-placeholder-color-light: #6c757d;
+$searchbar-placeholder-color-light: #a6a6a6;
 $searchbar-background-color-dark: #2c2c2c;
 $searchbar-border-color-dark: #333;
-$searchbar-text-color-dark: $text-color-dark;
-$searchbar-placeholder-color-dark: #e0e0e0;
+$searchbar-placeholder-color-dark: #888;
 
 // 카드 색상
 $card-background-color-light: #fff;
@@ -87,6 +88,9 @@ html.light {
   --spacing-small: #{$spacing-small};
   --spacing-medium: #{$spacing-medium};
   --spacing-large: #{$spacing-large};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xxl: #{$spacing-xxl};
+  --spacing-xxxl: #{$spacing-xxxl};
 
   // 상수
   --border-radius-xxs: #{$border-radius-xxs};
@@ -105,7 +109,6 @@ html.light {
   /* 검색 바 변수 */
   --searchbar-background-color: #{$searchbar-background-color-light};
   --searchbar-border-color: #{$searchbar-border-color-light};
-  --searchbar-text-color: #{$searchbar-text-color-light};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-light};
 
   /* 카드 변수 */
@@ -138,6 +141,9 @@ html.dark {
   --spacing-small: #{$spacing-small};
   --spacing-medium: #{$spacing-medium};
   --spacing-large: #{$spacing-large};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xxl: #{$spacing-xxl};
+  --spacing-xxxl: #{$spacing-xxxl};
 
   // 상수
   --border-radius-xxs: #{$border-radius-xxs};
@@ -156,7 +162,6 @@ html.dark {
   /* 검색 바 변수 */
   --searchbar-background-color: #{$searchbar-background-color-dark};
   --searchbar-border-color: #{$searchbar-border-color-dark};
-  --searchbar-text-color: #{$searchbar-text-color-dark};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-dark};
 
   /* 카드 변수 */
