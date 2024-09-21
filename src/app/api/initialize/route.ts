@@ -6,8 +6,11 @@ import { RawCulture, Culture } from '@/types/culture';
 const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
-const BATCH_SIZE = 200; // 배치 크기 조정
-const MAX_CONCURRENT_BATCHES = 2; // 동시에 처리할 배치 수 제한
+const BATCH_SIZE = 200; // 배치 크기
+const CONCURRENT_BATCHES = 1; // 동시 처리 배치 수
+const RETRY_LIMIT = 3; // 재시도 횟수
+
+export const revalidate = 0;
 
 const fetchCultures = async (): Promise<RawCulture[]> => {
   const allCultures: RawCulture[] = [];
@@ -16,7 +19,6 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   let totalDataCount = 0;
 
   try {
-    console.log('fetch initial cultures data start');
     const firstResponse = await fetch(`${BASE_URL}/${startIndex}/${endIndex}`);
     if (!firstResponse.ok) {
       throw new Error(`Failed to fetch initial cultures data: ${firstResponse.statusText}`);
@@ -51,20 +53,15 @@ const fetchCultures = async (): Promise<RawCulture[]> => {
   } catch (error) {
     console.error('Error fetching cultures:', error);
   }
-  console.log('fetch initial cultures data successfully');
   return allCultures;
 };
 
 const updateDatabase = async () => {
   try {
     const externalData: RawCulture[] = await fetchCultures();
-    console.log('Database updated start');
 
-    // 기존 데이터베이스의 모든 데이터를 삭제하는 대신 비교
-    const existingCultures = await prisma.culture.findMany();
-    const existingCultureMap = new Map(
-      existingCultures.map(culture => [`${culture.title}-${culture.homepageAddress}`, culture.id])
-    );
+    // 데이터베이스의 모든 데이터를 삭제
+    await prisma.culture.deleteMany({});
 
     // 데이터를 배치로 나누어 저장
     const batchedData: Omit<Culture, 'id'>[][] = [];
@@ -73,36 +70,34 @@ const updateDatabase = async () => {
       batchedData.push(batch);
     }
 
-    for (let i = 0; i < batchedData.length; i += MAX_CONCURRENT_BATCHES) {
-      const currentBatches = batchedData.slice(i, i + MAX_CONCURRENT_BATCHES);
-      await Promise.all(
-        currentBatches.map(async batch => {
-          const upsertPromises = batch.map(async rawCulture => {
-            const uniqueKey = `${rawCulture.title}-${rawCulture.homepageAddress}`;
-            const existingCultureId = existingCultureMap.get(uniqueKey);
-
-            // rawCulture를 Culture 형태로 매핑
-            const mappedCulture = rawCulture;
-
-            if (existingCultureId) {
-              await prisma.culture.update({
-                where: { id: existingCultureId },
-                data: { ...mappedCulture },
-              });
-            } else {
-              await prisma.culture.create({
-                data: { ...mappedCulture },
-              });
-            }
-          });
-          await Promise.all(upsertPromises);
-        })
+    // 동시 배치 처리를 위한 Promise 배열
+    const batchPromises = [];
+    while (batchedData.length > 0) {
+      const currentBatches = batchedData.splice(0, CONCURRENT_BATCHES);
+      batchPromises.push(
+        ...currentBatches.map(batch => retryCreateMany(batch, RETRY_LIMIT)) // 재시도 로직 추가
       );
     }
 
+    await Promise.all(batchPromises);
     console.log('Database updated successfully');
   } catch (error) {
     console.error('Failed to update database:', error);
+  }
+};
+
+// 재시도 로직 추가
+const retryCreateMany = async (batch: Omit<Culture, 'id'>[], retries: number): Promise<void> => {
+  try {
+    await prisma.culture.createMany({ data: batch });
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying... attempts left: ${retries}`);
+      await retryCreateMany(batch, retries - 1);
+    } else {
+      console.error('Failed after multiple retries:', error);
+      throw error;
+    }
   }
 };
 
