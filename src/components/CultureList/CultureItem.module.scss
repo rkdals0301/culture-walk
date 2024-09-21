@@ -11,8 +11,12 @@
   border-radius: var(--border-radius-small);
   gap: var(--spacing-small);
 
-  &:hover {
+  &:hover,
+  &:active {
     cursor: pointer;
+    background-color: var(--card-hover-background);
+    box-shadow: var(--card-hover-box-shadow);
+    border: 1px solid var(--card-hover-border-color);
   }
 
   .content-wrapper {
@@ -25,14 +29,17 @@
     .content-title {
       font-size: var(--font-size-small);
       font-weight: var(--font-weight-bold);
-      color: var(--card-title-color); // 제목과 다른 내용 사이의 간격
+      color: var(--card-title-color);
+
+      @include text-ellipsis;
     }
 
-    .content-title,
     .content-place,
     .content-date,
     .content-target,
     .content-price {
+      color: var(--card-text-color);
+
       @include text-ellipsis;
     }
   }

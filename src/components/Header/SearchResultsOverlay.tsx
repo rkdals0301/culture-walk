@@ -25,7 +25,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
 
   if (isLoading) {
     return (
-      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles['open'] : ''}`}>
         <Loader />
       </div>
     );
@@ -33,7 +33,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
 
   if (error) {
     return (
-      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles['open'] : ''}`}>
         <div className={styles['error-message']}>오류: {error.message}</div>
       </div>
     );
@@ -41,14 +41,14 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
 
   if (filteredCultures.length === 0) {
     return (
-      <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+      <div className={`${styles['search-results-overlay']} ${isOpen ? styles['open'] : ''}`}>
         <div className={styles['no-results']}>검색 결과가 없습니다.</div>
       </div>
     );
   }
 
   return (
-    <div className={`${styles['search-results-overlay']} ${isOpen ? styles.open : ''}`}>
+    <div className={`${styles['search-results-overlay']} ${isOpen ? styles['open'] : ''}`}>
       <CultureList cultures={filteredCultures} onItemClick={handleOnClick} />
     </div>
   );

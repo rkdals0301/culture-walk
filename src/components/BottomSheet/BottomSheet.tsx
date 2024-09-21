@@ -118,9 +118,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
   }, [closing, onClose]); // onClose 추가
 
   return (
-    <div ref={sheetRef} className={styles.sheet} style={{ height: `${height}px` }}>
+    <div ref={sheetRef} className={styles['sheet']} style={{ height: `${height}px` }}>
       <div className={styles['sheet-header']}>
-        <div className={styles.handle} />
+        <div className={styles['handle']} />
       </div>
       <div className={styles['sheet-content']}>{children}</div>
     </div>

@@ -5,8 +5,7 @@ interface MainProps {
 }
 
 const Main = ({ children }: MainProps) => {
-  return <main className={styles.main}>{children}</main>;
+  return <main className={styles['main']}>{children}</main>;
 };
-// const Main = ({}: { children: React.ReactNode }) => <main className={styles.main}></main>;
 
 export default Main;

@@ -49,14 +49,14 @@ const MapDetail = ({ params }: MapDetailProps) => {
           <div className={styles['button-wrapper']}>
             <button
               type='button'
-              className={styles.button}
+              className={styles['button']}
               onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
             >
               서울문화포털
             </button>
             <button
               type='button'
-              className={styles.button}
+              className={styles['button']}
               onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
             >
               예약

@@ -32,7 +32,7 @@ const Header = () => {
   };
 
   return (
-    <header className={styles.header}>
+    <header className={styles['header']}>
       <div className={styles['header-top']}>
         <div className={styles['gnb-wrapper']}>
           <button type='button' className={styles['gnb-button']} onClick={handleOpenSideMenu}>

@@ -28,7 +28,7 @@ const ThemeSwitcher = () => {
         onChange={handleChange}
       />
       <label htmlFor='theme-toggle' className={styles['switch-label']}>
-        <span className={styles.slider}></span>
+        <span className={styles['slider']}></span>
       </label>
     </div>
   );

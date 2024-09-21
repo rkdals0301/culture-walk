@@ -17,8 +17,8 @@ const SideMenu = () => {
 
   return (
     <>
-      <div className={`${styles['overlay']} ${isOpen ? styles.open : ''}`} onClick={handlerCloseSideMenu} />
-      <nav className={`${styles['side-menu']} ${isOpen ? styles.open : ''}`}>
+      <div className={`${styles['overlay']} ${isOpen ? styles['open'] : ''}`} onClick={handlerCloseSideMenu} />
+      <nav className={`${styles['side-menu']} ${isOpen ? styles['open'] : ''}`}>
         <button className={styles['close-button']} onClick={handlerCloseSideMenu}>
           &times;
         </button>

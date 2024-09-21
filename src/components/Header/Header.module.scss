@@ -10,9 +10,8 @@
   background-color: var(--background-color);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--box-shadow);
   gap: var(--spacing-small);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--header-border-bottom-color);
 
   .header-top {
     position: relative;
