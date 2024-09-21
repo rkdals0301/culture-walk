@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import dynamic from 'next/dynamic';
+import { Analytics } from '@vercel/analytics/react';
 import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 import notoSansKr from '@/fonts/notoSansKr';
