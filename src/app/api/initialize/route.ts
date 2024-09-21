@@ -6,8 +6,8 @@ import { RawCulture, Culture } from '@/types/culture';
 const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
-const BATCH_SIZE = 200; // 배치 크기
-const CONCURRENT_BATCHES = 1; // 동시 처리 배치 수
+const BATCH_SIZE = 100; // 배치 크기
+const CONCURRENT_BATCHES = 2; // 동시 처리 배치 수
 const RETRY_LIMIT = 3; // 재시도 횟수
 
 export const revalidate = 0;
