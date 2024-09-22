@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import styles from './MapFindMyLocationControl.module.scss';
-import Image from 'next/image';
+import MapFindMyLocationIcon from '../../../public//assets/map-find-my-location-icon.svg';
 
 interface MapFindMyLocationControlProps {
   onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백
@@ -52,7 +52,7 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
 
   return (
     <button className={styles['find-my-location-control']} onClick={handleFindMyLocation} disabled={loading}>
-      <Image src='/assets/map-my-location-icon.svg' alt='Find my location' width={20} height={20} priority />
+      <MapFindMyLocationIcon />
     </button>
   );
 };

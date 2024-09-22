@@ -1,11 +1,12 @@
 'use client';
 
-import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { closeSideMenu } from '@/slices/sideMenuSlice';
 import ThemeSwitcher from '@/components/Theme/ThemeSwitcher';
 import styles from './SideMenu.module.scss';
+import AvatarDefaultIcon from '../../../public/assets/avatar-default.svg';
+import CloseIcon from '../../../public/assets/close-icon.svg';
 
 const SideMenu = () => {
   const dispatch = useDispatch();
@@ -20,11 +21,11 @@ const SideMenu = () => {
       <div className={`${styles['overlay']} ${isOpen ? styles['open'] : ''}`} onClick={handlerCloseSideMenu} />
       <nav className={`${styles['side-menu']} ${isOpen ? styles['open'] : ''}`}>
         <button className={styles['close-button']} onClick={handlerCloseSideMenu}>
-          &times;
+          <CloseIcon />
         </button>
         <div className={styles['profile']}>
-          <div className={styles['image-wrapper']}>
-            <Image src='/assets/logo.svg' alt='Profile Image' width={50} height={50} priority />
+          <div className={styles['avatar-wrapper']}>
+            <AvatarDefaultIcon />
           </div>
           <div className={styles['content-wrapper']}>
             <p className={styles['name']}>산책자님</p>

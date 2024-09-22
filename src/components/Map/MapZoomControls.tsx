@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import Image from 'next/image';
 import styles from './MapZoomControls.module.scss';
+import MapAddIcon from '../../../public//assets/map-add-icon.svg';
+import MapRemoveIcon from '../../../public//assets/map-remove-icon.svg';
 
 interface MapZoomControlsProps {
   map: google.maps.Map | null; // Google Map 객체를 받을 prop
@@ -34,10 +35,10 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   return (
     <div className={styles['map-zoom-controls']}>
       <button className={styles['zoom-in-button']} onClick={handleZoomIn}>
-        <Image src='/assets/map-zoom-plus-icon.svg' alt='map-zoom-plus-icon' width={12} height={12} priority />
+        <MapAddIcon />
       </button>
       <button className={styles['zoom-out-button']} onClick={handleZoomOut}>
-        <Image src='/assets/map-zoom-minus-icon.svg' alt='map-zoom-minus-icon' width={12} height={12} priority />
+        <MapRemoveIcon />
       </button>
     </div>
   );

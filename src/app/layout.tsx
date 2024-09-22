@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic';
 import { Analytics } from '@vercel/analytics/react';
 import '@/styles/reset.scss';
 import '@/styles/globals.scss';
-import notoSansKr from '@/fonts/notoSansKr';
+// import notoSansKr from '@/fonts/notoSansKr';
+import pretendard from '@/fonts/pretendard';
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
 import ReduxProvider from '@/providers/ReduxProvider';
 import QueryClientProvider from '@/providers/QueryClientProvider';
@@ -144,7 +145,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         /> */}
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
-      <body className={notoSansKr.className}>
+      <body className={pretendard.className}>
         <QueryClientProvider>
           <ThemeProvider>
             <ReduxProvider>

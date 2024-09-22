@@ -145,7 +145,7 @@ const MapView = () => {
             title='현재 위치'
             position={currentLocation}
             icon={{
-              url: '/assets/marker-current-location-icon.svg',
+              url: '/assets/map-marker-current-location-icon.svg',
               scaledSize: new google.maps.Size(40, 40),
             }}
           />

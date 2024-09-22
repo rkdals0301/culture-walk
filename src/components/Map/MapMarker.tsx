@@ -50,8 +50,8 @@ const MapMarker = ({
     [onClick, setActiveInfoWindowId]
   );
 
-  const iconUrl = isSelected ? '/assets/marker-selected-icon.svg' : '/assets/marker-default-icon.svg';
-  const iconSize = isSelected ? new google.maps.Size(40, 40) : new google.maps.Size(35, 35);
+  const iconUrl = isSelected ? '/assets/map-marker-active-icon.svg' : '/assets/map-marker-default-icon.svg';
+  const iconSize = isSelected ? new google.maps.Size(40, 40) : new google.maps.Size(32, 32);
 
   return (
     <MarkerF
