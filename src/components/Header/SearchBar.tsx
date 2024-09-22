@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import styles from './SearchBar.module.scss';
 import { setSearchQuery } from '@/slices/culturesSlice'; // 검색 쿼리 설정 액션 import
+import SearchCancelIcon from '../../../public/assets/search-cancel-icon.svg';
+import SearchIcon from '../../../public/assets/search-icon.svg';
 
 interface SearchBarProps {
   onSearchClick: () => void;
@@ -11,12 +11,7 @@ interface SearchBarProps {
 
 const SearchBar = ({ onSearchClick }: SearchBarProps) => {
   const dispatch = useDispatch();
-  const { resolvedTheme } = useTheme();
   const [searchQuery, setSearchQueryState] = useState<string>('');
-
-  const searchIconSrc = resolvedTheme === 'dark' ? '/assets/search-icon-dark.svg' : '/assets/search-icon-light.svg';
-  const searchResetIconSrc =
-    resolvedTheme === 'dark' ? '/assets/search-reset-icon-dark.svg' : '/assets/search-reset-icon-light.svg';
 
   // 검색 처리 함수 (useCallback으로 메모이제이션)
   const handleSearch = useCallback(() => {
@@ -46,14 +41,14 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
       />
       {searchQuery.length > 0 && (
         <button type='button' className={styles['search-reset-button']} onClick={handleReset}>
-          <Image src={searchResetIconSrc} width={24} height={24} alt='Search Reset' priority />
+          <SearchCancelIcon />
         </button>
       )}
       <button
         type='submit' // 폼 제출 버튼
         className={styles['search-button']}
       >
-        <Image src={searchIconSrc} width={24} height={24} alt='Search' priority />
+        <SearchIcon />
       </button>
     </form>
   );

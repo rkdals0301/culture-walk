@@ -6,10 +6,12 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { useTheme } from 'next-themes';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Loader/Loader';
-import styles from './MapView.module.scss';
 import { useCultures } from '@/hooks/cultureHooks';
+import styles from './MapView.module.scss';
+import mapNightMode from '../../../public/mapStyles/night-mode.json';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
@@ -18,6 +20,7 @@ const MapMarker = dynamic(() => import('@/components/Map/MapMarker'), { ssr: fal
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapView = () => {
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { isLoading, error } = useCultures();
   const { id } = useParams(); // URL의 id 가져오기
@@ -102,8 +105,9 @@ const MapView = () => {
       disableDefaultUI: true,
       clickableIcons: false,
       zoom: 12,
+      styles: resolvedTheme === 'dark' ? mapNightMode : null,
     }),
-    []
+    [resolvedTheme]
   );
 
   if (!mapLoaded || isLoading) {

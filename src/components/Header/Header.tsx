@@ -3,21 +3,17 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
 import { useDispatch } from 'react-redux';
 import styles from './Header.module.scss';
 import SearchBar from '@/components/Header/SearchBar';
 import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
 import { toggleSideMenu } from '@/slices/sideMenuSlice';
+import SideMenuIcon from '../../../public/assets/menu-icon.svg';
+import ArrowBackIcon from '../../../public/assets/arrow-back-icon.svg';
 
 const Header = () => {
-  const { resolvedTheme } = useTheme();
   const dispatch = useDispatch();
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-
-  const gnbIconSrc = resolvedTheme === 'dark' ? '/assets/gnb-icon-dark.svg' : '/assets/gnb-icon-light.svg';
-  const leftArrowIconSrc =
-    resolvedTheme === 'dark' ? '/assets/left-arrow-icon-dark.svg' : '/assets/left-arrow-icon-light.svg';
 
   const handleOpenSideMenu = () => {
     dispatch(toggleSideMenu());
@@ -34,9 +30,9 @@ const Header = () => {
   return (
     <header className={styles['header']}>
       <div className={styles['header-top']}>
-        <div className={styles['gnb-wrapper']}>
-          <button type='button' className={styles['gnb-button']} onClick={handleOpenSideMenu}>
-            <Image src={gnbIconSrc} width={24} height={24} alt='gnb' priority />
+        <div className={styles['side-menu-button-wrapper']}>
+          <button type='button' className={styles['side-menu-button']} onClick={handleOpenSideMenu}>
+            <SideMenuIcon />
           </button>
         </div>
         <Link href='/'>
@@ -48,8 +44,8 @@ const Header = () => {
       </div>
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
-          <button type='button' className={styles['back-btn']} onClick={handleCloseOverlay}>
-            <Image src={leftArrowIconSrc} width={24} height={24} alt='back_icon' priority />
+          <button type='button' className={styles['back-button']} onClick={handleCloseOverlay}>
+            <ArrowBackIcon />
           </button>
         )}
         <SearchBar onSearchClick={handleOpenOverlay} />

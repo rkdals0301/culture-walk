@@ -77,7 +77,6 @@ $searchbar-border-color-dark: #333; // 경계색을 낮춰 부드러운 대비
 
 // light
 $card-background-color-light: #fff; // 유지
-$card-border-color-light: #e0e0e0; // 유지
 $card-title-color-light: #333; // 유지
 $card-text-color-light: #5a5a5a; // 어두운 회색으로 변경
 $card-box-shadow-light: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 10%);
@@ -87,7 +86,6 @@ $card-hover-box-shadow-light: 0 $spacing-xs $spacing-small rgb(0 0 0 / 20%); // 
 
 // dark
 $card-background-color-dark: #2c2c2c; // 유지
-$card-border-color-dark: #444; // 밝은 경계로 변경
 $card-title-color-dark: #f0f0f0; // 유지
 $card-text-color-dark: #9a9a9a; // 유지
 $card-box-shadow-dark: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 50%);
@@ -154,7 +152,6 @@ html.light {
 
   /* 카드 */
   --card-background-color: #{$card-background-color-light};
-  --card-border-color: #{$card-border-color-light};
   --card-title-color: #{$card-title-color-light};
   --card-text-color: #{$card-text-color-light};
   --card-box-shadow: #{$card-box-shadow-light};
@@ -216,7 +213,6 @@ html.dark {
 
   /* 카드 */
   --card-background-color: #{$card-background-color-dark};
-  --card-border-color: #{$card-border-color-dark};
   --card-title-color: #{$card-title-color-dark};
   --card-text-color: #{$card-text-color-dark};
   --card-box-shadow: #{$card-box-shadow-dark};

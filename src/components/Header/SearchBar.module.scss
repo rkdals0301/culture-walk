@@ -24,9 +24,15 @@
   }
 
   .search-reset-button {
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
     padding-right: var(--spacing-small);
   }
 
   .search-button {
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
   }
 }

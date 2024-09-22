@@ -20,7 +20,7 @@
     justify-content: center;
     align-items: center;
 
-    .gnb-wrapper {
+    .side-menu-button-wrapper {
       position: absolute;
       left: 0;
       height: 100%;
@@ -28,9 +28,9 @@
       justify-content: center;
       align-items: center;
 
-      .gnb-button {
+      .side-menu-button {
+        color: var(--text-color);
         display: flex;
-        justify-content: center;
         align-items: center;
       }
     }
@@ -57,5 +57,11 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-small);
+
+    .back-button {
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+    }
   }
 }
