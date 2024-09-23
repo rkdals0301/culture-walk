@@ -11,19 +11,9 @@
     display: flex;
     gap: 10px;
 
-    .button {
+    .button-link {
       font-weight: var(--font-weight-bold);
-      color: var(--button-text-color);
-      background-color: var(--button-background-color);
       flex: 1;
-      border: 1px solid var(--card-border-color);
-      border-radius: 12px;
-
-      &:active,
-      &:hover {
-        color: var(--button-hover-text-color);
-        background-color: var(--button-hover-background-color);
-      }
     }
   }
 }

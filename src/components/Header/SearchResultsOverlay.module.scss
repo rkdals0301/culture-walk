@@ -1,9 +1,9 @@
 .search-results-overlay {
   position: fixed;
-  top: 90px;
+  top: 85px;
   left: 0;
   width: 100%;
-  height: calc(100% - 90px);
+  height: calc(100% - 85px);
   padding: var(--spacing-small) var(--spacing-medium); // 전체 컨테이너 여백
   font-size: var(--font-size-large);
   font-weight: var(--font-weight-bold);

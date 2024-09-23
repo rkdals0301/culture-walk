@@ -40,13 +40,13 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
         onFocus={onSearchClick}
       />
       {searchQuery.length > 0 && (
-        <button type='button' className={styles['search-reset-button']} onClick={handleReset}>
+        <button type='button' className={`button ${styles['search-reset-button']}`} onClick={handleReset}>
           <SearchCancelIcon />
         </button>
       )}
       <button
         type='submit' // 폼 제출 버튼
-        className={styles['search-button']}
+        className='button'
       >
         <SearchIcon />
       </button>

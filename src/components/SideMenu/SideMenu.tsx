@@ -20,7 +20,7 @@ const SideMenu = () => {
     <>
       <div className={`${styles['overlay']} ${isOpen ? styles['open'] : ''}`} onClick={handlerCloseSideMenu} />
       <nav className={`${styles['side-menu']} ${isOpen ? styles['open'] : ''}`}>
-        <button className={styles['close-button']} onClick={handlerCloseSideMenu}>
+        <button className={`button ${styles['close-button']}`} onClick={handlerCloseSideMenu}>
           <CloseIcon />
         </button>
         <div className={styles['profile']}>

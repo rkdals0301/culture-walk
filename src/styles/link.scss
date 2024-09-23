@@ -1,0 +1,17 @@
+.link {
+  padding: var(--spacing-xxs) var(--spacing-small);
+  color: var(--button-text-color);
+  background-color: var(--button-background-color);
+  display: inline-flex; // 플렉스 박스를 사용하여 정렬
+  justify-content: center; // 수평 중앙 정렬
+  align-items: center; // 수직 중앙 정렬
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  border-radius: var(--border-radius-small);
+
+  &:hover {
+    color: var(--button-hover-text-color);
+    background-color: var(--button-hover-background-color);
+  }
+}

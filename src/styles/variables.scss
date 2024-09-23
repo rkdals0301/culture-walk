@@ -1,13 +1,15 @@
+@use 'sass:color';
+
 /* 공통 */
 // light
-$background-color-light: #f5f5f5;
+$background-color-light: #fff;
 $text-color-light: #333;
-$primary-color-light: #f14d3d;
+$primary-color-light: #1e90ff;
 
 // dark
 $background-color-dark: #1e1e1e;
 $text-color-dark: #e0e0e0;
-$primary-color-dark: #f14d3d;
+$primary-color-dark: #1e90ff;
 
 /* 폰트 */
 $font-size-tiny: 0.75rem; // 12px
@@ -52,16 +54,30 @@ $scrollbar-track-color-dark: #1e1e1e;
 /* 버튼 */
 
 // light
-$button-background-color-light: $primary-color-light; // 기본 배경색
-$button-text-color-light: #fff; // 텍스트 색상
-$button-hover-background-color-light: #d63931; // 어두운 색으로 유지
-$button-hover-text-color-light: #fff; // 호버 시 텍스트 색상
+$button-background-color-light: transparent; // 기본 배경색
+$button-text-color-light: $text-color-light; // 텍스트 색상
+$button-hover-background-color-light: rgb(0 0 0 / 5%); // hover 시 투명도 조절
+$button-hover-text-color-light: $text-color-light; // 호버 시 텍스트 색상
+$button-background-primary-color-light: $primary-color-light; // 기본 배경색
+$button-text-primary-color-light: #fff; // 텍스트 색상 (흰색)
+$button-hover-background-primary-color-light: color.adjust(
+  $button-background-primary-color-light,
+  $lightness: -10%
+); // 색상을 10% 어둡게
+$button-hover-text-primary-color-light: #fff; // 호버 시 텍스트 색상
 
 // dark
-$button-background-color-dark: $primary-color-dark; // 기본 배경색
-$button-text-color-dark: #fff; // 텍스트 색상
-$button-hover-background-color-dark: #e0524c; // 밝은 색으로 유지
-$button-hover-text-color-dark: #fff; // 호버 시 텍스트 색상
+$button-background-color-dark: transparent; // 기본 배경색
+$button-text-color-dark: $text-color-dark; // 텍스트 색상
+$button-hover-background-color-dark: rgb(255 255 255 / 10%); // hover 시 투명도 조절
+$button-hover-text-color-dark: $text-color-dark; // 호버 시 텍스트 색상
+$button-background-primary-color-dark: $primary-color-dark; // 기본 배경색
+$button-text-primary-color-dark: #fff; // 텍스트 색상 (흰색)
+$button-hover-background-primary-color-dark: color.adjust(
+  $button-background-primary-color-dark,
+  $lightness: -10%
+); // 색상을 10% 어둡게
+$button-hover-text-primary-color-dark: #fff; // 호버 시 텍스트 색상
 
 /* 검색바 */
 
@@ -80,20 +96,22 @@ $searchbar-border-color-dark: #333; // 경계색을 낮춰 부드러운 대비
 // light
 $card-background-color-light: #fff; // 유지
 $card-title-color-light: #333; // 유지
-$card-text-color-light: #5a5a5a; // 어두운 회색으로 변경
+$card-text-color-light: #5a5a5a; // 유지
+$card-border-color-light: #dcdcdc; // 유지
 $card-box-shadow-light: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 10%);
-$card-hover-background-color-light: #e1e1e1; // 유지
-$card-hover-border-color-light: #b8b8b8; // 유지
-$card-hover-box-shadow-light: 0 $spacing-xs $spacing-small rgb(0 0 0 / 20%); // 유지
+$card-hover-background-color-light: color.adjust($card-background-color-light, $lightness: -5%); // 호버 시 배경색 조정
+$card-hover-border-color-light: color.adjust($card-border-color-light, $lightness: -5%); // 호버 시 경계선 색상 조정
+$card-hover-box-shadow-light: 0 $spacing-xs $spacing-small rgb(0 0 0 / 15%); // 유지
 
 // dark
-$card-background-color-dark: #2c2c2c; // 유지
-$card-title-color-dark: #f0f0f0; // 유지
-$card-text-color-dark: #9a9a9a; // 유지
+$card-background-color-dark: #262626; // 깊은 어두운 회색
+$card-title-color-dark: #e0e0e0; // 부드러운 흰색
+$card-text-color-dark: #b0b0b0; // 조금 더 어두운 밝은 회색
+$card-border-color-dark: #444; // 진한 회색
 $card-box-shadow-dark: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 50%);
-$card-hover-background-color-dark: #424242; // 유지
-$card-hover-border-color-dark: #666; // 유지
-$card-hover-box-shadow-dark: 0 $spacing-xs $spacing-small rgb(0 0 0 / 50%); // 유지
+$card-hover-background-color-dark: color.adjust($card-background-color-dark, $lightness: 5%); // 호버 시 배경색 조정
+$card-hover-border-color-dark: color.adjust($card-border-color-dark, $lightness: 5%); // 호버 시 경계선 색상 조정
+$card-hover-box-shadow-dark: 0 $spacing-xs $spacing-small rgb(0 0 0 / 60%); // 유지
 
 /* 헤더 */
 
@@ -124,6 +142,10 @@ html.light {
   --button-text-color: #{$button-text-color-light};
   --button-hover-background-color: #{$button-hover-background-color-light};
   --button-hover-text-color: #{$button-hover-text-color-light};
+  --button-background-primary-color: #{$button-background-primary-color-light};
+  --button-text-primary-color: #{$button-text-primary-color-light};
+  --button-hover-background-primary-color: #{$button-hover-background-primary-color-light};
+  --button-hover-text-primary-color: #{$button-hover-text-primary-color-light};
 
   /* 간격 */
   --spacing-xxs: #{$spacing-xxs};
@@ -156,6 +178,7 @@ html.light {
   --card-background-color: #{$card-background-color-light};
   --card-title-color: #{$card-title-color-light};
   --card-text-color: #{$card-text-color-light};
+  --card-border-color: #{$card-border-color-light};
   --card-box-shadow: #{$card-box-shadow-light};
   --card-hover-background-color: #{$card-hover-background-color-light};
   --card-hover-border-color: #{$card-hover-border-color-light};
@@ -185,6 +208,10 @@ html.dark {
   --button-text-color: #{$button-text-color-dark};
   --button-hover-background-color: #{$button-hover-background-color-dark};
   --button-hover-text-color: #{$button-hover-text-color-dark};
+  --button-background-primary-color: #{$button-background-primary-color-dark};
+  --button-text-primary-color: #{$button-text-primary-color-dark};
+  --button-hover-background-primary-color: #{$button-hover-background-primary-color-dark};
+  --button-hover-text-primary-color: #{$button-hover-text-primary-color-dark};
 
   /* 간격 */
   --spacing-xxs: #{$spacing-xxs};
@@ -217,6 +244,7 @@ html.dark {
   --card-background-color: #{$card-background-color-dark};
   --card-title-color: #{$card-title-color-dark};
   --card-text-color: #{$card-text-color-dark};
+  --card-border-color: #{$card-border-color-dark};
   --card-box-shadow: #{$card-box-shadow-dark};
   --card-hover-background-color: #{$card-hover-background-color-dark};
   --card-hover-border-color: #{$card-hover-border-color-dark};

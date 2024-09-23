@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import styles from './Header.module.scss';
@@ -31,20 +30,19 @@ const Header = () => {
     <header className={styles['header']}>
       <div className={styles['header-top']}>
         <div className={styles['side-menu-button-wrapper']}>
-          <button type='button' className={styles['side-menu-button']} onClick={handleOpenSideMenu}>
+          <button type='button' className='button' onClick={handleOpenSideMenu}>
             <SideMenuIcon />
           </button>
         </div>
-        <Link href='/'>
+        <Link href='/' className='link'>
           <div className={styles['logo-wrapper']}>
-            <Image src='/assets/logo.svg' width={24} height={24} alt='logo' priority />
-            <span className={styles['logo-text']}>문화산책</span>
+            <div className={styles['logo-text']}>문화산책</div>
           </div>
         </Link>
       </div>
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
-          <button type='button' className={styles['back-button']} onClick={handleCloseOverlay}>
+          <button type='button' className='button' onClick={handleCloseOverlay}>
             <ArrowBackIcon />
           </button>
         )}
