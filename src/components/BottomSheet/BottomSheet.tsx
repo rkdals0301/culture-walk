@@ -1,20 +1,21 @@
+'use client';
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useBottomSheet } from '@/context/BottomSheetContext';
 import styles from './BottomSheet.module.scss';
 
 const BOTTOM_SHEET_STAGES = [215]; // 높이 단계 정의
 
-interface BottomSheetProps {
-  onClose: () => void; // 닫기 콜백
-  children: React.ReactNode;
-}
+const BottomSheet = () => {
+  const { isOpen, content, closeBottomSheet } = useBottomSheet();
 
-const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
-  const [height, setHeight] = useState(BOTTOM_SHEET_STAGES[0]);
+  const [height, setHeight] = useState(0); // 초기 높이를 0으로 설정
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [closing, setClosing] = useState(false); // 애니메이션 종료 플래그
   const sheetRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false); // 드래그 중인지 확인하는 플래그
+  const animationFrameId = useRef<number | null>(null); // 애니메이션 프레임 ID 저장
 
   // 드래그 시작
   const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
@@ -52,7 +53,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
           // 이전 단계로 이동
           setHeight(BOTTOM_SHEET_STAGES[currentStageIndex - 1]);
         } else if (height === BOTTOM_SHEET_STAGES[0]) {
-          // 250에서 아래로 드래그하면 닫기
+          // 215에서 아래로 드래그하면 닫기
           setClosing(true);
         }
       }
@@ -97,32 +98,57 @@ const BottomSheet: React.FC<BottomSheetProps> = ({ children, onClose }) => {
   }, [startDrag, drag, endDrag]);
 
   useEffect(() => {
+    if (isOpen) {
+      setClosing(false); // 닫힘 상태를 초기화
+      setHeight(BOTTOM_SHEET_STAGES[0]); // 열리면 기본 높이로 설정
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const sheetElement = sheetRef.current;
 
     if (closing && sheetElement) {
       const handleTransitionEnd = () => {
-        onClose();
+        closeBottomSheet(); // 트랜지션 종료 시점에 닫기 처리
       };
 
-      // 닫기 애니메이션 시작
-      setHeight(0); // 애니메이션으로 height를 0으로 설정하여 닫기
+      // 트랜지션으로 높이를 0으로 설정하여 애니메이션 처리
+      setHeight(0);
 
-      // 애니메이션 종료 시점 감지
       sheetElement.addEventListener('transitionend', handleTransitionEnd);
 
-      // 이벤트 리스너 제거
       return () => {
         sheetElement.removeEventListener('transitionend', handleTransitionEnd);
       };
     }
-  }, [closing, onClose]); // onClose 추가
+  }, [closing, closeBottomSheet]);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (sheetRef.current) {
+        sheetRef.current.style.height = `${height}px`;
+      }
+      animationFrameId.current = requestAnimationFrame(updateHeight);
+    };
+
+    // 첫 애니메이션 프레임 시작
+    updateHeight();
+
+    return () => {
+      // 애니메이션 프레임 해제
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null; // ID 초기화
+      }
+    };
+  }, [height]);
 
   return (
-    <div ref={sheetRef} className={styles['sheet']} style={{ height: `${height}px` }}>
+    <div ref={sheetRef} className={styles['sheet']}>
       <div className={styles['sheet-header']}>
         <div className={styles['handle']} />
       </div>
-      <div className={styles['sheet-content']}>{children}</div>
+      <div className={styles['sheet-content']}>{content}</div>
     </div>
   );
 };

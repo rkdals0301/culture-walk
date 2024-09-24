@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormattedCulture } from '@/types/culture';
 import Image from 'next/image';
 import styles from './CultureItem.module.scss';
@@ -14,6 +14,11 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
   const handleImageError = () => {
     setImgSrc('/assets/logo.svg');
   };
+
+  // 이미지 소스가 변경될 때마다 캐시 방지
+  useEffect(() => {
+    setImgSrc(culture.mainImage);
+  }, [culture.mainImage]);
 
   return (
     <li className={styles['culture-item-wrapper']} onClick={onClick}>
