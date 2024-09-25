@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
@@ -21,7 +21,6 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapView = () => {
   const { resolvedTheme } = useTheme();
-  // const router = useRouter();
   const { isLoading, error } = useCultures();
   const params = useParams(); // 동적 경로 매개변수 가져오기
   const id = params?.id; // URL의 id 가져오기

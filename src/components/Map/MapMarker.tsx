@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { MarkerF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import styles from './MapMarker.module.scss';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface MapMarkerProps {
   duplicateCultures: FormattedCulture[]; // 중복 여부를 Prop으로 전달받음
@@ -27,10 +27,13 @@ const MapMarker = ({
   const router = useRouter();
   const { openBottomSheet } = useBottomSheet(); // 바텀 시트를 위한 context 사용
 
-  const position = {
-    lat: culture.lat,
-    lng: culture.lng,
-  };
+  const position = useMemo(
+    () => ({
+      lat: culture.lat,
+      lng: culture.lng,
+    }),
+    [culture.lat, culture.lng]
+  );
 
   const handleGoToMapDetail = useCallback(
     (activeId: number) => {
