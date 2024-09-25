@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FormattedCulture } from '@/types/culture';
 import Image from 'next/image';
-import styles from './CultureItem.module.scss';
+import styles from './CultureItemLarge.module.scss';
 
-interface CultureItemProps {
+interface CultureItemLargeProps {
   culture: FormattedCulture;
   onClick?: () => void;
 }
 
-const CultureItem = ({ culture, onClick }: CultureItemProps) => {
+const CultureItemLarge = ({ culture, onClick }: CultureItemLargeProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
@@ -22,13 +22,6 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
 
   return (
     <li className={styles['culture-item-wrapper']} onClick={onClick}>
-      <div className={styles['content-wrapper']}>
-        <p className={styles['content-title']}>{culture.title}</p>
-        <p className={styles['content-place']}>{culture.displayPlace}</p>
-        <p className={styles['content-date']}>{culture.displayDate}</p>
-        <p className={styles['content-target']}>{culture.useTarget}</p>
-        <p className={styles['content-price']}>{culture.displayPrice}</p>
-      </div>
       <div className={styles['image-wrapper']}>
         <Image
           src={imgSrc}
@@ -39,8 +32,15 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
           onError={handleImageError}
         />
       </div>
+      <div className={styles['content-wrapper']}>
+        <p className={styles['content-title']}>{culture.title}</p>
+        <p className={styles['content-place']}>{culture.displayPlace}</p>
+        <p className={styles['content-date']}>{culture.displayDate}</p>
+        <p className={styles['content-target']}>{culture.useTarget}</p>
+        <p className={styles['content-price']}>{culture.displayPrice}</p>
+      </div>
     </li>
   );
 };
 
-export default CultureItem;
+export default CultureItemLarge;

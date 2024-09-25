@@ -4,12 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import styles from './BottomSheet.module.scss';
 
-const BOTTOM_SHEET_STAGES = [235, 500]; // 높이 단계 정의
+const BOTTOM_SHEET_STAGES = [250, 490]; // 높이 단계 정의
 
 const BottomSheet = () => {
-  const { isOpen, content, closeBottomSheet } = useBottomSheet();
-
-  const [height, setHeight] = useState(0);
+  const { isOpen, content, closeBottomSheet, height, setHeight } = useBottomSheet();
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [closing, setClosing] = useState(false);
@@ -54,7 +52,7 @@ const BottomSheet = () => {
       setCurrentY(0);
       isDragging.current = false;
     }
-  }, [currentY, height]);
+  }, [currentY, height, setHeight]);
 
   useEffect(() => {
     const headerElement = headerRef.current;
@@ -94,7 +92,7 @@ const BottomSheet = () => {
       setClosing(false);
       setHeight(BOTTOM_SHEET_STAGES[0]);
     }
-  }, [isOpen]);
+  }, [isOpen, setHeight]);
 
   useEffect(() => {
     const sheetElement = sheetRef.current;
@@ -111,7 +109,7 @@ const BottomSheet = () => {
         sheetElement.removeEventListener('transitionend', handleTransitionEnd);
       };
     }
-  }, [closing, closeBottomSheet]);
+  }, [closing, closeBottomSheet, setHeight]);
 
   useEffect(() => {
     const updateHeight = () => {

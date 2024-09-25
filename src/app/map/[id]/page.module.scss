@@ -6,6 +6,10 @@
   flex-direction: column;
   gap: var(--spacing-small);
 
+  .culture-item-container {
+    height: calc(100% - 60px);
+  }
+
   .button-wrapper {
     height: 50px;
     display: flex;
