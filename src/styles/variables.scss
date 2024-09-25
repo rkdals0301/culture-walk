@@ -4,12 +4,12 @@
 // light
 $background-color-light: #fff;
 $text-color-light: #333;
-$primary-color-light: #1e90ff;
+$primary-color-light: #007bff;
 
 // dark
 $background-color-dark: #1e1e1e;
 $text-color-dark: #e0e0e0;
-$primary-color-dark: #1e90ff;
+$primary-color-dark: #007bff;
 
 /* 폰트 */
 $font-size-tiny: 0.75rem; // 12px
@@ -94,24 +94,29 @@ $searchbar-border-color-dark: #333; // 경계색을 낮춰 부드러운 대비
 /* 카드 */
 
 // light
-$card-background-color-light: #fff; // 유지
+$card-background-color-light: #f0f0f0; // 유지
 $card-title-color-light: #333; // 유지
-$card-text-color-light: #5a5a5a; // 유지
-$card-border-color-light: #dcdcdc; // 유지
-$card-box-shadow-light: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 10%);
-$card-hover-background-color-light: color.adjust($card-background-color-light, $lightness: -5%); // 호버 시 배경색 조정
-$card-hover-border-color-light: color.adjust($card-border-color-light, $lightness: -5%); // 호버 시 경계선 색상 조정
-$card-hover-box-shadow-light: 0 $spacing-xs $spacing-small rgb(0 0 0 / 15%); // 유지
+$card-text-color-light: #666; // 텍스트 색상을 약간 밝게 조정
+$card-border-color-light: #bbb; // 보더 색상을 조금 더 진하게 조정
+$card-box-shadow-light: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 10%); // 그림자 색상 조정
+$card-hover-background-color-light: #e3f2ff; // 호버 시 배경색을 조금 더 밝게 조정
+$card-hover-border-color-light: #007bff; // 유지
+$card-hover-box-shadow-light:
+  0 4px 8px rgba(0 123 255 / 25%),
+  // 호버 시 박스 그림자를 약간 더 강조
+  0 2px 4px rgba(0 123 255 / 15%); // 두 번째 그림자 조정
 
 // dark
-$card-background-color-dark: #262626; // 깊은 어두운 회색
+$card-background-color-dark: #262626; // 깊은 어두운 회색 (변경 없음)
 $card-title-color-dark: #e0e0e0; // 부드러운 흰색
-$card-text-color-dark: #b0b0b0; // 조금 더 어두운 밝은 회색
-$card-border-color-dark: #444; // 진한 회색
-$card-box-shadow-dark: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 50%);
-$card-hover-background-color-dark: color.adjust($card-background-color-dark, $lightness: 5%); // 호버 시 배경색 조정
-$card-hover-border-color-dark: color.adjust($card-border-color-dark, $lightness: 5%); // 호버 시 경계선 색상 조정
-$card-hover-box-shadow-dark: 0 $spacing-xs $spacing-small rgb(0 0 0 / 60%); // 유지
+$card-text-color-dark: #c0c0c0; // 밝은 회색
+$card-border-color-dark: #444; // 진한 회색 (변경 없음)
+$card-box-shadow-dark: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 50%); // 그림자 조정
+$card-hover-background-color-dark: #2d2d2d; // 호버 시 배경색을 조금 더 어둡게 조정
+$card-hover-border-color-dark: #007bff; // 호버 시 경계선 색상 조정
+$card-hover-box-shadow-dark:
+  0 3px 6px rgb(0 123 255 / 15%),
+  0 1px 3px rgb(0 123 255 / 10%); // 호버 시 박스 그림자 조정
 
 /* 헤더 */
 
