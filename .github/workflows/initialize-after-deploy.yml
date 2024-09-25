@@ -1,14 +1,14 @@
-name: Initialize Database on Deploy Success
+# name: Initialize Database on Deploy Success
 
-on:
-  deployment_status:
+# on:
+#   deployment_status:
 
-jobs:
-  initialize-database:
-    runs-on: ubuntu-latest
-    if: github.event.deployment_status.state == 'success'
+# jobs:
+#   initialize-database:
+#     runs-on: ubuntu-latest
+#     if: github.event.deployment_status.state == 'success'
 
-    steps:
-      - name: Initialize Database
-        run: |
-          curl -X POST https://culturewalk.vercel.app/api/initialize
+#     steps:
+#       - name: Initialize Database
+#         run: |
+#           curl -X POST https://culturewalk.vercel.app/api/initialize

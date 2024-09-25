@@ -21,9 +21,12 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const MapView = () => {
   const { resolvedTheme } = useTheme();
-  const router = useRouter();
+  // const router = useRouter();
   const { isLoading, error } = useCultures();
-  const { id } = useParams(); // URL의 id 가져오기
+  const params = useParams(); // 동적 경로 매개변수 가져오기
+  const id = params?.id; // URL의 id 가져오기
+
+  const [currentId, setCurrentId] = useState<number | null>(null); // 선택된 문화 ID 상태
 
   const { cultures } = useSelector((state: RootState) => state.culture);
 
@@ -31,7 +34,6 @@ const MapView = () => {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [centerPosition, setCenterPosition] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.978 });
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
-  const [activeInfoWindowId, setActiveInfoWindowId] = useState<number | null>(null);
 
   if (!GOOGLE_MAPS_API_KEY) {
     throw new Error('Google Maps API key is missing in the environment variables');
@@ -52,17 +54,22 @@ const MapView = () => {
 
   // URL에서 가져온 id로 중심 설정
   useEffect(() => {
-    if (id && typeof id === 'string' && cultures.length > 0) {
-      const selectedCulture = cultures.find(culture => culture.id === parseInt(id, 10));
+    const idNum = Array.isArray(id) ? parseInt(id[0], 10) : parseInt(id, 10); // id가 숫자 형태로 변환된 경우
+
+    if (idNum && cultures.length > 0) {
+      const selectedCulture = cultures.find(culture => culture.id === idNum);
       if (selectedCulture) {
         const { lat, lng } = selectedCulture;
         setCenterPosition({ lat, lng });
-        setActiveMarkerId(parseInt(id, 10));
-        setActiveInfoWindowId(null);
+        setActiveMarkerId(idNum);
+        setCurrentId(idNum); // 선택된 문화 ID 업데이트
+      } else {
+        setCurrentId(null); // 선택된 문화 ID 업데이트
+        setActiveMarkerId(null);
       }
     } else {
+      setCurrentId(null); // 선택된 문화 ID 업데이트
       setActiveMarkerId(null);
-      setActiveInfoWindowId(null);
     }
   }, [id, cultures]);
 
@@ -74,18 +81,6 @@ const MapView = () => {
     setCurrentLocation({ lat, lng });
     setCenterPosition({ lat, lng });
   }, []);
-
-  const handleMarkerClick = useCallback(
-    (culture: FormattedCulture) => {
-      const { lat, lng } = culture;
-      const newCenter = { lat, lng };
-      setCenterPosition(newCenter);
-      setActiveMarkerId(culture.id);
-
-      router.push(`/map/${culture.id}`, { scroll: false });
-    },
-    [router]
-  );
 
   // 중복된 마커를 미리 계산하여 캐싱
   const duplicateCulturesMap = useMemo(() => {
@@ -135,9 +130,9 @@ const MapView = () => {
             duplicateCultures={duplicateCulturesMap[`${culture.lat}-${culture.lng}`]}
             culture={culture}
             isSelected={activeMarkerId === culture.id}
-            activeInfoWindowId={activeInfoWindowId}
-            onClick={handleMarkerClick}
-            setActiveInfoWindowId={setActiveInfoWindowId}
+            setActiveMarkerId={setActiveMarkerId}
+            setCenterPosition={setCenterPosition}
+            id={currentId} // 현재 ID를 MapMarker에 전달
           />
         ))}
         {currentLocation && (

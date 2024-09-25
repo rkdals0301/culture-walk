@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useCultureById } from '@/hooks/cultureHooks';
@@ -18,6 +18,7 @@ interface MapDetailProps {
 
 const MapDetail = ({ params }: MapDetailProps) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
   const { isLoading, error } = useCultureById(cultureId);
   const { culture } = useSelector((state: RootState) => state.culture);
@@ -68,7 +69,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
         onClose: handleBottomSheetClose,
       });
     }
-  }, [isLoading, error, culture, openBottomSheet, handleBottomSheetClose]);
+  }, [isLoading, error, culture, openBottomSheet, handleBottomSheetClose, params.id, searchParams]);
 
   return null; // 바텀 시트가 열릴 때는 MapDetail 컴포넌트가 UI를 렌더링하지 않음
 };

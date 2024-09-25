@@ -1,54 +1,91 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { MarkerF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
-import MapInfoWindow from '@/components/Map/MapInfoWindow';
+import { useBottomSheet } from '@/context/BottomSheetContext';
+import styles from './MapMarker.module.scss';
+import { useRouter, useParams } from 'next/navigation';
 
 interface MapMarkerProps {
   duplicateCultures: FormattedCulture[]; // 중복 여부를 Prop으로 전달받음
   culture: FormattedCulture;
   isSelected: boolean; // 선택 여부를 Prop으로 전달받음
-  activeInfoWindowId: number | null;
-  onClick: (culture: FormattedCulture) => void;
-  setActiveInfoWindowId: (id: number | null) => void;
+  setActiveMarkerId: React.Dispatch<React.SetStateAction<number | null>>; // void가 아닌 올바른 타입 설정
+  setCenterPosition: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }>>; // Props로 추가
+  id: number | null;
 }
 
 const MapMarker = ({
   duplicateCultures,
   culture,
   isSelected,
-  activeInfoWindowId,
-  onClick,
-  setActiveInfoWindowId,
+  setActiveMarkerId,
+  setCenterPosition,
+  id,
 }: MapMarkerProps) => {
-  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
-
-  const onLoad = useCallback((markerInstance: google.maps.Marker) => {
-    setMarker(markerInstance); // MarkerF가 로드되면 marker 객체를 저장
-  }, []);
+  const router = useRouter();
+  const { openBottomSheet } = useBottomSheet(); // 바텀 시트를 위한 context 사용
 
   const position = {
     lat: culture.lat,
     lng: culture.lng,
   };
 
+  const handleGoToMapDetail = useCallback(
+    (activeId: number) => {
+      if (activeId === id) {
+        router.push(`/map/${activeId}?timestamp=${Date.now()}`, { scroll: false });
+      } else {
+        router.push(`/map/${activeId}`, { scroll: false });
+      }
+    },
+    [router, id] // currentId를 의존성 배열에 추가
+  );
+
+  const handleGoToMap = useCallback(() => {
+    router.push(`/map`, { scroll: false }); // 바텀 시트 닫기 시, URL만 변경하고 상태는 유지
+  }, [router]);
+
   const handleMarkerClick = useCallback(() => {
     if (duplicateCultures.length > 1) {
-      setActiveInfoWindowId(culture.id);
-    } else {
-      setActiveInfoWindowId(null);
-      onClick(culture);
-    }
-  }, [duplicateCultures, culture, onClick, setActiveInfoWindowId]);
+      setActiveMarkerId(culture.id);
+      setCenterPosition(position);
 
-  const handleInfoWindowClick = useCallback(
-    (culture: FormattedCulture) => {
-      setActiveInfoWindowId(null);
-      onClick(culture);
-    },
-    [onClick, setActiveInfoWindowId]
-  );
+      openBottomSheet({
+        content: (
+          <div className={styles['info-window-container']}>
+            <ul className={styles['info-window-list']}>
+              {duplicateCultures.map(dupCulture => (
+                <li
+                  className={styles['info-window-list-item']}
+                  key={dupCulture.id}
+                  onClick={() => handleGoToMapDetail(dupCulture.id)}
+                >
+                  {dupCulture.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ),
+        onClose: () => {
+          setActiveMarkerId(null);
+          handleGoToMap();
+        },
+      });
+    } else {
+      handleGoToMapDetail(culture.id);
+    }
+  }, [
+    duplicateCultures,
+    culture,
+    openBottomSheet,
+    setActiveMarkerId,
+    position,
+    handleGoToMap,
+    handleGoToMapDetail,
+    setCenterPosition,
+  ]);
 
   const iconUrl = isSelected ? '/assets/map-marker-active-icon.svg' : '/assets/map-marker-default-icon.svg';
   const iconSize = isSelected ? new google.maps.Size(40, 40) : new google.maps.Size(32, 32);
@@ -63,17 +100,7 @@ const MapMarker = ({
         scaledSize: iconSize,
       }}
       zIndex={isSelected ? 1 : 0} // 선택된 마커를 최상단에 표시
-      onLoad={onLoad} // MarkerF가 로드될 때 호출
-    >
-      {activeInfoWindowId === culture.id && (
-        <MapInfoWindow
-          anchor={marker || undefined} // marker가 null이면 undefined로 설정
-          cultures={duplicateCultures}
-          onCultureClick={handleInfoWindowClick}
-          onClose={() => setActiveInfoWindowId(null)}
-        />
-      )}
-    </MarkerF>
+    />
   );
 };
 
