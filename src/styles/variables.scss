@@ -85,11 +85,13 @@ $button-hover-text-primary-color-dark: #fff; // 호버 시 텍스트 색상
 
 // light
 $searchbar-background-color-light: #fff; // 깨끗하고 신선한 흰색
-$searchbar-placeholder-color-light: #a1a1a1; // 부드러운 중간 회색
+$searchbar-placeholder-color-light: #888; // 부드러운 중간 회색
+$searchbar-border-color-light: #ccc; // 부드러운 중간 회색
 
 // dark
 $searchbar-background-color-dark: #2a2a2a; // 심플한 어두운 회색
 $searchbar-placeholder-color-dark: #b3b3b3; // 가독성을 고려한 밝은 회색
+$searchbar-border-color-dark: #2a2a2a; // 부드러운 중간 회색
 
 /* 카드 */
 
@@ -179,6 +181,7 @@ html.light {
   /* 검색 바 */
   --searchbar-background-color: #{$searchbar-background-color-light};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-light};
+  --searchbar-border-color: #{$searchbar-border-color-light};
 
   /* 카드 */
   --card-background-color: #{$card-background-color-light};
@@ -246,6 +249,7 @@ html.dark {
   /* 검색 바 */
   --searchbar-background-color: #{$searchbar-background-color-dark};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-dark};
+  --searchbar-border-color: #{$searchbar-border-color-dark};
 
   /* 카드 */
   --card-background-color: #{$card-background-color-dark};

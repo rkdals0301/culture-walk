@@ -97,7 +97,7 @@ export const viewport: Viewport = {
   //     color: '#1e1e1e',
   //   },
   // ],
-  themeColor: '#f5f5f5',
+  themeColor: '#ffffff',
   colorScheme: 'light dark',
 };
 

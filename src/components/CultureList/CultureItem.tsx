@@ -36,15 +36,17 @@ const CultureItem = ({ culture, variant = 'default', onClick }: CultureItemProps
       <div className={styles['image-wrapper']}>
         <Image
           src={imgSrc}
-          fill
+          width={100}
+          height={100}
           className={styles['image']}
           alt='Culture Image'
           blurDataURL={culture.mainImage}
           onError={handleImageError}
+          loading='lazy'
         />
       </div>
     </li>
   );
 };
 
-export default CultureItem;
+export default React.memo(CultureItem);
