@@ -2,28 +2,27 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useDispatch } from 'react-redux';
+import { useSideMenu } from '@/context/SideMenuContext'; // 컨텍스트에서 사이드 메뉴 상태 가져오기
 import styles from './Header.module.scss';
 import SearchBar from '@/components/Header/SearchBar';
 import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
-import { toggleSideMenu } from '@/slices/sideMenuSlice';
 import SideMenuIcon from '../../../public/assets/menu-icon.svg';
 import ArrowBackIcon from '../../../public/assets/arrow-back-icon.svg';
 
 const Header = () => {
-  const dispatch = useDispatch();
+  const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   const handleOpenSideMenu = () => {
-    dispatch(toggleSideMenu());
+    openSideMenu(); // 사이드 메뉴 열기
   };
 
   const handleOpenOverlay = () => {
-    setIsOverlayVisible(true); // 클릭 시 오버레이 표시/숨김 토글
+    setIsOverlayVisible(true); // 클릭 시 오버레이 표시
   };
 
   const handleCloseOverlay = () => {
-    setIsOverlayVisible(false); // 클릭 시 오버레이 표시/숨김 토글
+    setIsOverlayVisible(false); // 클릭 시 오버레이 숨김
   };
 
   return (

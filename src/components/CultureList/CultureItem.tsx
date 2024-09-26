@@ -5,10 +5,11 @@ import styles from './CultureItem.module.scss';
 
 interface CultureItemProps {
   culture: FormattedCulture;
+  variant?: 'default' | 'bottomsheet'; // variant prop 추가
   onClick?: () => void;
 }
 
-const CultureItem = ({ culture, onClick }: CultureItemProps) => {
+const CultureItem = ({ culture, variant = 'default', onClick }: CultureItemProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
@@ -21,7 +22,10 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
   }, [culture.mainImage]);
 
   return (
-    <li className={styles['culture-item-wrapper']} onClick={onClick}>
+    <li
+      className={`${styles['culture-item-wrapper']} ${variant === 'bottomsheet' ? styles['no-hover-active'] : ''}`} // variant에 따른 클래스 적용
+      onClick={onClick}
+    >
       <div className={styles['content-wrapper']}>
         <p className={styles['content-title']}>{culture.title}</p>
         <p className={styles['content-place']}>{culture.displayPlace}</p>

@@ -48,7 +48,11 @@ const MapDetail = ({ params }: MapDetailProps) => {
         content: (
           <div className={styles['bottom-sheet-container']}>
             <div className={styles['culture-item-container']}>
-              {height > 250 ? <CultureItemLarge culture={culture} /> : <CultureItem culture={culture} />}
+              {height > 250 ? (
+                <CultureItemLarge culture={culture} />
+              ) : (
+                <CultureItem culture={culture} variant='bottomsheet' />
+              )}
             </div>
             <div className={styles['button-wrapper']}>
               <button

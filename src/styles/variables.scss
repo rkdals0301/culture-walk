@@ -33,11 +33,13 @@ $spacing-xxl: 4rem; // 64px
 $spacing-xxxl: 5rem; // 80px
 
 // 테두리
-$border-radius-xxs: $spacing-xxs; // 2px
-$border-radius-xs: $spacing-xs; // 4px
-$border-radius-small: $spacing-small; // 8px
-$border-radius-medium: $spacing-medium; // 16px
-$border-radius-large: $spacing-large; // 32px
+$border-radius-xxs: 2px; // 매우 작은 둥근 모서리
+$border-radius-xs: 4px; // 작은 둥근 모서리
+$border-radius-sm: 8px; // 적당한 둥근 모서리
+$border-radius-md: 12px; // 중간 크기의 둥근 모서리 (가장 일반적)
+$border-radius-lg: 16px; // 큰 둥근 모서리
+$border-radius-xl: 24px; // 매우 큰 둥근 모서리
+$border-radius-full: 9999px; // 완전한 원형 모양
 
 /* 스크롤바 */
 
@@ -84,12 +86,10 @@ $button-hover-text-primary-color-dark: #fff; // 호버 시 텍스트 색상
 // light
 $searchbar-background-color-light: #fff; // 깨끗하고 신선한 흰색
 $searchbar-placeholder-color-light: #a1a1a1; // 부드러운 중간 회색
-$searchbar-border-color-light: #d9d9d9; // 부드러운 경계색
 
 // dark
 $searchbar-background-color-dark: #2a2a2a; // 심플한 어두운 회색
 $searchbar-placeholder-color-dark: #b3b3b3; // 가독성을 고려한 밝은 회색
-$searchbar-border-color-dark: #333; // 경계색을 낮춰 부드러운 대비
 
 /* 카드 */
 
@@ -165,9 +165,11 @@ html.light {
   /* 테두리 */
   --border-radius-xxs: #{$border-radius-xxs};
   --border-radius-xs: #{$border-radius-xs};
-  --border-radius-small: #{$border-radius-small};
-  --border-radius-medium: #{$border-radius-medium};
-  --border-radius-large: #{$border-radius-large};
+  --border-radius-sm: #{$border-radius-sm};
+  --border-radius-md: #{$border-radius-md};
+  --border-radius-lg: #{$border-radius-lg};
+  --border-radius-xl: #{$border-radius-xl};
+  --border-radius-full: #{$border-radius-full};
 
   /* 스크롤바 */
   --scrollbar-thumb-color: #{$scrollbar-thumb-color-light};
@@ -177,7 +179,6 @@ html.light {
   /* 검색 바 */
   --searchbar-background-color: #{$searchbar-background-color-light};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-light};
-  --searchbar-border-color: #{$searchbar-border-color-light};
 
   /* 카드 */
   --card-background-color: #{$card-background-color-light};
@@ -231,9 +232,11 @@ html.dark {
   /* 테두리 */
   --border-radius-xxs: #{$border-radius-xxs};
   --border-radius-xs: #{$border-radius-xs};
-  --border-radius-small: #{$border-radius-small};
-  --border-radius-medium: #{$border-radius-medium};
-  --border-radius-large: #{$border-radius-large};
+  --border-radius-sm: #{$border-radius-sm};
+  --border-radius-md: #{$border-radius-md};
+  --border-radius-lg: #{$border-radius-lg};
+  --border-radius-xl: #{$border-radius-xl};
+  --border-radius-full: #{$border-radius-full};
 
   /* 스크롤바 */
   --scrollbar-thumb-color: #{$scrollbar-thumb-color-dark};
@@ -243,7 +246,6 @@ html.dark {
   /* 검색 바 */
   --searchbar-background-color: #{$searchbar-background-color-dark};
   --searchbar-placeholder-color: #{$searchbar-placeholder-color-dark};
-  --searchbar-border-color: #{$searchbar-border-color-dark};
 
   /* 카드 */
   --card-background-color: #{$card-background-color-dark};

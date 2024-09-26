@@ -13,9 +13,10 @@ import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 // import Footer from '@/components/Common/Footer/Footer';
 import CustomToastContainer from '@/components/Toast/ToastContainer';
-import SideMenu from '@/components/SideMenu/SideMenu';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import BottomSheet from '@/components/BottomSheet/BottomSheet';
+import { SideMenuProvider } from '@/context/SideMenuContext';
+import SideMenu from '@/components/SideMenu/SideMenu';
 
 export const metadata: Metadata = {
   title: {
@@ -150,16 +151,18 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <body className={pretendard.className}>
         <QueryClientProvider>
           <ThemeProvider>
-            <BottomSheetProvider>
-              <ReduxProvider>
-                <Header />
-                <SideMenu />
-                <Main>{children}</Main>
-                {/* <Footer /> */}
-                <BottomSheet />
-                <CustomToastContainer /> {/* 여기에서 ToastContainer 추가 */}
-              </ReduxProvider>
-            </BottomSheetProvider>
+            <ReduxProvider>
+              <BottomSheetProvider>
+                <SideMenuProvider>
+                  <Header />
+                  <SideMenu />
+                  <Main>{children}</Main>
+                  {/* <Footer /> */}
+                  <BottomSheet />
+                  <CustomToastContainer /> {/* 여기에서 ToastContainer 추가 */}
+                </SideMenuProvider>
+              </BottomSheetProvider>
+            </ReduxProvider>
           </ThemeProvider>
         </QueryClientProvider>
         <Analytics />

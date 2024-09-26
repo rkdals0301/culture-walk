@@ -8,7 +8,7 @@
   transition:
     background-color 0.2s,
     color 0.2s;
-  border-radius: var(--border-radius-small);
+  border-radius: var(--border-radius-sm);
 
   &:hover {
     color: var(--button-hover-text-color);
