@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import dynamic from 'next/dynamic';
+import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
 import '@/styles/reset.scss';
 import '@/styles/globals.scss';
@@ -109,27 +109,23 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko'>
       <head>
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <Script
-              id='google-analytics'
-              strategy='lazyOnload'
-              src={`https://www.googletagmanager.com/gtag/js?id=G-Y4XKZDK818`}
-            />
-            <Script
-              id='google-analytics-init'
-              strategy='lazyOnload'
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', 'G-Y4XKZDK818');
-                `,
-              }}
-            />
-          </>
-        )}
+        {/* DNS Prefetch */}
+        <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
+        {/* Google Maps DNS Prefetch */}
+        <link rel='dns-prefetch' href='//maps.googleapis.com' />
+        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+        {/* Google Analytics DNS Prefetch */}
+        <link rel='dns-prefetch' href='//www.googletagmanager.com' />
+        <link rel='dns-prefetch' href='//www.google-analytics.com' />
+
+        {/* Preconnect */}
+        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
+        {/* Google Maps Preconnect */}
+        <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
+        {/* Google Analytics Preconnect  */}
+        <link rel='preconnect' href='https://www.googletagmanager.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://www.google-analytics.com' crossOrigin='anonymous' />
 
         {/* <Script
           id='channel-talk-script'
@@ -159,12 +155,14 @@ const RootLayout = ({ children }: RootLayoutProps) => {
                   <Main>{children}</Main>
                   {/* <Footer /> */}
                   <BottomSheet />
-                  <CustomToastContainer /> {/* 여기에서 ToastContainer 추가 */}
+                  <CustomToastContainer />
                 </SideMenuProvider>
               </BottomSheetProvider>
             </ReduxProvider>
           </ThemeProvider>
         </QueryClientProvider>
+        {process.env.NEXT_PUBLIC_GTM_ID && <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />}
+        {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
         <Analytics />
       </body>
     </html>
