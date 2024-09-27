@@ -26,7 +26,6 @@ const MapView = () => {
   const id = params?.id; // URL의 id 가져오기
 
   const [currentId, setCurrentId] = useState<number | null>(null); // 선택된 문화 ID 상태
-
   const { cultures } = useSelector((state: RootState) => state.culture);
 
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
@@ -58,10 +57,9 @@ const MapView = () => {
     if (idNum && cultures.length > 0) {
       const selectedCulture = cultures.find(culture => culture.id === idNum);
       if (selectedCulture) {
-        const { lat, lng } = selectedCulture;
-        setCenterPosition({ lat, lng });
+        setCenterPosition({ lat: selectedCulture.lat, lng: selectedCulture.lng });
         setActiveMarkerId(idNum);
-        setCurrentId(idNum); // 선택된 문화 ID 업데이트
+        setCurrentId(idNum);
       } else {
         setCurrentId(null); // 선택된 문화 ID 업데이트
         setActiveMarkerId(null);
@@ -132,6 +130,7 @@ const MapView = () => {
             setActiveMarkerId={setActiveMarkerId}
             setCenterPosition={setCenterPosition}
             id={currentId} // 현재 ID를 MapMarker에 전달
+            totalCulturesLength={cultures.length}
           />
         ))}
         {currentLocation && (

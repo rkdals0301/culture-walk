@@ -7,7 +7,7 @@ interface LoaderProps {
   speedMultiplier?: number;
 }
 
-const Loader = ({ color = '#F14D3D', size = 50, speedMultiplier = 1 }: LoaderProps) => {
+const Loader = ({ color = '#007bff', size = 50, speedMultiplier = 1 }: LoaderProps) => {
   return (
     <div className={styles['loader-wrapper']}>
       <ClipLoader color={color} size={size} speedMultiplier={speedMultiplier} />
