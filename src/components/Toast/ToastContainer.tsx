@@ -10,10 +10,15 @@ const CustomToastContainer = () => {
   return (
     <ToastContainer
       position='top-right'
-      autoClose={3000}
+      autoClose={3010}
+      limit={1}
       hideProgressBar={false}
-      closeOnClick={true}
-      draggable={true}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss={false}
+      draggable
+      pauseOnHover={false}
       theme={resolvedTheme}
     />
   );

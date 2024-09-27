@@ -1,17 +1,27 @@
 'use client';
 
-import React from 'react';
-import { QueryClient, QueryClientProvider as ReactQueryClientProvider } from '@tanstack/react-query';
+import React, { useMemo } from 'react';
+import { QueryClient, QueryClientProvider as ReactQueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import useApiError from '@/hooks/useApiError';
 
-// QueryClient 인스턴스 생성
-const queryClient = new QueryClient();
+const QueryClientProvider = ({ children }: { children: React.ReactNode }) => {
+  const { handleError } = useApiError(); // 에러 핸들러 가져오기
 
-interface QueryClientProviderProps {
-  children: React.ReactNode;
-}
+  // QueryClient 인스턴스 생성
+  const queryClient = useMemo(() => {
+    return new QueryClient({
+      defaultOptions: {
+        mutations: {
+          onError: handleError,
+        },
+      },
+      queryCache: new QueryCache({
+        onError: handleError,
+      }),
+    });
+  }, [handleError]);
 
-const QueryClientProvider = ({ children }: QueryClientProviderProps) => {
   return (
     <ReactQueryClientProvider client={queryClient}>
       {children}

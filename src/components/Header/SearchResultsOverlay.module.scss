@@ -15,4 +15,18 @@
   &.open {
     display: block; /* 오버레이가 열릴 때 보이도록 설정 */
   }
+
+  .error-message {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .no-result {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
