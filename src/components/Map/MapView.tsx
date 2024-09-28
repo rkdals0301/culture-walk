@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { getCultures } from '@/selectors/cultureSelectors'; // selector import
 import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
 import { useTheme } from 'next-themes';
 import { FormattedCulture } from '@/types/culture';
@@ -26,7 +26,7 @@ const MapView = () => {
   const id = params?.id; // URL의 id 가져오기
 
   const [currentId, setCurrentId] = useState<number | null>(null); // 선택된 문화 ID 상태
-  const { cultures } = useSelector((state: RootState) => state.culture);
+  const cultures = useSelector(getCultures); // 전체 문화 데이터 가져오기
 
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);

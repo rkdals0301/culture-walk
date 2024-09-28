@@ -3,13 +3,13 @@
 import { useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 import { useCultureById } from '@/hooks/cultureHooks';
 import Loader from '@/components/Loader/Loader';
 import clsx from 'clsx'; // clsx 추가
 import styles from './page.module.scss';
 import { CultureItem } from '@/components/CultureList';
 import { useBottomSheet } from '@/context/BottomSheetContext';
+import { getCulture } from '@/selectors/cultureSelectors'; // 선택자 임포트
 
 interface MapDetailProps {
   params: {
@@ -23,7 +23,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
   const timestamp = searchParams.get('timestamp'); // timestamp 값을 추출
   const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
   const { isLoading, error } = useCultureById(cultureId);
-  const { culture } = useSelector((state: RootState) => state.culture);
+  const culture = useSelector(getCulture); // Reselect을 사용하여 culture 가져오기
   const { openBottomSheet } = useBottomSheet();
 
   const handleOpenExternalLink = (url: string | undefined) => {
@@ -71,7 +71,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
       content,
       onClose: handleBottomSheetClose,
     });
-  }, [isLoading, error, culture, params.id, timestamp]);
+  }, [isLoading, error, culture, handleBottomSheetClose, openBottomSheet, params.id, timestamp]);
 
   return null;
 };

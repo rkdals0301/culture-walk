@@ -3,11 +3,11 @@ import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Loader/Loader';
 import { useRouter } from 'next/navigation';
-import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
 import { useCultures } from '@/hooks/cultureHooks';
 import { CultureList } from '@/components/CultureList';
-import clsx from 'clsx'; // clsx 추가
+import clsx from 'clsx';
+import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors'; // selector import
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -16,7 +16,8 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const { cultures, filteredCultures } = useSelector((state: RootState) => state.culture);
+  const cultures = useSelector(getCultures); // 전체 문화 데이터 가져오기
+  const filteredCultures = useSelector(getFilteredCultures); // 필터링된 문화 데이터 가져오기
   const { isLoading, isError, error } = useCultures(isOpen && cultures.length === 0);
 
   const handleOnClick = (culture: FormattedCulture) => {
@@ -24,7 +25,6 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
     router.push(`/map/${culture.id}`, { scroll: false });
   };
 
-  // 렌더링할 내용을 반환하는 함수
   const renderContent = () => {
     if (isLoading) {
       return <Loader />;

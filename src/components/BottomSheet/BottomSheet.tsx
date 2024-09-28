@@ -52,7 +52,7 @@ const BottomSheet = () => {
       setCurrentY(0);
       isDragging.current = false;
     }
-  }, [currentY, height, setHeight]);
+  }, [currentY, height, setHeight, closeBottomSheet]);
 
   useEffect(() => {
     const headerElement = headerRef.current;
