@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import clsx from 'clsx'; // clsx 추가
 import styles from './SearchBar.module.scss';
 import { setSearchQuery } from '@/slices/culturesSlice'; // 검색 쿼리 설정 액션 import
 import SearchCancelIcon from '../../../public/assets/search-cancel-icon.svg';
@@ -40,13 +41,17 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
         onFocus={onSearchClick}
       />
       {searchQuery.length > 0 && (
-        <button type='button' className={`button ${styles['search-reset-button']}`} onClick={handleReset}>
+        <button
+          type='button'
+          className={clsx('button', styles['search-reset-button'])} // clsx로 변경
+          onClick={handleReset}
+        >
           <SearchCancelIcon />
         </button>
       )}
       <button
-        type='submit' // 폼 제출 버튼
-        className='button'
+        type='submit'
+        className='button' // clsx로 단일 클래스 변경
       >
         <SearchIcon />
       </button>

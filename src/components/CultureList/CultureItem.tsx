@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FormattedCulture } from '@/types/culture';
 import Image from 'next/image';
 import styles from './CultureItem.module.scss';
+import clsx from 'clsx'; // clsx 추가
 
 interface CultureItemProps {
   culture: FormattedCulture;
@@ -23,7 +24,10 @@ const CultureItem = ({ culture, variant = 'default', onClick }: CultureItemProps
 
   return (
     <li
-      className={`${styles['culture-item-wrapper']} ${variant === 'bottomsheet' ? styles['no-hover-active'] : ''}`} // variant에 따른 클래스 적용
+      className={clsx(
+        styles['culture-item-wrapper'],
+        { [styles['no-hover-active']]: variant === 'bottomsheet' } // clsx로 조건부 클래스 처리
+      )}
       onClick={onClick}
     >
       <div className={styles['content-wrapper']}>

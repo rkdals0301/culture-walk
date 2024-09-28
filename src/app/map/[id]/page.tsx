@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useCultureById } from '@/hooks/cultureHooks';
 import Loader from '@/components/Loader/Loader';
+import clsx from 'clsx'; // clsx 추가
 import styles from './page.module.scss';
 import { CultureItem, CultureItemLarge } from '@/components/CultureList';
 import { useBottomSheet } from '@/context/BottomSheetContext';
@@ -57,14 +58,14 @@ const MapDetail = ({ params }: MapDetailProps) => {
             <div className={styles['button-wrapper']}>
               <button
                 type='button'
-                className={`button button-primary ${styles['button-link']}`}
+                className={clsx('button', 'button-primary', styles['button-link'])} // clsx로 변경
                 onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
               >
                 서울문화포털
               </button>
               <button
                 type='button'
-                className={`button button-primary ${styles['button-link']}`}
+                className={clsx('button', 'button-primary', styles['button-link'])} // clsx로 변경
                 onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
               >
                 예약

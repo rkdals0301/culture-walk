@@ -2,6 +2,7 @@
 
 import { useSideMenu } from '@/context/SideMenuContext'; // 컨텍스트에서 가져오기
 import ThemeSwitcher from '@/components/Theme/ThemeSwitcher';
+import clsx from 'clsx'; // clsx 추가
 import styles from './SideMenu.module.scss';
 import AvatarDefaultIcon from '../../../public/assets/avatar-default.svg';
 import CloseIcon from '../../../public/assets/close-icon.svg';
@@ -12,12 +13,12 @@ const SideMenu = () => {
   return (
     <>
       {/* 오버레이 클릭 시 사이드 메뉴 닫기 */}
-      <div className={`${styles['overlay']} ${isOpen ? styles['open'] : ''}`} onClick={closeSideMenu} />
+      <div className={clsx(styles['overlay'], { [styles['open']]: isOpen })} onClick={closeSideMenu} />
 
       {/* 사이드 메뉴 */}
-      <nav className={`${styles['side-menu']} ${isOpen ? styles['open'] : ''}`}>
+      <nav className={clsx(styles['side-menu'], { [styles['open']]: isOpen })}>
         {/* 닫기 버튼 */}
-        <button className={`button ${styles['close-button']}`} onClick={closeSideMenu}>
+        <button className={clsx('button', styles['close-button'])} onClick={closeSideMenu}>
           <CloseIcon />
         </button>
 

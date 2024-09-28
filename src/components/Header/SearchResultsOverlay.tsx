@@ -7,6 +7,7 @@ import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
 import { useCultures } from '@/hooks/cultureHooks';
 import { CultureList } from '@/components/CultureList';
+import clsx from 'clsx'; // clsx 추가
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;
@@ -45,7 +46,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
     return <CultureList cultures={filteredCultures} onItemClick={handleOnClick} />;
   };
 
-  return <div className={`${styles['search-results-overlay']} ${isOpen ? styles['open'] : ''}`}>{renderContent()}</div>;
+  return <div className={clsx(styles['search-results-overlay'], { [styles['open']]: isOpen })}>{renderContent()}</div>;
 };
 
 export default SearchResultsOverlay;
