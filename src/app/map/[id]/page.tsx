@@ -20,6 +20,7 @@ interface MapDetailProps {
 const MapDetail = ({ params }: MapDetailProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const timestamp = searchParams.get('timestamp'); // timestamp 값을 추출
   const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
   const { isLoading, error } = useCultureById(cultureId);
   const { culture } = useSelector((state: RootState) => state.culture);
@@ -34,49 +35,49 @@ const MapDetail = ({ params }: MapDetailProps) => {
   }, [router]);
 
   useEffect(() => {
+    let content: JSX.Element | null = null;
+
     if (isLoading) {
-      openBottomSheet({
-        content: <Loader />,
-        onClose: handleBottomSheetClose,
-      });
+      content = <Loader />;
     } else if (error) {
-      openBottomSheet({
-        content: <div>Error: {error.message}</div>,
-        onClose: handleBottomSheetClose,
-      });
+      content = <div>Error: {error.message}</div>;
     } else if (culture) {
-      openBottomSheet({
-        content: (
-          <div className={styles['bottom-sheet-container']}>
-            <div className={styles['culture-item-container']}>
-              {height > 250 ? (
-                <CultureItemLarge culture={culture} />
-              ) : (
-                <CultureItem culture={culture} variant='bottomsheet' />
-              )}
-            </div>
-            <div className={styles['button-wrapper']}>
-              <button
-                type='button'
-                className={clsx('button', 'button-primary', styles['button-link'])} // clsx로 변경
-                onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
-              >
-                서울문화포털
-              </button>
-              <button
-                type='button'
-                className={clsx('button', 'button-primary', styles['button-link'])} // clsx로 변경
-                onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
-              >
-                예약
-              </button>
-            </div>
+      content = (
+        <div className={styles['bottom-sheet-container']}>
+          <div className={styles['culture-item-container']}>
+            {height > 250 ? (
+              <CultureItemLarge culture={culture} />
+            ) : (
+              <CultureItem culture={culture} variant='bottomsheet' />
+            )}
           </div>
-        ),
+          <div className={styles['button-wrapper']}>
+            <button
+              type='button'
+              className={clsx('button', 'button-primary', styles['button-link'])}
+              onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
+            >
+              서울문화포털
+            </button>
+            <button
+              type='button'
+              className={clsx('button', 'button-primary', styles['button-link'])}
+              onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
+            >
+              예약
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (content) {
+      openBottomSheet({
+        content,
         onClose: handleBottomSheetClose,
       });
     }
-  }, [isLoading, error, culture, openBottomSheet, handleBottomSheetClose, params.id, searchParams, height]);
+  }, [isLoading, error, culture, params.id, timestamp, height]);
 
   return null; // 바텀 시트가 열릴 때는 MapDetail 컴포넌트가 UI를 렌더링하지 않음
 };

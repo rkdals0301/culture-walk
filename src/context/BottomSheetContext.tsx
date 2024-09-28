@@ -19,10 +19,12 @@ interface BottomSheetContextProps {
 
 const BottomSheetContext = createContext<BottomSheetContextProps | undefined>(undefined);
 
+const BOTTOM_SHEET_STAGES = [250, 490];
+
 export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<React.ReactNode | null>(null);
-  const [height, setHeight] = useState(0); // 추가
+  const [height, setHeight] = useState(BOTTOM_SHEET_STAGES[0]); // 추가
 
   const onCloseCallbackRef = useRef<(() => void) | null>(null); // useRef로 콜백 관리
 

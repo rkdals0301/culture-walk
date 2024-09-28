@@ -1,11 +1,9 @@
 .sheet {
   position: fixed;
   right: 0;
-  bottom: 0;
+  bottom: -250px;
   left: 0;
-  overflow: hidden;
   background-color: var(--background-color);
-  transition: height 0.2s ease-out;
   box-shadow: 0 -4px 20px rgb(0 0 0 / 20%);
   border-top-left-radius: var(--border-radius-xl);
   border-top-right-radius: var(--border-radius-xl);

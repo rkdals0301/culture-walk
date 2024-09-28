@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import styles from './BottomSheet.module.scss';
 
-const BOTTOM_SHEET_STAGES = [250, 490]; // 높이 단계 정의
+const BOTTOM_SHEET_STAGES = [250, 490];
 
 const BottomSheet = () => {
   const { isOpen, content, closeBottomSheet, height, setHeight } = useBottomSheet();
@@ -12,9 +13,8 @@ const BottomSheet = () => {
   const [currentY, setCurrentY] = useState(0);
   const [closing, setClosing] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null); // header 참조 추가
+  const headerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
-  const animationFrameId = useRef<number | null>(null);
 
   const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
     setStartY('touches' in e ? e.touches[0].clientY : e.clientY);
@@ -90,52 +90,27 @@ const BottomSheet = () => {
   useEffect(() => {
     if (isOpen) {
       setClosing(false);
-      setHeight(BOTTOM_SHEET_STAGES[0]);
     }
-  }, [isOpen, setHeight]);
+  }, [isOpen]);
 
   useEffect(() => {
-    const sheetElement = sheetRef.current;
-
-    if (closing && sheetElement) {
-      const handleTransitionEnd = () => {
-        closeBottomSheet();
-      };
-
-      setHeight(0);
-      sheetElement.addEventListener('transitionend', handleTransitionEnd);
-
-      return () => {
-        sheetElement.removeEventListener('transitionend', handleTransitionEnd);
-      };
+    if (closing) {
+      closeBottomSheet();
     }
-  }, [closing, closeBottomSheet, setHeight]);
-
-  useEffect(() => {
-    const updateHeight = () => {
-      if (sheetRef.current) {
-        sheetRef.current.style.height = `${height}px`;
-      }
-      animationFrameId.current = requestAnimationFrame(updateHeight);
-    };
-
-    updateHeight();
-
-    return () => {
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
-      }
-    };
-  }, [height]);
+  }, [closing]);
 
   return (
-    <div ref={sheetRef} className={styles['sheet']}>
+    <motion.div
+      ref={sheetRef}
+      className={styles['sheet']}
+      animate={{ height, bottom: isOpen ? 0 : -250 }} // y값에 따라 애니메이션
+      transition={{ duration: 0.3 }}
+    >
       <div ref={headerRef} className={styles['sheet-header']}>
         <div className={styles['handle']} />
       </div>
       <div className={styles['sheet-content']}>{content}</div>
-    </div>
+    </motion.div>
   );
 };
 
