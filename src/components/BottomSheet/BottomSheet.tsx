@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import styles from './BottomSheet.module.scss';
 
-const BOTTOM_SHEET_STAGES = [250, 490];
+// const BOTTOM_SHEET_STAGES = [250, 490];
+const BOTTOM_SHEET_STAGES = [240];
 
 const BottomSheet = () => {
-  const { isOpen, content, closeBottomSheet, height, setHeight } = useBottomSheet();
+  const { isOpen, content, height, closeBottomSheet, setHeight } = useBottomSheet();
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
-  const [closing, setClosing] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -45,7 +45,7 @@ const BottomSheet = () => {
         if (currentStageIndex > 0) {
           setHeight(BOTTOM_SHEET_STAGES[currentStageIndex - 1]);
         } else if (height === BOTTOM_SHEET_STAGES[0]) {
-          setClosing(true);
+          closeBottomSheet();
         }
       }
 
@@ -86,18 +86,6 @@ const BottomSheet = () => {
       }
     };
   }, [startDrag, drag, endDrag]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setClosing(false);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (closing) {
-      closeBottomSheet();
-    }
-  }, [closing]);
 
   return (
     <motion.div

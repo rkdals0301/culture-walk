@@ -8,7 +8,7 @@ import { useCultureById } from '@/hooks/cultureHooks';
 import Loader from '@/components/Loader/Loader';
 import clsx from 'clsx'; // clsx 추가
 import styles from './page.module.scss';
-import { CultureItem, CultureItemLarge } from '@/components/CultureList';
+import { CultureItem } from '@/components/CultureList';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 
 interface MapDetailProps {
@@ -24,7 +24,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
   const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
   const { isLoading, error } = useCultureById(cultureId);
   const { culture } = useSelector((state: RootState) => state.culture);
-  const { height, openBottomSheet } = useBottomSheet();
+  const { openBottomSheet } = useBottomSheet();
 
   const handleOpenExternalLink = (url: string | undefined) => {
     window.open(url, '_blank');
@@ -45,11 +45,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
       content = (
         <div className={styles['bottom-sheet-container']}>
           <div className={styles['culture-item-container']}>
-            {height > 250 ? (
-              <CultureItemLarge culture={culture} />
-            ) : (
-              <CultureItem culture={culture} variant='bottomsheet' />
-            )}
+            <CultureItem culture={culture} variant='bottomsheet' />
           </div>
           <div className={styles['button-wrapper']}>
             <button
@@ -71,15 +67,13 @@ const MapDetail = ({ params }: MapDetailProps) => {
       );
     }
 
-    if (content) {
-      openBottomSheet({
-        content,
-        onClose: handleBottomSheetClose,
-      });
-    }
-  }, [isLoading, error, culture, params.id, timestamp, height]);
+    openBottomSheet({
+      content,
+      onClose: handleBottomSheetClose,
+    });
+  }, [isLoading, error, culture, params.id, timestamp]);
 
-  return null; // 바텀 시트가 열릴 때는 MapDetail 컴포넌트가 UI를 렌더링하지 않음
+  return null;
 };
 
 export default MapDetail;

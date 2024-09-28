@@ -19,7 +19,7 @@ interface BottomSheetContextProps {
 
 const BottomSheetContext = createContext<BottomSheetContextProps | undefined>(undefined);
 
-const BOTTOM_SHEET_STAGES = [250, 490];
+const BOTTOM_SHEET_STAGES = [240, 490];
 
 export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,8 +30,8 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   // 바텀 시트를 열 때 onClose 콜백 설정
   const openBottomSheet = useCallback(({ content, onClose }: OpenBottomSheetParams) => {
-    setContent(content);
     setIsOpen(true);
+    setContent(content);
     if (onClose) {
       onCloseCallbackRef.current = onClose; // 콜백을 ref에 저장
     }
