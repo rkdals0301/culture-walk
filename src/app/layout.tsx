@@ -113,7 +113,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
         {/* Google Maps DNS Prefetch */}
         <link rel='dns-prefetch' href='//maps.googleapis.com' />
+        <link rel='dns-prefetch' href='//maps.gstatic.com' />
         <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+
         {/* Google Analytics DNS Prefetch */}
         <link rel='dns-prefetch' href='//www.googletagmanager.com' />
         <link rel='dns-prefetch' href='//www.google-analytics.com' />
@@ -122,6 +124,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
         {/* Google Maps Preconnect */}
         <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://maps.gstatic.com' crossOrigin='anonymous' />
         <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
         {/* Google Analytics Preconnect  */}
         <link rel='preconnect' href='https://www.googletagmanager.com' crossOrigin='anonymous' />
