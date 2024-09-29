@@ -50,6 +50,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
           <div className={styles['button-wrapper']}>
             <button
               type='button'
+              aria-label='서울문화포털 웹사이트로 이동'
               className={clsx('button', 'button-primary', styles['button-link'])}
               onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
             >
@@ -57,6 +58,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
             </button>
             <button
               type='button'
+              aria-label='예약 웹사이트로 이동'
               className={clsx('button', 'button-primary', styles['button-link'])}
               onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
             >

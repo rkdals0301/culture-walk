@@ -17,6 +17,7 @@ const Pretendard = localFont({
   ],
   display: 'swap', // 폰트 로딩 중에도 텍스트가 표시되도록 함
   preload: true, // 폰트를 미리 로드해 초기 로딩 성능 향상
+  fallback: ['arial', 'sans-serif'],
 });
 
 export default Pretendard;

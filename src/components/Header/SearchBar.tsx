@@ -43,6 +43,7 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
       {searchQuery.length > 0 && (
         <button
           type='button'
+          aria-label='검색어 초기화'
           className={clsx('button', styles['search-reset-button'])} // clsx로 변경
           onClick={handleReset}
         >
@@ -51,6 +52,7 @@ const SearchBar = ({ onSearchClick }: SearchBarProps) => {
       )}
       <button
         type='submit'
+        aria-label='검색'
         className='button' // clsx로 단일 클래스 변경
       >
         <SearchIcon />

@@ -34,10 +34,10 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
 
   return (
     <div className={styles['map-zoom-controls']}>
-      <button className={styles['zoom-in-button']} onClick={handleZoomIn}>
+      <button aria-label='지도 확대' className={styles['zoom-in-button']} onClick={handleZoomIn}>
         <MapAddIcon />
       </button>
-      <button className={styles['zoom-out-button']} onClick={handleZoomOut}>
+      <button aria-label='지도 축소' className={styles['zoom-out-button']} onClick={handleZoomOut}>
         <MapRemoveIcon />
       </button>
     </div>

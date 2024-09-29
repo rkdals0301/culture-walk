@@ -103,6 +103,7 @@ const MapMarker = ({
   return (
     <MarkerF
       title={culture.title}
+      options={{ optimized: true }}
       position={position}
       onClick={handleMarkerClick}
       icon={{

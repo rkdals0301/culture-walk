@@ -18,7 +18,7 @@ const SideMenu = () => {
       {/* 사이드 메뉴 */}
       <nav className={clsx(styles['side-menu'], { [styles['open']]: isOpen })}>
         {/* 닫기 버튼 */}
-        <button className={clsx('button', styles['close-button'])} onClick={closeSideMenu}>
+        <button aria-label='사이드메뉴 닫기' className={clsx('button', styles['close-button'])} onClick={closeSideMenu}>
           <CloseIcon />
         </button>
 

@@ -29,7 +29,7 @@ const Header = () => {
     <header className={styles['header']}>
       <div className={styles['header-top']}>
         <div className={styles['side-menu-button-wrapper']}>
-          <button type='button' className='button' onClick={handleOpenSideMenu}>
+          <button type='button' aria-label='사이드메뉴 열기' className='button' onClick={handleOpenSideMenu}>
             <SideMenuIcon />
           </button>
         </div>
@@ -41,7 +41,7 @@ const Header = () => {
       </div>
       <div className={styles['header-bottom']}>
         {isOverlayVisible && (
-          <button type='button' className='button' onClick={handleCloseOverlay}>
+          <button type='button' aria-label='검색 결과 닫기' className='button' onClick={handleCloseOverlay}>
             <ArrowBackIcon />
           </button>
         )}

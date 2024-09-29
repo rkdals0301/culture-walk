@@ -51,7 +51,12 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
   }, [onLocationUpdate]);
 
   return (
-    <button className={styles['find-my-location-control']} onClick={handleFindMyLocation} disabled={loading}>
+    <button
+      aria-label='내 위치 찾기'
+      className={styles['find-my-location-control']}
+      onClick={handleFindMyLocation}
+      disabled={loading}
+    >
       <MapFindMyLocationIcon />
     </button>
   );
