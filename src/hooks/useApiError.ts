@@ -2,9 +2,9 @@ import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
-type ErrorResponse = {
+interface ErrorResponse {
   message: string;
-};
+}
 
 type StatusHandler = (msg?: string) => void;
 

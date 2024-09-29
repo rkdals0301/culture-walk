@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "postbuild": "next-sitemap",
     "start": "next start",
+    "serve": "pnpm run build && pnpm run start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "stylelint": "stylelint \"**/*.{scss,css}\" --fix",
