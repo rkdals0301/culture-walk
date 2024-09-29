@@ -8,8 +8,10 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "stylelint": "stylelint \"**/*.{scss,css}\" --fix",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "prisma:reset": "prisma migrate reset --force"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.5.3",
