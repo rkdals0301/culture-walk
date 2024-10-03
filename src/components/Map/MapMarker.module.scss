@@ -1,11 +1,5 @@
 .info-window-container {
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-
   .info-window-list {
-    height: 100%;
-
     .info-window-list-item {
       padding: var(--spacing-small);
       font-weight: var(--font-weight-bold);

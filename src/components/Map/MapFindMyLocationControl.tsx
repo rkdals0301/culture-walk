@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import styles from './MapFindMyLocationControl.module.scss';
 import MapFindMyLocationIcon from '../../../public//assets/map-find-my-location-icon.svg';
+import IconButton from '@/components/Common/IconButton';
 
 interface MapFindMyLocationControlProps {
   onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백
@@ -51,14 +51,15 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
   }, [onLocationUpdate]);
 
   return (
-    <button
-      aria-label='내 위치 찾기'
-      className={styles['find-my-location-control']}
-      onClick={handleFindMyLocation}
+    <IconButton
+      ariaLabel='내 위치 찾기'
+      fullWidth={false}
       disabled={loading}
-    >
-      <MapFindMyLocationIcon />
-    </button>
+      onClick={handleFindMyLocation}
+      className={`absolute bottom-24 right-2 size-8 rounded-full bg-gray-100 shadow-lg hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300`} // 위치와 스타일을 위한 추가 클래스
+      icon={<MapFindMyLocationIcon />} // 아이콘 컴포넌트
+      iconClassName='dark:text-gray-900' // 아이콘 색상 스타일
+    />
   );
 };
 

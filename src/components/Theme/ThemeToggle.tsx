@@ -2,9 +2,9 @@
 
 import React, { useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import styles from './ThemeSwitcher.module.scss';
+import Toggle from '@/components/Common/Toggle'; // Toggle 컴포넌트 임포트
 
-const ThemeSwitcher = () => {
+const ThemeToggle = () => {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -19,19 +19,8 @@ const ThemeSwitcher = () => {
   };
 
   return (
-    <div className={styles['toggle-switch']}>
-      <input
-        className={styles['switch-input']}
-        id='theme-toggle'
-        type='checkbox'
-        checked={resolvedTheme === 'dark'}
-        onChange={handleChange}
-      />
-      <label htmlFor='theme-toggle' className={styles['switch-label']}>
-        <span className={styles['slider']}></span>
-      </label>
-    </div>
+    <Toggle id='theme-toggle' ariaLabel='다크모드 토글' checked={resolvedTheme === 'dark'} onChange={handleChange} />
   );
 };
 
-export default ThemeSwitcher;
+export default ThemeToggle;

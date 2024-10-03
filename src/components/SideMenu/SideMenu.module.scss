@@ -22,7 +22,6 @@
   width: 300px; /* 사이드 메뉴의 너비 */
   height: 100%;
   padding: var(--spacing-medium);
-  background-color: var(--background-color); /* 사이드 메뉴의 배경색 */
   transition: transform 0.2s ease-out;
   transform: translateX(-100%); /* 사이드 메뉴가 화면 밖에 위치하도록 */
   box-shadow: 2px 0 5px rgb(0 0 0 / 10%);

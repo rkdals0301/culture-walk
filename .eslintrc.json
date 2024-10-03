@@ -2,29 +2,16 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript",
-    "plugin:prettier/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:tailwindcss/recommended",
+    "plugin:prettier/recommended"
   ],
-  "plugins": ["prettier", "@typescript-eslint"],
-  "parser": "@typescript-eslint/parser", // TypeScript 파서 사용
+  "plugins": ["@typescript-eslint", "tailwindcss"],
+  "parser": "@typescript-eslint/parser",
   "rules": {
-    "prettier/prettier": [
-      "error",
-      {
-        "printWidth": 120,
-        "tabWidth": 2,
-        "singleQuote": true,
-        "jsxSingleQuote": true,
-        "semi": true,
-        "trailingComma": "es5",
-        "bracketSpacing": true,
-        "useTabs": false,
-        "arrowParens": "avoid",
-        "endOfLine": "auto"
-      }
-    ],
-    "@typescript-eslint/consistent-type-definitions": ["error", "interface"], // 타입 정의 일관성
-    "@typescript-eslint/no-explicit-any": "warn", // any 타입 사용 경고
+    "tailwindcss/classnames-order": "error",
+    "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -32,6 +19,6 @@
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
-    "react/react-in-jsx-scope": "off" // Next.js에서 React 자동 임포트
+    "react/react-in-jsx-scope": "off"
   }
 }

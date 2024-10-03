@@ -1,266 +1,91 @@
 @use 'sass:color';
 
-/* 공통 */
-// light
-$background-color-light: #fff;
-$text-color-light: #333;
-$primary-color-light: #007bff;
+/* 공통 색상 변수 */
+$colors: (
+  light: (
+    background: #fff,
+    text: #333,
+    primary: #007bff,
+    scrollbar-thumb: #bbb,
+    scrollbar-thumb-hover: #888,
+    scrollbar-track: #f0f0f0,
+  ),
+  dark: (
+    background: #1e1e1e,
+    text: #e0e0e0,
+    primary: #007bff,
+    scrollbar-thumb: #444,
+    scrollbar-thumb-hover: #666,
+    scrollbar-track: #2e2e2e,
+  ),
+);
 
-// dark
-$background-color-dark: #1e1e1e;
-$text-color-dark: #e0e0e0;
-$primary-color-dark: #007bff;
-
-/* 폰트 */
-$font-size-tiny: 0.75rem; // 12px
-$font-size-small: 0.875rem; // 14px
-$font-size-base: 1rem; // 16px
-$font-size-large: 1.5rem; // 24px
-$font-weight-normal: 400;
-$font-weight-bold: 700;
-
-// $font-family: 'Noto Sans KR', arial, sans-serif;
+/* 폰트 설정 */
 $font-family: 'Pretendard', arial, sans-serif;
+$font-sizes: (
+  tiny: 0.75rem,
+  // 12px
+  small: 0.875rem,
+  // 14px
+  base: 1rem,
+  // 16px
+  large: 1.5rem,
+  // 24px
+);
+$font-weights: (
+  normal: 400,
+  bold: 700,
+);
 
-/* 간격  */
-$spacing-xxs: 0.125rem; // 2px
-$spacing-xs: 0.25rem; // 4px
-$spacing-small: 0.5rem; // 8px
-$spacing-medium: 1rem; // 16px
-$spacing-large: 2rem; // 32px
-$spacing-xl: 3rem; // 48px
-$spacing-xxl: 4rem; // 64px
-$spacing-xxxl: 5rem; // 80px
+/* 버튼 스타일 */
+$button-styles: (
+  light: (
+    background: transparent,
+    text: #333,
+    hover-background: rgb(0 0 0 / 5%),
+    hover-text: #333,
+    primary-background: #007bff,
+    primary-text: #fff,
+  ),
+  dark: (
+    background: transparent,
+    text: #e0e0e0,
+    hover-background: rgb(255 255 255 / 10%),
+    hover-text: #e0e0e0,
+    primary-background: #007bff,
+    primary-text: #fff,
+  ),
+);
 
-// 테두리
-$border-radius-xxs: 2px; // 매우 작은 둥근 모서리
-$border-radius-xs: 4px; // 작은 둥근 모서리
-$border-radius-sm: 8px; // 적당한 둥근 모서리
-$border-radius-md: 12px; // 중간 크기의 둥근 모서리 (가장 일반적)
-$border-radius-lg: 16px; // 큰 둥근 모서리
-$border-radius-xl: 24px; // 매우 큰 둥근 모서리
-$border-radius-full: 9999px; // 완전한 원형 모양
+/* CSS 변환 */
+@for $theme in light, dark {
+  html.#{$theme} {
+    --background-color: map.get(map.get($colors, $theme), background);
+    --text-color: map.get(map.get($colors, $theme), text);
+    --primary-color: map.get(map.get($colors, $theme), primary);
 
-/* 스크롤바 */
+    // 폰트 설정
+    @each $size, $value in $font-sizes {
+      --font-size-#{$size}: #{$value};
+    }
 
-// light
-$scrollbar-thumb-color-light: #bbb;
-$scrollbar-thumb-hover-color-light: #888;
-$scrollbar-track-color-light: #f0f0f0;
+    @each $weight, $value in $font-weights {
+      --font-weight-#{$weight}: #{$value};
+    }
 
-// dark
-$scrollbar-thumb-color-dark: #444;
-$scrollbar-thumb-hover-color-dark: #666;
-$scrollbar-track-color-dark: #2e2e2e;
+    --font-family: #{$font-family};
 
-/* 버튼 */
+    // 버튼 스타일
+    --button-background-color: map.get(map.get($button-styles, $theme), background);
+    --button-text-color: map.get(map.get($button-styles, $theme), text);
+    --button-hover-background-color: map.get(map.get($button-styles, $theme), hover-background);
+    --button-hover-text-color: map.get(map.get($button-styles, $theme), hover-text);
+    --button-background-primary-color: map.get(map.get($button-styles, $theme), primary-background);
+    --button-text-primary-color: map.get(map.get($button-styles, $theme), primary-text);
 
-// light
-$button-background-color-light: transparent; // 기본 배경색
-$button-text-color-light: $text-color-light; // 텍스트 색상
-$button-hover-background-color-light: rgb(0 0 0 / 5%); // hover 시 투명도 조절
-$button-hover-text-color-light: $text-color-light; // 호버 시 텍스트 색상
-$button-background-primary-color-light: $primary-color-light; // 기본 배경색
-$button-text-primary-color-light: #fff; // 텍스트 색상 (흰색)
-$button-hover-background-primary-color-light: color.adjust(
-  $button-background-primary-color-light,
-  $lightness: -10%
-); // 색상을 10% 어둡게
-$button-hover-text-primary-color-light: #fff; // 호버 시 텍스트 색상
-
-// dark
-$button-background-color-dark: transparent; // 기본 배경색
-$button-text-color-dark: $text-color-dark; // 텍스트 색상
-$button-hover-background-color-dark: rgb(255 255 255 / 10%); // hover 시 투명도 조절
-$button-hover-text-color-dark: $text-color-dark; // 호버 시 텍스트 색상
-$button-background-primary-color-dark: $primary-color-dark; // 기본 배경색
-$button-text-primary-color-dark: #fff; // 텍스트 색상 (흰색)
-$button-hover-background-primary-color-dark: color.adjust(
-  $button-background-primary-color-dark,
-  $lightness: -10%
-); // 색상을 10% 어둡게
-$button-hover-text-primary-color-dark: #fff; // 호버 시 텍스트 색상
-
-/* 검색바 */
-
-// light
-$searchbar-background-color-light: #fff; // 깨끗하고 신선한 흰색
-$searchbar-placeholder-color-light: #888; // 부드러운 중간 회색
-$searchbar-border-color-light: #ccc; // 부드러운 중간 회색
-
-// dark
-$searchbar-background-color-dark: #2a2a2a; // 심플한 어두운 회색
-$searchbar-placeholder-color-dark: #b3b3b3; // 가독성을 고려한 밝은 회색
-$searchbar-border-color-dark: #2a2a2a; // 부드러운 중간 회색
-
-/* 카드 */
-
-// light
-$card-background-color-light: #f0f0f0; // 유지
-$card-title-color-light: #333; // 유지
-$card-text-color-light: #666; // 텍스트 색상을 약간 밝게 조정
-$card-border-color-light: #bbb; // 보더 색상을 조금 더 진하게 조정
-$card-box-shadow-light: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 10%); // 그림자 색상 조정
-$card-hover-background-color-light: #e3f2ff; // 호버 시 배경색을 조금 더 밝게 조정
-$card-hover-border-color-light: #007bff; // 유지
-$card-hover-box-shadow-light:
-  0 4px 8px rgba(0 123 255 / 25%),
-  // 호버 시 박스 그림자를 약간 더 강조
-  0 2px 4px rgba(0 123 255 / 15%); // 두 번째 그림자 조정
-
-// dark
-$card-background-color-dark: #262626; // 깊은 어두운 회색 (변경 없음)
-$card-title-color-dark: #e0e0e0; // 부드러운 흰색
-$card-text-color-dark: #c0c0c0; // 밝은 회색
-$card-border-color-dark: #444; // 진한 회색 (변경 없음)
-$card-box-shadow-dark: 0 $spacing-xxs $spacing-xs rgb(0 0 0 / 50%); // 그림자 조정
-$card-hover-background-color-dark: #2d2d2d; // 호버 시 배경색을 조금 더 어둡게 조정
-$card-hover-border-color-dark: #007bff; // 호버 시 경계선 색상 조정
-$card-hover-box-shadow-dark:
-  0 3px 6px rgb(0 123 255 / 15%),
-  0 1px 3px rgb(0 123 255 / 10%); // 호버 시 박스 그림자 조정
-
-/* 헤더 */
-
-// light
-$header-border-bottom-color-light: rgb(0 0 0 / 10%); // 부드러운 회색
-
-// dark
-$header-border-bottom-color-dark: rgb(255 255 255 / 10%); // 부드러운 밝은 색
-
-// CSS 변환
-html.light {
-  /* 공통 */
-  --background-color: #{$background-color-light};
-  --text-color: #{$text-color-light};
-  --primary-color: #{$primary-color-light};
-
-  /* 폰트 */
-  --font-size-tiny: #{$font-size-tiny};
-  --font-size-small: #{$font-size-small};
-  --font-size-base: #{$font-size-base};
-  --font-size-large: #{$font-size-large};
-  --font-weight-normal: #{$font-weight-normal};
-  --font-weight-bold: #{$font-weight-bold};
-  --font-family: #{$font-family};
-
-  /* 버튼 */
-  --button-background-color: #{$button-background-color-light};
-  --button-text-color: #{$button-text-color-light};
-  --button-hover-background-color: #{$button-hover-background-color-light};
-  --button-hover-text-color: #{$button-hover-text-color-light};
-  --button-background-primary-color: #{$button-background-primary-color-light};
-  --button-text-primary-color: #{$button-text-primary-color-light};
-  --button-hover-background-primary-color: #{$button-hover-background-primary-color-light};
-  --button-hover-text-primary-color: #{$button-hover-text-primary-color-light};
-
-  /* 간격 */
-  --spacing-xxs: #{$spacing-xxs};
-  --spacing-xs: #{$spacing-xs};
-  --spacing-small: #{$spacing-small};
-  --spacing-medium: #{$spacing-medium};
-  --spacing-large: #{$spacing-large};
-  --spacing-xl: #{$spacing-xl};
-  --spacing-xxl: #{$spacing-xxl};
-  --spacing-xxxl: #{$spacing-xxxl};
-
-  /* 테두리 */
-  --border-radius-xxs: #{$border-radius-xxs};
-  --border-radius-xs: #{$border-radius-xs};
-  --border-radius-sm: #{$border-radius-sm};
-  --border-radius-md: #{$border-radius-md};
-  --border-radius-lg: #{$border-radius-lg};
-  --border-radius-xl: #{$border-radius-xl};
-  --border-radius-full: #{$border-radius-full};
-
-  /* 스크롤바 */
-  --scrollbar-thumb-color: #{$scrollbar-thumb-color-light};
-  --scrollbar-thumb-hover-color: #{$scrollbar-thumb-hover-color-light};
-  --scrollbar-track-color: #{$scrollbar-track-color-light};
-
-  /* 검색 바 */
-  --searchbar-background-color: #{$searchbar-background-color-light};
-  --searchbar-placeholder-color: #{$searchbar-placeholder-color-light};
-  --searchbar-border-color: #{$searchbar-border-color-light};
-
-  /* 카드 */
-  --card-background-color: #{$card-background-color-light};
-  --card-title-color: #{$card-title-color-light};
-  --card-text-color: #{$card-text-color-light};
-  --card-border-color: #{$card-border-color-light};
-  --card-box-shadow: #{$card-box-shadow-light};
-  --card-hover-background-color: #{$card-hover-background-color-light};
-  --card-hover-border-color: #{$card-hover-border-color-light};
-  --card-hover-box-shadow: #{$card-hover-box-shadow-light};
-
-  /* 헤더 */
-  --header-border-bottom-color: #{$header-border-bottom-color-light};
-}
-
-html.dark {
-  /* 공통 */
-  --background-color: #{$background-color-dark};
-  --text-color: #{$text-color-dark};
-  --primary-color: #{$primary-color-dark};
-
-  /* 폰트 */
-  --font-size-tiny: #{$font-size-tiny};
-  --font-size-small: #{$font-size-small};
-  --font-size-base: #{$font-size-base};
-  --font-size-large: #{$font-size-large};
-  --font-weight-normal: #{$font-weight-normal};
-  --font-weight-bold: #{$font-weight-bold};
-  --font-family: #{$font-family};
-
-  /* 버튼 */
-  --button-background-color: #{$button-background-color-dark};
-  --button-text-color: #{$button-text-color-dark};
-  --button-hover-background-color: #{$button-hover-background-color-dark};
-  --button-hover-text-color: #{$button-hover-text-color-dark};
-  --button-background-primary-color: #{$button-background-primary-color-dark};
-  --button-text-primary-color: #{$button-text-primary-color-dark};
-  --button-hover-background-primary-color: #{$button-hover-background-primary-color-dark};
-  --button-hover-text-primary-color: #{$button-hover-text-primary-color-dark};
-
-  /* 간격 */
-  --spacing-xxs: #{$spacing-xxs};
-  --spacing-xs: #{$spacing-xs};
-  --spacing-small: #{$spacing-small};
-  --spacing-medium: #{$spacing-medium};
-  --spacing-large: #{$spacing-large};
-  --spacing-xl: #{$spacing-xl};
-  --spacing-xxl: #{$spacing-xxl};
-  --spacing-xxxl: #{$spacing-xxxl};
-
-  /* 테두리 */
-  --border-radius-xxs: #{$border-radius-xxs};
-  --border-radius-xs: #{$border-radius-xs};
-  --border-radius-sm: #{$border-radius-sm};
-  --border-radius-md: #{$border-radius-md};
-  --border-radius-lg: #{$border-radius-lg};
-  --border-radius-xl: #{$border-radius-xl};
-  --border-radius-full: #{$border-radius-full};
-
-  /* 스크롤바 */
-  --scrollbar-thumb-color: #{$scrollbar-thumb-color-dark};
-  --scrollbar-thumb-hover-color: #{$scrollbar-thumb-hover-color-dark};
-  --scrollbar-track-color: #{$scrollbar-track-color-dark};
-
-  /* 검색 바 */
-  --searchbar-background-color: #{$searchbar-background-color-dark};
-  --searchbar-placeholder-color: #{$searchbar-placeholder-color-dark};
-  --searchbar-border-color: #{$searchbar-border-color-dark};
-
-  /* 카드 */
-  --card-background-color: #{$card-background-color-dark};
-  --card-title-color: #{$card-title-color-dark};
-  --card-text-color: #{$card-text-color-dark};
-  --card-border-color: #{$card-border-color-dark};
-  --card-box-shadow: #{$card-box-shadow-dark};
-  --card-hover-background-color: #{$card-hover-background-color-dark};
-  --card-hover-border-color: #{$card-hover-border-color-dark};
-  --card-hover-box-shadow: #{$card-hover-box-shadow-dark};
-
-  /* 헤더 */
-  --header-border-bottom-color: #{$header-border-bottom-color-dark};
+    // 스크롤바
+    --scrollbar-thumb-color: map.get(map.get($colors, $theme), scrollbar-thumb);
+    --scrollbar-thumb-hover-color: map.get(map.get($colors, $theme), scrollbar-thumb-hover);
+    --scrollbar-track-color: map.get(map.get($colors, $theme), scrollbar-track);
+  }
 }

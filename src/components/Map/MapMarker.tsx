@@ -4,7 +4,6 @@ import React, { useCallback, useMemo } from 'react';
 import { MarkerF } from '@react-google-maps/api';
 import { FormattedCulture } from '@/types/culture';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import styles from './MapMarker.module.scss';
 import { useRouter } from 'next/navigation';
 
 interface MapMarkerProps {
@@ -59,11 +58,11 @@ const MapMarker = ({
 
       openBottomSheet({
         content: (
-          <div className={styles['info-window-container']}>
-            <ul className={styles['info-window-list']}>
+          <div>
+            <ul>
               {duplicateCultures.map(dupCulture => (
                 <li
-                  className={styles['info-window-list-item']}
+                  className='cursor-pointer rounded-lg bg-white p-2 font-bold text-gray-900 hover:bg-gray-200 dark:bg-neutral-900 dark:text-gray-100 dark:hover:bg-neutral-700'
                   key={dupCulture.id}
                   onClick={() => handleGoToMapDetail(dupCulture.id)}
                 >

@@ -1,53 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { FormattedCulture } from '@/types/culture';
 import Image from 'next/image';
-import styles from './CultureItem.module.scss';
-import clsx from 'clsx'; // clsx 추가
 
 interface CultureItemProps {
   culture: FormattedCulture;
-  variant?: 'default' | 'bottomsheet'; // variant prop 추가
   onClick?: () => void;
 }
 
-const CultureItem = ({ culture, variant = 'default', onClick }: CultureItemProps) => {
+const CultureItem = ({ culture, onClick }: CultureItemProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
     setImgSrc('/assets/logo.svg');
   };
 
-  // 이미지 소스가 변경될 때마다 캐시 방지
   useEffect(() => {
     setImgSrc(culture.mainImage);
   }, [culture.mainImage]);
 
   return (
-    <li
-      className={clsx(
-        styles['culture-item-wrapper'],
-        { [styles['no-hover-active']]: variant === 'bottomsheet' } // clsx로 조건부 클래스 처리
-      )}
-      onClick={onClick}
-    >
-      <div className={styles['content-wrapper']}>
-        <p className={styles['content-title']}>{culture.title}</p>
-        <p className={styles['content-place']}>{culture.displayPlace}</p>
-        <p className={styles['content-date']}>{culture.displayDate}</p>
-        <p className={styles['content-target']}>{culture.useTarget}</p>
-        <p className={styles['content-price']}>{culture.displayPrice}</p>
-      </div>
-      <div className={styles['image-wrapper']}>
+    <li className='flex h-full gap-4' onClick={onClick ? onClick : undefined}>
+      <div className='flex size-28 flex-none'>
         <Image
           src={imgSrc}
-          width={100}
-          height={100}
-          className={styles['image']}
+          width={112}
+          height={112}
+          className={'size-28 rounded-md'}
           alt='Culture Image'
-          blurDataURL={culture.mainImage}
           onError={handleImageError}
           loading='lazy'
         />
+      </div>
+      <div className='grow overflow-hidden'>
+        <p className='truncate text-base font-bold text-gray-900 dark:text-gray-100'>{culture.title}</p>
+        <p className='truncate text-sm text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
+        <p className='truncate text-sm text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
+        <p className='truncate text-sm text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
+        <p className='truncate text-sm text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
       </div>
     </li>
   );

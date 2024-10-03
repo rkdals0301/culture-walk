@@ -10,7 +10,6 @@ import { useTheme } from 'next-themes';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Loader/Loader';
 import { useCultures } from '@/hooks/cultureHooks';
-import styles from './MapView.module.scss';
 import mapNightMode from '../../../public/mapStyles/night-mode.json';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
@@ -104,49 +103,47 @@ const MapView = () => {
 
   if (!mapLoaded || isLoading) {
     return (
-      <div className={styles['map-view']}>
+      <div className='size-full'>
         <Loader />
       </div>
     );
   }
 
   if (mapLoadError) {
-    return <div className={styles['map-view']}>Error loading maps</div>;
+    return <div className='size-full'>Error loading maps</div>;
   }
 
   if (error) {
-    return <div className={styles['map-view']}>에러: {error.message}</div>;
+    return <div className='size-full'>에러: {error.message}</div>;
   }
 
   return (
-    <div className={styles['map-view']}>
-      <GoogleMap mapContainerClassName={styles.map} options={mapOptions} center={centerPosition} onLoad={handleMapLoad}>
-        {cultures.map(culture => (
-          <MapMarker
-            key={culture.id}
-            duplicateCultures={duplicateCulturesMap[`${culture.lat}-${culture.lng}`]}
-            culture={culture}
-            isSelected={activeMarkerId === culture.id}
-            setActiveMarkerId={setActiveMarkerId}
-            setCenterPosition={setCenterPosition}
-            id={currentId} // 현재 ID를 MapMarker에 전달
-            totalCulturesLength={cultures.length}
-          />
-        ))}
-        {currentLocation && (
-          <MarkerF
-            title='현재 위치'
-            position={currentLocation}
-            icon={{
-              url: '/assets/map-marker-current-location-icon.svg',
-              scaledSize: new google.maps.Size(40, 40),
-            }}
-          />
-        )}
-        <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
-        <MapZoomControls map={mapInstance} />
-      </GoogleMap>
-    </div>
+    <GoogleMap mapContainerClassName='size-full' options={mapOptions} center={centerPosition} onLoad={handleMapLoad}>
+      {cultures.map(culture => (
+        <MapMarker
+          key={culture.id}
+          duplicateCultures={duplicateCulturesMap[`${culture.lat}-${culture.lng}`]}
+          culture={culture}
+          isSelected={activeMarkerId === culture.id}
+          setActiveMarkerId={setActiveMarkerId}
+          setCenterPosition={setCenterPosition}
+          id={currentId} // 현재 ID를 MapMarker에 전달
+          totalCulturesLength={cultures.length}
+        />
+      ))}
+      {currentLocation && (
+        <MarkerF
+          title='현재 위치'
+          position={currentLocation}
+          icon={{
+            url: '/assets/map-marker-current-location-icon.svg',
+            scaledSize: new google.maps.Size(40, 40),
+          }}
+        />
+      )}
+      <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
+      <MapZoomControls map={mapInstance} />
+    </GoogleMap>
   );
 };
 

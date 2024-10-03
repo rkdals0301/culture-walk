@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from './SearchResultsOverlay.module.scss';
 import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Loader/Loader';
 import { useRouter } from 'next/navigation';
@@ -31,14 +30,16 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
     }
 
     if (isError) {
-      return <div className={styles['error-message']}>{error.message}</div>;
+      return <div className='flex h-full items-center justify-center'>{error.message}</div>;
     }
 
     if (filteredCultures.length === 0) {
       return (
-        <div className={styles['no-results']}>
-          <h3>검색 결과가 없습니다.</h3>
-          <p>다른 검색어를 시도해 보세요.</p>
+        <div className='flex h-full items-center justify-center'>
+          <div>
+            <h3 className='text-lg font-bold'>검색 결과가 없습니다.</h3>
+            <p>다른 검색어를 시도해 보세요.</p>
+          </div>
         </div>
       );
     }
@@ -46,7 +47,16 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
     return <CultureList cultures={filteredCultures} onItemClick={handleOnClick} />;
   };
 
-  return <div className={clsx(styles['search-results-overlay'], { [styles['open']]: isOpen })}>{renderContent()}</div>;
+  return (
+    <div
+      className={clsx(
+        'fixed left-0 top-20 h-[calc(100dvh-5rem)] w-full overflow-y-auto bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100',
+        { block: isOpen, hidden: !isOpen }
+      )}
+    >
+      {renderContent()}
+    </div>
+  );
 };
 
 export default SearchResultsOverlay;

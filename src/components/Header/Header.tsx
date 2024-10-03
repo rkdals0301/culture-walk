@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSideMenu } from '@/context/SideMenuContext'; // 컨텍스트에서 사이드 메뉴 상태 가져오기
-import styles from './Header.module.scss';
 import SearchBar from '@/components/Header/SearchBar';
 import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
 import SideMenuIcon from '../../../public/assets/menu-icon.svg';
 import ArrowBackIcon from '../../../public/assets/arrow-back-icon.svg';
+import IconButton from '@/components/Common/IconButton';
 
 const Header = () => {
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
@@ -26,24 +26,26 @@ const Header = () => {
   };
 
   return (
-    <header className={styles['header']}>
-      <div className={styles['header-top']}>
-        <div className={styles['side-menu-button-wrapper']}>
-          <button type='button' aria-label='사이드메뉴 열기' className='button' onClick={handleOpenSideMenu}>
-            <SideMenuIcon />
-          </button>
+    <header className='fixed left-0 top-0 z-10 flex h-20 w-full flex-col gap-1 border-b border-b-gray-300 bg-white p-2 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
+      <div className='relative flex h-7 flex-none items-center justify-center'>
+        <div className='absolute left-0 flex h-full items-center justify-center'>
+          <IconButton
+            icon={<SideMenuIcon />} // 아이콘 전달
+            ariaLabel='사이드메뉴 열기' // 접근성 라벨
+            onClick={handleOpenSideMenu} // 클릭 핸들러
+          />
         </div>
-        <Link href='/' className='link'>
-          <div className={styles['logo-wrapper']}>
-            <div className={styles['logo-text']}>문화산책</div>
-          </div>
+        <Link href='/' className='flex h-full items-center'>
+          <div className='flex items-center justify-center text-lg font-bold'>문화산책</div>
         </Link>
       </div>
-      <div className={styles['header-bottom']}>
+      <div className='flex grow items-center gap-2'>
         {isOverlayVisible && (
-          <button type='button' aria-label='검색 결과 닫기' className='button' onClick={handleCloseOverlay}>
-            <ArrowBackIcon />
-          </button>
+          <IconButton
+            icon={<ArrowBackIcon />} // 아이콘 전달
+            ariaLabel='검색 결과 닫기' // 접근성 라벨
+            onClick={handleCloseOverlay} // 클릭 핸들러
+          />
         )}
         <SearchBar onSearchClick={handleOpenOverlay} />
       </div>

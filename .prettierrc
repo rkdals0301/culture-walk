@@ -8,5 +8,8 @@
   "bracketSpacing": true,
   "useTabs": false,
   "arrowParens": "avoid",
-  "endOfLine": "auto"
+  "endOfLine": "auto",
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindFunctions": ["clsx", "twMerge"],
+  "tailwindConfig": "./tailwind.config.js"
 }

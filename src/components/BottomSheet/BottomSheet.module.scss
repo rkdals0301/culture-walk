@@ -26,5 +26,6 @@
   .sheet-content {
     height: calc(100% - 30px);
     padding: var(--spacing-medium);
+    overflow-y: auto;
   }
 }

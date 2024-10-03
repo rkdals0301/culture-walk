@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useCultureById } from '@/hooks/cultureHooks';
 import Loader from '@/components/Loader/Loader';
-import clsx from 'clsx'; // clsx 추가
-import styles from './page.module.scss';
 import { CultureItem } from '@/components/CultureList';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import { getCulture } from '@/selectors/cultureSelectors'; // 선택자 임포트
+import { getCulture } from '@/selectors/cultureSelectors';
+import Button from '@/components/Common/Button';
 
 interface MapDetailProps {
   params: {
@@ -20,10 +19,10 @@ interface MapDetailProps {
 const MapDetail = ({ params }: MapDetailProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const timestamp = searchParams.get('timestamp'); // timestamp 값을 추출
-  const cultureId = parseInt(params.id, 10); // 문자열을 숫자로 변환
+  const timestamp = searchParams.get('timestamp');
+  const cultureId = parseInt(params.id, 10);
   const { isLoading, error } = useCultureById(cultureId);
-  const culture = useSelector(getCulture); // Reselect을 사용하여 culture 가져오기
+  const culture = useSelector(getCulture);
   const { openBottomSheet } = useBottomSheet();
 
   const handleOpenExternalLink = (url: string | undefined) => {
@@ -31,7 +30,7 @@ const MapDetail = ({ params }: MapDetailProps) => {
   };
 
   const handleBottomSheetClose = useCallback(() => {
-    router.push('/map', { scroll: false }); // 바텀 시트 닫기 시, URL만 변경하고 상태는 유지
+    router.push('/map', { scroll: false });
   }, [router]);
 
   useEffect(() => {
@@ -43,27 +42,25 @@ const MapDetail = ({ params }: MapDetailProps) => {
       content = <div>Error: {error.message}</div>;
     } else if (culture) {
       content = (
-        <div className={styles['bottom-sheet-container']}>
-          <div className={styles['culture-item-container']}>
-            <CultureItem culture={culture} variant='bottomsheet' />
+        <div className='flex h-full flex-col gap-2'>
+          <div className='grow'>
+            <CultureItem culture={culture} />
           </div>
-          <div className={styles['button-wrapper']}>
-            <button
-              type='button'
-              aria-label='서울문화포털 웹사이트로 이동'
-              className={clsx('button', 'button-primary', styles['button-link'])}
+          <div className='flex h-11 flex-none gap-2'>
+            <Button
+              fullWidth
+              ariaLabel='서울문화포털 웹사이트로 이동'
               onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
             >
               서울문화포털
-            </button>
-            <button
-              type='button'
-              aria-label='예약 웹사이트로 이동'
-              className={clsx('button', 'button-primary', styles['button-link'])}
+            </Button>
+            <Button
+              fullWidth
+              ariaLabel='예약 웹사이트로 이동'
               onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
             >
               예약
-            </button>
+            </Button>
           </div>
         </div>
       );

@@ -1,7 +1,14 @@
 {
-  "extends": ["stylelint-config-standard-scss"],
+  "extends": ["stylelint-config-standard-scss", "stylelint-config-tailwindcss"],
   "plugins": ["stylelint-order"],
   "rules": {
+    "at-rule-no-unknown": null,
+    "scss/at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": ["mixin", "include", "tailwind", "apply", "layer", "responsive", "variants", "screen"]
+      }
+    ],
     "order/properties-order": [
       {
         "groupName": "reset",

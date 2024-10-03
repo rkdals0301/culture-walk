@@ -1,8 +1,6 @@
-import styles from './Footer.module.scss';
-
 const Footer = () => {
   return (
-    <footer className={styles['footer']}>
+    <footer className='fixed bottom-0 left-0 flex w-full items-center justify-center'>
       <p>Copyright © Gangmin Lee. All Rights Reserved</p>
     </footer>
   );

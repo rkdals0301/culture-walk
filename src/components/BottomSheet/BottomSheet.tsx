@@ -3,10 +3,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import styles from './BottomSheet.module.scss';
 
-// const BOTTOM_SHEET_STAGES = [250, 490];
-const BOTTOM_SHEET_STAGES = [240];
+const BOTTOM_SHEET_STAGES = [220];
 
 const BottomSheet = () => {
   const { isOpen, content, height, closeBottomSheet, setHeight } = useBottomSheet();
@@ -90,14 +88,14 @@ const BottomSheet = () => {
   return (
     <motion.div
       ref={sheetRef}
-      className={styles['sheet']}
-      animate={{ height, bottom: isOpen ? 0 : -250 }} // y값에 따라 애니메이션
+      className={`fixed inset-x-0 bottom-[-220px] flex h-[220px] flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100`}
+      animate={{ height, bottom: isOpen ? 0 : -220 }}
       transition={{ duration: 0.3 }}
     >
-      <div ref={headerRef} className={styles['sheet-header']}>
-        <div className={styles['handle']} />
+      <div ref={headerRef} className='flex h-8 flex-none cursor-grabbing items-center justify-center'>
+        <div className='h-1 w-10 rounded-full bg-gray-300' />
       </div>
-      <div className={styles['sheet-content']}>{content}</div>
+      <div className='grow overflow-y-auto px-4 pb-4'>{content}</div>
     </motion.div>
   );
 };

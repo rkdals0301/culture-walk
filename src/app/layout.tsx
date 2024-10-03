@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
-import '@/styles/reset.scss';
+// import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 // import notoSansKr from '@/fonts/notoSansKr';
 import pretendard from '@/fonts/pretendard';
@@ -147,7 +147,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         /> */}
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
-      <body className={pretendard.className}>
+      <body
+        className={`${pretendard.className} size-full bg-white text-gray-900 transition-colors duration-200 dark:bg-neutral-900 dark:text-gray-100`}
+      >
         <QueryClientProvider>
           <ThemeProvider>
             <ReduxProvider>
