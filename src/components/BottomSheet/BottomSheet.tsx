@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 
-const BOTTOM_SHEET_STAGES = [220];
+const BOTTOM_SHEET_STAGES = [200];
 
 const BottomSheet = () => {
   const { isOpen, content, height, closeBottomSheet, setHeight } = useBottomSheet();
@@ -88,8 +88,8 @@ const BottomSheet = () => {
   return (
     <motion.div
       ref={sheetRef}
-      className={`fixed inset-x-0 bottom-[-220px] flex h-[220px] flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100`}
-      animate={{ height, bottom: isOpen ? 0 : -220 }}
+      className={`fixed inset-x-0 bottom-[-200px] flex h-[200px] flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100`}
+      animate={{ height, bottom: isOpen ? 0 : -200 }}
       transition={{ duration: 0.3 }}
     >
       <div ref={headerRef} className='flex h-8 flex-none cursor-grabbing items-center justify-center'>

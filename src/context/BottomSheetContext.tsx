@@ -19,7 +19,7 @@ interface BottomSheetContextProps {
 
 const BottomSheetContext = createContext<BottomSheetContextProps | undefined>(undefined);
 
-const BOTTOM_SHEET_STAGES = [220, 490];
+const BOTTOM_SHEET_STAGES = [200];
 
 export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);

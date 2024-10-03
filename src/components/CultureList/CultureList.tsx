@@ -15,7 +15,7 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
   const rowVirtualizer = useVirtualizer({
     count: itemCount, // 총 아이템 수
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 139, // 각 카드의 예상 높이 설정
+    estimateSize: () => 119, // 각 카드의 예상 높이 설정
   });
 
   return (
