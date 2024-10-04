@@ -77,7 +77,7 @@ const SearchBar = ({ onClose }: SearchBarProps) => {
           )}
         </form>
       </div>
-      <div className='h-[calc(100dvh-3.5rem)] grow overflow-y-auto'>
+      <div className='h-[calc(100dvh-3.5rem)] grow'>
         <SearchResultsOverlay onClose={handleCloseOverlay} />
       </div>
     </div>

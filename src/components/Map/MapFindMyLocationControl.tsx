@@ -3,6 +3,7 @@
 import IconButton from '@/components/Common/IconButton';
 
 import React, { useCallback, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import MapFindMyLocationIcon from '../../../public//assets/map-find-my-location-icon.svg';
 
@@ -42,7 +43,7 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
             errorMessage = '위치 정보 요청이 시간 초과되었습니다.';
             break;
         }
-        alert(errorMessage);
+        toast.error(errorMessage);
       },
       {
         enableHighAccuracy: true, // GPS 사용

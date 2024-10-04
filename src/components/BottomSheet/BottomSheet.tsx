@@ -90,7 +90,7 @@ const BottomSheet = () => {
   return (
     <motion.div
       ref={sheetRef}
-      className={`fixed inset-x-0 bottom-[-200px] flex h-[200px] flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100`}
+      className={`fixed inset-x-0 bottom-[-200px] flex h-[200px] w-full flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100 md:left-1/2 md:w-1/2 md:-translate-x-1/2`}
       animate={{ height, bottom: isOpen ? 0 : -200 }}
       transition={{ duration: 0.3 }}
     >

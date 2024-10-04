@@ -11,16 +11,14 @@ import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
 
-// selector import
-
 interface SearchResultsOverlayProps {
   onClose: () => void;
 }
 
 const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const cultures = useSelector(getCultures); // 전체 문화 데이터 가져오기
-  const filteredCultures = useSelector(getFilteredCultures); // 필터링된 문화 데이터 가져오기
+  const cultures = useSelector(getCultures);
+  const filteredCultures = useSelector(getFilteredCultures);
   const { isLoading, isError, error } = useCultures(cultures.length === 0);
 
   const handleOnClick = (culture: FormattedCulture) => {
@@ -28,31 +26,35 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
     router.push(`/map/${culture.id}`, { scroll: false });
   };
 
+  const renderError = () => (
+    <div className='flex size-full items-center justify-center'>
+      <p className='text-red-500'>{error?.message}</p>
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div className='flex size-full items-center justify-center'>
+      <div>
+        <p className='text-center'>검색 결과가 없습니다.</p>
+        <p className='text-center'>다른 검색어로 검색해 보세요.</p>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
-    if (isLoading) {
-      return <Loader />;
-    }
-
-    if (isError) {
-      return <div className='flex h-full items-center justify-center'>{error.message}</div>;
-    }
-
-    if (filteredCultures.length === 0) {
-      return (
-        <div className='flex h-full items-center justify-center'>
-          <div>
-            <h3 className='text-lg font-bold'>검색 결과가 없습니다.</h3>
-            <p>다른 검색어를 시도해 보세요.</p>
-          </div>
-        </div>
-      );
-    }
+    if (isLoading) return <Loader />;
+    if (isError) return renderError();
+    if (filteredCultures.length === 0) return renderEmptyState();
 
     return <CultureList cultures={filteredCultures} onItemClick={handleOnClick} />;
   };
 
   return (
-    <div className={clsx('bg-white p-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}>{renderContent()}</div>
+    <div
+      className={clsx('size-full overflow-y-auto bg-white p-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}
+    >
+      {renderContent()}
+    </div>
   );
 };
 
