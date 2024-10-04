@@ -14,15 +14,14 @@ import clsx from 'clsx';
 // selector import
 
 interface SearchResultsOverlayProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) => {
+const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
   const cultures = useSelector(getCultures); // 전체 문화 데이터 가져오기
   const filteredCultures = useSelector(getFilteredCultures); // 필터링된 문화 데이터 가져오기
-  const { isLoading, isError, error } = useCultures(isOpen && cultures.length === 0);
+  const { isLoading, isError, error } = useCultures(cultures.length === 0);
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
@@ -53,14 +52,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
   };
 
   return (
-    <div
-      className={clsx(
-        'fixed left-0 top-24 h-[calc(100dvh-6rem)] w-full bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100',
-        { block: isOpen, hidden: !isOpen }
-      )}
-    >
-      {renderContent()}
-    </div>
+    <div className={clsx('bg-white p-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}>{renderContent()}</div>
   );
 };
 

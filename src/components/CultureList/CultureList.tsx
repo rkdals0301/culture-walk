@@ -24,7 +24,7 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
   });
 
   return (
-    <div ref={parentRef} className='h-full overflow-auto bg-white p-3 dark:bg-neutral-900'>
+    <div ref={parentRef} className='bg-white dark:bg-neutral-900'>
       <div
         className='relative'
         style={{

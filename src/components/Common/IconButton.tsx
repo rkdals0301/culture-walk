@@ -40,22 +40,20 @@ const IconButton = ({
 
   const colorClass = colorClasses[variant];
 
-  // 기본 아이콘 색상 클래스를 변수로 분리
-  const iconColorClass = 'text-gray-900 dark:text-gray-100';
-
+  const iconColorClass = 'text-gray-900 dark:text-gray-100'; // 기본 아이콘 색상
+  const iconSizeClass = 'size-6'; // 아이콘 크기
   const buttonClass = twMerge(clsx(baseClass, colorClass, disabledClass, fullWidth && 'w-full', className));
 
   return (
     <button
       type={type}
       onClick={disabled ? undefined : onClick}
-      aria-label={ariaLabel} // 접근성 라벨
-      className={buttonClass} // 병합된 클래스 적용
-      disabled={disabled} // 비활성화 여부
+      aria-label={ariaLabel}
+      className={buttonClass}
+      disabled={disabled}
       {...props}
     >
-      {/* 기본 아이콘 색상 적용 */}
-      <span className={twMerge(iconColorClass, iconClassName)}>{icon}</span>
+      <span className={twMerge(clsx(iconSizeClass, iconColorClass), iconClassName)}>{icon}</span>
     </button>
   );
 };

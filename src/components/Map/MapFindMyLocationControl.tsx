@@ -60,7 +60,7 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
       onClick={handleFindMyLocation}
       className={`absolute bottom-24 right-2 size-8 rounded-full bg-gray-100 shadow-lg hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300`} // 위치와 스타일을 위한 추가 클래스
       icon={<MapFindMyLocationIcon />} // 아이콘 컴포넌트
-      iconClassName='dark:text-gray-900' // 아이콘 색상 스타일
+      iconClassName='size-5 dark:text-gray-900' // 아이콘 색상 스타일
     />
   );
 };

@@ -43,7 +43,7 @@ const SideMenu = () => {
         {/* 프로필 섹션 */}
         <div className='flex gap-2'>
           <div className='flex items-center justify-center'>
-            <AvatarDefaultIcon />
+            <AvatarDefaultIcon className='size-12' />
           </div>
           <div className='flex flex-col justify-center'>
             <p className='text-base font-bold'>산책자님</p>
