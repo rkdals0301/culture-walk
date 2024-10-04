@@ -55,7 +55,7 @@ const SearchResultsOverlay = ({ isOpen, onClose }: SearchResultsOverlayProps) =>
   return (
     <div
       className={clsx(
-        'fixed left-0 top-20 h-[calc(100dvh-5rem)] w-full overflow-y-auto bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100',
+        'fixed left-0 top-24 h-[calc(100dvh-6rem)] w-full bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100',
         { block: isOpen, hidden: !isOpen }
       )}
     >

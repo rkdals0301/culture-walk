@@ -30,7 +30,7 @@ const Header = () => {
   };
 
   return (
-    <header className='fixed left-0 top-0 z-10 flex h-20 w-full flex-col gap-1 border-b border-b-gray-300 bg-white p-2 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
+    <header className='fixed left-0 top-0 z-10 flex h-24 w-full flex-col gap-2 border-b border-b-gray-300 bg-white p-3 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
       <div className='relative flex h-7 flex-none items-center justify-center'>
         <div className='absolute left-0 flex h-full items-center justify-center'>
           <IconButton
