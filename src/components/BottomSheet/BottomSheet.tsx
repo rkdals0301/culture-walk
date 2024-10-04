@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { useBottomSheet } from '@/context/BottomSheetContext';
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { motion } from 'framer-motion';
 
 const BOTTOM_SHEET_STAGES = [200];
 

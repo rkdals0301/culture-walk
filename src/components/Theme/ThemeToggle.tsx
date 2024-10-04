@@ -1,8 +1,12 @@
 'use client';
 
+import Toggle from '@/components/Common/Toggle';
+
 import React, { useEffect } from 'react';
+
 import { useTheme } from 'next-themes';
-import Toggle from '@/components/Common/Toggle'; // Toggle 컴포넌트 임포트
+
+// Toggle 컴포넌트 임포트
 
 const ThemeToggle = () => {
   const { resolvedTheme, setTheme } = useTheme();

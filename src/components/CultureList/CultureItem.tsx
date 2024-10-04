@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { FormattedCulture } from '@/types/culture';
+
+import React, { useEffect, useState } from 'react';
+
 import Image from 'next/image';
 
 interface CultureItemProps {

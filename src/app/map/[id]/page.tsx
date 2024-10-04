@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { useCultureById } from '@/hooks/cultureHooks';
-import Loader from '@/components/Loader/Loader';
-import { CultureItem } from '@/components/CultureList';
-import { useBottomSheet } from '@/context/BottomSheetContext';
-import { getCulture } from '@/selectors/cultureSelectors';
 import Button from '@/components/Common/Button';
+import { CultureItem } from '@/components/CultureList';
+import Loader from '@/components/Loader/Loader';
+import { useBottomSheet } from '@/context/BottomSheetContext';
+import { useCultureById } from '@/hooks/cultureHooks';
+import { getCulture } from '@/selectors/cultureSelectors';
+
+import { useCallback, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface MapDetailProps {
   params: {

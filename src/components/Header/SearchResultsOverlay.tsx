@@ -1,12 +1,17 @@
-import React from 'react';
-import { FormattedCulture } from '@/types/culture';
-import Loader from '@/components/Loader/Loader';
-import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { useCultures } from '@/hooks/cultureHooks';
 import { CultureList } from '@/components/CultureList';
+import Loader from '@/components/Loader/Loader';
+import { useCultures } from '@/hooks/cultureHooks';
+import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors';
+import { FormattedCulture } from '@/types/culture';
+
+import React from 'react';
+import { useSelector } from 'react-redux';
+
+import { useRouter } from 'next/navigation';
+
 import clsx from 'clsx';
-import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors'; // selector import
+
+// selector import
 
 interface SearchResultsOverlayProps {
   isOpen: boolean;

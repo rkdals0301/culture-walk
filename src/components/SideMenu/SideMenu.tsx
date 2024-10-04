@@ -1,11 +1,15 @@
 'use client';
 
-import { useSideMenu } from '@/context/SideMenuContext'; // 컨텍스트에서 가져오기
+import IconButton from '@/components/Common/IconButton';
+// 컨텍스트에서 가져오기
 import ThemeToggle from '@/components/Theme/ThemeToggle';
-import clsx from 'clsx'; // clsx 추가
+import { useSideMenu } from '@/context/SideMenuContext';
+
+import clsx from 'clsx';
+
+// clsx 추가
 import AvatarDefaultIcon from '../../../public/assets/avatar-default.svg';
 import CloseIcon from '../../../public/assets/close-icon.svg';
-import IconButton from '@/components/Common/IconButton';
 
 const SideMenu = () => {
   const { isOpen, closeSideMenu } = useSideMenu(); // 컨텍스트 값 사용

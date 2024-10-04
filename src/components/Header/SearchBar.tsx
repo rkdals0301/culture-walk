@@ -1,9 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import IconButton from '@/components/Common/IconButton';
+import { setSearchQuery } from '@/slices/culturesSlice';
+
+import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setSearchQuery } from '@/slices/culturesSlice'; // 검색 쿼리 설정 액션 import
+
+// 검색 쿼리 설정 액션 import
 import SearchCancelIcon from '../../../public/assets/search-cancel-icon.svg';
 import SearchIcon from '../../../public/assets/search-icon.svg';
-import IconButton from '@/components/Common/IconButton';
 
 interface SearchBarProps {
   onSearchClick: () => void;

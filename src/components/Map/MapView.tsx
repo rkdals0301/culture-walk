@@ -1,15 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { getCultures } from '@/selectors/cultureSelectors'; // selector import
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
-import { useTheme } from 'next-themes';
-import { FormattedCulture } from '@/types/culture';
 import Loader from '@/components/Loader/Loader';
 import { useCultures } from '@/hooks/cultureHooks';
+import { getCultures } from '@/selectors/cultureSelectors';
+import { FormattedCulture } from '@/types/culture';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { useTheme } from 'next-themes';
+import dynamic from 'next/dynamic';
+import { useParams } from 'next/navigation';
+
+// selector import
+import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
+
 import mapNightMode from '../../../public/mapStyles/night-mode.json';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });

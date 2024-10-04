@@ -1,5 +1,6 @@
-import { configureStore } from '@reduxjs/toolkit';
 import cultureReducer from '@/slices/culturesSlice';
+
+import { configureStore } from '@reduxjs/toolkit';
 
 export const store = configureStore({
   reducer: {

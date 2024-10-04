@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
-import { MarkerF } from '@react-google-maps/api';
-import { FormattedCulture } from '@/types/culture';
 import { useBottomSheet } from '@/context/BottomSheetContext';
+import { FormattedCulture } from '@/types/culture';
+
+import React, { useCallback, useMemo } from 'react';
+
 import { useRouter } from 'next/navigation';
+
+import { MarkerF } from '@react-google-maps/api';
 
 interface MapMarkerProps {
   duplicateCultures: FormattedCulture[]; // 중복 여부를 Prop으로 전달받음

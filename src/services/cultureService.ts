@@ -1,4 +1,4 @@
-import { RawCulture, Culture } from '@/types/culture';
+import { Culture, RawCulture } from '@/types/culture';
 
 export function mapRawCultureToCulture(rawCulture: RawCulture): Omit<Culture, 'id'> {
   return {

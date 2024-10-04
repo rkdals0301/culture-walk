@@ -1,13 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useSideMenu } from '@/context/SideMenuContext'; // 컨텍스트에서 사이드 메뉴 상태 가져오기
+import IconButton from '@/components/Common/IconButton';
+// 컨텍스트에서 사이드 메뉴 상태 가져오기
 import SearchBar from '@/components/Header/SearchBar';
 import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
-import SideMenuIcon from '../../../public/assets/menu-icon.svg';
+import { useSideMenu } from '@/context/SideMenuContext';
+
+import { useState } from 'react';
+
+import Link from 'next/link';
+
 import ArrowBackIcon from '../../../public/assets/arrow-back-icon.svg';
-import IconButton from '@/components/Common/IconButton';
+import SideMenuIcon from '../../../public/assets/menu-icon.svg';
 
 const Header = () => {
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용

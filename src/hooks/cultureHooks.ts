@@ -1,9 +1,11 @@
+import { setCulture, setCultures } from '@/slices/culturesSlice';
 import { Culture } from '@/types/culture';
-import { useQuery } from '@tanstack/react-query';
-import { useDispatch } from 'react-redux';
-import { setCultures, setCulture } from '@/slices/culturesSlice';
-import { formatCultureData } from '@/utils/cultureUtils';
 import axiosInstance from '@/utils/axiosInstance';
+import { formatCultureData } from '@/utils/cultureUtils';
+
+import { useDispatch } from 'react-redux';
+
+import { useQuery } from '@tanstack/react-query';
 
 // 전체 Culture 목록을 가져오는 훅
 export const useCultures = (enabled: boolean = true) => {

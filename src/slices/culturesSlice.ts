@@ -1,5 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit';
 import { FormattedCulture } from '@/types/culture';
+
+import { createSlice } from '@reduxjs/toolkit';
 
 interface CultureState {
   culture: FormattedCulture | null;

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { ReactNode, createContext, useContext, useState } from 'react';
 
 interface SideMenuContextType {
   isOpen: boolean;

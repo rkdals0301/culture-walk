@@ -1,7 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import React from 'react';
+
+import dynamic from 'next/dynamic';
 
 const MapView = dynamic(() => import('@/components/Map/MapView'), { ssr: false });
 

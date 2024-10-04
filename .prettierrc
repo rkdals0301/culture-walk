@@ -9,7 +9,10 @@
   "useTabs": false,
   "arrowParens": "avoid",
   "endOfLine": "auto",
-  "plugins": ["prettier-plugin-tailwindcss"],
+  "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "tailwindFunctions": ["clsx", "twMerge"],
-  "tailwindConfig": "./tailwind.config.js"
+  "tailwindConfig": "./tailwind.config.js",
+  "importOrder": ["^react", "^next", "^@?\\w", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

@@ -1,5 +1,6 @@
-import { format } from 'date-fns';
 import { Culture, FormattedCulture } from '@/types/culture';
+
+import { format } from 'date-fns';
 
 const formatString = (object: Culture, keys: (keyof Culture)[], separator = ', '): string => {
   return keys

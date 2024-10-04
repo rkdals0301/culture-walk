@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
-import { mapRawCultureToCulture } from '@/services/cultureService';
 import prisma from '@/lib/prisma';
-import { RawCulture, Culture } from '@/types/culture';
+import { mapRawCultureToCulture } from '@/services/cultureService';
+import { Culture, RawCulture } from '@/types/culture';
+
+import { NextResponse } from 'next/server';
 
 const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;

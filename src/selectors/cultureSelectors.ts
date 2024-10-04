@@ -1,6 +1,7 @@
-import { createSelector } from 'reselect';
 import { RootState } from '@/store';
 import { FormattedCulture } from '@/types/culture';
+
+import { createSelector } from 'reselect';
 
 // 전체 문화 데이터를 가져오는 셀렉터
 export const getCultures = (state: RootState): FormattedCulture[] => state.culture.cultures;

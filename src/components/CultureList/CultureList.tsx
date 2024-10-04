@@ -1,6 +1,9 @@
-import React, { useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { FormattedCulture } from '@/types/culture';
+
+import React, { useRef } from 'react';
+
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 import CultureItem from './CultureItem';
 
 interface CultureListProps {
