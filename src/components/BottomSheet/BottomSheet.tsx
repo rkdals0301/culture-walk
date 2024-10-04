@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { motion } from 'framer-motion';
 
-const BOTTOM_SHEET_STAGES = [200];
+const BOTTOM_SHEET_STAGES = [210];
 
 const BottomSheet = () => {
   const { isOpen, content, height, closeBottomSheet, setHeight } = useBottomSheet();
@@ -90,8 +90,8 @@ const BottomSheet = () => {
   return (
     <motion.div
       ref={sheetRef}
-      className={`fixed inset-x-0 bottom-[-200px] flex h-[200px] w-full flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100 md:left-1/2 md:w-1/2 md:-translate-x-1/2`}
-      animate={{ height, bottom: isOpen ? 0 : -200 }}
+      className={`fixed inset-x-0 bottom-[-210px] flex h-[210px] w-full flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100 md:left-1/2 md:w-1/2 md:-translate-x-1/2`}
+      animate={{ height, bottom: isOpen ? 0 : -210 }}
       transition={{ duration: 0.3 }}
     >
       <div ref={headerRef} className='flex h-8 flex-none cursor-grabbing items-center justify-center'>
