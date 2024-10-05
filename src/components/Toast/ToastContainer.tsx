@@ -1,6 +1,6 @@
 'use client';
 
-import { ToastContainer } from 'react-toastify';
+import { Slide, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { useTheme } from 'next-themes';
@@ -13,8 +13,8 @@ const CustomToastContainer = () => {
   return (
     <ToastContainer
       position='top-right'
-      autoClose={3010}
-      limit={1}
+      transition={Slide}
+      autoClose={3000}
       hideProgressBar={false}
       newestOnTop={false}
       closeOnClick
@@ -22,7 +22,10 @@ const CustomToastContainer = () => {
       pauseOnFocusLoss={false}
       draggable
       pauseOnHover={false}
+      closeButton={false}
       theme={resolvedTheme}
+      icon={false}
+      stacked
     />
   );
 };
