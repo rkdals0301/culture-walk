@@ -17,10 +17,7 @@ const SideMenu = () => {
   return (
     <>
       {/* 오버레이 클릭 시 사이드 메뉴 닫기 */}
-      <div
-        className={clsx('fixed left-0 top-0 z-10 size-full bg-black/50', { hidden: !isOpen })}
-        onClick={closeSideMenu}
-      />
+      <div className={clsx('fixed inset-0 z-10 size-full bg-black/50', { hidden: !isOpen })} onClick={closeSideMenu} />
 
       {/* 사이드 메뉴 */}
       <nav

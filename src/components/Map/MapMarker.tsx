@@ -77,7 +77,6 @@ const MapMarker = ({
         ),
         onClose: () => {
           setActiveMarkerId(null);
-          handleGoToMap();
         },
       });
     } else {

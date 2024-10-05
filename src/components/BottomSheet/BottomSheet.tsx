@@ -2,103 +2,29 @@
 
 import { useBottomSheet } from '@/context/BottomSheetContext';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 
 import { motion } from 'framer-motion';
 
-const BOTTOM_SHEET_STAGES = [210];
-
 const BottomSheet = () => {
-  const { isOpen, content, height, closeBottomSheet, setHeight } = useBottomSheet();
-  const [startY, setStartY] = useState(0);
-  const [currentY, setCurrentY] = useState(0);
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-
-  const startDrag = useCallback((e: TouchEvent | MouseEvent) => {
-    setStartY('touches' in e ? e.touches[0].clientY : e.clientY);
-    setCurrentY(0);
-    isDragging.current = true;
-  }, []);
-
-  const drag = useCallback(
-    (e: TouchEvent | MouseEvent) => {
-      if (isDragging.current) {
-        const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        setCurrentY(y - startY);
-      }
-    },
-    [startY]
-  );
-
-  const endDrag = useCallback(() => {
-    if (isDragging.current) {
-      const threshold = 20;
-      const currentStageIndex = BOTTOM_SHEET_STAGES.findIndex(h => height === h);
-
-      if (currentY < -threshold) {
-        if (currentStageIndex < BOTTOM_SHEET_STAGES.length - 1) {
-          setHeight(BOTTOM_SHEET_STAGES[currentStageIndex + 1]);
-        }
-      } else if (currentY > threshold) {
-        if (currentStageIndex > 0) {
-          setHeight(BOTTOM_SHEET_STAGES[currentStageIndex - 1]);
-        } else if (height === BOTTOM_SHEET_STAGES[0]) {
-          closeBottomSheet();
-        }
-      }
-
-      setCurrentY(0);
-      isDragging.current = false;
-    }
-  }, [currentY, height, setHeight, closeBottomSheet]);
-
-  useEffect(() => {
-    const headerElement = headerRef.current;
-
-    const handleTouchStart = (e: TouchEvent) => startDrag(e);
-    const handleTouchMove = (e: TouchEvent) => drag(e);
-    const handleTouchEnd = () => endDrag();
-    const handleMouseDown = (e: MouseEvent) => startDrag(e);
-    const handleMouseMove = (e: MouseEvent) => drag(e);
-    const handleMouseUp = () => endDrag();
-
-    const options = { passive: false };
-
-    if (headerElement) {
-      headerElement.addEventListener('touchstart', handleTouchStart, options);
-      headerElement.addEventListener('touchmove', handleTouchMove, options);
-      headerElement.addEventListener('touchend', handleTouchEnd);
-      headerElement.addEventListener('mousedown', handleMouseDown, options);
-      document.addEventListener('mousemove', handleMouseMove, options);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      if (headerElement) {
-        headerElement.removeEventListener('touchstart', handleTouchStart);
-        headerElement.removeEventListener('touchmove', handleTouchMove);
-        headerElement.removeEventListener('touchend', handleTouchEnd);
-        headerElement.removeEventListener('mousedown', handleMouseDown);
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      }
-    };
-  }, [startDrag, drag, endDrag]);
+  const { isOpen, content, closeBottomSheet } = useBottomSheet();
 
   return (
-    <motion.div
-      ref={sheetRef}
-      className={`fixed inset-x-0 bottom-[-210px] flex h-[210px] w-full flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100 md:left-1/2 md:w-1/2 md:-translate-x-1/2`}
-      animate={{ height, bottom: isOpen ? 0 : -210 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div ref={headerRef} className='flex h-8 flex-none cursor-grabbing items-center justify-center'>
-        <div className='h-1 w-10 rounded-full bg-gray-300' />
-      </div>
-      <div className='grow overflow-y-auto px-4 pb-4'>{content}</div>
-    </motion.div>
+    <>
+      {isOpen && (
+        <>
+          <div className='fixed inset-0 z-10 size-full bg-black/50' onClick={closeBottomSheet} />
+          <motion.div
+            className={`fixed inset-x-0 bottom-0 z-20 flex h-[185px] w-full flex-col rounded-t-xl bg-white shadow-lg dark:bg-neutral-900 dark:text-gray-100 md:left-1/2 md:w-4/5 md:-translate-x-1/2 lg:w-3/5 xl:w-1/2`}
+            animate={{ bottom: 0 }}
+            initial={{ bottom: -185 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className='grow overflow-y-auto p-4'>{content}</div>
+          </motion.div>
+        </>
+      )}
+    </>
   );
 };
 
