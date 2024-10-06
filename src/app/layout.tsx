@@ -110,7 +110,7 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
   return (
-    <html lang='ko'>
+    <html lang='ko' className=''>
       <head>
         {/* DNS Prefetch */}
         <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
@@ -151,7 +151,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
       <body
-        className={`${pretendard.className} size-full bg-white text-gray-900 transition-colors duration-200 dark:bg-neutral-900 dark:text-gray-100`}
+        className={`${pretendard.className} safe-area h-dvh w-dvw touch-pan-y bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
       >
         <QueryClientProvider>
           <ThemeProvider>

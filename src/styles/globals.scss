@@ -6,34 +6,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .safe-area {
+    margin: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+}
+
 // Google Focus Border Bug Fix
 .gm-style iframe + div {
   border: none !important;
 }
 
+button,
 input,
-button {
-  background: none;
+optgroup,
+select,
+textarea {
+  background: none; /* 배경 없애기 */
+  box-shadow: none;
+  appearance: none; /* 기본 스타일 제거 */
+  touch-action: manipulation; /* 터치 동작 최적화 */
+  outline: none;
 }
 
-// button,
-// input,
-// select,
-// textarea {
-//   font-size: inherit; /* 부모 요소의 폰트 크기를 상속 */
-//   line-height: inherit; /* 부모 요소의 줄 높이를 상속 */
-//   color: inherit; /* 텍스트 색상을 부모 요소와 동일하게 설정 */
-//   background: none; /* 배경을 없애기 */
-//   box-shadow: none; /* 기본 그림자 제거 */
-//   border: none; /* 기본 테두리 제거 */
-//   outline: none; /* 포커스 시 윤곽선 제거 */
-//   appearance: none; /* 기본 스타일 제거 */
-//   touch-action: manipulation; /* 터치 이벤트의 기본 동작 방지 */
-// }
-
-// a,
-// button,
-// img,
-// nav {
-//   user-select: none;
-// }
+img {
+  user-select: none;
+}

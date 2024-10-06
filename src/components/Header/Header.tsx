@@ -2,6 +2,7 @@
 
 import IconButton from '@/components/Common/IconButton';
 import SearchBar from '@/components/Header/SearchBar';
+import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
 import { useState } from 'react';
@@ -28,9 +29,9 @@ const Header = () => {
   };
 
   return (
-    <header className='fixed left-0 top-0 z-10 flex h-14 w-full flex-col border-b border-b-gray-300 bg-white p-3 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
+    <header className='fixed left-0 top-0 z-10 flex h-14 w-full flex-col border-b border-b-gray-300 bg-white px-4 py-2 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
       <div className='flex h-full flex-none items-center justify-between'>
-        <div className='flex h-full items-center justify-center gap-2'>
+        <div className='flex h-full items-center justify-center gap-4'>
           <IconButton
             icon={<SideMenuIcon />} // 아이콘 전달
             ariaLabel='사이드메뉴 열기' // 접근성 라벨
@@ -40,12 +41,13 @@ const Header = () => {
             <div className='flex items-center justify-center text-lg font-bold'>문화산책</div>
           </Link>
         </div>
-        <div className='flex h-full items-center justify-center'>
+        <div className='flex h-full items-center justify-center gap-4'>
           <IconButton
             icon={<SearchIcon />} // 아이콘 전달
             ariaLabel='검색바 열기' // 접근성 라벨
             onClick={handleOpenOverlay}
           />
+          <ThemeToggleButton />
         </div>
       </div>
       {isSearchBarVisible && <SearchBar onClose={handleCloseOverlay} />}

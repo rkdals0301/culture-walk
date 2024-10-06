@@ -1,8 +1,6 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
-// 컨텍스트에서 가져오기
-import ThemeToggle from '@/components/Theme/ThemeToggle';
 import { useSideMenu } from '@/context/SideMenuContext';
 
 import clsx from 'clsx';
@@ -45,14 +43,6 @@ const SideMenu = () => {
           <div className='flex flex-col justify-center'>
             <p className='text-base font-bold'>산책자님</p>
             <p className='text-sm text-gray-600 dark:text-gray-400'>회원가입 서비스 준비중</p>
-          </div>
-        </div>
-
-        {/* 다크 모드 토글 섹션 */}
-        <div className='mt-7 flex items-center justify-between'>
-          <div>다크모드</div>
-          <div>
-            <ThemeToggle />
           </div>
         </div>
       </nav>
