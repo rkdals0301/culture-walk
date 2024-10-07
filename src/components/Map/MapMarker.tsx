@@ -50,10 +50,6 @@ const MapMarker = ({
     [router, id] // currentId를 의존성 배열에 추가
   );
 
-  const handleGoToMap = useCallback(() => {
-    router.push(`/map`, { scroll: false }); // 바텀 시트 닫기 시, URL만 변경하고 상태는 유지
-  }, [router]);
-
   const handleMarkerClick = useCallback(() => {
     if (duplicateCultures.length > 1) {
       setActiveMarkerId(culture.id);
@@ -88,7 +84,6 @@ const MapMarker = ({
     openBottomSheet,
     setActiveMarkerId,
     position,
-    handleGoToMap,
     handleGoToMapDetail,
     setCenterPosition,
   ]);
