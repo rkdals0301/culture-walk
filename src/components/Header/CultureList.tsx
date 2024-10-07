@@ -1,10 +1,10 @@
+import CultureItem from '@/components/Header/CultureItem';
 import { FormattedCulture } from '@/types/culture';
 
 import React, { useRef } from 'react';
 
 import { useVirtualizer } from '@tanstack/react-virtual';
-
-import CultureItem from './CultureItem';
+import clsx from 'clsx';
 
 interface CultureListProps {
   cultures: FormattedCulture[];
@@ -17,34 +17,40 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
 
   const rowVirtualizer = useVirtualizer({
     count: itemCount, // 총 아이템 수
-    overscan: 5,
-    gap: 12,
+    overscan: 10,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 114,
+    estimateSize: () => 90,
   });
 
   return (
-    <div ref={parentRef} className='bg-white dark:bg-neutral-900'>
+    <div ref={parentRef} className='rounded-lg bg-gray-100 dark:bg-neutral-800'>
       <div
-        className='relative'
+        className='relative divide-y divide-gray-300 dark:divide-neutral-700'
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
         }}
       >
         {rowVirtualizer.getVirtualItems().map(virtualItem => {
           const culture = cultures[virtualItem.index]; // 현재 인덱스의 문화 정보
+          const isFirst = virtualItem.index === 0;
+          const isLast = virtualItem.index === cultures.length - 1;
 
           return (
             <div
               key={virtualItem.key} // 각 항목에 고유한 key 추가
-              className='absolute w-full'
+              className='absolute size-full'
               style={{
                 height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
               }}
               onClick={() => onItemClick(culture)}
             >
-              <div className='w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-100 p-2 hover:bg-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700'>
+              <div
+                className={clsx('size-full cursor-pointer px-4 py-3 hover:bg-gray-200 dark:hover:bg-neutral-700', {
+                  'rounded-t-lg': isFirst, // 첫 번째 요소일 때 상단 둥근 모서리
+                  'rounded-b-lg': isLast, // 마지막 요소일 때 하단 둥근 모서리
+                })}
+              >
                 <CultureItem culture={culture} />
               </div>
             </div>

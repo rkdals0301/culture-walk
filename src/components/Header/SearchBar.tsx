@@ -43,12 +43,11 @@ const SearchBar = ({ onClose }: SearchBarProps) => {
 
   return (
     <div className='fixed left-0 top-0 z-20 flex size-full flex-col bg-white dark:bg-neutral-900'>
-      <div className='flex h-14 flex-none items-center gap-4 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
+      <div className='flex h-14 flex-none items-center gap-2 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
         <IconButton
           icon={<ArrowBackIcon />} // 아이콘 전달
           ariaLabel='검색 결과 닫기' // 접근성 라벨
           onClick={handleCloseOverlay} // 클릭 핸들러
-          iconClassName='size-6'
         />
         <form
           onSubmit={handleSubmit}

@@ -25,7 +25,7 @@ const Button = ({
   onClick,
   ...props
 }: ButtonProps) => {
-  const baseClass = `flex justify-center items-center rounded transition duration-200 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+  const baseClass = `font-semibold flex justify-center items-center rounded transition duration-200 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
 
   const colorClasses = {
     primary: 'bg-blue-600 text-white hover:bg-blue-500',

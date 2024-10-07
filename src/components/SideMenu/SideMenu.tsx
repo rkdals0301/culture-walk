@@ -20,7 +20,7 @@ const SideMenu = () => {
       {/* 사이드 메뉴 */}
       <nav
         className={clsx(
-          'fixed z-20 size-full bg-white p-6 shadow-lg transition-transform dark:bg-neutral-900 md:w-72',
+          'fixed z-20 size-full bg-white p-6 shadow-lg transition-transform duration-300 dark:bg-neutral-900 md:w-72',
           {
             '-translate-x-full': !isOpen,
             'translate-x-0': isOpen,

@@ -29,7 +29,7 @@ const ThemeToggle = () => {
     <IconButton
       ariaLabel='다크모드 토글'
       onClick={handleClick}
-      icon={resolvedTheme === 'dark' ? <LightModeIcon className='size-6' /> : <DarkModeIcon className='size-6' />}
+      icon={resolvedTheme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
     />
   );
 };

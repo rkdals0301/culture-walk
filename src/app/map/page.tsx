@@ -3,8 +3,8 @@
 
 // const MapView = dynamic(() => import('@/components/Map/MapView'), { ssr: false });
 
-const Map = () => {
+const MapPage = () => {
   return null;
 };
 
-export default Map;
+export default MapPage;

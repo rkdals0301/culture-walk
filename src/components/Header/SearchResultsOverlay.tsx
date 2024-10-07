@@ -1,4 +1,4 @@
-import { CultureList } from '@/components/CultureList';
+import CultureList from '@/components/Header/CultureList';
 import Loader from '@/components/Loader/Loader';
 import { useCultures } from '@/hooks/cultureHooks';
 import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors';
@@ -51,7 +51,9 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
 
   return (
     <div
-      className={clsx('size-full overflow-y-auto bg-white p-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}
+      className={clsx(
+        'size-full overflow-y-auto bg-white px-4 py-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100'
+      )}
     >
       {renderContent()}
     </div>

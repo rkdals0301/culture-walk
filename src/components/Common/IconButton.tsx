@@ -41,7 +41,7 @@ const IconButton = ({
   const colorClass = colorClasses[variant];
 
   const iconColorClass = 'text-gray-900 dark:text-gray-100'; // 기본 아이콘 색상
-  const iconSizeClass = 'size-6'; // 아이콘 크기
+  const iconSizeClass = 'size-7'; // 아이콘 크기
   const buttonClass = twMerge(clsx(baseClass, colorClass, disabledClass, fullWidth && 'w-full', className));
 
   return (

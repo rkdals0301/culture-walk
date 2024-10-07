@@ -1,34 +1,41 @@
 'use client';
 
 import Button from '@/components/Common/Button';
-import { CultureItem } from '@/components/CultureList';
 import Loader from '@/components/Loader/Loader';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureById } from '@/hooks/cultureHooks';
 import { getCulture } from '@/selectors/cultureSelectors';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-interface MapDetailProps {
+interface MapDetailPageProps {
   params: {
     id: string;
   };
 }
 
-const MapDetail = ({ params }: MapDetailProps) => {
+const MapDetailPage = ({ params }: MapDetailPageProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const timestamp = searchParams.get('timestamp');
-  const cultureId = parseInt(params.id, 10);
+  const cultureId = useMemo(() => parseInt(params.id, 10), [params.id]);
+
   const { isLoading, error } = useCultureById(cultureId);
   const culture = useSelector(getCulture);
   const { openBottomSheet } = useBottomSheet();
 
-  const handleOpenExternalLink = (url: string | undefined) => {
-    window.open(url, '_blank');
+  const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
+
+  const handleImageError = () => {
+    setImgSrc('/assets/logo.svg');
+  };
+
+  const handleOpenExternalLink = (url?: string) => {
+    if (url) window.open(url, '_blank');
   };
 
   const handleBottomSheetClose = useCallback(() => {
@@ -36,19 +43,40 @@ const MapDetail = ({ params }: MapDetailProps) => {
   }, [router]);
 
   useEffect(() => {
-    let content: JSX.Element | null = null;
+    setImgSrc(culture?.mainImage || '/assets/logo.svg');
+  }, [culture?.mainImage]);
 
+  // Content 렌더링 로직 분리
+  const renderContent = useCallback(() => {
     if (isLoading) {
-      content = <Loader />;
-    } else if (error) {
-      content = <div>Error: {error.message}</div>;
-    } else if (culture) {
-      content = (
-        <div className='flex h-full flex-col gap-2'>
-          <div className='grow'>
-            <CultureItem culture={culture} />
+      return <Loader />;
+    }
+    if (error) {
+      return <div>Error: {error.message}</div>;
+    }
+    if (culture) {
+      return (
+        <div className='flex size-full flex-col gap-4'>
+          <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
+            <div className='relative h-full w-32 flex-none'>
+              <Image
+                src={imgSrc ?? '/assets/logo.svg'}
+                alt={culture.title}
+                className='rounded-lg'
+                onError={handleImageError}
+                objectFit='cover'
+                fill
+              />
+            </div>
+            <div className='h-full grow overflow-y-auto'>
+              <p className='mb-1 font-bold text-gray-900 dark:text-gray-100'>{culture.title}</p>
+              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
+              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
+              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
+              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
+            </div>
           </div>
-          <div className='flex h-11 flex-none gap-2'>
+          <div className='flex h-10 flex-none gap-2'>
             <Button
               fullWidth
               ariaLabel='서울문화포털 웹사이트로 이동'
@@ -67,14 +95,18 @@ const MapDetail = ({ params }: MapDetailProps) => {
         </div>
       );
     }
+    return null;
+  }, [isLoading, error, culture, imgSrc]);
 
+  // BottomSheet 여는 로직 통합
+  useEffect(() => {
     openBottomSheet({
-      content,
+      content: renderContent(),
       onClose: handleBottomSheetClose,
     });
-  }, [isLoading, error, culture, handleBottomSheetClose, openBottomSheet, params.id, timestamp]);
+  }, [renderContent, openBottomSheet, handleBottomSheetClose, timestamp]);
 
   return null;
 };
 
-export default MapDetail;
+export default MapDetailPage;

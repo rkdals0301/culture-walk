@@ -15,17 +15,9 @@ const CustomToastContainer = () => {
       position='top-right'
       transition={Slide}
       autoClose={3000}
-      hideProgressBar={false}
-      newestOnTop={false}
       closeOnClick
-      rtl={false}
-      pauseOnFocusLoss={false}
       draggable
-      pauseOnHover={false}
-      closeButton={false}
       theme={resolvedTheme}
-      icon={false}
-      stacked
     />
   );
 };

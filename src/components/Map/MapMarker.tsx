@@ -61,7 +61,7 @@ const MapMarker = ({
 
       openBottomSheet({
         content: (
-          <div>
+          <div className='size-full overflow-y-auto'>
             <ul>
               {duplicateCultures.map(dupCulture => (
                 <li
