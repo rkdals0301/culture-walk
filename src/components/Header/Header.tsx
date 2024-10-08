@@ -1,7 +1,7 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
-import SearchBar from '@/components/Header/SearchBar';
+import SearchView from '@/components/Header/SearchView';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
@@ -50,7 +50,7 @@ const Header = () => {
           <ThemeToggleButton />
         </div>
       </div>
-      {isSearchBarVisible && <SearchBar onClose={handleCloseOverlay} />}
+      {isSearchBarVisible && <SearchView onClose={handleCloseOverlay} />}
     </header>
   );
 };
