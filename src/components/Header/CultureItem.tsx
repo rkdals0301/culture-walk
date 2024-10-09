@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 interface CultureItemProps {
   culture: FormattedCulture;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 const CultureItem = ({ culture, onClick }: CultureItemProps) => {
@@ -17,16 +17,16 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
   };
 
   return (
-    <li className='flex size-full gap-4' onClick={onClick ? onClick : undefined}>
-      <div className='relative size-16 flex-none'>
+    <li className='flex size-full gap-4' onClick={onClick}>
+      <div className='size-16 flex-none'>
         <Image
+          width={64}
+          height={64}
           src={imgSrc}
           alt={culture.title}
-          className='rounded-md'
-          onError={handleImageError}
+          className='size-full rounded-md'
           loading='lazy'
-          objectFit='cover'
-          fill
+          onError={handleImageError}
         />
       </div>
       <div className='size-full grow overflow-hidden'>

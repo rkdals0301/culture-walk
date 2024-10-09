@@ -12,7 +12,7 @@
     "tailwindcss/classnames-order": "error",
     "tailwindcss/no-custom-classname": "off",
     "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -22,4 +22,9 @@
     ],
     "react/react-in-jsx-scope": "off"
   }
+  // "settings": {
+  //   "tailwindcss": {
+  //     "config": "./tailwind.config.ts"
+  //   }
+  // }
 }

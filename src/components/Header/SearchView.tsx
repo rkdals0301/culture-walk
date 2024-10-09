@@ -39,18 +39,26 @@ const SearchView = ({ onClose }: SearchViewProps) => {
   };
 
   return (
-    <div className='fixed left-0 top-0 z-20 flex size-full flex-col bg-white dark:bg-neutral-900'>
-      <div className='flex h-14 flex-none items-center gap-2 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
-        <IconButton icon={<ArrowBackIcon />} ariaLabel='검색 결과 닫기' onClick={onClose} />
-        <SearchBar
-          searchQuery={searchQuery}
-          onSearchChange={handleSearchChange}
-          onReset={handleReset}
-          onSubmit={handleSubmit}
-        />
-      </div>
-      <div className='h-[calc(100dvh-4rem)] grow'>
-        <SearchResultsOverlay onClose={onClose} />
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+      {/* 반투명 배경 */}
+      <div className='fixed inset-0 bg-black/50' onClick={onClose}></div>
+
+      {/* 모달 컨텐츠 */}
+      <div className='relative z-50 size-full bg-white dark:bg-neutral-900 md:h-175 md:w-192 md:rounded-lg md:shadow-lg'>
+        <div className='flex h-14 items-center gap-2 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
+          <IconButton icon={<ArrowBackIcon />} ariaLabel='검색 결과 닫기' onClick={onClose} />
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            onReset={handleReset}
+            onSubmit={handleSubmit}
+          />
+        </div>
+        {/* 모달 내용에 스크롤 처리 */}
+        <div className='h-[calc(100%-7rem)]'>
+          <SearchResultsOverlay onClose={onClose} />
+        </div>
+        <div className='h-14 items-center border-t border-t-gray-300 dark:border-t-neutral-700' />
       </div>
     </div>
   );

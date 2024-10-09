@@ -58,14 +58,14 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
       return (
         <div className='flex size-full flex-col gap-4'>
           <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
-            <div className='relative h-full w-32 flex-none'>
+            <div className='h-full w-32 flex-none'>
               <Image
+                width={128}
+                height={182}
                 src={imgSrc ?? '/assets/logo.svg'}
                 alt={culture.title}
-                className='rounded-lg'
+                className='size-full rounded-lg'
                 onError={handleImageError}
-                objectFit='cover'
-                fill
               />
             </div>
             <div className='h-full grow overflow-y-auto'>

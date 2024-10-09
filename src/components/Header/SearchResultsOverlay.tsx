@@ -51,9 +51,7 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
 
   return (
     <div
-      className={clsx(
-        'size-full overflow-y-auto bg-white px-4 py-3 text-gray-900 dark:bg-neutral-900 dark:text-gray-100'
-      )}
+      className={clsx('size-full overflow-y-auto bg-white p-4 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}
     >
       {renderContent()}
     </div>
