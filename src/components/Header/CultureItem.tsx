@@ -6,10 +6,9 @@ import Image from 'next/image';
 
 interface CultureItemProps {
   culture: FormattedCulture;
-  onClick: () => void;
 }
 
-const CultureItem = ({ culture, onClick }: CultureItemProps) => {
+const CultureItem = ({ culture }: CultureItemProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
@@ -17,7 +16,7 @@ const CultureItem = ({ culture, onClick }: CultureItemProps) => {
   };
 
   return (
-    <li className='flex size-full gap-4' onClick={onClick}>
+    <li className='flex size-full gap-4'>
       <div className='size-16 flex-none'>
         <Image
           width={64}
