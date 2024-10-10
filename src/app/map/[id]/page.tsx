@@ -69,14 +69,14 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
               />
             </div>
             <div className='h-full grow overflow-y-auto'>
-              <p className='mb-1 font-bold text-gray-900 dark:text-gray-100'>{culture.title}</p>
+              <p className='font-semibold text-gray-900 dark:text-gray-100'>{culture.title}</p>
               <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
               <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
               <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
               <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
             </div>
           </div>
-          <div className='flex h-10 flex-none gap-2'>
+          <div className='flex h-10 flex-none gap-4'>
             <Button
               fullWidth
               ariaLabel='서울문화포털 웹사이트로 이동'

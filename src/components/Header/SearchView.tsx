@@ -45,7 +45,7 @@ const SearchView = ({ onClose }: SearchViewProps) => {
 
       {/* 모달 컨텐츠 */}
       <div className='relative z-50 size-full bg-white dark:bg-neutral-900 md:h-175 md:w-192 md:rounded-lg md:shadow-lg'>
-        <div className='flex h-14 items-center gap-2 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
+        <div className='flex h-14 items-center gap-4 border-b border-b-gray-300 px-4 py-2 dark:border-b-neutral-700'>
           <IconButton icon={<ArrowBackIcon />} ariaLabel='검색 결과 닫기' onClick={onClose} />
           <SearchBar
             searchQuery={searchQuery}

@@ -22,9 +22,4 @@
     ],
     "react/react-in-jsx-scope": "off"
   }
-  // "settings": {
-  //   "tailwindcss": {
-  //     "config": "./tailwind.config.ts"
-  //   }
-  // }
 }

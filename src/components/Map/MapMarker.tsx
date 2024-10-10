@@ -61,7 +61,7 @@ const MapMarker = ({
             <ul>
               {duplicateCultures.map(dupCulture => (
                 <li
-                  className='cursor-pointer rounded-lg bg-white p-2 font-bold text-gray-900 hover:bg-gray-200 dark:bg-neutral-900 dark:text-gray-100 dark:hover:bg-neutral-700'
+                  className='cursor-pointer rounded-lg bg-white p-2 font-semibold text-gray-900 hover:bg-gray-200 dark:bg-neutral-900 dark:text-gray-100 dark:hover:bg-neutral-700'
                   key={dupCulture.id}
                   onClick={() => handleGoToMapDetail(dupCulture.id)}
                 >

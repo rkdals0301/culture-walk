@@ -29,11 +29,11 @@ const CultureItem = ({ culture }: CultureItemProps) => {
         />
       </div>
       <div className='size-full grow overflow-hidden'>
-        <p className='mb-1 truncate text-sm font-bold text-gray-900 dark:text-gray-100'>{culture.title}</p>
-        <p className='truncate text-xs font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
-        {/* <p className='truncate text-xs font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p> */}
-        {/* <p className='truncate text-xs font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p> */}
-        <p className='truncate text-xs font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
+        <p className='truncate font-semibold text-gray-900 dark:text-gray-100'>{culture.title}</p>
+        <p className='truncate text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
+        {/* <p className='truncate text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p> */}
+        {/* <p className='truncate text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p> */}
+        <p className='truncate text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
       </div>
     </li>
   );

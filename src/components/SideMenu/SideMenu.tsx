@@ -20,7 +20,7 @@ const SideMenu = () => {
       {/* 사이드 메뉴 */}
       <nav
         className={clsx(
-          'fixed z-20 size-full bg-white p-6 shadow-lg transition-transform duration-300 dark:bg-neutral-900 md:w-72',
+          'fixed z-20 size-full bg-white p-4 shadow-lg transition-transform duration-300 dark:bg-neutral-900 md:w-72',
           {
             '-translate-x-full': !isOpen,
             'translate-x-0': isOpen,
@@ -36,12 +36,12 @@ const SideMenu = () => {
         </div>
 
         {/* 프로필 섹션 */}
-        <div className='flex gap-2'>
+        <div className='flex gap-4'>
           <div className='flex items-center justify-center'>
             <AvatarDefaultIcon className='size-12' />
           </div>
           <div className='flex flex-col justify-center'>
-            <p className='text-base font-bold'>산책자님</p>
+            <p className='font-semibold'>산책자님</p>
             <p className='text-sm text-gray-600 dark:text-gray-400'>회원가입 서비스 준비중</p>
           </div>
         </div>

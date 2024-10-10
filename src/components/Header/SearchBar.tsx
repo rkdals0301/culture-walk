@@ -22,7 +22,7 @@ const SearchBar = ({ searchQuery, onSearchChange, onReset, onSubmit }: SearchBar
         value={searchQuery}
         onChange={e => onSearchChange(e.target.value)}
       />
-      <div className='flex h-full items-center justify-center gap-2'>
+      <div className='flex h-full items-center justify-center gap-4'>
         {searchQuery.length > 0 && (
           <IconButton icon={<SearchCancelIcon />} ariaLabel='검색어 초기화' onClick={onReset} />
         )}
