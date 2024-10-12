@@ -11,7 +11,7 @@ interface ButtonProps {
   fullWidth?: boolean;
   ariaLabel: string;
   disabled?: boolean;
-  onClick: () => void;
+  onClick?: () => void; // 'onClick'을 선택적 속성으로 변경
 }
 
 const Button = ({
@@ -22,7 +22,7 @@ const Button = ({
   fullWidth = false,
   ariaLabel,
   disabled = false,
-  onClick,
+  onClick, // 기본 동작 설정
   ...props
 }: ButtonProps) => {
   const baseClass = `font-semibold flex justify-center items-center rounded transition duration-200 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
@@ -59,7 +59,7 @@ const Button = ({
   return (
     <button
       type={type}
-      onClick={disabled ? undefined : onClick}
+      onClick={disabled || !onClick ? undefined : onClick} // onClick이 없을 때 undefined 처리
       aria-label={ariaLabel}
       className={buttonClass}
       {...props}
