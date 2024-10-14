@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 // 현재 날짜 구하기
 const today = new Date();
-const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0)); // 시간은 0으로 설정하여 날짜만 비교
 
 export async function GET() {
   try {
@@ -22,9 +22,10 @@ export async function GET() {
       },
     });
 
+    // 성공적으로 데이터를 가져온 경우
     return NextResponse.json(cultures);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to fetch and store data' }, { status: 500 });
+    console.error('문화 목록 데이터를 가져오는데 실패했습니다.', error);
+    return NextResponse.json({ error: '문화 목록 데이터를 가져오는데 실패했습니다.' }, { status: 500 });
   }
 }

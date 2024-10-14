@@ -8,13 +8,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const id = params.id;
 
   if (!id) {
-    return NextResponse.json({ error: 'ID parameter is required' }, { status: 400 });
+    return NextResponse.json({ error: 'ID 파라미터가 필요합니다.' }, { status: 400 });
   }
 
   const parsedId = parseInt(id, 10);
 
   if (isNaN(parsedId)) {
-    return NextResponse.json({ error: 'Invalid ID parameter' }, { status: 400 });
+    return NextResponse.json({ error: '유효하지 않은 ID 파라미터입니다.' }, { status: 400 });
   }
 
   try {
@@ -25,12 +25,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
     });
 
     if (!culture) {
-      return NextResponse.json({ error: 'Culture not found' }, { status: 404 });
+      return NextResponse.json({ error: '해당 문화를 찾을 수 없습니다.' }, { status: 404 });
     }
 
     return NextResponse.json(culture);
   } catch (error) {
-    console.error('Error fetching culture by ID:', error);
-    return NextResponse.json({ error: 'Failed to fetch culture data' }, { status: 500 });
+    console.error('문화 데이터를 가져오는데 실패했습니다.', error);
+    return NextResponse.json({ error: '문화 데이터를 가져오는데 실패했습니다.' }, { status: 500 });
   }
 }
