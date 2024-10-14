@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
 interface MapDetailPageProps {
   params: {
@@ -52,7 +52,18 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
       return <Loader />;
     }
     if (error) {
-      return <div>Error: {error.message}</div>;
+      return (
+        <div className='flex size-full flex-col items-center justify-center gap-4'>
+          <p>죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.</p>
+          <Button ariaLabel='다시 시도' onClick={() => window.location.reload()}>
+            다시 시도
+          </Button>
+        </div>
+      );
+    }
+    if (!culture) {
+      notFound();
+      return null; // notFound 호출 후에는 반환값을 null로 설정
     }
     if (culture) {
       return (

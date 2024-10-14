@@ -4,6 +4,8 @@ import { Culture, RawCulture } from '@/types/culture';
 
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const BASE_URL = process.env.SEOUL_API_CULTURAL_URL;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;

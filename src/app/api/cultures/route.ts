@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma';
 
 import { NextResponse } from 'next/server';
 
-// export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 // 현재 날짜 구하기
 const today = new Date();

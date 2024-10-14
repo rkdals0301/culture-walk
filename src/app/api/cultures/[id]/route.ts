@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma';
 
 import { NextResponse } from 'next/server';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const id = params.id;
