@@ -12,7 +12,7 @@ const CultureItem = ({ culture }: CultureItemProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
-    setImgSrc('/assets/logo.svg');
+    setImgSrc('/assets/images/logo.svg');
   };
 
   return (

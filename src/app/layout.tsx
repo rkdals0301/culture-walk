@@ -26,17 +26,9 @@ export const metadata: Metadata = {
     template: '%s | 문화산책',
   },
   icons: [
+    { rel: 'icon', type: 'image/png', url: '/favicon-48x48.png', sizes: '48x48' },
+    { rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' },
     { rel: 'icon', url: '/favicon.ico', sizes: 'any' }, // 기본 ico 파일
-    { rel: 'icon', type: 'image/png', sizes: '16x16', url: '/favicon-16x16.png' },
-    { rel: 'icon', type: 'image/png', sizes: '32x32', url: '/favicon-32x32.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '57x57', url: '/apple-touch-icon-57x57.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '60x60', url: '/apple-touch-icon-60x60.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '72x72', url: '/apple-touch-icon-72x72.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '76x76', url: '/apple-touch-icon-76x76.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '114x114', url: '/apple-touch-icon-114x114.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '120x120', url: '/apple-touch-icon-120x120.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '144x144', url: '/apple-touch-icon-144x144.png' },
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '152x152', url: '/apple-touch-icon-152x152.png' },
     { rel: 'apple-touch-icon', type: 'image/png', sizes: '180x180', url: '/apple-touch-icon-180x180.png' },
   ],
   description:
@@ -57,7 +49,7 @@ export const metadata: Metadata = {
     siteName: '문화산책',
     images: [
       {
-        url: 'https://culturewalk.vercel.app/assets/logo.svg',
+        url: 'https://culturewalk.vercel.app/assets/images/logo.svg',
         width: 1200,
         height: 630,
         alt: 'culturewalk',
@@ -72,7 +64,7 @@ export const metadata: Metadata = {
       '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
     images: [
       {
-        url: 'https://culturewalk.vercel.app/assets/logo.svg',
+        url: 'https://culturewalk.vercel.app/assets/images/logo.svg',
         width: 1200,
         height: 675,
         alt: 'culturewalk',
