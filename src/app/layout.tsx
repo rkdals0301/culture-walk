@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     '서울시 문화행사, 서울 문화 행사, 서울 공연, 서울 전시회, 서울시 이벤트, 서울 문화 축제, 서울 시내 행사, 서울 문화 지도, 서울 문화 활동, 서울 시민 문화',
   verification: {
     other: {
-      'google-site-verification': '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF',
+      'google-site-verification': '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF-ZoOEKo',
       'naver-site-verification': '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5',
     },
   },
