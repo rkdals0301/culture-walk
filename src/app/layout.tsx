@@ -8,7 +8,7 @@ import '@/styles/globals.scss';
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 
-import { GoogleAnalytics } from '@next/third-parties/google';
+// import pretendard from '../../public/assets/fonts/pretendard';
 
 const QueryClientProvider = dynamic(() => import('@/providers/QueryClientProvider'), { ssr: false });
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     '서울시 문화행사, 서울 문화 행사, 서울 공연, 서울 전시회, 서울시 이벤트, 서울 문화 축제, 서울 시내 행사, 서울 문화 지도, 서울 문화 활동, 서울 시민 문화',
   verification: {
     other: {
+      'google-site-verification': '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF',
       'naver-site-verification': '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5',
     },
   },
@@ -124,7 +125,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             </ReduxProvider>
           </ThemeProvider>
         </QueryClientProvider>
-        {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
       </body>
     </html>
   );
