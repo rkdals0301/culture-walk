@@ -1,24 +1,22 @@
-import BottomSheet from '@/components/BottomSheet/BottomSheet';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
-import SideMenu from '@/components/SideMenu/SideMenu';
-import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
-import QueryClientProvider from '@/providers/QueryClientProvider';
-import ReduxProvider from '@/providers/ReduxProvider';
 // import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 
-import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
-import { Analytics } from '@vercel/analytics/react';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
-import pretendard from '../../public/assets/fonts/pretendard';
-
+const QueryClientProvider = dynamic(() => import('@/providers/QueryClientProvider'), { ssr: false });
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
+const ReduxProvider = dynamic(() => import('@/providers/ReduxProvider'), { ssr: false });
+
+const SideMenu = dynamic(() => import('@/components/SideMenu/SideMenu'), { ssr: false });
+const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet'), { ssr: false });
+const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'), { ssr: false });
 
 export const metadata: Metadata = {
   title: {
@@ -79,18 +77,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  maximumScale: 1,
+  // maximumScale: 1,
   userScalable: false,
-  // themeColor: [
-  //   {
-  //     media: '(prefers-color-scheme: light)',
-  //     color: '#f5f5f5',
-  //   },
-  //   {
-  //     media: '(prefers-color-scheme: dark)',
-  //     color: '#1e1e1e',
-  //   },
-  // ],
   themeColor: '#ffffff',
   colorScheme: 'light dark',
 };
@@ -103,47 +91,24 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko'>
       <head>
-        {/* DNS Prefetch */}
+        {/* Culture Seoul */}
         <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
-        {/* Google Maps DNS Prefetch */}
+        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
+
+        {/* Google Maps */}
         <link rel='dns-prefetch' href='//maps.googleapis.com' />
         <link rel='dns-prefetch' href='//maps.gstatic.com' />
-        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
-
-        {/* Google Analytics DNS Prefetch */}
-        <link rel='dns-prefetch' href='//www.googletagmanager.com' />
-        <link rel='dns-prefetch' href='//www.google-analytics.com' />
-
-        {/* Preconnect */}
-        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
-        {/* Google Maps Preconnect */}
         <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
         <link rel='preconnect' href='https://maps.gstatic.com' crossOrigin='anonymous' />
-        <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
-        {/* Google Analytics Preconnect  */}
-        <link rel='preconnect' href='https://www.googletagmanager.com' crossOrigin='anonymous' />
+
+        {/* Google Analytics */}
+        <link rel='dns-prefetch' href='//www.google-analytics.com' />
         <link rel='preconnect' href='https://www.google-analytics.com' crossOrigin='anonymous' />
 
-        {/* <Script
-          id='channel-talk-script'
-          strategy='lazyOnload'
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){var w=window;if(w.ChannelIO){return w.console.error("ChannelIO script included twice.");}var ch=function(){ch.c(arguments);};ch.q=[];ch.c=function(args){ch.q.push(args);};w.ChannelIO=ch;function l(){if(w.ChannelIOInitialized){return;}w.ChannelIOInitialized=true;var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";var x=document.getElementsByTagName("script")[0];if(x.parentNode){x.parentNode.insertBefore(s,x);}}if(document.readyState==="complete"){l();}else{w.addEventListener("DOMContentLoaded",l);w.addEventListener("load",l);}})();
-
-              ChannelIO('boot', {
-                "pluginKey": "4ef79cde-b936-48a0-a501-2ccda61855e4",
-                "zIndex": 2,
-                "appearance": "system"
-              });
-            `,
-          }}
-        /> */}
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
-      <body
-        className={`${pretendard.className} safe-area h-dvh w-dvw touch-pan-y bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
-      >
+      {/* ${pretendard.className} */}
+      <body className={`safe-area h-dvh touch-pan-y bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}>
         <QueryClientProvider>
           <ThemeProvider>
             <ReduxProvider>
@@ -159,9 +124,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             </ReduxProvider>
           </ThemeProvider>
         </QueryClientProvider>
-        {process.env.NEXT_PUBLIC_GTM_ID && <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />}
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
-        <Analytics />
       </body>
     </html>
   );

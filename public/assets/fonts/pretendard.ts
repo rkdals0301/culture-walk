@@ -1,12 +1,16 @@
 import localFont from 'next/font/local';
 
 // 폰트 설정 함수
-const Pretendard = localFont({
-  src: './PretendardVariable.woff2',
+const pretendard = localFont({
+  src: [
+    { path: './pretendard-Regular.woff2', weight: '400', style: 'normal' },
+    { path: './Pretendard-Medium.woff2', weight: '400', style: 'normal' },
+    { path: './Pretendard-SemiBold.woff2', weight: '400', style: 'normal' },
+    { path: './Pretendard-Bold.woff2', weight: '400', style: 'normal' },
+  ],
   display: 'swap',
-  weight: '100 900',
-  preload: true, // 폰트를 미리 로드해 초기 로딩 성능 향상
+  preload: true,
   fallback: ['arial', 'sans-serif'],
 });
 
-export default Pretendard;
+export default pretendard;

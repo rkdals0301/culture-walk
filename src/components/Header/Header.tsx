@@ -38,7 +38,7 @@ const Header = () => {
             onClick={handleOpenSideMenu} // 클릭 핸들러
           />
           <Link href='/' className='flex h-full items-center justify-center'>
-            <div className='flex items-center justify-center text-lg font-bold'>문화산책</div>
+            <h1 className='flex items-center justify-center text-lg font-bold'>문화산책</h1>
           </Link>
         </div>
         <div className='flex h-full items-center justify-center gap-4'>
