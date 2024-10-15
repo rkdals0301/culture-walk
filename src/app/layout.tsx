@@ -16,7 +16,7 @@ import dynamic from 'next/dynamic';
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
 
-import pretendard from '../../public/fonts/pretendard';
+import pretendard from '../../public/assets/fonts/pretendard';
 
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
 

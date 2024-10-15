@@ -6,8 +6,8 @@ import React, { useEffect } from 'react';
 
 import { useTheme } from 'next-themes';
 
-import DarkModeIcon from '../../../public/assets/dark-mode-icon.svg';
-import LightModeIcon from '../../../public/assets/light-mode-icon.svg';
+import DarkModeIcon from '../../../public/assets/images/dark-mode-icon.svg';
+import LightModeIcon from '../../../public/assets/images/light-mode-icon.svg';
 
 // 다크모드 아이콘
 

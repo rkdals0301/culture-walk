@@ -5,7 +5,7 @@ import IconButton from '@/components/Common/IconButton';
 import React, { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import MapFindMyLocationIcon from '../../../public//assets/map-find-my-location-icon.svg';
+import MapFindMyLocationIcon from '../../../public/assets/images/map-find-my-location-icon.svg';
 
 interface MapFindMyLocationControlProps {
   onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백

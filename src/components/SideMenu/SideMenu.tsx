@@ -6,8 +6,8 @@ import { useSideMenu } from '@/context/SideMenuContext';
 import clsx from 'clsx';
 
 // clsx 추가
-import AvatarDefaultIcon from '../../../public/assets/avatar-default.svg';
-import CloseIcon from '../../../public/assets/close-icon.svg';
+import AvatarDefaultIcon from '../../../public/assets/images/avatar-default.svg';
+import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const SideMenu = () => {
   const { isOpen, closeSideMenu } = useSideMenu(); // 컨텍스트 값 사용

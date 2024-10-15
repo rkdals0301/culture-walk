@@ -9,8 +9,8 @@ import { useState } from 'react';
 
 import Link from 'next/link';
 
-import SideMenuIcon from '../../../public/assets/menu-icon.svg';
-import SearchIcon from '../../../public/assets/search-icon.svg';
+import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
+import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);

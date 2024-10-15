@@ -5,7 +5,7 @@ import { setSearchQuery } from '@/slices/culturesSlice';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import ArrowBackIcon from '../../../public/assets/arrow-back-icon.svg';
+import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchBar from './SearchBar';
 
 interface SearchViewProps {

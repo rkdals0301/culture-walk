@@ -15,7 +15,7 @@ import { useParams } from 'next/navigation';
 // selector import
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 
-import mapNightMode from '../../../public/mapStyles/night-mode.json';
+import googleMapNightMode from '../../../public/assets/google-map-night-mode.json';
 
 const MapZoomControls = dynamic(() => import('@/components/Map/MapZoomControls'), { ssr: false });
 const MapFindMyLocationControl = dynamic(() => import('@/components/Map/MapFindMyLocationControl'), { ssr: false });
@@ -101,7 +101,7 @@ const MapView = () => {
       disableDefaultUI: true,
       clickableIcons: false,
       zoom: 12,
-      styles: resolvedTheme === 'dark' ? mapNightMode : null,
+      styles: resolvedTheme === 'dark' ? googleMapNightMode : null,
     }),
     [resolvedTheme]
   );

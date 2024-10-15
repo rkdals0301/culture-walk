@@ -2,8 +2,8 @@ import IconButton from '@/components/Common/IconButton';
 
 import React from 'react';
 
-import SearchCancelIcon from '../../../public/assets/search-cancel-icon.svg';
-import SearchIcon from '../../../public/assets/search-icon.svg';
+import SearchCancelIcon from '../../../public/assets/images/search-cancel-icon.svg';
+import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 interface SearchBarProps {
   searchQuery: string;

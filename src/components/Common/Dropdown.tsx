@@ -3,8 +3,8 @@ import IconButton from '@/components/Common/IconButton';
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import ArrowDropDownIcon from '../../../public/assets/arrow-drop-down-icon.svg';
-import ArrowDropUpIcon from '../../../public/assets/arrow-drop-up-icon.svg';
+import ArrowDropDownIcon from '../../../public/assets/images/arrow-drop-down-icon.svg';
+import ArrowDropUpIcon from '../../../public/assets/images/arrow-drop-up-icon.svg';
 
 interface DropdownProps {
   icon?: React.ReactNode; // 아이콘이 있을 경우
