@@ -2,12 +2,9 @@ import BottomSheet from '@/components/BottomSheet/BottomSheet';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import SideMenu from '@/components/SideMenu/SideMenu';
-// import Footer from '@/components/Common/Footer/Footer';
 import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
-// import notoSansKr from '@/fonts/notoSansKr';
-import pretendard from '@/fonts/pretendard';
 import QueryClientProvider from '@/providers/QueryClientProvider';
 import ReduxProvider from '@/providers/ReduxProvider';
 // import '@/styles/reset.scss';
@@ -18,6 +15,8 @@ import dynamic from 'next/dynamic';
 
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google';
 import { Analytics } from '@vercel/analytics/react';
+
+import pretendard from '../../public/fonts/pretendard';
 
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
 
@@ -110,7 +109,7 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
   return (
-    <html lang='ko' className=''>
+    <html lang='ko'>
       <head>
         {/* DNS Prefetch */}
         <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
@@ -161,7 +160,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
                   <Header />
                   <SideMenu />
                   <Main>{children}</Main>
-                  {/* <Footer /> */}
                   <BottomSheet />
                   <CustomToastContainer />
                 </SideMenuProvider>
