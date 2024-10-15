@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import Image from 'next/image';
-import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 
 interface MapDetailPageProps {
   params: {
@@ -20,8 +20,6 @@ interface MapDetailPageProps {
 
 const MapDetailPage = ({ params }: MapDetailPageProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const timestamp = searchParams.get('timestamp');
   const cultureId = useMemo(() => parseInt(params.id, 10), [params.id]);
 
   const { isLoading, error } = useCultureById(cultureId);
@@ -31,7 +29,7 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
   const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
 
   const handleImageError = () => {
-    setImgSrc('/assets/logo.svg');
+    setImgSrc('/assets/images/logo.svg');
   };
 
   const handleOpenExternalLink = (url?: string) => {
@@ -43,7 +41,7 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
   }, [router]);
 
   useEffect(() => {
-    setImgSrc(culture?.mainImage || '/assets/logo.svg');
+    setImgSrc(culture?.mainImage || '/assets/images/logo.svg');
   }, [culture?.mainImage]);
 
   // Content 렌더링 로직 분리
@@ -65,47 +63,46 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
       notFound();
       return null; // notFound 호출 후에는 반환값을 null로 설정
     }
-    if (culture) {
-      return (
-        <div className='flex size-full flex-col gap-4'>
-          <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
-            <div className='h-full w-32 flex-none'>
-              <Image
-                width={128}
-                height={182}
-                src={imgSrc ?? '/assets/logo.svg'}
-                alt={culture.title}
-                className='size-full rounded-lg'
-                onError={handleImageError}
-              />
-            </div>
-            <div className='h-full grow overflow-y-auto'>
-              <p className='font-semibold text-gray-900 dark:text-gray-100'>{culture.title}</p>
-              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
-              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
-              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
-              <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
-            </div>
+
+    return (
+      <div className='flex size-full flex-col gap-4'>
+        <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
+          <div className='h-full w-32 flex-none'>
+            <Image
+              width={128}
+              height={182}
+              src={imgSrc ?? '/assets/images/logo.svg'}
+              alt={culture.title}
+              className='size-full rounded-lg'
+              onError={handleImageError}
+            />
           </div>
-          <div className='flex h-10 flex-none gap-4'>
-            <Button
-              fullWidth
-              ariaLabel='서울문화포털 웹사이트로 이동'
-              onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
-            >
-              서울문화포털
-            </Button>
-            <Button
-              fullWidth
-              ariaLabel='예약 웹사이트로 이동'
-              onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
-            >
-              예약
-            </Button>
+          <div className='h-full grow overflow-y-auto'>
+            <p className='font-semibold text-gray-900 dark:text-gray-100'>{culture.title}</p>
+            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
+            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
+            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
+            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
           </div>
         </div>
-      );
-    }
+        <div className='flex h-10 flex-none gap-4'>
+          <Button
+            fullWidth
+            ariaLabel='서울문화포털 웹사이트로 이동'
+            onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
+          >
+            서울문화포털
+          </Button>
+          <Button
+            fullWidth
+            ariaLabel='예약 웹사이트로 이동'
+            onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
+          >
+            예약
+          </Button>
+        </div>
+      </div>
+    );
     return null;
   }, [isLoading, error, culture, imgSrc]);
 
@@ -115,7 +112,7 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
       content: renderContent(),
       onClose: handleBottomSheetClose,
     });
-  }, [renderContent, openBottomSheet, handleBottomSheetClose, timestamp]);
+  }, [renderContent, openBottomSheet, handleBottomSheetClose]);
 
   return null;
 };

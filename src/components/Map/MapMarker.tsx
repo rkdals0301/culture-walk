@@ -42,7 +42,7 @@ const MapMarker = ({
   const handleGoToMapDetail = useCallback(
     (activeId: number) => {
       if (activeId === id) {
-        router.push(`/map/${activeId}?timestamp=${Date.now()}`, { scroll: false });
+        router.push(`/map/${activeId}`, { scroll: false });
       } else {
         router.push(`/map/${activeId}`, { scroll: false });
       }
@@ -88,7 +88,9 @@ const MapMarker = ({
     setCenterPosition,
   ]);
 
-  const iconUrl = isSelected ? '/assets/map-marker-active-icon.svg' : '/assets/map-marker-default-icon.svg';
+  const iconUrl = isSelected
+    ? '/assets/images/map-marker-active-icon.svg'
+    : '/assets/images/map-marker-default-icon.svg';
   const iconSize = isSelected ? new google.maps.Size(40, 40) : new google.maps.Size(32, 32);
 
   // 선택된 마커는 최상단에 위치, 그렇지 않으면 cultures.length와 culture.id에 기반한 zIndex 설정
