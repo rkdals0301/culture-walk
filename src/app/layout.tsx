@@ -2,13 +2,12 @@ import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
+import { Pretendard } from '@/styles/font';
 // import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
-
-// import pretendard from '../../public/assets/fonts/pretendard';
 
 const QueryClientProvider = dynamic(() => import('@/providers/QueryClientProvider'), { ssr: false });
 const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
@@ -93,23 +92,28 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     <html lang='ko'>
       <head>
         {/* Culture Seoul */}
-        <link rel='dns-prefetch' href='//culture.seoul.go.kr' />
-        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://culture.seoul.go.kr' />
+        <link rel='dns-prefetch' href='https://culture.seoul.go.kr' />
 
         {/* Google Maps */}
-        <link rel='dns-prefetch' href='//maps.googleapis.com' />
-        <link rel='dns-prefetch' href='//maps.gstatic.com' />
-        <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
-        <link rel='preconnect' href='https://maps.gstatic.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://maps.googleapis.com' />
+        <link rel='dns-prefetch' href='https://maps.googleapis.com' />
+        <link rel='preconnect' href='https://maps.gstatic.com' />
+        <link rel='dns-prefetch' href='https://maps.gstatic.com' />
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link rel='dns-prefetch' href='https://fonts.googleapis.com' />
+        <link rel='preconnect' href='https://fonts.gstatic.com' />
 
         {/* Google Analytics */}
-        <link rel='dns-prefetch' href='//www.google-analytics.com' />
-        <link rel='preconnect' href='https://www.google-analytics.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://www.google-analytics.com' />
+        <link rel='dns-prefetch' href='https://www.google-analytics.com' />
 
         <noscript>You need to enable JavaScript to run this app.</noscript>
       </head>
-      {/* ${pretendard.className} */}
-      <body className={`safe-area h-dvh touch-pan-y bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}>
+
+      <body
+        className={`${Pretendard.className} safe-area h-dvh bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
+      >
         <QueryClientProvider>
           <ThemeProvider>
             <ReduxProvider>
