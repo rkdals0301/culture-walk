@@ -112,7 +112,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       </head>
 
       <body
-        className={`${Pretendard.className} safe-area h-dvh bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
+        className={`${Pretendard.className} safe-area min-h-dvh bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
       >
         <QueryClientProvider>
           <ThemeProvider>

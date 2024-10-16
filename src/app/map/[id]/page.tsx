@@ -74,7 +74,10 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
               src={imgSrc ?? '/assets/images/logo.svg'}
               alt={culture.title}
               className='size-full rounded-lg'
+              placeholder='blur'
+              blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
               onError={handleImageError}
+              priority
             />
           </div>
           <div className='h-full grow overflow-y-auto'>

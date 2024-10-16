@@ -25,6 +25,8 @@ const CultureItem = ({ culture }: CultureItemProps) => {
           alt={culture.title}
           className='size-full'
           loading='lazy'
+          placeholder='blur'
+          blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
           onError={handleImageError}
         />
       </div>
