@@ -2,7 +2,7 @@ import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
-import { Pretendard } from '@/styles/font';
+// import { pretendard } from '@/styles/font';
 // import '@/styles/reset.scss';
 import '@/styles/globals.scss';
 
@@ -92,27 +92,43 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     <html lang='ko'>
       <head>
         {/* Culture Seoul */}
-        <link rel='preconnect' href='https://culture.seoul.go.kr' />
         <link rel='dns-prefetch' href='https://culture.seoul.go.kr' />
+        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
 
         {/* Google Maps */}
-        <link rel='preconnect' href='https://maps.googleapis.com' />
         <link rel='dns-prefetch' href='https://maps.googleapis.com' />
-        <link rel='preconnect' href='https://maps.gstatic.com' />
+        <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
         <link rel='dns-prefetch' href='https://maps.gstatic.com' />
-        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link rel='preconnect' href='https://maps.gstatic.com' crossOrigin='anonymous' />
         <link rel='dns-prefetch' href='https://fonts.googleapis.com' />
-        <link rel='preconnect' href='https://fonts.gstatic.com' />
+        <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
+        <link rel='preconnect' href='https://fonts.gstatic.com' crossOrigin='anonymous' />
 
         {/* Google Analytics */}
-        <link rel='preconnect' href='https://www.google-analytics.com' />
         <link rel='dns-prefetch' href='https://www.google-analytics.com' />
+        <link rel='preconnect' href='https://www.google-analytics.com' crossOrigin='anonymous' />
 
-        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <link
+          rel='preload'
+          href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
+          as='style'
+          crossOrigin='anonymous'
+        />
+        <link
+          rel='stylesheet'
+          href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
+          crossOrigin='anonymous'
+        />
+        <noscript>
+          <link
+            rel='stylesheet'
+            href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
+          />
+          You need to enable JavaScript to run this app.
+        </noscript>
       </head>
-
       <body
-        className={`${Pretendard.className} safe-area min-h-dvh bg-white text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
+        className={`safe-area min-h-dvh bg-white font-pretendard text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
       >
         <QueryClientProvider>
           <ThemeProvider>

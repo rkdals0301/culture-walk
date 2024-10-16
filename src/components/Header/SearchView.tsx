@@ -1,12 +1,15 @@
 import IconButton from '@/components/Common/IconButton';
-import SearchResultsOverlay from '@/components/Header/SearchResultsOverlay';
 import { setSearchQuery } from '@/slices/culturesSlice';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
+import dynamic from 'next/dynamic';
+
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchBar from './SearchBar';
+
+const SearchResultsOverlay = dynamic(() => import('@/components/Header/SearchResultsOverlay'), { ssr: false });
 
 interface SearchViewProps {
   onClose: () => void;

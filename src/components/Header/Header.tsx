@@ -1,16 +1,18 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
-import SearchView from '@/components/Header/SearchView';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
 import { useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
 import SearchIcon from '../../../public/assets/images/search-icon.svg';
+
+const SearchView = dynamic(() => import('@/components/Header/SearchView'), { ssr: false });
 
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
