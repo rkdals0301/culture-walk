@@ -1,7 +1,11 @@
 import Header from '@/components/Header/Header';
+import Loader from '@/components/Loader/Loader';
 import Main from '@/components/Main/Main';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
+import QueryClientProvider from '@/providers/QueryClientProvider';
+import ReduxProvider from '@/providers/ReduxProvider';
+import ThemeProvider from '@/providers/ThemeProvider';
 // import { pretendard } from '@/styles/font';
 // import '@/styles/reset.scss';
 import '@/styles/globals.scss';
@@ -9,13 +13,13 @@ import '@/styles/globals.scss';
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 
-const QueryClientProvider = dynamic(() => import('@/providers/QueryClientProvider'), { ssr: false });
-const ThemeProvider = dynamic(() => import('@/providers/ThemeProvider'), { ssr: false });
-const ReduxProvider = dynamic(() => import('@/providers/ReduxProvider'), { ssr: false });
-
-const SideMenu = dynamic(() => import('@/components/SideMenu/SideMenu'), { ssr: false });
-const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet'), { ssr: false });
-const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'), { ssr: false });
+const SideMenu = dynamic(() => import('@/components/SideMenu/SideMenu'), {
+  loading: () => <Loader isFullscreen />,
+});
+const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet'), {
+  loading: () => <Loader isFullscreen />,
+});
+const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
 
 export const metadata: Metadata = {
   title: {
@@ -77,7 +81,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  // maximumScale: 1,
+  maximumScale: 1,
   userScalable: false,
   themeColor: '#ffffff',
   colorScheme: 'light dark',
@@ -96,17 +100,15 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
 
         {/* Google Maps */}
-        <link rel='dns-prefetch' href='https://maps.googleapis.com' />
         <link rel='preconnect' href='https://maps.googleapis.com' crossOrigin='anonymous' />
-        <link rel='dns-prefetch' href='https://maps.gstatic.com' />
         <link rel='preconnect' href='https://maps.gstatic.com' crossOrigin='anonymous' />
-        <link rel='dns-prefetch' href='https://fonts.googleapis.com' />
+
+        {/* Google Fonts */}
         <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
         <link rel='preconnect' href='https://fonts.gstatic.com' crossOrigin='anonymous' />
 
         {/* Google Analytics */}
         <link rel='dns-prefetch' href='https://www.google-analytics.com' />
-        <link rel='preconnect' href='https://www.google-analytics.com' crossOrigin='anonymous' />
 
         <link
           rel='preload'

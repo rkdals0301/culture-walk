@@ -1,6 +1,7 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
+import Loader from '@/components/Loader/Loader';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
@@ -12,7 +13,9 @@ import Link from 'next/link';
 import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
 import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
-const SearchView = dynamic(() => import('@/components/Header/SearchView'), { ssr: false });
+const SearchView = dynamic(() => import('@/components/Header/SearchView'), {
+  loading: () => <Loader isFullscreen />,
+});
 
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);

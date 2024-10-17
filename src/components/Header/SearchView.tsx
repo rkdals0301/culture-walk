@@ -1,4 +1,5 @@
 import IconButton from '@/components/Common/IconButton';
+import Loader from '@/components/Loader/Loader';
 import { setSearchQuery } from '@/slices/culturesSlice';
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -9,7 +10,9 @@ import dynamic from 'next/dynamic';
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchBar from './SearchBar';
 
-const SearchResultsOverlay = dynamic(() => import('@/components/Header/SearchResultsOverlay'), { ssr: false });
+const SearchResultsOverlay = dynamic(() => import('@/components/Header/SearchResultsOverlay'), {
+  loading: () => <Loader />,
+});
 
 interface SearchViewProps {
   onClose: () => void;

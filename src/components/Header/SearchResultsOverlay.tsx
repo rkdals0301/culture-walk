@@ -1,4 +1,3 @@
-import CultureList from '@/components/Header/CultureList';
 import Loader from '@/components/Loader/Loader';
 import { useCultures } from '@/hooks/cultureHooks';
 import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors';
@@ -7,9 +6,14 @@ import { FormattedCulture } from '@/types/culture';
 import React from 'react';
 import { useSelector } from 'react-redux';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
+
+const CultureList = dynamic(() => import('@/components/Header/CultureList'), {
+  loading: () => <Loader />,
+});
 
 interface SearchResultsOverlayProps {
   onClose: () => void;

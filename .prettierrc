@@ -9,6 +9,8 @@
   "useTabs": false,
   "arrowParens": "avoid",
   "endOfLine": "auto",
+  "proseWrap": "always",
+  "htmlWhitespaceSensitivity": "strict",
   "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "tailwindFunctions": ["clsx", "twMerge"],
   "importOrder": ["^react", "^next", "^@?\\w", "^[./]"],

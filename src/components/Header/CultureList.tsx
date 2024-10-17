@@ -1,10 +1,14 @@
-import CultureItem from '@/components/Header/CultureItem';
 import { FormattedCulture } from '@/types/culture';
 
 import React, { useRef } from 'react';
 
+import dynamic from 'next/dynamic';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
 import clsx from 'clsx';
+
+// TODO: 스켈레톤 UI 작업
+const CultureItem = dynamic(() => import('@/components/Header/CultureItem'));
 
 interface CultureListProps {
   cultures: FormattedCulture[];
