@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-const Home = () => {
+const HomePage = () => {
   redirect('/map');
 };
 
-export default Home;
+export default HomePage;

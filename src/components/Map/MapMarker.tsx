@@ -41,13 +41,9 @@ const MapMarker = ({
 
   const handleGoToMapDetail = useCallback(
     (activeId: number) => {
-      if (activeId === id) {
-        router.push(`/map/${activeId}`, { scroll: false });
-      } else {
-        router.push(`/map/${activeId}`, { scroll: false });
-      }
+      router.push(`/map/${activeId}`);
     },
-    [router, id] // currentId를 의존성 배열에 추가
+    [router] // currentId를 의존성 배열에 추가
   );
 
   const handleMarkerClick = useCallback(() => {

@@ -6,7 +6,7 @@ interface LoaderProps {
   isFullscreen?: boolean; // 전체화면 여부
 }
 
-const Loader = ({ color = '#007bff', size = 60, isFullscreen = false }: LoaderProps) => {
+const Loader = ({ color = '#007bff', size = 50, isFullscreen = false }: LoaderProps) => {
   return (
     <div className={`flex size-full items-center justify-center ${isFullscreen ? 'fixed inset-0 bg-black/80' : ''}`}>
       <ClipLoader color={color} size={size} />
