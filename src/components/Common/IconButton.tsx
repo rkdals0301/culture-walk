@@ -27,7 +27,7 @@ const IconButton = ({
   className,
   ...props
 }: IconButtonProps) => {
-  const baseClass = 'flex items-center justify-center rounded transition duration-200';
+  const baseClass = 'flex items-center justify-center rounded-full transition duration-200 p-2';
   const disabledClass = disabled ? 'opacity-50 cursor-not-allowed' : '';
 
   const colorClasses = {

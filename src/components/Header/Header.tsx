@@ -36,7 +36,7 @@ const Header = () => {
   return (
     <header className='fixed inset-0 z-10 flex h-14 w-full flex-col border-b border-b-gray-300 bg-white px-4 py-2 text-gray-900 dark:border-b-neutral-700 dark:bg-neutral-900 dark:text-gray-100'>
       <div className='flex h-full flex-none items-center justify-between'>
-        <div className='flex h-full items-center justify-center gap-4'>
+        <div className='flex h-full items-center justify-center gap-2'>
           <IconButton
             icon={<SideMenuIcon />} // 아이콘 전달
             ariaLabel='사이드메뉴 열기' // 접근성 라벨
@@ -46,7 +46,7 @@ const Header = () => {
             <h1 className='flex items-center justify-center text-lg font-bold'>문화산책</h1>
           </Link>
         </div>
-        <div className='flex h-full items-center justify-center gap-4'>
+        <div className='flex h-full items-center justify-center gap-2'>
           <IconButton
             icon={<SearchIcon />} // 아이콘 전달
             ariaLabel='검색바 열기' // 접근성 라벨
