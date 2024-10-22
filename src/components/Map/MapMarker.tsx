@@ -25,7 +25,6 @@ const MapMarker = ({
   isSelected,
   setActiveMarkerId,
   setCenterPosition,
-  id,
   totalCulturesLength,
 }: MapMarkerProps) => {
   const router = useRouter();

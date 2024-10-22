@@ -4,7 +4,7 @@ import { useBottomSheet } from '@/context/BottomSheetContext';
 
 import React, { useEffect } from 'react';
 
-import { AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import * as m from 'framer-motion/m';
 
 const BottomSheet = () => {
@@ -37,16 +37,7 @@ const BottomSheet = () => {
             initial={{ bottom: -260 }}
             transition={{ duration: 0.3 }}
           >
-            <AnimatePresence>
-              <m.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 5 }}
-              >
-                <div className='size-full p-4'>{content}</div>
-              </m.div>
-            </AnimatePresence>
+            <div className='size-full p-4'>{content}</div> {/* 업데이트된 content 사용 */}
           </m.div>
         </LazyMotion>
       )}

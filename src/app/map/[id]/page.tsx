@@ -37,7 +37,7 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
   };
 
   const handleBottomSheetClose = useCallback(() => {
-    router.push('/map', { scroll: false });
+    router.push('/map');
   }, [router]);
 
   useEffect(() => {
@@ -61,7 +61,6 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
     }
     if (!culture) {
       notFound();
-      return null; // notFound 호출 후에는 반환값을 null로 설정
     }
 
     return (
@@ -106,7 +105,6 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
         </div>
       </div>
     );
-    return null;
   }, [isLoading, error, culture, imgSrc]);
 
   // BottomSheet 여는 로직 통합
