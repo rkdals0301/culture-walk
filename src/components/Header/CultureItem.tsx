@@ -2,6 +2,7 @@ import { FormattedCulture } from '@/types/culture';
 
 import React, { useState } from 'react';
 
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
 
 interface CultureItemProps {
@@ -9,6 +10,7 @@ interface CultureItemProps {
 }
 
 const CultureItem = ({ culture }: CultureItemProps) => {
+  const { resolvedTheme } = useTheme();
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
 
   const handleImageError = () => {
@@ -17,17 +19,21 @@ const CultureItem = ({ culture }: CultureItemProps) => {
 
   return (
     <li className='flex size-full gap-4'>
-      <div className='size-16 flex-none'>
+      <div className='relative size-16 flex-none'>
         <Image
-          width={64}
-          height={64}
           src={imgSrc}
           alt={culture.title}
-          className='size-full'
           loading='lazy'
           placeholder='blur'
-          blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
+          blurDataURL={
+            resolvedTheme === 'dark'
+              ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDIJfE/ik1xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAPpqkfBnntZwAAAAABJRU5ErkJggg=='
+              : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDINe/pE00xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAMX43gB4UCRUgAAAABJRU5ErkJggg=='
+          }
           onError={handleImageError}
+          fill
+          sizes='100dvw'
+          className='rounded-lg'
         />
       </div>
       <div className='size-full grow overflow-hidden'>

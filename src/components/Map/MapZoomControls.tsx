@@ -37,19 +37,19 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   return (
     <div className='absolute bottom-5 right-2 flex flex-col items-center justify-center rounded-lg bg-white shadow-lg'>
       <IconButton
-        className='size-8 rounded-t-lg bg-gray-100 hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300'
+        className='rounded-none rounded-t-lg bg-gray-100 hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300'
         icon={<MapAddIcon />}
         ariaLabel='지도 확대'
         onClick={handleZoomIn}
-        iconClassName='size-5 dark:text-gray-900' // 아이콘 색상 스타일
+        iconClassName='dark:text-gray-900' // 아이콘 색상 스타일
       />
       <div className='h-px w-full bg-gray-200' /> {/* 버튼 사이의 선 */}
       <IconButton
         icon={<MapRemoveIcon />}
-        className='size-8 rounded-b-lg bg-gray-100 hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300'
+        className='rounded-none rounded-b-lg bg-gray-100 hover:bg-gray-300 dark:bg-gray-100 dark:hover:bg-gray-300'
         ariaLabel='지도 축소'
         onClick={handleZoomOut}
-        iconClassName='size-5 dark:text-gray-900' // 아이콘 색상 스타일
+        iconClassName='dark:text-gray-900' // 아이콘 색상 스타일
       />
     </div>
   );

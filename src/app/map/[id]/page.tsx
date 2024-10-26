@@ -66,17 +66,17 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
     return (
       <div className='flex size-full flex-col gap-4'>
         <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
-          <div className='h-full w-32 flex-none'>
+          <div className='relative h-full w-32 flex-none'>
             <Image
-              width={128}
-              height={182}
               src={imgSrc ?? '/assets/images/logo.svg'}
               alt={culture.title}
-              className='size-full rounded-lg'
               placeholder='blur'
               blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
               onError={handleImageError}
+              fill
+              sizes='100dvw'
               priority
+              className='rounded-lg'
             />
           </div>
           <div className='h-full grow overflow-y-auto'>
@@ -109,10 +109,13 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
 
   // BottomSheet 여는 로직 통합
   useEffect(() => {
+    // if (!isLoading && !error && culture) {
     openBottomSheet({
       content: renderContent(),
       onClose: handleBottomSheetClose,
     });
+    // }
+    // }, [isLoading, error, culture, renderContent, openBottomSheet, handleBottomSheetClose]);
   }, [renderContent, openBottomSheet, handleBottomSheetClose]);
 
   return null;
