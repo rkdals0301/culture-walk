@@ -25,13 +25,13 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
     count: itemCount, // 총 아이템 수
     overscan: 10,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 90,
+    estimateSize: () => 136,
   });
 
   return (
-    <div ref={parentRef} className='rounded-lg bg-gray-100 dark:bg-neutral-800'>
+    <div ref={parentRef} className='h-full overflow-y-auto pr-1'>
       <div
-        className='relative divide-y divide-gray-300 dark:divide-neutral-700'
+        className='relative'
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
         }}
@@ -42,9 +42,10 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
           const isLast = virtualItem.index === cultures.length - 1;
 
           return (
-            <div
-              key={virtualItem.key} // 각 항목에 고유한 key 추가
-              className='absolute size-full'
+            <button
+              type='button'
+              key={virtualItem.key}
+              className='absolute left-0 right-0 text-left'
               style={{
                 height: `${virtualItem.size}px`,
                 transform: `translateY(${virtualItem.start}px)`,
@@ -52,14 +53,17 @@ const CultureList = ({ cultures, onItemClick }: CultureListProps) => {
               onClick={() => onItemClick(culture)}
             >
               <div
-                className={clsx('size-full cursor-pointer px-4 py-3 hover:bg-gray-200 dark:hover:bg-neutral-700', {
-                  'rounded-t-lg': isFirst, // 첫 번째 요소일 때 상단 둥근 모서리
-                  'rounded-b-lg': isLast, // 마지막 요소일 때 하단 둥근 모서리
-                })}
+                className={clsx(
+                  'surface-card mx-1 my-2 h-[calc(100%-16px)] rounded-[28px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
+                  {
+                    'mt-1': isFirst,
+                    'mb-1': isLast,
+                  }
+                )}
               >
                 <CultureItem culture={culture} />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

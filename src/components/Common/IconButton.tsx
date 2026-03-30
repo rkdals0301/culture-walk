@@ -27,22 +27,30 @@ const IconButton = ({
   className,
   ...props
 }: IconButtonProps) => {
-  const baseClass = 'flex items-center justify-center rounded-full transition duration-200 p-2';
+  const baseClass =
+    'inline-flex items-center justify-center rounded-2xl border transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
   const disabledClass = disabled ? 'opacity-50 cursor-not-allowed' : '';
 
   const colorClasses = {
-    primary: 'hover:bg-gray-200 dark:hover:bg-neutral-700',
-    secondary: 'hover:bg-gray-200 dark:hover:bg-neutral-700',
-    success: 'hover:bg-gray-200 dark:hover:bg-neutral-700',
-    danger: 'hover:bg-gray-200 dark:hover:bg-neutral-700',
-    gradient: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gray-200 dark:hover:bg-neutral-700',
+    primary:
+      'border-transparent bg-[#1f765f] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(31,118,95,0.95)] hover:bg-[#175846]',
+    secondary:
+      'border-[var(--app-border)] bg-white/70 text-[var(--app-text)] hover:bg-white dark:bg-white/5 dark:hover:bg-white/10',
+    success:
+      'border-transparent bg-[#d98b2f] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(217,139,47,0.9)] hover:bg-[#c17824]',
+    danger:
+      'border-transparent bg-[#8e3b34] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(142,59,52,0.9)] hover:bg-[#733029]',
+    gradient:
+      'border-transparent bg-gradient-to-r from-[#1f765f] via-[#2b8a6e] to-[#d98b2f] text-[#fff8f1] hover:brightness-105',
   };
 
   const colorClass = colorClasses[variant];
 
-  const iconColorClass = 'text-gray-900 dark:text-gray-100'; // 기본 아이콘 색상
-  const iconSizeClass = 'size-6'; // 아이콘 크기
-  const buttonClass = twMerge(clsx(baseClass, colorClass, disabledClass, fullWidth && 'w-full', className));
+  const iconColorClass = 'text-current'; // 기본 아이콘 색상
+  const iconSizeClass = 'size-5 sm:size-6'; // 아이콘 크기
+  const buttonClass = twMerge(
+    clsx(baseClass, colorClass, disabledClass, fullWidth ? 'w-full' : 'size-11', className)
+  );
 
   return (
     <button

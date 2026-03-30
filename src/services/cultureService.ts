@@ -1,28 +1,88 @@
+import { CultureRow, NewCultureRow } from '@/db/schema';
 import { Culture, RawCulture } from '@/types/culture';
 
-export function mapRawCultureToCulture(rawCulture: RawCulture): Omit<Culture, 'id'> {
+const parseDateToIso = (value?: string) => {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+};
+
+const parseNumber = (value?: string) => {
+  if (!value) return null;
+
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return null;
+  return parsed;
+};
+
+const toText = (value?: string) => value?.trim() || null;
+
+const toDateOrNow = (value?: string | null) => {
+  if (!value) return new Date();
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return new Date();
+  return parsed;
+};
+
+export function mapRawCultureToCulture(rawCulture: RawCulture): NewCultureRow {
   return {
-    classification: rawCulture.CODENAME ?? null,
-    date: rawCulture.DATE ?? null,
-    endDate: new Date(rawCulture.END_DATE) ?? null,
-    etcDescription: rawCulture.ETC_DESC ?? null,
-    guName: rawCulture.GUNAME ?? null,
-    homepageDetailAddress: rawCulture.ORG_LINK ?? null,
-    isFree: rawCulture.IS_FREE ?? null,
-    lat: parseFloat(rawCulture.LOT) ?? null,
-    lng: parseFloat(rawCulture.LAT) ?? null,
-    mainImage: rawCulture.MAIN_IMG ?? null,
-    homepageAddress: rawCulture.HMPG_ADDR ?? null,
-    organizationName: rawCulture.ORG_NAME ?? null,
-    place: rawCulture.PLACE ?? null,
-    performerInformation: rawCulture.PLAYER ?? null,
-    programIntroduction: rawCulture.PROGRAM ?? null,
-    registrationDate: rawCulture.RGSTDATE ?? null,
-    startDate: new Date(rawCulture.STRTDATE) ?? null,
-    themeClassification: rawCulture.THEMECODE ?? null,
-    register: rawCulture.TICKET ?? null,
-    title: rawCulture.TITLE ?? null,
-    useFee: rawCulture.USE_FEE ?? null,
-    useTarget: rawCulture.USE_TRGT ?? null,
+    classification: toText(rawCulture.CODENAME),
+    date: toText(rawCulture.DATE),
+    endDate: parseDateToIso(rawCulture.END_DATE),
+    etcDescription: toText(rawCulture.ETC_DESC),
+    guName: toText(rawCulture.GUNAME),
+    homepageDetailAddress: toText(rawCulture.ORG_LINK),
+    isFree: toText(rawCulture.IS_FREE),
+    lat: parseNumber(rawCulture.LOT),
+    lng: parseNumber(rawCulture.LAT),
+    mainImage: toText(rawCulture.MAIN_IMG),
+    homepageAddress: toText(rawCulture.HMPG_ADDR),
+    organizationName: toText(rawCulture.ORG_NAME),
+    place: toText(rawCulture.PLACE),
+    performerInformation: toText(rawCulture.PLAYER),
+    programIntroduction: toText(rawCulture.PROGRAM),
+    registrationDate: toText(rawCulture.RGSTDATE),
+    startDate: parseDateToIso(rawCulture.STRTDATE),
+    themeClassification: toText(rawCulture.THEMECODE),
+    register: toText(rawCulture.TICKET),
+    title: toText(rawCulture.TITLE),
+    useFee: toText(rawCulture.USE_FEE),
+    useTarget: toText(rawCulture.USE_TRGT),
+  };
+}
+
+export function mapCultureRowToCulture(row: CultureRow): Culture {
+  const startDate = toDateOrNow(row.startDate);
+  const endDate = toDateOrNow(row.endDate ?? row.startDate);
+
+  return {
+    id: row.id,
+    classification: row.classification ?? '',
+    date: row.date ?? '',
+    endDate,
+    etcDescription: row.etcDescription ?? '',
+    guName: row.guName ?? '',
+    homepageDetailAddress: row.homepageDetailAddress ?? '',
+    isFree: row.isFree ?? '',
+    lat: row.lat ?? 0,
+    lng: row.lng ?? 0,
+    mainImage: row.mainImage ?? '/assets/images/logo.svg',
+    homepageAddress: row.homepageAddress ?? '',
+    organizationName: row.organizationName ?? '',
+    place: row.place ?? '',
+    performerInformation: row.performerInformation ?? '',
+    programIntroduction: row.programIntroduction ?? '',
+    registrationDate: row.registrationDate ?? '',
+    startDate,
+    themeClassification: row.themeClassification ?? '',
+    register: row.register ?? '',
+    title: row.title ?? '',
+    useFee: row.useFee ?? '',
+    useTarget: row.useTarget ?? '',
+    createdAt: row.createdAt ? new Date(row.createdAt) : undefined,
+    updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
   };
 }

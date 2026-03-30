@@ -10,17 +10,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
-interface MapDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-const MapDetailPage = ({ params }: MapDetailPageProps) => {
+const MapDetailPage = () => {
   const router = useRouter();
-  const cultureId = useMemo(() => parseInt(params.id, 10), [params.id]);
+  const params = useParams<{ id: string }>();
+  const cultureId = useMemo(() => {
+    const rawId = params?.id;
+    const idValue = Array.isArray(rawId) ? rawId[0] : rawId;
+    return idValue ? parseInt(idValue, 10) : NaN;
+  }, [params]);
 
   const { isLoading, error } = useCultureById(cultureId);
   const culture = useSelector(getCulture);
@@ -28,13 +27,13 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
 
   const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
 
-  const handleImageError = () => {
+  const handleImageError = useCallback(() => {
     setImgSrc('/assets/images/logo.svg');
-  };
+  }, []);
 
-  const handleOpenExternalLink = (url?: string) => {
+  const handleOpenExternalLink = useCallback((url?: string) => {
     if (url) window.open(url, '_blank');
-  };
+  }, []);
 
   const handleBottomSheetClose = useCallback(() => {
     router.push('/map');
@@ -60,38 +59,57 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
       );
     }
     if (!culture) {
-      notFound();
+      return (
+        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-[28px] p-6 text-center'>
+          <p className='text-lg font-semibold tracking-[-0.03em]'>행사 정보를 찾을 수 없습니다.</p>
+          <Button ariaLabel='목록으로 돌아가기' onClick={() => router.push('/map')}>
+            목록으로 돌아가기
+          </Button>
+        </div>
+      );
     }
 
     return (
-      <div className='flex size-full flex-col gap-4'>
-        <div className='flex h-[calc(100%-3.5rem)] grow gap-4'>
-          <div className='relative h-full w-32 flex-none'>
-            <Image
-              src={imgSrc ?? '/assets/images/logo.svg'}
-              alt={culture.title}
-              placeholder='blur'
-              blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
-              onError={handleImageError}
-              fill
-              sizes='100dvw'
-              priority
-              className='rounded-lg'
-            />
-          </div>
-          <div className='h-full grow overflow-y-auto'>
-            <p className='font-semibold text-gray-900 dark:text-gray-100'>{culture.title}</p>
-            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPlace}</p>
-            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayDate}</p>
-            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.useTarget}</p>
-            <p className='text-sm font-medium text-gray-600 dark:text-gray-400'>{culture.displayPrice}</p>
-          </div>
+      <div className='flex flex-col gap-5'>
+        <div className='relative aspect-[16/10] overflow-hidden rounded-[28px] bg-black/[0.04] dark:bg-white/[0.05]'>
+          <Image
+            src={imgSrc ?? '/assets/images/logo.svg'}
+            alt={culture.title}
+            placeholder='blur'
+            blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
+            onError={handleImageError}
+            fill
+            sizes='100dvw'
+            priority
+            className='object-cover'
+          />
         </div>
-        <div className='flex h-10 flex-none gap-4'>
+        <div className='flex flex-wrap gap-2'>
+          <span className='rounded-full bg-[#e3f1ec] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'>
+            {culture.classification || 'Culture'}
+          </span>
+          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>{culture.guName}</span>
+          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+            {culture.displayPrice}
+          </span>
+        </div>
+        <div>
+          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>Selected Event</p>
+          <h2 className='mt-2 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.05em]'>{culture.title}</h2>
+        </div>
+        <div className='space-y-2 text-sm leading-6 text-[var(--app-muted)]'>
+          <p>{culture.displayPlace}</p>
+          <p>{culture.displayDate}</p>
+          <p>{culture.useTarget}</p>
+          <p>{culture.displayPrice}</p>
+        </div>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
           <Button
             fullWidth
             ariaLabel='서울문화포털 웹사이트로 이동'
             onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
+            variant='secondary'
+            disabled={!culture?.homepageAddress}
           >
             서울문화포털
           </Button>
@@ -99,13 +117,14 @@ const MapDetailPage = ({ params }: MapDetailPageProps) => {
             fullWidth
             ariaLabel='예약 웹사이트로 이동'
             onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
+            disabled={!culture?.homepageDetailAddress}
           >
-            예약
+            예약 / 상세
           </Button>
         </div>
       </div>
     );
-  }, [isLoading, error, culture, imgSrc]);
+  }, [isLoading, error, culture, imgSrc, handleImageError, handleOpenExternalLink, router]);
 
   // BottomSheet 여는 로직 통합
   useEffect(() => {

@@ -3,7 +3,6 @@ import Loader from '@/components/Loader/Loader';
 import Main from '@/components/Main/Main';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
-import QueryClientProvider from '@/providers/QueryClientProvider';
 import ReduxProvider from '@/providers/ReduxProvider';
 import ThemeProvider from '@/providers/ThemeProvider';
 // import { pretendard } from '@/styles/font';
@@ -20,6 +19,9 @@ const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet')
   loading: () => <Loader isFullscreen />,
 });
 const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
+const SITE_URL =
+  process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmindev31.workers.dev';
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/logo.svg`;
 
 export const metadata: Metadata = {
   title: {
@@ -27,10 +29,8 @@ export const metadata: Metadata = {
     template: '%s | 문화산책',
   },
   icons: [
-    { rel: 'icon', type: 'image/png', url: '/favicon-48x48.png', sizes: '48x48' },
     { rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' },
-    { rel: 'icon', url: '/favicon.ico', sizes: 'any' }, // 기본 ico 파일
-    { rel: 'apple-touch-icon', type: 'image/png', sizes: '180x180', url: '/apple-touch-icon-180x180.png' },
+    { rel: 'shortcut icon', type: 'image/svg+xml', url: '/favicon.svg' },
   ],
   description:
     '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
@@ -42,16 +42,15 @@ export const metadata: Metadata = {
       'naver-site-verification': '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5',
     },
   },
-  // manifest: 'https://culturewalk.vercel.app/manifest.json',
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
-    url: 'https://culturewalk.vercel.app',
+    url: SITE_URL,
     title: '문화산책',
     siteName: '문화산책',
     images: [
       {
-        url: 'https://culturewalk.vercel.app/assets/images/logo.svg',
+        url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
         alt: 'culturewalk',
@@ -66,7 +65,7 @@ export const metadata: Metadata = {
       '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
     images: [
       {
-        url: 'https://culturewalk.vercel.app/assets/images/logo.svg',
+        url: OG_IMAGE_URL,
         width: 1200,
         height: 675,
         alt: 'culturewalk',
@@ -93,7 +92,7 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
   return (
-    <html lang='ko'>
+    <html lang='ko' suppressHydrationWarning>
       <head>
         {/* Culture Seoul */}
         <link rel='dns-prefetch' href='https://culture.seoul.go.kr' />
@@ -130,23 +129,22 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         </noscript>
       </head>
       <body
+        suppressHydrationWarning
         className={`safe-area min-h-dvh bg-white font-pretendard text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
       >
-        <QueryClientProvider>
-          <ThemeProvider>
-            <ReduxProvider>
-              <BottomSheetProvider>
-                <SideMenuProvider>
-                  <Header />
-                  <SideMenu />
-                  <Main>{children}</Main>
-                  <BottomSheet />
-                  <CustomToastContainer />
-                </SideMenuProvider>
-              </BottomSheetProvider>
-            </ReduxProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <ReduxProvider>
+            <BottomSheetProvider>
+              <SideMenuProvider>
+                <Header />
+                <SideMenu />
+                <Main>{children}</Main>
+                <BottomSheet />
+                <CustomToastContainer />
+              </SideMenuProvider>
+            </BottomSheetProvider>
+          </ReduxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

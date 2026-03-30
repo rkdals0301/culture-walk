@@ -52,15 +52,25 @@ const MapMarker = ({
 
       openBottomSheet({
         content: (
-          <div className='size-full overflow-y-auto'>
-            <ul>
+          <div className='flex flex-col gap-4'>
+            <div>
+              <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                Shared Place
+              </p>
+              <h3 className='mt-2 text-xl font-semibold tracking-[-0.03em]'>같은 위치에서 여러 행사가 열리고 있습니다.</h3>
+              <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>
+                아래 목록에서 원하는 행사를 골라 상세 바텀시트로 이동할 수 있습니다.
+              </p>
+            </div>
+            <ul className='grid gap-2'>
               {duplicateCultures.map(dupCulture => (
                 <li
-                  className='cursor-pointer rounded-lg bg-white p-2 font-semibold text-gray-900 hover:bg-gray-200 dark:bg-neutral-900 dark:text-gray-100 dark:hover:bg-neutral-700'
+                  className='surface-card cursor-pointer rounded-[22px] p-4 font-semibold tracking-[-0.02em] transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.45)]'
                   key={dupCulture.id}
                   onClick={() => handleGoToMapDetail(dupCulture.id)}
                 >
-                  {dupCulture.title}
+                  <p>{dupCulture.title}</p>
+                  <p className='mt-1 text-sm font-medium text-[var(--app-muted)]'>{dupCulture.displayDate}</p>
                 </li>
               ))}
             </ul>

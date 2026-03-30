@@ -4,46 +4,89 @@ import IconButton from '@/components/Common/IconButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
 import clsx from 'clsx';
+import Image from 'next/image';
+import Link from 'next/link';
 
-// clsx 추가
-import AvatarDefaultIcon from '../../../public/assets/images/avatar-default.svg';
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const SideMenu = () => {
-  const { isOpen, closeSideMenu } = useSideMenu(); // 컨텍스트 값 사용
+  const { isOpen, closeSideMenu } = useSideMenu();
 
   return (
     <>
-      {/* 오버레이 클릭 시 사이드 메뉴 닫기 */}
-      <div className={clsx('fixed inset-0 z-10 size-full bg-black/50', { hidden: !isOpen })} onClick={closeSideMenu} />
+      <div
+        className={clsx('fixed inset-0 z-30 size-full bg-[#081311]/50 backdrop-blur-sm', { hidden: !isOpen })}
+        onClick={closeSideMenu}
+      />
 
-      {/* 사이드 메뉴 */}
       <nav
         className={clsx(
-          'fixed z-20 size-full bg-white p-4 shadow-lg transition-transform duration-300 dark:bg-neutral-900 md:w-72',
+          'surface-panel fixed left-0 top-0 z-40 flex h-dvh w-[92vw] max-w-sm flex-col gap-8 rounded-r-[32px] p-5 transition-transform duration-300 sm:p-6',
           {
             '-translate-x-full': !isOpen,
             'translate-x-0': isOpen,
           }
         )}
       >
-        <div className='absolute right-5 top-5'>
+        <div className='flex items-start justify-between gap-4'>
+          <Link href='/map' className='flex items-center gap-4' onClick={closeSideMenu}>
+            <Image
+              src='/assets/images/logo-128.png'
+              alt='CultureWalk'
+              width={52}
+              height={52}
+              className='rounded-3xl shadow-[0_22px_44px_-28px_rgba(31,118,95,0.95)]'
+            />
+            <div>
+              <p className='text-[0.62rem] font-semibold uppercase tracking-[0.3em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                Seoul Culture Map
+              </p>
+              <h2 className='text-xl font-semibold tracking-[-0.03em]'>CultureWalk</h2>
+            </div>
+          </Link>
           <IconButton
-            icon={<CloseIcon />} // 아이콘 전달
-            ariaLabel='사이드메뉴 닫기' // 접근성 라벨
+            icon={<CloseIcon />}
+            ariaLabel='사이드메뉴 닫기'
             onClick={closeSideMenu}
+            variant='secondary'
           />
         </div>
 
-        {/* 프로필 섹션 */}
-        <div className='flex gap-4'>
-          <div className='flex items-center justify-center'>
-            <AvatarDefaultIcon className='size-12' />
+        <div className='space-y-3'>
+          <p className='text-sm leading-6 text-[var(--app-muted)]'>
+            서울 곳곳에서 열리는 전시, 공연, 축제를 지도 위에서 빠르게 훑고 바로 이동하는 문화 탐색 앱입니다.
+          </p>
+          <div className='grid gap-3'>
+            <div className='surface-card rounded-[24px] p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                Explore
+              </p>
+              <p className='mt-2 text-lg font-semibold tracking-[-0.03em]'>지도 중심 탐색</p>
+              <p className='mt-1 text-sm text-[var(--app-muted)]'>행사 위치와 거리감을 한 번에 비교할 수 있습니다.</p>
+            </div>
+            <div className='surface-card rounded-[24px] p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                Search
+              </p>
+              <p className='mt-2 text-lg font-semibold tracking-[-0.03em]'>빠른 검색과 비교</p>
+              <p className='mt-1 text-sm text-[var(--app-muted)]'>
+                상단 검색에서 공연명, 전시명, 축제명을 바로 찾아 결과를 비교할 수 있습니다.
+              </p>
+            </div>
+            <div className='surface-card rounded-[24px] p-4'>
+              <p className='text-xs font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                Follow
+              </p>
+              <p className='mt-2 text-lg font-semibold tracking-[-0.03em]'>행사 상세로 바로 이동</p>
+              <p className='mt-1 text-sm text-[var(--app-muted)]'>바텀시트에서 포털과 상세 링크를 바로 열 수 있습니다.</p>
+            </div>
           </div>
-          <div className='flex flex-col justify-center'>
-            <p className='font-semibold'>산책자님</p>
-            <p className='text-sm text-gray-600 dark:text-gray-400'>회원가입 서비스 준비중</p>
-          </div>
+        </div>
+
+        <div className='surface-card mt-auto rounded-[24px] p-4'>
+          <p className='text-xs font-semibold uppercase tracking-[0.24em] text-[var(--app-muted)]'>Current mode</p>
+          <p className='mt-2 text-base font-semibold'>Route-centered visual system</p>
+          <p className='mt-1 text-sm text-[var(--app-muted)]'>브랜드 아이콘과 UI를 하나의 경로 중심 언어로 통일했습니다.</p>
         </div>
       </nav>
     </>

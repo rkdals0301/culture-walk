@@ -2,7 +2,7 @@
 
 import IconButton from '@/components/Common/IconButton';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useTheme } from 'next-themes';
 
@@ -13,23 +13,30 @@ import LightModeIcon from '../../../public/assets/images/light-mode-icon.svg';
 
 const ThemeToggle = () => {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === 'dark';
 
   useEffect(() => {
     const metaThemeColor = document.querySelector("meta[name='theme-color']") as HTMLMetaElement;
     if (metaThemeColor) {
-      metaThemeColor.content = resolvedTheme === 'dark' ? '#171717' : '#ffffff';
+      metaThemeColor.content = isDark ? '#081311' : '#f4efe7';
     }
-  }, [resolvedTheme]);
+  }, [isDark]);
 
   const handleClick = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+    setTheme(isDark ? 'light' : 'dark');
   };
 
   return (
     <IconButton
       ariaLabel='다크모드 토글'
       onClick={handleClick}
-      icon={resolvedTheme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+      icon={isDark ? <LightModeIcon /> : <DarkModeIcon />}
     />
   );
 };

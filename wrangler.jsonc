@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "culturewalk",
+  "main": "worker.js",
+  "compatibility_date": "2026-03-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["10 19 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "APP_BASE_URL": "https://culturewalk.gangmindev31.workers.dev",
+    "SITE_URL": "https://culturewalk.gangmindev31.workers.dev",
+    "SEOUL_API_CULTURAL_URL": "http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "CULTURE_CACHE",
+      "id": "5a421575aa4b4466bc15c461152e2b04",
+      "preview_id": "f6a1c4e81a104f8aaeb83e4097d6b1bb"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "culture-walk-db",
+      "database_id": "eeb25c40-46ce-46ff-8b13-46ea719ea6a6",
+      "preview_database_id": "fcf302f5-c475-459d-a01b-c327e07f6270",
+      "migrations_dir": "db/migrations"
+    }
+  ]
+}

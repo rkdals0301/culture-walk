@@ -31,16 +31,16 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   };
 
   const renderError = () => (
-    <div className='flex size-full items-center justify-center'>
-      <p className='text-red-500'>{error?.message}</p>
+    <div className='surface-card flex size-full items-center justify-center rounded-[28px] p-8'>
+      <p className='text-sm font-medium text-[#8e3b34] dark:text-[#ffb3a9]'>{error?.message}</p>
     </div>
   );
 
   const renderEmptyState = () => (
-    <div className='flex size-full items-center justify-center'>
-      <div>
-        <p className='text-center'>검색 결과가 없습니다.</p>
-        <p className='text-center'>다른 검색어로 검색해 보세요.</p>
+    <div className='surface-card flex size-full items-center justify-center rounded-[28px] p-8 text-center'>
+      <div className='max-w-sm'>
+        <p className='text-lg font-semibold tracking-[-0.03em]'>검색 결과가 없습니다.</p>
+        <p className='mt-2 text-sm text-[var(--app-muted)]'>다른 공연명이나 전시명으로 다시 찾아보세요.</p>
       </div>
     </div>
   );
@@ -54,10 +54,25 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   };
 
   return (
-    <div
-      className={clsx('size-full overflow-y-auto bg-white p-4 text-gray-900 dark:bg-neutral-900 dark:text-gray-100')}
-    >
+    <div className={clsx('flex size-full min-h-0 flex-col gap-4 text-[var(--app-text)]')}>
+      <div className='surface-card flex flex-wrap items-center justify-between gap-3 rounded-[28px] px-5 py-4'>
+        <div>
+          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
+            Results
+          </p>
+          <p className='mt-1 text-lg font-semibold tracking-[-0.03em]'>검색 결과 {filteredCultures.length}개</p>
+        </div>
+        <button
+          type='button'
+          onClick={onClose}
+          className='soft-chip rounded-full px-4 py-2 text-sm font-medium text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+        >
+          결과 닫기
+        </button>
+      </div>
+      <div className='min-h-0 flex-1'>
       {renderContent()}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,8 @@
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://culturewalk.vercel.app', // 사이트의 기본 URL
+  siteUrl:
+    process.env.SITE_URL ||
+    process.env.APP_BASE_URL ||
+    'https://culturewalk.gangmindev31.workers.dev', // 사이트의 기본 URL
   generateRobotsTxt: true, // robots.txt 파일 생성 여부
   changefreq: 'weekly', // 페이지 변경 빈도 (optional)
   priority: 0.7, // 페이지 우선 순위 (optional)

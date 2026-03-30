@@ -3,7 +3,7 @@ interface MainProps {
 }
 
 const Main = ({ children }: MainProps) => {
-  return <main className='h-dvh w-full pt-14'>{children}</main>;
+  return <main className='relative h-dvh w-full overflow-hidden'>{children}</main>;
 };
 
 export default Main;

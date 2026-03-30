@@ -9,9 +9,21 @@ const formatString = (object: Culture, keys: (keyof Culture)[], separator = ', '
     .join(separator);
 };
 
-const formatDisplayDate = (startDate: Date, endDate: Date) => {
-  const formattedStartDate = format(startDate, 'yyyy-MM-dd'); // yyyy-mm-dd 형식으로 포맷
-  const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+const toValidDate = (value: Date | string) => {
+  if (value instanceof Date) return value;
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) return parsed;
+
+  return new Date();
+};
+
+const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => {
+  const safeStartDate = toValidDate(startDate);
+  const safeEndDate = toValidDate(endDate);
+
+  const formattedStartDate = format(safeStartDate, 'yyyy-MM-dd'); // yyyy-mm-dd 형식으로 포맷
+  const formattedEndDate = format(safeEndDate, 'yyyy-MM-dd');
 
   return formattedStartDate === formattedEndDate ? formattedStartDate : `${formattedStartDate} ~ ${formattedEndDate}`;
 };
@@ -25,7 +37,7 @@ export const formatCultureData = (cultures: Culture[]): FormattedCulture[] => {
       ...culture,
       displayDate: formatDisplayDate(culture.startDate, culture.endDate),
       displayPlace,
-      displayPrice,
+      displayPrice: displayPrice || '정보 없음',
     };
   });
 };
