@@ -16,6 +16,8 @@ const PAGE_SIZE = 1000;
 // D1/SQLite variable limits can fail on large multi-row inserts.
 const BATCH_SIZE = 4;
 const RETRY_LIMIT = 3;
+type DbClient = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+type InsertableDb = Pick<DbClient, 'insert'>;
 
 const fetchCultures = async (baseUrl: string) => {
   const allCultures: RawCulture[] = [];
@@ -38,21 +40,27 @@ const fetchCultures = async (baseUrl: string) => {
   }
 
   const responses = await Promise.allSettled(requests);
+  let failedRequestCount = 0;
 
   for (const result of responses) {
     if (result.status === 'fulfilled') {
       const rows = result.value?.data?.culturalEventInfo?.row || [];
       allCultures.push(...rows);
     } else {
+      failedRequestCount += 1;
       console.error('문화 API 요청 실패:', result.reason);
     }
+  }
+
+  if (failedRequestCount > 0) {
+    throw new Error(`문화 API 요청 ${failedRequestCount}건이 실패했습니다.`);
   }
 
   return allCultures;
 };
 
 const retryInsertBatch = async (
-  db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  db: InsertableDb,
   batch: NewCultureRow[],
   retries: number
 ): Promise<void> => {
@@ -68,18 +76,38 @@ const retryInsertBatch = async (
   }
 };
 
-const replaceCultures = async (db: NonNullable<Awaited<ReturnType<typeof getDb>>>, rows: RawCulture[]) => {
+const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
   const mappedRows = rows.map(mapRawCultureToCulture);
 
   if (mappedRows.length === 0) {
     throw new Error('외부 API에서 유효한 문화 데이터를 가져오지 못했습니다.');
   }
 
+  const previousRows = await db.select().from(culturesTable);
   await db.delete(culturesTable);
 
-  for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
-    const batch = mappedRows.slice(i, i + BATCH_SIZE);
-    await retryInsertBatch(db, batch, RETRY_LIMIT);
+  try {
+    for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
+      const batch = mappedRows.slice(i, i + BATCH_SIZE);
+      await retryInsertBatch(db, batch, RETRY_LIMIT);
+    }
+  } catch (error) {
+    console.error('문화 데이터 교체 실패. 기존 데이터 복원을 시도합니다.', error);
+
+    try {
+      if (previousRows.length > 0) {
+        await db.delete(culturesTable);
+
+        for (let i = 0; i < previousRows.length; i += BATCH_SIZE) {
+          const batch = previousRows.slice(i, i + BATCH_SIZE);
+          await retryInsertBatch(db, batch, RETRY_LIMIT);
+        }
+      }
+    } catch (restoreError) {
+      console.error('기존 문화 데이터 복원에 실패했습니다.', restoreError);
+    }
+
+    throw error;
   }
 };
 

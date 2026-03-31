@@ -1,143 +1,140 @@
-'use client';
+import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
+import { getDb } from '@/db/client';
+import { cultures } from '@/db/schema';
+import { mapCultureRowToCulture } from '@/services/cultureService';
+import { formatCultureData } from '@/utils/cultureUtils';
 
-import Button from '@/components/Common/Button';
-import Loader from '@/components/Loader/Loader';
-import { useBottomSheet } from '@/context/BottomSheetContext';
-import { useCultureById } from '@/hooks/cultureHooks';
-import { getCulture } from '@/selectors/cultureSelectors';
+import type { Metadata } from 'next';
+import { eq } from 'drizzle-orm';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/logo.svg`;
 
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+const getCultureById = async (id: number) => {
+  const db = await getDb();
+  if (!db) {
+    return null;
+  }
 
-const MapDetailPage = () => {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const cultureId = useMemo(() => {
-    const rawId = params?.id;
-    const idValue = Array.isArray(rawId) ? rawId[0] : rawId;
-    return idValue ? parseInt(idValue, 10) : NaN;
-  }, [params]);
+  const row = await db.query.cultures.findFirst({
+    where: eq(cultures.id, id),
+  });
 
-  const { isLoading, error } = useCultureById(cultureId);
-  const culture = useSelector(getCulture);
-  const { openBottomSheet } = useBottomSheet();
+  if (!row) {
+    return null;
+  }
 
-  const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
+  return mapCultureRowToCulture(row);
+};
 
-  const handleImageError = useCallback(() => {
-    setImgSrc('/assets/images/logo.svg');
-  }, []);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const parsedId = Number.parseInt(id, 10);
 
-  const handleOpenExternalLink = useCallback((url?: string) => {
-    if (url) window.open(url, '_blank');
-  }, []);
+  if (!Number.isFinite(parsedId)) {
+    return {
+      title: '행사 정보',
+      description: '서울 문화행사 상세 정보',
+      robots: { index: false, follow: true },
+      alternates: { canonical: `/map/${id}` },
+    };
+  }
 
-  const handleBottomSheetClose = useCallback(() => {
-    router.push('/map');
-  }, [router]);
+  const culture = await getCultureById(parsedId);
+  if (!culture) {
+    return {
+      title: '행사 정보를 찾을 수 없습니다',
+      description: '요청한 서울 문화행사 상세 정보를 찾을 수 없습니다.',
+      robots: { index: false, follow: true },
+      alternates: { canonical: `/map/${parsedId}` },
+    };
+  }
 
-  useEffect(() => {
-    setImgSrc(culture?.mainImage || '/assets/images/logo.svg');
-  }, [culture?.mainImage]);
+  const formatted = formatCultureData([culture])[0];
+  const title = formatted?.title || '서울 문화행사 상세';
+  const description = [formatted?.displayDate, formatted?.displayPlace, formatted?.useTarget]
+    .filter(Boolean)
+    .join(' · ')
+    .slice(0, 155);
 
-  // Content 렌더링 로직 분리
-  const renderContent = useCallback(() => {
-    if (isLoading) {
-      return <Loader />;
-    }
-    if (error) {
-      return (
-        <div className='flex size-full flex-col items-center justify-center gap-4'>
-          <p>죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.</p>
-          <Button ariaLabel='다시 시도' onClick={() => window.location.reload()}>
-            다시 시도
-          </Button>
-        </div>
-      );
-    }
-    if (!culture) {
-      return (
-        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-[28px] p-6 text-center'>
-          <p className='text-lg font-semibold tracking-[-0.03em]'>행사 정보를 찾을 수 없습니다.</p>
-          <Button ariaLabel='목록으로 돌아가기' onClick={() => router.push('/map')}>
-            목록으로 돌아가기
-          </Button>
-        </div>
-      );
-    }
+  return {
+    title: `${title} | 문화산책`,
+    description: description || '서울 문화행사 상세 정보',
+    alternates: {
+      canonical: `/map/${parsedId}`,
+    },
+    openGraph: {
+      type: 'article',
+      locale: 'ko_KR',
+      url: `/map/${parsedId}`,
+      title,
+      description: description || '서울 문화행사 상세 정보',
+      siteName: '문화산책',
+      images: [
+        {
+          url: formatted?.mainImage || OG_IMAGE_URL,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: description || '서울 문화행사 상세 정보',
+      images: [formatted?.mainImage || OG_IMAGE_URL],
+    },
+    keywords: [formatted?.classification, formatted?.guName, '서울 문화행사', '전시', '공연'].filter(
+      Boolean
+    ) as string[],
+  };
+}
 
-    return (
-      <div className='flex flex-col gap-5'>
-        <div className='relative aspect-[16/10] overflow-hidden rounded-[28px] bg-black/[0.04] dark:bg-white/[0.05]'>
-          <Image
-            src={imgSrc ?? '/assets/images/logo.svg'}
-            alt={culture.title}
-            placeholder='blur'
-            blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
-            onError={handleImageError}
-            fill
-            sizes='100dvw'
-            priority
-            className='object-cover'
-          />
-        </div>
-        <div className='flex flex-wrap gap-2'>
-          <span className='rounded-full bg-[#e3f1ec] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'>
-            {culture.classification || 'Culture'}
-          </span>
-          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>{culture.guName}</span>
-          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
-            {culture.displayPrice}
-          </span>
-        </div>
-        <div>
-          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>Selected Event</p>
-          <h2 className='mt-2 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.05em]'>{culture.title}</h2>
-        </div>
-        <div className='space-y-2 text-sm leading-6 text-[var(--app-muted)]'>
-          <p>{culture.displayPlace}</p>
-          <p>{culture.displayDate}</p>
-          <p>{culture.useTarget}</p>
-          <p>{culture.displayPrice}</p>
-        </div>
-        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          <Button
-            fullWidth
-            ariaLabel='서울문화포털 웹사이트로 이동'
-            onClick={() => handleOpenExternalLink(culture?.homepageAddress)}
-            variant='secondary'
-            disabled={!culture?.homepageAddress}
-          >
-            서울문화포털
-          </Button>
-          <Button
-            fullWidth
-            ariaLabel='예약 웹사이트로 이동'
-            onClick={() => handleOpenExternalLink(culture?.homepageDetailAddress)}
-            disabled={!culture?.homepageDetailAddress}
-          >
-            예약 / 상세
-          </Button>
-        </div>
-      </div>
-    );
-  }, [isLoading, error, culture, imgSrc, handleImageError, handleOpenExternalLink, router]);
+const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params;
+  const parsedId = Number.parseInt(id, 10);
+  const culture = Number.isFinite(parsedId) ? await getCultureById(parsedId) : null;
+  const formatted = culture ? formatCultureData([culture])[0] : null;
 
-  // BottomSheet 여는 로직 통합
-  useEffect(() => {
-    // if (!isLoading && !error && culture) {
-    openBottomSheet({
-      content: renderContent(),
-      onClose: handleBottomSheetClose,
+  const eventStructuredData =
+    formatted &&
+    JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Event',
+      name: formatted.title,
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      startDate: formatted.startDate instanceof Date ? formatted.startDate.toISOString() : undefined,
+      endDate: formatted.endDate instanceof Date ? formatted.endDate.toISOString() : undefined,
+      location: {
+        '@type': 'Place',
+        name: formatted.place || formatted.displayPlace,
+        address: formatted.guName || '서울시',
+      },
+      image: formatted.mainImage ? [formatted.mainImage] : undefined,
+      description: formatted.etcDescription || formatted.displayDate,
+      organizer: {
+        '@type': 'Organization',
+        name: formatted.organizationName || '문화산책',
+      },
+      offers: {
+        '@type': 'Offer',
+        price: formatted.useFee || '0',
+        priceCurrency: 'KRW',
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/map/${parsedId}`,
+      },
     });
-    // }
-    // }, [isLoading, error, culture, renderContent, openBottomSheet, handleBottomSheetClose]);
-  }, [renderContent, openBottomSheet, handleBottomSheetClose]);
 
-  return null;
+  return (
+    <>
+      {eventStructuredData && (
+        <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: eventStructuredData }} />
+      )}
+      <MapDetailSheetClient />
+    </>
+  );
 };
 
 export default MapDetailPage;

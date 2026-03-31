@@ -23,7 +23,7 @@ const CultureItem = ({ culture }: CultureItemProps) => {
   };
 
   return (
-    <li className='flex size-full items-center gap-4'>
+    <div className='flex size-full items-center gap-4'>
       <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[22px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24'>
         <Image
           src={imgSrc}
@@ -67,7 +67,7 @@ const CultureItem = ({ culture }: CultureItemProps) => {
           <p className='truncate'>{culture.displayPrice}</p>
         </div>
       </div>
-    </li>
+    </div>
   );
 };
 

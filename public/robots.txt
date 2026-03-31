@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://culturewalk.gangmindev31.workers.dev
+Host: https://culturewalk.gangmin.dev
 
 # Sitemaps
-Sitemap: https://culturewalk.gangmindev31.workers.dev/sitemap.xml
+Sitemap: https://culturewalk.gangmin.dev/sitemap.xml

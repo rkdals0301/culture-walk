@@ -29,8 +29,14 @@ cp .env.example .env
 필수 환경 변수:
 
 - `SEOUL_API_CULTURAL_URL`
-- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`
 - `SYNC_TOKEN` (권장, initialize 보호)
+
+SEO/분석(선택):
+
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` (GA4 측정 ID, 예: `G-XXXXXXXXXX`)
+- `GOOGLE_SITE_VERIFICATION` (Search Console 메타 검증 토큰)
+- `NAVER_SITE_VERIFICATION` (네이버 웹마스터도구 메타 검증 토큰)
 
 3. D1 로컬 마이그레이션
 
@@ -48,7 +54,7 @@ npm run dev
 
 - `npm run dev`: 로컬 개발 서버
 - `npm run build`: 프로덕션 빌드
-- `npm run serve`: 빌드 후 로컬 서빙
+- `npm run start`: 빌드 결과 실행
 - `npm run lint`: ESLint
 - `npm run typecheck`: TypeScript 타입 체크
 - `npm run db:generate`: drizzle migration 파일 생성

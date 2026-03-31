@@ -7,12 +7,10 @@
   },
   "packageManager": "npm@10",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
-    "build:analyze": "ANALYZE=true next build",
     "postbuild": "next-sitemap",
     "start": "next start",
-    "serve": "npm run build && npm run start",
     "cf:build": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare build && wrangler dev",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -21,14 +19,10 @@
     "db:migrate:local": "wrangler d1 migrations apply culture-walk-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply culture-walk-db --remote",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit",
-    "stylelint": "stylelint \"**/*.{scss,css}\" --fix"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.17.1",
-    "@react-google-maps/api": "^2.19.3",
-    "@reduxjs/toolkit": "^2.2.7",
     "@tanstack/react-virtual": "^3.10.8",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
@@ -41,12 +35,9 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-loading-skeleton": "^3.5.0",
-    "react-redux": "^9.1.2",
     "react-spinners": "^0.17.0",
     "react-toastify": "^10.0.5",
-    "reselect": "^5.1.1",
     "sass": "^1.79.4",
-    "sharp": "^0.33.5",
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
@@ -56,25 +47,15 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.7.0",
-    "@typescript-eslint/parser": "^8.7.0",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.1.7",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-tailwindcss": "^3.17.4",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
-    "stylelint": "^16.9.0",
-    "stylelint-config-standard-scss": "^13.1.0",
-    "stylelint-config-tailwindcss": "^0.0.7",
-    "stylelint-order": "^6.0.4",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2",
-    "webpack-bundle-analyzer": "^4.10.2",
     "wrangler": "^4.75.0"
   }
 }

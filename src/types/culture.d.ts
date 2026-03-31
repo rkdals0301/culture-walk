@@ -6,8 +6,8 @@ export interface RawCulture {
   GUNAME: string;
   HMPG_ADDR: string;
   IS_FREE: string;
-  LAT: string; // string 형태로 들어올 수 있음
-  LOT: string; // string 형태로 들어올 수 있음
+  LAT: string; // 위도, string 형태로 들어올 수 있음
+  LOT: string; // 경도, string 형태로 들어올 수 있음
   MAIN_IMG: string;
   ORG_LINK: string;
   ORG_NAME: string;

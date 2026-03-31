@@ -1,6 +1,7 @@
 import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } from '@/cache/kv';
 import { cultures } from '@/db/schema';
 import { getDb } from '@/db/client';
+import { hasMissingSqliteTableError } from '@/server/sqliteError';
 import { mapCultureRowToCulture } from '@/services/cultureService';
 import { Culture } from '@/types/culture';
 
@@ -10,50 +11,13 @@ import { and, asc, gte, isNotNull, lte } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 const CACHE_TTL_SECONDS = 60 * 10;
-const SQLITE_MISSING_TABLE_MESSAGE = 'no such table: cultures';
-
-function hasMissingCulturesTableError(error: unknown) {
-  const visited = new Set<object>();
-  let current: unknown = error;
-
-  while (current) {
-    if (current instanceof Error) {
-      if (current.message.includes(SQLITE_MISSING_TABLE_MESSAGE)) {
-        return true;
-      }
-
-      const next = (current as Error & { cause?: unknown }).cause;
-      if (!next || typeof next !== 'object') {
-        current = next;
-        continue;
-      }
-
-      if (visited.has(next)) {
-        return false;
-      }
-
-      visited.add(next);
-      current = next;
-      continue;
-    }
-
-    const text = String(current);
-    if (text.includes(SQLITE_MISSING_TABLE_MESSAGE)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  return false;
-}
 
 export async function GET() {
   try {
     const db = await getDb();
     if (!db) {
-      console.warn('D1 데이터베이스 바인딩을 찾지 못해 빈 문화 목록을 반환합니다.');
-      return NextResponse.json([]);
+      console.error('D1 데이터베이스 바인딩을 찾지 못해 문화 목록을 제공할 수 없습니다.');
+      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
     const now = new Date();
@@ -90,9 +54,9 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error) {
-    if (hasMissingCulturesTableError(error)) {
-      console.warn('cultures 테이블이 없어 빈 문화 목록을 반환합니다.');
-      return NextResponse.json([]);
+    if (hasMissingSqliteTableError(error, 'cultures')) {
+      console.error('cultures 테이블이 없어 문화 목록을 제공할 수 없습니다.');
+      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
     console.error('문화 목록 데이터를 가져오는데 실패했습니다.', error);

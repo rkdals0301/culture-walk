@@ -1,10 +1,28 @@
+const siteUrl = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
+
 module.exports = {
-  siteUrl:
-    process.env.SITE_URL ||
-    process.env.APP_BASE_URL ||
-    'https://culturewalk.gangmindev31.workers.dev', // 사이트의 기본 URL
-  generateRobotsTxt: true, // robots.txt 파일 생성 여부
-  changefreq: 'weekly', // 페이지 변경 빈도 (optional)
-  priority: 0.7, // 페이지 우선 순위 (optional)
-  sitemapSize: 5000, // 각 사이트맵 파일에 포함할 최대 URL 수 (optional)
+  siteUrl,
+  generateRobotsTxt: true,
+  changefreq: 'daily',
+  priority: 0.7,
+  sitemapSize: 5000,
+  exclude: ['/_not-found', '/404', '/api/*'],
+  robotsTxtOptions: {
+    policies: [{ userAgent: '*', allow: '/' }],
+    additionalSitemaps: [`${siteUrl}/sitemap.xml`],
+  },
+  transform: async (config, path) => {
+    const priorityMap = {
+      '/': 1.0,
+      '/map': 1.0,
+    };
+
+    return {
+      loc: path,
+      changefreq: path === '/map' || path === '/' ? 'daily' : 'weekly',
+      priority: priorityMap[path] ?? config.priority,
+      lastmod: new Date().toISOString(),
+      alternateRefs: [],
+    };
+  },
 };

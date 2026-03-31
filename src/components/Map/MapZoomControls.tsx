@@ -8,34 +8,29 @@ import MapAddIcon from '../../../public/assets/images/map-add-icon.svg';
 import MapRemoveIcon from '../../../public/assets/images/map-remove-icon.svg';
 
 interface MapZoomControlsProps {
-  map: google.maps.Map | null; // Google Map 객체를 받을 prop
+  map: {
+    getLevel: () => number;
+    setLevel: (level: number) => void;
+  } | null;
 }
 
 const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   const handleZoomIn = useCallback(() => {
     if (map) {
-      const zoomLevel = map.getZoom();
-      if (typeof zoomLevel === 'number') {
-        map.setZoom(zoomLevel + 1); // Zoom in by increasing zoom level
-      } else {
-        console.error('Zoom level is undefined or not a number');
-      }
+      const level = map.getLevel();
+      map.setLevel(Math.max(1, level - 1));
     }
   }, [map]);
 
   const handleZoomOut = useCallback(() => {
     if (map) {
-      const zoomLevel = map.getZoom();
-      if (typeof zoomLevel === 'number') {
-        map.setZoom(zoomLevel - 1); // Zoom out by decreasing zoom level
-      } else {
-        console.error('Zoom level is undefined or not a number');
-      }
+      const level = map.getLevel();
+      map.setLevel(Math.min(14, level + 1));
     }
   }, [map]);
 
   return (
-    <div className='surface-panel absolute bottom-5 right-3 z-20 flex flex-col items-center justify-center gap-1 rounded-[22px] p-1 md:bottom-6 md:right-6'>
+    <div className='surface-panel flex flex-col items-center justify-center gap-1 rounded-[22px] p-1'>
       <IconButton
         className='rounded-[16px]'
         icon={<MapAddIcon />}

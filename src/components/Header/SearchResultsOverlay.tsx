@@ -1,19 +1,14 @@
-import Loader from '@/components/Loader/Loader';
+import CultureList from '@/components/Header/CultureList';
+import CultureListLoading from '@/components/Header/CultureListLoading';
+import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
-import { getCultures, getFilteredCultures } from '@/selectors/cultureSelectors';
 import { FormattedCulture } from '@/types/culture';
 
 import React from 'react';
-import { useSelector } from 'react-redux';
 
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
-
-const CultureList = dynamic(() => import('@/components/Header/CultureList'), {
-  loading: () => <Loader />,
-});
 
 interface SearchResultsOverlayProps {
   onClose: () => void;
@@ -21,9 +16,8 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const cultures = useSelector(getCultures);
-  const filteredCultures = useSelector(getFilteredCultures);
-  const { isLoading, isError, error } = useCultures(cultures.length === 0);
+  const { filteredCultures } = useCultureContext();
+  const { isLoading, isError, error } = useCultures();
 
   const handleOnClick = (culture: FormattedCulture) => {
     onClose();
@@ -46,7 +40,7 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   );
 
   const renderContent = () => {
-    if (isLoading) return <Loader />;
+    if (isLoading) return <CultureListLoading />;
     if (isError) return renderError();
     if (filteredCultures.length === 0) return renderEmptyState();
 
@@ -54,7 +48,7 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
   };
 
   return (
-    <div className={clsx('flex size-full min-h-0 flex-col gap-4 text-[var(--app-text)]')}>
+    <div className={clsx('pointer-events-auto flex size-full min-h-0 flex-col gap-4 text-[var(--app-text)]')}>
       <div className='surface-card flex flex-wrap items-center justify-between gap-3 rounded-[28px] px-5 py-4'>
         <div>
           <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
@@ -71,7 +65,7 @@ const SearchResultsOverlay = ({ onClose }: SearchResultsOverlayProps) => {
         </button>
       </div>
       <div className='min-h-0 flex-1'>
-      {renderContent()}
+        {renderContent()}
       </div>
     </div>
   );

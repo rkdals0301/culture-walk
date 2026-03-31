@@ -1,20 +1,13 @@
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
-<svg width="32px" height="32px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000" stroke="#000000" stroke-width="3.3599999999999994">
-
-<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-
-<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-
-<g id="SVGRepo_iconCarrier">
-
-<title>70 Basic icons by Xicons.co</title>
-
-<path d="M24,1.32c-9.92,0-18,7.8-18,17.38A16.83,16.83,0,0,0,9.57,29.09l12.84,16.8a2,2,0,0,0,3.18,0l12.84-16.8A16.84,16.84,0,0,0,42,18.7C42,9.12,33.92,1.32,24,1.32Z" fill="#007BFF"/>
-
-<path d="M25.37,12.13a7,7,0,1,0,5.5,5.5A7,7,0,0,0,25.37,12.13Z" fill="#B0D4FF"/>
-
-</g>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48" fill="none">
+  <path
+    d="M24 2C14.6112 2 7 9.46939 7 18.6818C7 27.041 11.5714 32.7529 14.9778 36.9552L22.4454 46.1828C23.2468 47.1738 24.7532 47.1738 25.5546 46.1828L33.0222 36.9552C36.4286 32.7529 41 27.041 41 18.6818C41 9.46939 33.3888 2 24 2Z"
+    fill="#1F765F"
+  />
+  <path
+    d="M24 33.2C15.4952 33.2 8.6 26.3568 8.6 17.9091C8.6 9.4614 15.4952 2.61818 24 2.61818C32.5048 2.61818 39.4 9.4614 39.4 17.9091C39.4 26.3568 32.5048 33.2 24 33.2Z"
+    fill="#2F8D75"
+    opacity="0.5"
+  />
+  <circle cx="24" cy="18.6" r="7.4" fill="#F7F3EA" />
+  <circle cx="24" cy="18.6" r="3.3" fill="#1F765F" />
 </svg>

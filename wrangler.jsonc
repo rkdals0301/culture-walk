@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "culturewalk",
+  "name": "culture-walk",
   "main": "worker.js",
   "compatibility_date": "2026-03-30",
   "compatibility_flags": ["nodejs_compat"],
@@ -15,8 +15,8 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "APP_BASE_URL": "https://culturewalk.gangmindev31.workers.dev",
-    "SITE_URL": "https://culturewalk.gangmindev31.workers.dev",
+    "APP_BASE_URL": "https://culturewalk.gangmin.dev",
+    "SITE_URL": "https://culturewalk.gangmin.dev",
     "SEOUL_API_CULTURAL_URL": "http://openapi.seoul.go.kr:8088/684e537944726b643635534d756b47/json/culturalEventInfo"
   },
   "kv_namespaces": [

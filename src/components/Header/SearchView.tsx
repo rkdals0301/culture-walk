@@ -1,9 +1,8 @@
 import IconButton from '@/components/Common/IconButton';
+import { useCultureContext } from '@/context/CultureContext';
 import Loader from '@/components/Loader/Loader';
-import { setSearchQuery } from '@/slices/culturesSlice';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import dynamic from 'next/dynamic';
 
@@ -19,17 +18,17 @@ interface SearchViewProps {
 }
 
 const SearchView = ({ onClose }: SearchViewProps) => {
-  const dispatch = useDispatch();
+  const { setSearchQuery } = useCultureContext();
   const [searchQuery, setSearchQueryState] = useState<string>('');
 
   const handleSearch = useCallback(() => {
-    dispatch(setSearchQuery(searchQuery));
-  }, [dispatch, searchQuery]);
+    setSearchQuery(searchQuery);
+  }, [searchQuery, setSearchQuery]);
 
   const handleReset = useCallback(() => {
     setSearchQueryState('');
-    dispatch(setSearchQuery(''));
-  }, [dispatch]);
+    setSearchQuery('');
+  }, [setSearchQuery]);
 
   useEffect(() => {
     handleReset();
@@ -45,10 +44,10 @@ const SearchView = ({ onClose }: SearchViewProps) => {
   };
 
   return (
-    <div className='fixed inset-0 z-50 flex items-start justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8'>
-      <div className='fixed inset-0 bg-[#081311]/55 backdrop-blur-sm' onClick={onClose} />
+    <div className='pointer-events-auto fixed inset-0 z-50 flex items-start justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8'>
+      <div className='pointer-events-auto fixed inset-0 bg-[#081311]/55 backdrop-blur-sm' onClick={onClose} />
 
-      <div className='surface-panel relative z-50 flex h-full w-full max-w-[1040px] flex-col overflow-hidden rounded-[32px] text-[var(--app-text)]'>
+      <div className='surface-panel pointer-events-auto relative z-50 flex h-full w-full max-w-[1040px] flex-col overflow-hidden rounded-[32px] text-[var(--app-text)]'>
         <div className='border-b border-[var(--app-border)] px-4 py-4 sm:px-6 sm:py-6'>
           <div className='flex items-start gap-3 sm:gap-4'>
             <IconButton icon={<ArrowBackIcon />} ariaLabel='검색 결과 닫기' onClick={onClose} variant='secondary' />
