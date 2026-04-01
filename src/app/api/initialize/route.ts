@@ -14,8 +14,14 @@ export const revalidate = 0;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 // D1/SQLite variable limits can fail on large multi-row inserts.
-const BATCH_SIZE = 4;
+const BATCH_SIZE = 30;
 const RETRY_LIMIT = 3;
+const KOREA_LAT_MIN = 33;
+const KOREA_LAT_MAX = 39.8;
+const KOREA_LNG_MIN = 124;
+const KOREA_LNG_MAX = 132;
+const MIN_VALID_COORDINATE_COUNT = 5;
+const MIN_VALID_COORDINATE_RATIO = 0.03;
 type DbClient = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 type InsertableDb = Pick<DbClient, 'insert'>;
 
@@ -76,6 +82,71 @@ const retryInsertBatch = async (
   }
 };
 
+const isBetween = (value: number, min: number, max: number) => value >= min && value <= max;
+
+const looksLikeKoreaLat = (value: number) => isBetween(value, KOREA_LAT_MIN, KOREA_LAT_MAX);
+const looksLikeKoreaLng = (value: number) => isBetween(value, KOREA_LNG_MIN, KOREA_LNG_MAX);
+
+const normalizeCoordinates = (
+  lat: number | null,
+  lng: number | null
+): { lat: number | null; lng: number | null; status: 'kept' | 'swapped' | 'invalid' } => {
+  const hasLat = typeof lat === 'number' && Number.isFinite(lat);
+  const hasLng = typeof lng === 'number' && Number.isFinite(lng);
+
+  if (!hasLat || !hasLng) {
+    return { lat: null, lng: null, status: 'invalid' };
+  }
+
+  if (looksLikeKoreaLng(lat) && looksLikeKoreaLat(lng)) {
+    return { lat: lng, lng: lat, status: 'swapped' };
+  }
+
+  const isValidGlobalLat = isBetween(lat, -90, 90);
+  const isValidGlobalLng = isBetween(lng, -180, 180);
+
+  if (!isValidGlobalLat || !isValidGlobalLng) {
+    return { lat: null, lng: null, status: 'invalid' };
+  }
+
+  return { lat, lng, status: 'kept' };
+};
+
+const normalizeAndValidateRows = (rows: NewCultureRow[]) => {
+  let swappedCount = 0;
+  let validCoordinateCount = 0;
+  let invalidCoordinateCount = 0;
+
+  const normalizedRows = rows.map(row => {
+    const normalized = normalizeCoordinates(row.lat ?? null, row.lng ?? null);
+
+    if (normalized.status === 'swapped') {
+      swappedCount += 1;
+      validCoordinateCount += 1;
+    } else if (normalized.status === 'kept') {
+      validCoordinateCount += 1;
+    } else {
+      invalidCoordinateCount += 1;
+    }
+
+    return { ...row, lat: normalized.lat, lng: normalized.lng };
+  });
+
+  const validRatio = validCoordinateCount / normalizedRows.length;
+
+  if (validCoordinateCount < MIN_VALID_COORDINATE_COUNT || validRatio < MIN_VALID_COORDINATE_RATIO) {
+    throw new Error(
+      `좌표 데이터 품질이 기준 미달입니다. valid=${validCoordinateCount}, invalid=${invalidCoordinateCount}, swapped=${swappedCount}, total=${normalizedRows.length}`
+    );
+  }
+
+  console.info(
+    `좌표 정규화 완료: valid=${validCoordinateCount}, invalid=${invalidCoordinateCount}, swapped=${swappedCount}, total=${normalizedRows.length}`
+  );
+
+  return normalizedRows;
+};
+
 const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
   const mappedRows = rows.map(mapRawCultureToCulture);
 
@@ -83,12 +154,13 @@ const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
     throw new Error('외부 API에서 유효한 문화 데이터를 가져오지 못했습니다.');
   }
 
+  const normalizedRows = normalizeAndValidateRows(mappedRows);
   const previousRows = await db.select().from(culturesTable);
   await db.delete(culturesTable);
 
   try {
-    for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
-      const batch = mappedRows.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < normalizedRows.length; i += BATCH_SIZE) {
+      const batch = normalizedRows.slice(i, i + BATCH_SIZE);
       await retryInsertBatch(db, batch, RETRY_LIMIT);
     }
   } catch (error) {
