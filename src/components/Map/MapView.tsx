@@ -141,6 +141,7 @@ const MapView = () => {
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
   const [centerPosition, setCenterPosition] = useState(DEFAULT_MAP_CENTER);
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
+  const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -180,6 +181,7 @@ const MapView = () => {
 
   const goToMapDetail = useCallback(
     (id: number) => {
+      setPendingDetailId(id);
       setActiveMarkerId(id);
       router.push(`/map/${id}`);
     },
@@ -225,6 +227,7 @@ const MapView = () => {
           </div>
         ),
         onClose: () => {
+          setPendingDetailId(null);
           if (selectedCultureId === null) {
             setActiveMarkerId(null);
           }
@@ -264,8 +267,26 @@ const MapView = () => {
     const selectedCulture = cultures.find(culture => culture.id === selectedCultureId);
     if (selectedCulture) {
       setCenterPosition({ lat: selectedCulture.lat, lng: selectedCulture.lng });
+
+      if (mapInstance && window.kakao?.maps) {
+        mapInstance.setCenter(new window.kakao.maps.LatLng(selectedCulture.lat, selectedCulture.lng));
+        if (mapInstance.getLevel() > 4) {
+          mapInstance.setLevel(4);
+        }
+      }
     }
-  }, [selectedCultureId, cultures]);
+  }, [selectedCultureId, cultures, mapInstance]);
+
+  useEffect(() => {
+    if (pathname === '/map') {
+      setPendingDetailId(null);
+      return;
+    }
+
+    if (selectedCultureId && pendingDetailId === selectedCultureId) {
+      setPendingDetailId(null);
+    }
+  }, [pathname, pendingDetailId, selectedCultureId]);
 
   useEffect(() => {
     let canceled = false;
@@ -358,6 +379,8 @@ const MapView = () => {
       return;
     }
 
+    const useCluster = selectedCultureId === null;
+
     markerClustererRef.current.clear();
     markerRefs.current.forEach(marker => marker.setMap(null));
     markerRefs.current = [];
@@ -365,14 +388,15 @@ const MapView = () => {
     const kakaoMaps = window.kakao.maps;
 
     markerGroups.forEach((group, index) => {
-      const isSelected = activeMarkerId !== null && group.duplicateCultures.some(culture => culture.id === activeMarkerId);
+      const focusedId = pendingDetailId ?? activeMarkerId;
+      const isSelected = focusedId !== null && group.duplicateCultures.some(culture => culture.id === focusedId);
       const iconUrl = isSelected
         ? '/assets/images/map-marker-active-icon.svg'
         : '/assets/images/map-marker-default-icon.svg';
       const iconSize = isSelected ? new kakaoMaps.Size(40, 40) : new kakaoMaps.Size(32, 32);
 
       const marker = new kakaoMaps.Marker({
-        map: null,
+        map: useCluster ? null : mapInstance,
         title: group.primaryCulture.title,
         position: new kakaoMaps.LatLng(group.lat, group.lng),
         image: new kakaoMaps.MarkerImage(iconUrl, iconSize),
@@ -387,14 +411,16 @@ const MapView = () => {
       markerRefs.current.push(marker);
     });
 
-    markerClustererRef.current.addMarkers(markerRefs.current);
+    if (useCluster) {
+      markerClustererRef.current.addMarkers(markerRefs.current);
+    }
 
     return () => {
       markerClustererRef.current?.clear();
       markerRefs.current.forEach(marker => marker.setMap(null));
       markerRefs.current = [];
     };
-  }, [activeMarkerId, handleMarkerGroupClick, mapInstance, markerGroups]);
+  }, [activeMarkerId, handleMarkerGroupClick, mapInstance, markerGroups, pendingDetailId, selectedCultureId]);
 
   useEffect(() => {
     if (!mapInstance || !window.kakao?.maps) {
@@ -459,6 +485,14 @@ const MapView = () => {
         <div className='pointer-events-none absolute left-3 right-3 top-20 z-20 md:left-auto md:right-6 md:max-w-xs'>
           <div className='surface-panel rounded-[16px] px-3 py-2 text-xs font-medium text-[var(--app-muted)]'>
             행사 데이터를 불러오는 중입니다.
+          </div>
+        </div>
+      )}
+
+      {pendingDetailId !== null && (
+        <div className='pointer-events-none absolute left-3 right-3 top-32 z-20 md:left-auto md:right-6 md:max-w-xs'>
+          <div className='surface-panel rounded-[16px] px-3 py-2 text-xs font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+            행사 상세를 여는 중입니다.
           </div>
         </div>
       )}

@@ -1,3 +1,4 @@
+import MapDashboard from '@/components/Map/MapDashboard';
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
@@ -132,6 +133,7 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
       {eventStructuredData && (
         <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: eventStructuredData }} />
       )}
+      <MapDashboard />
       <MapDetailSheetClient />
     </>
   );

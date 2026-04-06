@@ -7,9 +7,10 @@ import Image from 'next/image';
 
 interface CultureItemProps {
   culture: FormattedCulture;
+  isSelected?: boolean;
 }
 
-const CultureItem = ({ culture }: CultureItemProps) => {
+const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
@@ -43,7 +44,13 @@ const CultureItem = ({ culture }: CultureItemProps) => {
       </div>
       <div className='min-w-0 grow overflow-hidden'>
         <div className='mb-3 flex flex-wrap items-center gap-2'>
-          <span className='rounded-full bg-[#e3f1ec] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'>
+          <span
+            className={
+              isSelected
+                ? 'rounded-full bg-[#1f765f] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#fff8f1] dark:bg-[#2f9b7d] dark:text-[#081311]'
+                : 'rounded-full bg-[#e3f1ec] px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'
+            }
+          >
             {culture.classification || 'Culture'}
           </span>
           <span className='rounded-full bg-black/[0.04] px-2.5 py-1 text-[0.68rem] font-medium text-[var(--app-muted)] dark:bg-white/[0.06]'>

@@ -7,9 +7,9 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface StatCardProps {
   label: string;
@@ -27,10 +27,21 @@ const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
 
 const MapDashboard = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { cultures } = useCultureContext();
   const { isLoading, error } = useCultures();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
-  const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(true);
+  const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
+  const isDetailRoute = /^\/map\/\d+/.test(pathname ?? '');
+  const selectedCultureId = useMemo(() => {
+    const match = (pathname ?? '').match(/^\/map\/(\d+)/);
+    if (!match) {
+      return null;
+    }
+
+    const parsed = Number.parseInt(match[1], 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  }, [pathname]);
 
   const totalCount = cultures.length;
   const districtCount = useMemo(() => new Set(cultures.map(culture => culture.guName).filter(Boolean)).size, [cultures]);
@@ -46,6 +57,14 @@ const MapDashboard = () => {
     router.push(`/map/${culture.id}`);
   };
 
+  useEffect(() => {
+    if (!isDetailRoute) {
+      return;
+    }
+
+    setIsMobileSheetVisible(false);
+  }, [isDetailRoute]);
+
   const renderListPanel = () => {
     if (isLoading) {
       return <CultureListLoading />;
@@ -60,7 +79,7 @@ const MapDashboard = () => {
       );
     }
 
-    return <CultureList cultures={cultures} onItemClick={handleOpenCulture} />;
+    return <CultureList cultures={cultures} onItemClick={handleOpenCulture} selectedCultureId={selectedCultureId} />;
   };
 
   return (
@@ -135,7 +154,7 @@ const MapDashboard = () => {
           <div className='flex-1' />
         </div>
 
-        {isMobileSheetVisible ? (
+        {!isDetailRoute && isMobileSheetVisible ? (
           <section className='surface-panel pointer-events-auto mt-auto flex h-[54vh] min-h-[300px] max-h-[560px] w-full flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] lg:hidden'>
             <div className='border-b border-[var(--app-border)] px-5 py-4 sm:px-6'>
               <div className='mb-3'>
@@ -169,17 +188,17 @@ const MapDashboard = () => {
             </div>
             <div className='min-h-0 flex-1 px-3 pb-3 pt-2'>{renderListPanel()}</div>
           </section>
-        ) : (
+        ) : !isDetailRoute ? (
           <div className='pointer-events-auto mt-auto flex justify-center lg:hidden'>
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
               className='surface-panel rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--app-text)]'
             >
-              목록 보기
+              행사 목록 보기 {totalCount > 0 ? `(${totalCount})` : ''}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
