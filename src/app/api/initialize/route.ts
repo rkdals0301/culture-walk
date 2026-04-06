@@ -24,6 +24,10 @@ const MIN_VALID_COORDINATE_COUNT = 5;
 const MIN_VALID_COORDINATE_RATIO = 0.03;
 type DbClient = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 type InsertableDb = Pick<DbClient, 'insert'>;
+const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
+type D1PrepareResult = { meta?: { changes?: number } };
+type D1Prepared = { bind: (...values: unknown[]) => { run: () => Promise<D1PrepareResult> } };
+type D1Binding = { exec: (query: string) => Promise<unknown>; prepare: (query: string) => D1Prepared };
 
 const fetchCultures = async (baseUrl: string) => {
   const allCultures: RawCulture[] = [];
@@ -80,6 +84,46 @@ const retryInsertBatch = async (
     }
     throw error;
   }
+};
+
+const toDedupeKey = (row: NewCultureRow) =>
+  [
+    row.title ?? '',
+    row.startDate ?? '',
+    row.endDate ?? '',
+    row.place ?? '',
+    row.guName ?? '',
+    row.organizationName ?? '',
+    row.lat == null ? '' : row.lat.toFixed(6),
+    row.lng == null ? '' : row.lng.toFixed(6),
+  ].join('||');
+
+const deduplicateRows = (rows: NewCultureRow[]) => {
+  const deduped = new Map<string, NewCultureRow>();
+  let duplicateCount = 0;
+
+  for (const row of rows) {
+    const key = toDedupeKey(row);
+    const existing = deduped.get(key);
+    if (!existing) {
+      deduped.set(key, row);
+      continue;
+    }
+
+    duplicateCount += 1;
+    const existingRegistrationDate = existing.registrationDate ?? '';
+    const nextRegistrationDate = row.registrationDate ?? '';
+
+    if (nextRegistrationDate > existingRegistrationDate) {
+      deduped.set(key, row);
+    }
+  }
+
+  if (duplicateCount > 0) {
+    console.info(`중복 이벤트 제거 완료: duplicates=${duplicateCount}, unique=${deduped.size}`);
+  }
+
+  return Array.from(deduped.values());
 };
 
 const isBetween = (value: number, min: number, max: number) => value >= min && value <= max;
@@ -147,6 +191,47 @@ const normalizeAndValidateRows = (rows: NewCultureRow[]) => {
   return normalizedRows;
 };
 
+const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
+  const d1 = env.DB as D1Binding | undefined;
+  if (!d1) {
+    return true;
+  }
+
+  await d1.exec(`
+    CREATE TABLE IF NOT EXISTS sync_locks (
+      name TEXT PRIMARY KEY,
+      acquired_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await d1
+    .prepare(
+    `DELETE FROM sync_locks
+     WHERE name = ?
+       AND datetime(acquired_at) < datetime('now', '-30 minutes')`
+  )
+    .bind(INITIALIZE_LOCK_NAME)
+    .run();
+
+  const result = await d1
+    .prepare(
+    'INSERT OR IGNORE INTO sync_locks (name, acquired_at) VALUES (?, CURRENT_TIMESTAMP)'
+  )
+    .bind(INITIALIZE_LOCK_NAME)
+    .run();
+
+  return (result.meta?.changes ?? 0) > 0;
+};
+
+const releaseInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
+  const d1 = env.DB as D1Binding | undefined;
+  if (!d1) {
+    return;
+  }
+
+  await d1.prepare('DELETE FROM sync_locks WHERE name = ?').bind(INITIALIZE_LOCK_NAME).run();
+};
+
 const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
   const mappedRows = rows.map(mapRawCultureToCulture);
 
@@ -155,12 +240,18 @@ const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
   }
 
   const normalizedRows = normalizeAndValidateRows(mappedRows);
+  const deduplicatedRows = deduplicateRows(normalizedRows);
+
+  if (deduplicatedRows.length === 0) {
+    throw new Error('중복 제거 이후 남은 문화 데이터가 없습니다.');
+  }
+
   const previousRows = await db.select().from(culturesTable);
   await db.delete(culturesTable);
 
   try {
-    for (let i = 0; i < normalizedRows.length; i += BATCH_SIZE) {
-      const batch = normalizedRows.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < deduplicatedRows.length; i += BATCH_SIZE) {
+      const batch = deduplicatedRows.slice(i, i + BATCH_SIZE);
       await retryInsertBatch(db, batch, RETRY_LIMIT);
     }
   } catch (error) {
@@ -186,8 +277,11 @@ const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
 const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
 
 export async function POST(request: NextRequest) {
+  let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
+  let lockAcquired = false;
+
   try {
-    const env = await getWorkerEnv();
+    env = await getWorkerEnv();
     const syncToken = env.SYNC_TOKEN;
     const requestToken = request.headers.get('x-sync-token');
 
@@ -209,6 +303,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.' }, { status: 503 });
     }
 
+    lockAcquired = await acquireInitializeLock(env);
+    if (!lockAcquired) {
+      return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
+    }
+
     const externalData = await fetchCultures(baseUrl);
     if (externalData.length === 0) {
       return NextResponse.json({ error: '외부 API에서 가져온 데이터가 없습니다.' }, { status: 502 });
@@ -224,5 +323,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('데이터베이스 업데이트 실패:', error);
     return NextResponse.json({ error: '데이터베이스 업데이트 실패' }, { status: 500 });
+  } finally {
+    if (env && lockAcquired) {
+      try {
+        await releaseInitializeLock(env);
+      } catch (error) {
+        console.error('동기화 락 해제 실패:', error);
+      }
+    }
   }
 }
