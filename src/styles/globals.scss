@@ -8,7 +8,7 @@
     --app-bg: #f4efe7;
     --app-bg-accent: rgba(31, 118, 95, 0.16);
     --app-text: #10211d;
-    --app-muted: #5c6d69;
+    --app-muted: #4f615c;
     --app-surface: rgba(255, 251, 245, 0.78);
     --app-card: rgba(255, 255, 255, 0.82);
     --app-border: rgba(16, 33, 29, 0.08);
@@ -22,7 +22,7 @@
     --app-bg: #081311;
     --app-bg-accent: rgba(95, 191, 157, 0.18);
     --app-text: #f8f4eb;
-    --app-muted: #9fb5ae;
+    --app-muted: #a8beb7;
     --app-surface: rgba(10, 25, 22, 0.8);
     --app-card: rgba(15, 34, 29, 0.86);
     --app-border: rgba(248, 244, 235, 0.08);
@@ -46,6 +46,7 @@
     overscroll-behavior: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
   }
 
   a {

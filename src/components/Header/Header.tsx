@@ -4,7 +4,7 @@ import IconButton from '@/components/Common/IconButton';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -20,6 +20,7 @@ const SearchView = dynamic(() => import('@/components/Header/SearchView'), {
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
+  const hasSearchHistoryEntryRef = useRef(false);
 
   useEffect(() => {
     void import('@/components/Header/SearchView');
@@ -30,12 +31,51 @@ const Header = () => {
   };
 
   const handleOpenOverlay = () => {
+    if (isSearchBarVisible) {
+      return;
+    }
+
     setIsSearchBarVisible(true); // 클릭 시 오버레이 표시
+    if (typeof window !== 'undefined') {
+      const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+      window.history.pushState({ ...currentState, __cwSearchOverlay: true }, '', window.location.href);
+      hasSearchHistoryEntryRef.current = true;
+    }
   };
 
-  const handleCloseOverlay = () => {
-    setIsSearchBarVisible(false); // 클릭 시 오버레이 표시
-  };
+  const handleCloseOverlay = useCallback(
+    (options?: { syncHistory?: boolean }) => {
+      const syncHistory = options?.syncHistory ?? true;
+      setIsSearchBarVisible(false);
+
+      if (!syncHistory) {
+        hasSearchHistoryEntryRef.current = false;
+        return;
+      }
+
+      if (typeof window !== 'undefined' && hasSearchHistoryEntryRef.current) {
+        hasSearchHistoryEntryRef.current = false;
+        window.history.back();
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (!isSearchBarVisible) {
+        return;
+      }
+
+      hasSearchHistoryEntryRef.current = false;
+      setIsSearchBarVisible(false);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isSearchBarVisible]);
 
   return (
     <header className='pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8'>
@@ -63,7 +103,12 @@ const Header = () => {
           <ThemeToggleButton />
         </div>
       </div>
-      {isSearchBarVisible && <SearchView onClose={handleCloseOverlay} />}
+      {isSearchBarVisible && (
+        <SearchView
+          onClose={() => handleCloseOverlay({ syncHistory: true })}
+          onCloseWithoutHistory={() => handleCloseOverlay({ syncHistory: false })}
+        />
+      )}
     </header>
   );
 };

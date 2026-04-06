@@ -88,7 +88,7 @@ const MapDashboard = () => {
         <div className='pointer-events-none hidden h-full lg:flex'>
           <div
             className={`pointer-events-none h-full transition-[width] duration-300 ${
-              isDesktopPanelCollapsed ? 'w-[88px]' : 'w-[340px] xl:w-[372px]'
+              isDesktopPanelCollapsed ? 'w-[88px]' : 'w-[372px] xl:w-[420px]'
             }`}
           >
             <div className='pointer-events-auto h-full'>
@@ -122,10 +122,13 @@ const MapDashboard = () => {
                   <div className='border-b border-[var(--app-border)] px-5 py-4 sm:px-6'>
                     <div className='flex items-start justify-between gap-3'>
                       <div className='min-w-0'>
-                        <p className='text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                        <p className='text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:text-[#8dc5b5]'>
                           City Culture Guide
                         </p>
-                        <h2 className='mt-2 text-[1.6rem] font-semibold leading-[1.12] tracking-[-0.04em]'>지도에서 바로 행사 고르기</h2>
+                        <h2 className='mt-2 text-[1.72rem] font-semibold leading-[1.18] tracking-[-0.03em]'>
+                          지도에서 바로 행사 고르기
+                        </h2>
+                        <p className='mt-1 text-sm text-[var(--app-muted)]'>지금 진행 중인 행사 중심으로 정렬됩니다.</p>
                       </div>
                       <button
                         type='button'
@@ -146,7 +149,7 @@ const MapDashboard = () => {
                       </div>
                     )}
                   </div>
-                  <div className='min-h-0 flex-1 px-3 pb-3 pt-2'>{renderListPanel()}</div>
+                  <div className='min-h-0 flex-1 px-4 pb-4 pt-3'>{renderListPanel()}</div>
                 </section>
               )}
             </div>
@@ -155,45 +158,37 @@ const MapDashboard = () => {
         </div>
 
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[54vh] min-h-[300px] max-h-[560px] w-full flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] lg:hidden'>
-            <div className='border-b border-[var(--app-border)] px-5 py-4 sm:px-6'>
-              <div className='mb-3'>
-                <div className='flex items-center justify-center'>
-                  <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
-                </div>
-                <div className='mt-2 flex justify-end'>
-                  <button
-                    type='button'
-                    onClick={() => setIsMobileSheetVisible(false)}
-                    className='soft-chip rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--app-muted)]'
-                  >
-                    지도만 보기
-                  </button>
-                </div>
+          <section className='surface-panel pointer-events-auto mt-auto flex h-[68vh] min-h-[360px] max-h-[78dvh] w-full flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] lg:hidden'>
+            <div className='border-b border-[var(--app-border)] px-4 py-3'>
+              <div className='mb-2 flex items-center justify-center'>
+                <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
               </div>
-              <p className='text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
-                City Culture Guide
-              </p>
-              <h2 className='mt-2 text-[1.45rem] font-semibold leading-[1.12] tracking-[-0.04em]'>지도에서 바로 행사 고르기</h2>
-              <div className='mt-4 grid grid-cols-3 gap-2.5'>
-                <StatCard label='Events' value={totalCount} />
-                <StatCard label='Free' value={freeCount} />
-                <StatCard label='Districts' value={districtCount} />
-              </div>
-              {ADSENSE_MAP_PANEL_SLOT && (
-                <div className='surface-card mt-4 rounded-[18px] p-2.5'>
-                  <GoogleAdSlot slot={ADSENSE_MAP_PANEL_SLOT} className='min-h-[72px]' />
+              <div className='flex items-center justify-between gap-3'>
+                <div className='min-w-0'>
+                  <p className='text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                    Event List
+                  </p>
+                  <p className='mt-1 truncate text-sm font-medium text-[var(--app-muted)]'>
+                    총 {totalCount}개 · 무료 {freeCount}개 · {districtCount}개 구
+                  </p>
                 </div>
-              )}
+                <button
+                  type='button'
+                  onClick={() => setIsMobileSheetVisible(false)}
+                  className='soft-chip shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--app-muted)]'
+                >
+                  지도만 보기
+                </button>
+              </div>
             </div>
-            <div className='min-h-0 flex-1 px-3 pb-3 pt-2'>{renderListPanel()}</div>
+            <div className='min-h-0 flex-1 px-2 pb-2 pt-2'>{renderListPanel()}</div>
           </section>
         ) : !isDetailRoute ? (
           <div className='pointer-events-auto mt-auto flex justify-center lg:hidden'>
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--app-text)]'
+              className='surface-panel rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] shadow-[0_20px_44px_-30px_rgba(16,33,29,0.6)]'
             >
               행사 목록 보기 {totalCount > 0 ? `(${totalCount})` : ''}
             </button>

@@ -35,7 +35,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
     getItemKey: index => cultures[index]?.id ?? index,
     // Card content can be 1~2 lines, so measure real row height to avoid overlap.
     measureElement: element => element?.getBoundingClientRect().height ?? 0,
-    estimateSize: () => 168,
+    estimateSize: () => 194,
   });
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
   }, [rowVirtualizer, selectedIndex]);
 
   return (
-    <div ref={parentRef} className='h-full overflow-y-auto pr-1'>
+    <div ref={parentRef} className='h-full overflow-y-auto pr-1.5'>
       <div
         className='relative'
         style={{
@@ -66,10 +66,13 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
               key={virtualItem.key}
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
-              className={clsx('absolute left-0 right-0 px-1 text-left', {
+              className={clsx(
+                'absolute left-0 right-0 rounded-[28px] px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/45',
+                {
                 'pt-1': isFirst,
                 'pb-1': isLast,
-              })}
+                }
+              )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
               }}
@@ -78,7 +81,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
             >
               <div
                 className={clsx(
-                  'surface-card relative mb-2 rounded-[28px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
+                  'surface-card relative mb-2 rounded-[26px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
                   {
                     'mt-1': isFirst,
                     'mb-0': isLast,
