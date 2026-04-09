@@ -305,9 +305,13 @@ export async function POST(request: NextRequest) {
     }
 
     lockAcquired = await acquireInitializeLock(env);
+    console.info(`동기화 락 획득 시도: acquired=${lockAcquired}, force=${forceSync}`);
+
     if (!lockAcquired && forceSync) {
+      console.info('강제 동기화 요청으로 기존 락 해제 후 재시도합니다.');
       await releaseInitializeLock(env);
       lockAcquired = await acquireInitializeLock(env);
+      console.info(`강제 동기화 재시도 결과: acquired=${lockAcquired}`);
     }
 
     if (!lockAcquired) {
