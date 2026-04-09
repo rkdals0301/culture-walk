@@ -14,7 +14,7 @@ export const revalidate = 0;
 const INITIAL_START_INDEX = 1;
 const PAGE_SIZE = 1000;
 // D1/SQLite variable limits can fail on large multi-row inserts.
-const BATCH_SIZE = 30;
+const BATCH_SIZE = 4;
 const RETRY_LIMIT = 3;
 const KOREA_LAT_MIN = 33;
 const KOREA_LAT_MAX = 39.8;
@@ -78,7 +78,21 @@ const retryInsertBatch = async (
       await retryInsertBatch(db, batch, retries - 1);
       return;
     }
-    throw error;
+
+    if (batch.length > 1) {
+      const mid = Math.floor(batch.length / 2);
+      const left = batch.slice(0, mid);
+      const right = batch.slice(mid);
+
+      await retryInsertBatch(db, left, RETRY_LIMIT);
+      await retryInsertBatch(db, right, RETRY_LIMIT);
+      return;
+    }
+
+    console.error(
+      `단일 문화 데이터 insert 실패로 스킵합니다. title=${batch[0]?.title ?? 'unknown'}`,
+      error
+    );
   }
 };
 
