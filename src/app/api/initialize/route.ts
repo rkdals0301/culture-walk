@@ -279,6 +279,7 @@ const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
 export async function POST(request: NextRequest) {
   let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
   let lockAcquired = false;
+  const forceSync = request.headers.get('x-sync-force') === 'true';
 
   try {
     env = await getWorkerEnv();
@@ -304,6 +305,11 @@ export async function POST(request: NextRequest) {
     }
 
     lockAcquired = await acquireInitializeLock(env);
+    if (!lockAcquired && forceSync) {
+      await releaseInitializeLock(env);
+      lockAcquired = await acquireInitializeLock(env);
+    }
+
     if (!lockAcquired) {
       return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
     }
