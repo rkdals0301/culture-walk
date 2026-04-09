@@ -24,13 +24,6 @@ const MIN_VALID_COORDINATE_COUNT = 5;
 const MIN_VALID_COORDINATE_RATIO = 0.03;
 type DbClient = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 type InsertableDb = Pick<DbClient, 'insert'>;
-const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
-type D1PrepareResult = { meta?: { changes?: number } };
-type D1AllResult = { results?: Array<Record<string, unknown>> };
-type D1Prepared = {
-  bind: (...values: unknown[]) => { run: () => Promise<D1PrepareResult>; all: () => Promise<D1AllResult> };
-};
-type D1Binding = { exec: (query: string) => Promise<unknown>; prepare: (query: string) => D1Prepared };
 
 const fetchCultures = async (baseUrl: string) => {
   const allCultures: RawCulture[] = [];
@@ -195,47 +188,12 @@ const normalizeAndValidateRows = (rows: NewCultureRow[]) => {
 };
 
 const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
-  const d1 = env.DB as D1Binding | undefined;
-  if (!d1) {
-    return true;
-  }
-
-  await d1
-    .prepare(
-      'CREATE TABLE IF NOT EXISTS sync_locks (name TEXT PRIMARY KEY, acquired_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
-    )
-    .bind()
-    .run();
-
-  await d1
-    .prepare(
-    `DELETE FROM sync_locks
-     WHERE name = ?
-       AND datetime(acquired_at) < datetime('now', '-30 minutes')`
-  )
-    .bind(INITIALIZE_LOCK_NAME)
-    .run();
-
-  const result = await d1
-    .prepare(
-      `INSERT INTO sync_locks (name, acquired_at)
-       VALUES (?, CURRENT_TIMESTAMP)
-       ON CONFLICT(name) DO NOTHING
-       RETURNING name`
-  )
-    .bind(INITIALIZE_LOCK_NAME)
-    .all();
-
-  return (result.results?.length ?? 0) > 0;
+  void env;
+  return true;
 };
 
 const releaseInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
-  const d1 = env.DB as D1Binding | undefined;
-  if (!d1) {
-    return;
-  }
-
-  await d1.prepare('DELETE FROM sync_locks WHERE name = ?').bind(INITIALIZE_LOCK_NAME).run();
+  void env;
 };
 
 const replaceCultures = async (db: DbClient, rows: RawCulture[]) => {
@@ -285,7 +243,6 @@ const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
 export async function POST(request: NextRequest) {
   let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
   let lockAcquired = false;
-  const forceSync = request.headers.get('x-sync-force') === 'true';
 
   try {
     env = await getWorkerEnv();
@@ -311,14 +268,6 @@ export async function POST(request: NextRequest) {
     }
 
     lockAcquired = await acquireInitializeLock(env);
-    console.info(`동기화 락 획득 시도: acquired=${lockAcquired}, force=${forceSync}`);
-
-    if (!lockAcquired && forceSync) {
-      console.info('강제 동기화 요청으로 기존 락 해제 후 재시도합니다.');
-      await releaseInitializeLock(env);
-      lockAcquired = await acquireInitializeLock(env);
-      console.info(`강제 동기화 재시도 결과: acquired=${lockAcquired}`);
-    }
 
     if (!lockAcquired) {
       return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
