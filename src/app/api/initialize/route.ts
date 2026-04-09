@@ -26,7 +26,10 @@ type DbClient = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 type InsertableDb = Pick<DbClient, 'insert'>;
 const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
 type D1PrepareResult = { meta?: { changes?: number } };
-type D1Prepared = { bind: (...values: unknown[]) => { run: () => Promise<D1PrepareResult> } };
+type D1AllResult = { results?: Array<Record<string, unknown>> };
+type D1Prepared = {
+  bind: (...values: unknown[]) => { run: () => Promise<D1PrepareResult>; all: () => Promise<D1AllResult> };
+};
 type D1Binding = { exec: (query: string) => Promise<unknown>; prepare: (query: string) => D1Prepared };
 
 const fetchCultures = async (baseUrl: string) => {
@@ -215,12 +218,15 @@ const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv
 
   const result = await d1
     .prepare(
-    'INSERT OR IGNORE INTO sync_locks (name, acquired_at) VALUES (?, CURRENT_TIMESTAMP)'
+      `INSERT INTO sync_locks (name, acquired_at)
+       VALUES (?, CURRENT_TIMESTAMP)
+       ON CONFLICT(name) DO NOTHING
+       RETURNING name`
   )
     .bind(INITIALIZE_LOCK_NAME)
-    .run();
+    .all();
 
-  return (result.meta?.changes ?? 0) > 0;
+  return (result.results?.length ?? 0) > 0;
 };
 
 const releaseInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
