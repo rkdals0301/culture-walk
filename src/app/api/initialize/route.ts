@@ -197,12 +197,12 @@ const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv
     return true;
   }
 
-  await d1.exec(`
-    CREATE TABLE IF NOT EXISTS sync_locks (
-      name TEXT PRIMARY KEY,
-      acquired_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  await d1
+    .prepare(
+      'CREATE TABLE IF NOT EXISTS sync_locks (name TEXT PRIMARY KEY, acquired_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
+    )
+    .bind()
+    .run();
 
   await d1
     .prepare(
