@@ -6,7 +6,7 @@ import { mapCultureRowToCulture } from '@/services/cultureService';
 import { Culture } from '@/types/culture';
 
 import { NextResponse } from 'next/server';
-import { and, asc, gte, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, asc, gte, isNotNull, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +49,6 @@ export async function GET() {
           isNotNull(cultures.endDate),
           sql`${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
           sql`${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`,
-          lte(cultures.startDate, utcToday),
           gte(cultures.endDate, utcToday)
         )
       )
