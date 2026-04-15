@@ -10,7 +10,7 @@ const MapShell = ({ children }: MapShellProps) => {
       <div className='absolute inset-0 z-0'>
         <MapViewClientOnly />
       </div>
-      <div className='pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(8,19,17,0.28)_0%,rgba(8,19,17,0.04)_30%,rgba(8,19,17,0.16)_100%)] dark:bg-[linear-gradient(180deg,rgba(8,19,17,0.48)_0%,rgba(8,19,17,0.1)_30%,rgba(8,19,17,0.24)_100%)]' />
+      <div className='pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(8,19,17,0.14)_0%,rgba(8,19,17,0.03)_62%,transparent_100%)] dark:bg-[linear-gradient(180deg,rgba(8,19,17,0.26)_0%,rgba(8,19,17,0.06)_62%,transparent_100%)] sm:h-32 lg:h-36' />
       <div className='pointer-events-none relative z-20 h-full'>{children}</div>
     </div>
   );
