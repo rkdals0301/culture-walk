@@ -7,12 +7,22 @@ import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureById } from '@/hooks/cultureHooks';
 
+import type { FormattedCulture } from '@/types/culture';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
+
+const buildCultureSummary = (culture: FormattedCulture) => {
+  const regionText = culture.guName ? `${culture.guName}에서 열리는` : '서울에서 열리는';
+  const placeText = culture.displayPlace || culture.place || '공개된 장소';
+  const priceText = culture.displayPrice ? `요금은 ${culture.displayPrice}입니다.` : '요금 정보는 공식 페이지에서 확인할 수 있습니다.';
+
+  return `${culture.title}은 ${regionText} ${culture.classification || '문화행사'}입니다. ${placeText}에서 진행되며, 일정은 ${culture.displayDate}입니다. ${priceText}`;
+};
 
 const MapDetailSheetClient = () => {
   const router = useRouter();
@@ -71,6 +81,8 @@ const MapDetailSheetClient = () => {
       );
     }
 
+    const cultureSummary = buildCultureSummary(culture);
+
     return (
       <div className='flex flex-col gap-5'>
         <div className='relative aspect-[16/10] overflow-hidden rounded-[28px] bg-black/[0.04] dark:bg-white/[0.05]'>
@@ -100,6 +112,13 @@ const MapDetailSheetClient = () => {
             Selected Event
           </p>
           <h2 className='mt-2 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.05em]'>{culture.title}</h2>
+        </div>
+
+        <div className='surface-card rounded-[24px] p-4'>
+          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
+            CultureWalk 요약
+          </p>
+          <p className='mt-2 break-words text-sm leading-6 text-[var(--app-muted)]'>{cultureSummary}</p>
         </div>
 
         <div className='surface-card rounded-[24px] p-4'>

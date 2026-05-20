@@ -71,6 +71,11 @@ export const metadata: Metadata = {
       'naver-site-verification': NAVER_SITE_VERIFICATION,
     },
   },
+  other: ADSENSE_CLIENT_ID
+    ? {
+        'google-adsense-account': ADSENSE_CLIENT_ID,
+      }
+    : undefined,
   openGraph: {
     type: 'website',
     locale: 'ko_KR',

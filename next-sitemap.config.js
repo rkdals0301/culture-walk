@@ -6,15 +6,17 @@ module.exports = {
   changefreq: 'daily',
   priority: 0.7,
   sitemapSize: 5000,
-  exclude: ['/_not-found', '/404', '/api/*'],
+  exclude: ['/_not-found', '/404', '/api/*', '/ads.txt'],
   robotsTxtOptions: {
     policies: [{ userAgent: '*', allow: '/' }],
-    additionalSitemaps: [`${siteUrl}/sitemap.xml`],
   },
   transform: async (config, path) => {
     const priorityMap = {
       '/': 1.0,
       '/map': 1.0,
+      '/about': 0.8,
+      '/privacy': 0.5,
+      '/contact': 0.5,
     };
 
     return {

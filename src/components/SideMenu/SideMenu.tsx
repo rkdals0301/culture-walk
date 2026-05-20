@@ -9,6 +9,13 @@ import Link from 'next/link';
 
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
+const NAVIGATION_LINKS = [
+  { href: '/map', label: '문화지도' },
+  { href: '/about', label: '서비스 소개' },
+  { href: '/privacy', label: '개인정보처리방침' },
+  { href: '/contact', label: '문의' },
+];
+
 const SideMenu = () => {
   const { isOpen, closeSideMenu } = useSideMenu();
 
@@ -56,6 +63,18 @@ const SideMenu = () => {
           <p className='text-sm leading-6 text-[var(--app-muted)]'>
             서울 곳곳에서 열리는 전시, 공연, 축제를 지도 위에서 빠르게 훑고 바로 이동하는 문화 탐색 앱입니다.
           </p>
+          <div className='grid grid-cols-2 gap-2'>
+            {NAVIGATION_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={closeSideMenu}
+                className='soft-chip rounded-2xl px-4 py-3 text-sm font-semibold text-[var(--app-text)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
           <div className='grid gap-3'>
             <div className='surface-card rounded-[24px] p-4'>
               <p className='text-xs font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
