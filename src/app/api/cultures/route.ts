@@ -44,7 +44,7 @@ export async function GET() {
     const utcToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)).toISOString();
 
     const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v1', {
+    const cacheKey = createCacheKey('cultures:list:v2', {
       version: cacheVersion,
       utcDate: utcToday.slice(0, 10),
     });
