@@ -28,7 +28,8 @@ cp .env.example .env
 
 필수 환경 변수:
 
-- `SEOUL_API_CULTURAL_URL`
+- `SEOUL_API_CULTURAL_BASE_URL`
+- `SEOUL_API_KEY`
 - `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`
 - `SYNC_TOKEN` (권장, initialize 보호)
 
@@ -75,3 +76,4 @@ npm run dev
 
 - `wrangler.jsonc`의 D1/KV id는 실제 리소스 값으로 교체해야 합니다.
 - `SYNC_TOKEN`은 `wrangler secret put SYNC_TOKEN`으로 설정하는 것을 권장합니다.
+- `SEOUL_API_KEY`는 `wrangler secret put SEOUL_API_KEY`로 설정하고, `wrangler.jsonc`에는 base URL만 둡니다.
