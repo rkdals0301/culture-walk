@@ -38,7 +38,7 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
           }
           onError={handleImageError}
           fill
-          sizes='100dvw'
+          sizes='(min-width: 1024px) 104px, (min-width: 640px) 96px, 80px'
           className='object-cover'
         />
       </div>

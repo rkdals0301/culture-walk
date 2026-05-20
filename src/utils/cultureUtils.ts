@@ -1,8 +1,8 @@
-import { Culture, FormattedCulture } from '@/types/culture';
+import { CultureListItem, FormattedCulture } from '@/types/culture';
 
 import { format } from 'date-fns';
 
-const formatString = (object: Culture, keys: (keyof Culture)[], separator = ', '): string => {
+const formatString = (object: Partial<CultureListItem>, keys: (keyof CultureListItem)[], separator = ', '): string => {
   return keys
     .map(key => object[key])
     .filter(val => val != null) // `null`과 `undefined`를 함께 처리
@@ -28,7 +28,7 @@ const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => 
   return formattedStartDate === formattedEndDate ? formattedStartDate : `${formattedStartDate} ~ ${formattedEndDate}`;
 };
 
-export const formatCultureData = (cultures: Culture[]): FormattedCulture[] => {
+export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture[] => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');
     const displayPrice = culture.isFree === '유료' ? formatString(culture, ['isFree', 'useFee']) : culture.isFree;

@@ -93,7 +93,7 @@ const MapDetailSheetClient = () => {
             blurDataURL='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNcWQ8AAdcBKrJda2oAAAAASUVORK5CYII='
             onError={handleImageError}
             fill
-            sizes='100dvw'
+            sizes='(min-width: 1024px) 520px, 100dvw'
             priority
             className='object-cover'
           />

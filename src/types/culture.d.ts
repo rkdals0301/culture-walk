@@ -51,8 +51,25 @@ export interface Culture {
   updatedAt?: Date; // 수정일
 }
 
-export interface FormattedCulture extends Culture {
+export type CultureListItem = Pick<
+  Culture,
+  | 'id'
+  | 'classification'
+  | 'endDate'
+  | 'guName'
+  | 'isFree'
+  | 'lat'
+  | 'lng'
+  | 'mainImage'
+  | 'place'
+  | 'startDate'
+  | 'title'
+  | 'useFee'
+>;
+
+export type FormattedCulture = CultureListItem &
+  Partial<Culture> & {
   displayDate: string;
   displayPlace: string;
   displayPrice: string;
-}
+};
