@@ -27,6 +27,21 @@ const toDateOrNow = (value?: string | null) => {
   return parsed;
 };
 
+const isBetween = (value: number, min: number, max: number) => value >= min && value <= max;
+const looksLikeKoreaLat = (value: number) => isBetween(value, 33, 39.8);
+const looksLikeKoreaLng = (value: number) => isBetween(value, 124, 132);
+
+export const normalizeCultureCoordinates = (lat: number | null | undefined, lng: number | null | undefined) => {
+  const safeLat = typeof lat === 'number' && Number.isFinite(lat) ? lat : 0;
+  const safeLng = typeof lng === 'number' && Number.isFinite(lng) ? lng : 0;
+
+  if (looksLikeKoreaLng(safeLat) && looksLikeKoreaLat(safeLng)) {
+    return { lat: safeLng, lng: safeLat };
+  }
+
+  return { lat: safeLat, lng: safeLng };
+};
+
 export function mapRawCultureToCulture(rawCulture: RawCulture): NewCultureRow {
   return {
     classification: toText(rawCulture.CODENAME),
@@ -57,6 +72,7 @@ export function mapRawCultureToCulture(rawCulture: RawCulture): NewCultureRow {
 export function mapCultureRowToCulture(row: CultureRow): Culture {
   const startDate = toDateOrNow(row.startDate);
   const endDate = toDateOrNow(row.endDate ?? row.startDate);
+  const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
 
   return {
     id: row.id,
@@ -67,8 +83,8 @@ export function mapCultureRowToCulture(row: CultureRow): Culture {
     guName: row.guName ?? '',
     homepageDetailAddress: row.homepageDetailAddress ?? '',
     isFree: row.isFree ?? '',
-    lat: row.lat ?? 0,
-    lng: row.lng ?? 0,
+    lat: coordinates.lat,
+    lng: coordinates.lng,
     mainImage: row.mainImage ?? '/assets/images/logo.svg',
     homepageAddress: row.homepageAddress ?? '',
     organizationName: row.organizationName ?? '',

@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
 import { eq } from 'drizzle-orm';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/logo.svg`;
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png`;
 
 const getCultureById = async (id: number) => {
   const db = await getDb();

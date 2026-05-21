@@ -2,10 +2,11 @@ import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } fr
 import { cultures } from '@/db/schema';
 import { getDb } from '@/db/client';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
+import { normalizeCultureCoordinates } from '@/services/cultureService';
 import { CultureListItem } from '@/types/culture';
 
 import { NextResponse } from 'next/server';
-import { and, asc, gte, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export async function GET() {
     const utcToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)).toISOString();
 
     const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v2', {
+    const cacheKey = createCacheKey('cultures:list:v3', {
       version: cacheVersion,
       utcDate: utcToday.slice(0, 10),
     });
@@ -76,27 +77,39 @@ export async function GET() {
           isNotNull(cultures.lng),
           isNotNull(cultures.startDate),
           isNotNull(cultures.endDate),
-          sql`${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
-          sql`${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`,
+          or(
+            and(
+              sql`${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
+              sql`${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
+            ),
+            and(
+              sql`${cultures.lng} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
+              sql`${cultures.lat} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
+            )
+          ),
           gte(cultures.endDate, utcToday)
         )
       )
       .orderBy(asc(cultures.startDate));
 
-    const result: CultureListItem[] = rows.map(row => ({
-      id: row.id,
-      classification: row.classification ?? '',
-      endDate: toDateOrNow(row.endDate ?? row.startDate),
-      guName: row.guName ?? '',
-      isFree: row.isFree ?? '',
-      lat: row.lat ?? 0,
-      lng: row.lng ?? 0,
-      mainImage: row.mainImage ?? '/assets/images/logo.svg',
-      place: row.place ?? '',
-      startDate: toDateOrNow(row.startDate),
-      title: row.title ?? '',
-      useFee: row.useFee ?? '',
-    }));
+    const result: CultureListItem[] = rows.map(row => {
+      const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
+
+      return {
+        id: row.id,
+        classification: row.classification ?? '',
+        endDate: toDateOrNow(row.endDate ?? row.startDate),
+        guName: row.guName ?? '',
+        isFree: row.isFree ?? '',
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        mainImage: row.mainImage ?? '/assets/images/logo.svg',
+        place: row.place ?? '',
+        startDate: toDateOrNow(row.startDate),
+        title: row.title ?? '',
+        useFee: row.useFee ?? '',
+      };
+    });
     await writeKvCache(cacheKey, result, CACHE_TTL_SECONDS);
 
     return listResponse(result);

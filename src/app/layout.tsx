@@ -20,7 +20,7 @@ const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet')
 const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
 const SITE_URL =
   process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/logo.svg`;
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png`;
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GOOGLE_SITE_VERIFICATION =
@@ -87,8 +87,8 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: 'culturewalk',
-        type: 'image/svg+xml',
+        alt: '문화산책 - 서울 문화행사 지도',
+        type: 'image/png',
       },
     ],
   },
@@ -101,9 +101,9 @@ export const metadata: Metadata = {
       {
         url: OG_IMAGE_URL,
         width: 1200,
-        height: 675,
-        alt: 'culturewalk',
-        type: 'image/svg+xml',
+        height: 630,
+        alt: '문화산책 - 서울 문화행사 지도',
+        type: 'image/png',
       },
     ],
   },
