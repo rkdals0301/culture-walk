@@ -6,10 +6,12 @@ import { mapCultureRowToCulture } from '@/services/cultureService';
 import { formatCultureData } from '@/utils/cultureUtils';
 
 import type { Metadata } from 'next';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { notFound } from 'next/navigation';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png`;
+const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 
 const getCultureById = async (id: number) => {
   const db = await getDb();
@@ -18,8 +20,8 @@ const getCultureById = async (id: number) => {
   }
 
   const row = await db.query.cultures.findFirst({
-    where: eq(cultures.id, id), 
-  }); 
+    where: and(eq(cultures.id, id), eq(cultures.isActive, true)),
+  });
 
   if (!row) {
     return null;
@@ -30,9 +32,9 @@ const getCultureById = async (id: number) => {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const parsedId = Number.parseInt(id, 10);
+  const parsedId = parseCultureId(id);
 
-  if (!Number.isFinite(parsedId)) {
+  if (parsedId === null) {
     return {
       title: '행사 정보',
       description: '서울 문화행사 상세 정보',
@@ -94,8 +96,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const parsedId = Number.parseInt(id, 10);
-  const culture = Number.isFinite(parsedId) ? await getCultureById(parsedId) : null;
+  const parsedId = parseCultureId(id);
+  if (parsedId === null) {
+    notFound();
+  }
+
+  const culture = await getCultureById(parsedId);
+  if (!culture) {
+    notFound();
+  }
+
   const formatted = culture ? formatCultureData([culture])[0] : null;
 
   const eventStructuredData =

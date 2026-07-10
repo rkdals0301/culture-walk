@@ -100,8 +100,8 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
               className='hidden sm:inline-flex'
             />
             <div className='min-w-0 flex-1'>
-              <p className='text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:text-[#8dc5b5]'>
-                Search Seoul Culture
+              <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+                서울 문화행사 검색
               </p>
               <h2 className='mt-1 text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.02em] sm:text-[1.9rem] sm:tracking-[-0.03em]'>
                 문화행사를 빠르게 검색하세요

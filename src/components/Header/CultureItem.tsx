@@ -1,4 +1,5 @@
 import { FormattedCulture } from '@/types/culture';
+import CultureImageFallback from '@/components/Common/CultureImageFallback';
 
 import React, { useEffect, useState } from 'react';
 
@@ -14,33 +15,45 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    setImgSrc(culture.mainImage);
+    setImageFailed(false);
+  }, [culture.mainImage]);
+
   const handleImageError = () => {
-    setImgSrc('/assets/images/logo.svg');
+    setImageFailed(true);
   };
+
+  const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc.includes('/assets/images/logo');
 
   return (
     <div className='flex size-full items-center gap-3'>
-      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[20px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24 lg:h-24 lg:w-20 xl:h-28 xl:w-24'>
-        <Image
-          src={imgSrc}
-          alt={culture.title}
-          loading='lazy'
-          placeholder='blur'
-          blurDataURL={
-            mounted && resolvedTheme === 'dark'
-              ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDIJfE/ik1xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAPpqkfBnntZwAAAAABJRU5ErkJggg=='
-              : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDINe/pE00xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAMX43gB4UCRUgAAAABJRU5ErkJggg=='
-          }
-          onError={handleImageError}
-          fill
-          sizes='(min-width: 1024px) 104px, (min-width: 640px) 96px, 80px'
-          className='object-cover'
-        />
+      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[14px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24 lg:h-24 lg:w-20 xl:h-28 xl:w-24'>
+        {hasCultureImage ? (
+          <Image
+            src={imgSrc}
+            alt={culture.title}
+            loading='lazy'
+            placeholder='blur'
+            blurDataURL={
+              mounted && resolvedTheme === 'dark'
+                ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDIJfE/ik1xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAPpqkfBnntZwAAAAABJRU5ErkJggg=='
+                : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAAPUlEQVR42u3OMQEAAAgDINe/pE00xh5IQPamKgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLtwAMX43gB4UCRUgAAAABJRU5ErkJggg=='
+            }
+            onError={handleImageError}
+            fill
+            sizes='(min-width: 1024px) 104px, (min-width: 640px) 96px, 80px'
+            className='object-cover'
+          />
+        ) : (
+          <CultureImageFallback compact />
+        )}
       </div>
       <div className='min-w-0 grow overflow-hidden'>
         <div className='mb-2.5 flex flex-wrap items-center gap-1.5'>
@@ -51,7 +64,7 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
                 : 'rounded-full bg-[#e3f1ec] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'
             }
           >
-            {culture.classification || 'Culture'}
+            {culture.classification || '문화행사'}
           </span>
           <span className='rounded-full bg-black/[0.04] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--app-muted)] dark:bg-white/[0.06]'>
             {culture.guName}

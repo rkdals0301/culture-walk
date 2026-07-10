@@ -28,7 +28,7 @@ const IconButton = ({
   ...props
 }: IconButtonProps) => {
   const baseClass =
-    'inline-flex items-center justify-center rounded-2xl border transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
+    'inline-flex items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
   const disabledClass = disabled ? 'opacity-50 cursor-not-allowed' : '';
 
   const colorClasses = {

@@ -1,16 +1,10 @@
-import CultureItemSkeleton from '@/components/Header/CultureItemSkeleton';
+import CultureItem from '@/components/Header/CultureItem';
 import { FormattedCulture } from '@/types/culture';
 
 import React, { useEffect, useMemo, useRef } from 'react';
 
-import dynamic from 'next/dynamic';
-
 import { useVirtualizer } from '@tanstack/react-virtual';
 import clsx from 'clsx';
-
-const CultureItem = dynamic(() => import('@/components/Header/CultureItem'), {
-  loading: () => <CultureItemSkeleton />,
-});
 
 interface CultureListProps {
   cultures: FormattedCulture[];
@@ -67,7 +61,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
               className={clsx(
-                'absolute left-0 right-0 rounded-[28px] px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/45',
+                'absolute left-0 right-0 rounded-[20px] px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/45',
                 {
                   'pt-1': isFirst,
                   'pb-1': isLast,
@@ -81,11 +75,11 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
             >
               <div
                 className={clsx(
-                  'surface-card relative mb-2 overflow-hidden rounded-[26px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
+                  'surface-card relative mb-2 overflow-hidden rounded-[18px] px-4 py-4 transition duration-200 hover:border-[#1f765f]/20 hover:shadow-[0_18px_36px_-30px_rgba(31,118,95,0.45)]',
                   {
                     'mt-1': isFirst,
                     'mb-0': isLast,
-                    'border-[#1f765f]/55 bg-[#eaf5f1] shadow-[0_28px_56px_-34px_rgba(31,118,95,0.75)] ring-2 ring-[#1f765f]/35 dark:bg-[#10352d]': isSelected,
+                    'border-[#1f765f]/55 bg-[#eaf5f1] shadow-[0_20px_42px_-34px_rgba(31,118,95,0.65)] ring-2 ring-[#1f765f]/30 dark:bg-[#10352d]': isSelected,
                   }
                 )}
               >

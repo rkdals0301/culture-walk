@@ -1,4 +1,5 @@
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
+import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
@@ -12,9 +13,6 @@ import dynamic from 'next/dynamic';
 import Script from 'next/script';
 
 const SideMenu = dynamic(() => import('@/components/SideMenu/SideMenu'), {
-  loading: () => null,
-});
-const BottomSheet = dynamic(() => import('@/components/BottomSheet/BottomSheet'), {
   loading: () => null,
 });
 const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
@@ -123,9 +121,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: '#ffffff',
   colorScheme: 'light dark',
 };
