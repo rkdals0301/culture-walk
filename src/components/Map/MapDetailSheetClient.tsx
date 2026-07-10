@@ -84,8 +84,8 @@ const MapDetailSheetClient = () => {
     const cultureSummary = buildCultureSummary(culture);
 
     return (
-      <div className='flex flex-col gap-5'>
-        <div className='relative aspect-[16/10] overflow-hidden rounded-[28px] bg-black/[0.04] dark:bg-white/[0.05]'>
+      <div className='flex flex-col gap-4'>
+        <div className='relative aspect-[16/9] overflow-hidden rounded-[26px] bg-black/[0.04] dark:bg-white/[0.05]'>
           <Image
             src={imgSrc ?? '/assets/images/logo.svg'}
             alt={culture.title}
@@ -108,17 +108,27 @@ const MapDetailSheetClient = () => {
           </span>
         </div>
         <div>
-          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
+          <p className='text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
             Selected Event
           </p>
-          <h2 className='mt-2 text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.05em]'>{culture.title}</h2>
+          <h2 className='mt-2 text-[1.55rem] font-semibold leading-[1.15] tracking-[-0.04em] sm:text-[1.75rem]'>
+            {culture.title}
+          </h2>
         </div>
 
-        <div className='surface-card rounded-[24px] p-4'>
-          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
-            CultureWalk 요약
-          </p>
-          <p className='mt-2 break-words text-sm leading-6 text-[var(--app-muted)]'>{cultureSummary}</p>
+        <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+          <div className='soft-chip rounded-[18px] px-3 py-2.5'>
+            <p className='text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]'>일정</p>
+            <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
+          </div>
+          <div className='soft-chip rounded-[18px] px-3 py-2.5'>
+            <p className='text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]'>장소</p>
+            <p className='mt-1 line-clamp-2 text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
+          </div>
+          <div className='soft-chip rounded-[18px] px-3 py-2.5'>
+            <p className='text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[var(--app-muted)]'>요금</p>
+            <p className='mt-1 line-clamp-2 text-sm font-semibold leading-5'>{culture.displayPrice}</p>
+          </div>
         </div>
 
         <div className='surface-card rounded-[24px] p-4'>
@@ -142,13 +152,24 @@ const MapDetailSheetClient = () => {
           </dl>
         </div>
 
+        <div className='surface-card rounded-[24px] p-4'>
+          <p className='text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>
+            CultureWalk 요약
+          </p>
+          <p className='mt-2 break-words text-sm leading-6 text-[var(--app-muted)]'>{cultureSummary}</p>
+        </div>
+
         {culture.etcDescription && (
-          <div className='surface-card rounded-[24px] p-4'>
-            <p className='text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>기타 안내</p>
-            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+          <details className='surface-card group rounded-[24px] p-4'>
+            <summary className='flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
+              <span className='text-[0.68rem] uppercase tracking-[0.24em] text-[#1f765f] dark:text-[#8dc5b5]'>추가 안내</span>
+              <span className='text-xs text-[var(--app-muted)] group-open:hidden'>열기</span>
+              <span className='hidden text-xs text-[var(--app-muted)] group-open:inline'>닫기</span>
+            </summary>
+            <p className='mt-3 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.etcDescription}
             </p>
-          </div>
+          </details>
         )}
 
         {ADSENSE_DETAIL_SLOT && (

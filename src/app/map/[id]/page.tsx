@@ -18,8 +18,8 @@ const getCultureById = async (id: number) => {
   }
 
   const row = await db.query.cultures.findFirst({
-    where: eq(cultures.id, id),
-  });
+    where: eq(cultures.id, id), 
+  }); 
 
   if (!row) {
     return null;

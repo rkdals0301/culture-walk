@@ -69,8 +69,8 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
               className={clsx(
                 'absolute left-0 right-0 rounded-[28px] px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/45',
                 {
-                'pt-1': isFirst,
-                'pb-1': isLast,
+                  'pt-1': isFirst,
+                  'pb-1': isLast,
                 }
               )}
               style={{
@@ -81,7 +81,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
             >
               <div
                 className={clsx(
-                  'surface-card relative mb-2 rounded-[26px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
+                  'surface-card relative mb-2 overflow-hidden rounded-[26px] px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#1f765f]/20 hover:shadow-[0_24px_48px_-30px_rgba(31,118,95,0.5)]',
                   {
                     'mt-1': isFirst,
                     'mb-0': isLast,
@@ -90,9 +90,10 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
                 )}
               >
                 {isSelected && (
-                  <span className='absolute right-4 top-4 z-10 inline-flex items-center rounded-full bg-[#1f765f] px-2.5 py-1 text-[0.64rem] font-semibold tracking-[0.08em] text-[#fff8f1] shadow-[0_10px_22px_-14px_rgba(31,118,95,0.9)] dark:bg-[#2f9b7d] dark:text-[#081311]'>
-                    선택됨
-                  </span>
+                  <>
+                    <span className='absolute bottom-4 left-0 top-4 w-1.5 rounded-r-full bg-[#1f765f] shadow-[0_10px_22px_-14px_rgba(31,118,95,0.9)] dark:bg-[#2f9b7d]' />
+                    <span className='sr-only'>선택됨</span>
+                  </>
                 )}
                 <CultureItem culture={culture} isSelected={isSelected} />
               </div>

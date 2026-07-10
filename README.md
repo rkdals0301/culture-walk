@@ -65,6 +65,14 @@ npm run dev
 - `npm run preview`: Cloudflare(wrangler) 로컬 프리뷰
 - `npm run deploy`: Cloudflare 배포
 
+## Operations
+
+- 데이터 상태 확인: `GET /api/health`
+- 공개 문화행사 목록: `GET /api/cultures`
+- 수동 동기화: `POST /api/initialize` with `x-sync-token`
+
+`/api/health`는 전체 데이터 수, 진행 중 데이터 수, 좌표 정합성, 최신 업데이트 시각을 반환합니다. `ok: false`면 cron 이후 데이터가 비어 있거나 좌표가 비정상인 상태입니다.
+
 ## Cloudflare
 
 - 설정 파일: `wrangler.jsonc`

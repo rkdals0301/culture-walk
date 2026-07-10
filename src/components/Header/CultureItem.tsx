@@ -24,8 +24,8 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
   };
 
   return (
-    <div className='flex size-full items-center gap-3 sm:gap-4'>
-      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[20px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24 lg:h-[7.4rem] lg:w-[6.4rem]'>
+    <div className='flex size-full items-center gap-3'>
+      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[20px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24 lg:h-24 lg:w-20 xl:h-28 xl:w-24'>
         <Image
           src={imgSrc}
           alt={culture.title}
@@ -43,7 +43,7 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
         />
       </div>
       <div className='min-w-0 grow overflow-hidden'>
-        <div className='mb-2.5 flex flex-wrap items-center gap-2'>
+        <div className='mb-2.5 flex flex-wrap items-center gap-1.5'>
           <span
             className={
               isSelected

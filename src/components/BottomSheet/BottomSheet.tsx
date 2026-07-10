@@ -55,10 +55,10 @@ const BottomSheet = () => {
     <>
       {isOpen && (
         <LazyMotion features={domAnimation}>
-          <div className='pointer-events-none fixed inset-0 z-40 size-full bg-[#081311]/42 backdrop-blur-[1px]' />
+          <div className='pointer-events-none fixed inset-0 z-40 size-full bg-[#081311]/28 backdrop-blur-[1px]' />
           <m.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-7.5rem)] flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[440px] md:max-h-[calc(100dvh-9rem)]'
+            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] md:max-h-[calc(100dvh-8rem)]'
             animate={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: 48 }}
             transition={{ duration: 0.28 }}
@@ -69,13 +69,13 @@ const BottomSheet = () => {
               <button
                 type='button'
                 onClick={closeBottomSheet}
-                className='soft-chip justify-self-end rounded-full px-3 py-1 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+                className='soft-chip flex size-8 items-center justify-center justify-self-end rounded-full text-base font-semibold leading-none text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
                 aria-label='상세 패널 닫기'
               >
-                닫기
+                ×
               </button>
             </div>
-            <div className='min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4'>{content}</div>
+            <div className='min-h-0 flex-1 overflow-y-auto px-4 pb-5 pt-4 sm:px-5'>{content}</div>
           </m.div>
         </LazyMotion>
       )}

@@ -17,9 +17,9 @@ interface StatCardProps {
 }
 
 const StatCard = ({ label, value }: StatCardProps) => (
-  <div className='soft-chip rounded-[18px] px-3 py-2.5'>
-    <p className='text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[var(--app-muted)]'>{label}</p>
-    <p className='mt-0.5 text-lg font-semibold tracking-[-0.03em]'>{value}</p>
+  <div className='soft-chip rounded-[16px] px-3 py-2'>
+    <p className='text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-[var(--app-muted)]'>{label}</p>
+    <p className='mt-0.5 text-base font-semibold tracking-[-0.03em]'>{value}</p>
   </div>
 );
 
@@ -88,18 +88,18 @@ const MapDashboard = () => {
         <div className='pointer-events-none hidden h-full lg:flex'>
           <div
             className={`pointer-events-none h-full transition-[width] duration-300 ${
-              isDesktopPanelCollapsed ? 'w-[88px]' : 'w-[372px] xl:w-[420px]'
+              isDesktopPanelCollapsed ? 'w-[76px]' : 'w-[344px] xl:w-[380px]'
             }`}
           >
             <div className='pointer-events-auto h-full'>
               {isDesktopPanelCollapsed ? (
-                <div className='surface-panel flex h-full flex-col items-center justify-between rounded-[28px] px-3 py-4 text-[var(--app-text)]'>
+                <div className='surface-panel flex h-full flex-col items-center justify-between rounded-[26px] px-2.5 py-4 text-[var(--app-text)]'>
                   <button
                     type='button'
                     onClick={() => setIsDesktopPanelCollapsed(false)}
-                    className='rounded-full bg-[#1f765f] px-3 py-2 text-xs font-semibold text-[#fff8f1] transition hover:bg-[#175846]'
+                    className='rounded-full bg-[#1f765f] px-3 py-2 text-[0.68rem] font-semibold text-[#fff8f1] transition hover:bg-[#175846]'
                   >
-                    목록 열기
+                    목록
                   </button>
                   <div className='grid gap-2 text-center'>
                     <div className='soft-chip rounded-xl px-2 py-1.5'>
@@ -118,17 +118,15 @@ const MapDashboard = () => {
                   <div className='text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[var(--app-muted)]'>Map</div>
                 </div>
               ) : (
-                <section className='surface-panel flex h-full min-h-0 flex-col overflow-hidden rounded-[30px] text-[var(--app-text)]'>
-                  <div className='border-b border-[var(--app-border)] px-5 py-4 sm:px-6'>
+                <section className='surface-panel flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] text-[var(--app-text)]'>
+                  <div className='border-b border-[var(--app-border)] px-4 py-3.5'>
                     <div className='flex items-start justify-between gap-3'>
                       <div className='min-w-0'>
-                        <p className='text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:text-[#8dc5b5]'>
-                          City Culture Guide
+                        <p className='text-[0.64rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:text-[#8dc5b5]'>
+                          Seoul Events
                         </p>
-                        <h2 className='mt-2 text-[1.72rem] font-semibold leading-[1.18] tracking-[-0.03em]'>
-                          지도에서 바로 행사 고르기
-                        </h2>
-                        <p className='mt-1 text-sm text-[var(--app-muted)]'>지금 진행 중인 행사 중심으로 정렬됩니다.</p>
+                        <h2 className='mt-1.5 text-xl font-semibold leading-[1.2] tracking-[-0.03em]'>행사 목록</h2>
+                        <p className='mt-1 text-xs text-[var(--app-muted)]'>지도에서 선택하면 목록도 함께 표시됩니다.</p>
                       </div>
                       <button
                         type='button'
@@ -138,7 +136,7 @@ const MapDashboard = () => {
                         접기
                       </button>
                     </div>
-                    <div className='mt-4 grid grid-cols-3 gap-2.5'>
+                    <div className='mt-3 grid grid-cols-3 gap-2'>
                       <StatCard label='Events' value={totalCount} />
                       <StatCard label='Free' value={freeCount} />
                       <StatCard label='Districts' value={districtCount} />
@@ -149,7 +147,7 @@ const MapDashboard = () => {
                       </div>
                     )}
                   </div>
-                  <div className='min-h-0 flex-1 px-4 pb-4 pt-3'>{renderListPanel()}</div>
+                  <div className='min-h-0 flex-1 px-3 pb-3 pt-3'>{renderListPanel()}</div>
                 </section>
               )}
             </div>
@@ -158,7 +156,7 @@ const MapDashboard = () => {
         </div>
 
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[68vh] min-h-[360px] max-h-[78dvh] w-full flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] lg:hidden'>
+          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] min-h-[390px] max-h-[82dvh] w-full flex-col overflow-hidden rounded-[30px] text-[var(--app-text)] lg:hidden'>
             <div className='border-b border-[var(--app-border)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
                 <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
@@ -175,7 +173,7 @@ const MapDashboard = () => {
                 <button
                   type='button'
                   onClick={() => setIsMobileSheetVisible(false)}
-                  className='soft-chip shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--app-muted)]'
+                  className='shrink-0 rounded-full bg-[#1f765f] px-3.5 py-2 text-xs font-semibold text-[#fff8f1] shadow-[0_14px_30px_-22px_rgba(31,118,95,0.9)]'
                 >
                   지도만 보기
                 </button>
@@ -188,9 +186,9 @@ const MapDashboard = () => {
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] shadow-[0_20px_44px_-30px_rgba(16,33,29,0.6)]'
+              className='surface-panel rounded-full border-[#1f765f]/20 px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-[0_20px_44px_-30px_rgba(16,33,29,0.6)]'
             >
-              행사 목록 보기 {totalCount > 0 ? `(${totalCount})` : ''}
+              목록 보기 {totalCount > 0 ? `· ${totalCount}개` : ''}
             </button>
           </div>
         ) : null}
