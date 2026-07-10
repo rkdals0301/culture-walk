@@ -1,4 +1,3 @@
-ALTER TABLE cultures ADD COLUMN source_key TEXT;
 ALTER TABLE cultures ADD COLUMN is_active INTEGER DEFAULT 1 NOT NULL;
 ALTER TABLE cultures ADD COLUMN last_seen_at TEXT;
 ALTER TABLE cultures ADD COLUMN deactivated_at TEXT;
@@ -13,7 +12,7 @@ SET source_key = 'culture:'
   || trim(COALESCE(organization_name, '')),
     last_seen_at = COALESCE(updated_at, CURRENT_TIMESTAMP);
 
-CREATE UNIQUE INDEX cultures_source_key_idx ON cultures(source_key);
+CREATE UNIQUE INDEX IF NOT EXISTS cultures_source_key_idx ON cultures(source_key);
 CREATE INDEX cultures_active_end_date_idx ON cultures(is_active, end_date);
 
 ALTER TABLE culture_sync_staging ADD COLUMN source_key TEXT;
