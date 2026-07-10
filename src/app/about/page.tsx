@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const AboutPage = () => {
   return (
     <InfoPageShell
-      eyebrow='About CultureWalk'
+      eyebrow='문화산책 소개'
       title='서울 문화행사를 지도 위에서 더 쉽게 찾습니다.'
       description='문화산책은 서울시 문화행사 공개 정보를 바탕으로 전시, 공연, 축제, 체험 행사를 위치 중심으로 탐색할 수 있게 만든 서비스입니다.'
     >

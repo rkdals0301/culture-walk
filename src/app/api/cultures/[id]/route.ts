@@ -6,7 +6,7 @@ import { mapCultureRowToCulture } from '@/services/cultureService';
 import { Culture } from '@/types/culture';
 
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 const CACHE_TTL_SECONDS = 60 * 10;
@@ -18,11 +18,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'ID 파라미터가 필요합니다.' }, { status: 400 });
   }
 
-  const parsedId = parseInt(id, 10);
-
-  if (isNaN(parsedId)) {
+  if (!/^[1-9]\d*$/.test(id)) {
     return NextResponse.json({ error: '유효하지 않은 ID 파라미터입니다.' }, { status: 400 });
   }
+  const parsedId = Number(id);
 
   try {
     const db = await getDb();
@@ -39,7 +38,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     }
 
     const row = await db.query.cultures.findFirst({
-      where: eq(cultures.id, parsedId),
+      where: and(eq(cultures.id, parsedId), eq(cultures.isActive, true)),
     });
 
     if (!row) {

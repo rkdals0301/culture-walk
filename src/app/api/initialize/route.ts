@@ -63,14 +63,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
     }
 
-    const result = await syncCultures(baseUrl, d1);
+    const trigger = request.headers.get('x-sync-trigger')?.trim() || 'manual';
+    const result = await syncCultures(baseUrl, d1, { trigger });
 
     return NextResponse.json(
       {
         message: '데이터베이스 업데이트 성공',
+        runId: result.runId,
         totalFetched: result.fetched,
         inserted: result.inserted,
+        updated: result.updated,
+        reactivated: result.reactivated,
+        deactivated: result.deactivated,
         skipped: result.skipped,
+        invalidCoordinates: result.invalidCoordinates,
+        invalidDates: result.invalidDates,
+        missingRequiredFields: result.missingRequiredFields,
       },
       { status: 200 }
     );

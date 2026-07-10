@@ -28,7 +28,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseClass = clsx(
-    'inline-flex items-center justify-center rounded-2xl border font-semibold tracking-[-0.01em] transition duration-200',
+    'inline-flex items-center justify-center rounded-xl border font-semibold transition duration-200',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
     disabled && 'cursor-not-allowed opacity-50'
   );

@@ -4,9 +4,10 @@ import { getDb } from '@/db/client';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
 import { normalizeCultureCoordinates } from '@/services/cultureService';
 import { CultureListItem } from '@/types/culture';
+import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 import { NextResponse } from 'next/server';
-import { and, asc, gte, isNotNull, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,13 +42,12 @@ export async function GET() {
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
-    const now = new Date();
-    const utcToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)).toISOString();
+    const koreaToday = getKoreaDateStartIso();
 
     const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v3', {
+    const cacheKey = createCacheKey('cultures:list:v4', {
       version: cacheVersion,
-      utcDate: utcToday.slice(0, 10),
+      koreaDate: koreaToday.slice(0, 10),
     });
 
     const cached = await readKvCache<CultureListItem[]>(cacheKey);
@@ -73,6 +73,7 @@ export async function GET() {
       .from(cultures)
       .where(
         and(
+          eq(cultures.isActive, true),
           isNotNull(cultures.lat),
           isNotNull(cultures.lng),
           isNotNull(cultures.startDate),
@@ -87,7 +88,7 @@ export async function GET() {
               sql`${cultures.lat} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
             )
           ),
-          gte(cultures.endDate, utcToday)
+          gte(cultures.endDate, koreaToday)
         )
       )
       .orderBy(asc(cultures.startDate));

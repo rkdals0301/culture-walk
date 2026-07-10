@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --map-header-height: 72px;
+    --map-sidebar-width: 400px;
     color-scheme: light;
     --app-bg: #f4efe7;
     --app-bg-accent: rgba(31, 118, 95, 0.16);
@@ -12,8 +14,8 @@
     --app-surface: rgba(255, 251, 245, 0.78);
     --app-card: rgba(255, 255, 255, 0.82);
     --app-border: rgba(16, 33, 29, 0.08);
-    --app-shadow: 0 30px 60px -34px rgba(16, 33, 29, 0.48);
-    --app-shadow-soft: 0 20px 40px -32px rgba(16, 33, 29, 0.3);
+    --app-shadow: 0 24px 48px -34px rgba(16, 33, 29, 0.38);
+    --app-shadow-soft: 0 14px 30px -26px rgba(16, 33, 29, 0.24);
     --app-chip: rgba(16, 33, 29, 0.06);
   }
 
@@ -26,8 +28,8 @@
     --app-surface: rgba(10, 25, 22, 0.8);
     --app-card: rgba(15, 34, 29, 0.86);
     --app-border: rgba(248, 244, 235, 0.08);
-    --app-shadow: 0 36px 70px -38px rgba(0, 0, 0, 0.72);
-    --app-shadow-soft: 0 24px 50px -36px rgba(0, 0, 0, 0.54);
+    --app-shadow: 0 28px 56px -38px rgba(0, 0, 0, 0.62);
+    --app-shadow-soft: 0 18px 38px -30px rgba(0, 0, 0, 0.46);
     --app-chip: rgba(248, 244, 235, 0.08);
   }
 
@@ -101,6 +103,28 @@
   border: 1px solid var(--app-border);
   background: var(--app-chip);
   backdrop-filter: blur(12px);
+}
+
+.map-viewport,
+.map-top-scrim {
+  inset: 0;
+}
+
+@media (min-width: 1024px) {
+  .map-viewport {
+    bottom: 0;
+    left: var(--map-sidebar-width);
+    right: 0;
+    top: var(--map-header-height);
+    transition: left 280ms ease;
+  }
+
+  .map-top-scrim {
+    left: var(--map-sidebar-width);
+    right: 0;
+    top: var(--map-header-height);
+    transition: left 280ms ease;
+  }
 }
 
 button,

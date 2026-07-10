@@ -4,12 +4,14 @@ import React, { createContext, useCallback, useContext, useRef, useState } from 
 
 interface OpenBottomSheetParams {
   content: React.ReactNode;
+  footer?: React.ReactNode;
   onClose?: () => void;
 }
 
 interface BottomSheetContextProps {
   isOpen: boolean;
   content: React.ReactNode | null;
+  footer: React.ReactNode | null;
   openBottomSheet: (params: OpenBottomSheetParams) => void;
   closeBottomSheet: () => void;
 }
@@ -19,13 +21,15 @@ const BottomSheetContext = createContext<BottomSheetContextProps | undefined>(un
 export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState<React.ReactNode | null>(null);
+  const [footer, setFooter] = useState<React.ReactNode | null>(null);
 
   const onCloseCallbackRef = useRef<(() => void) | null>(null); // useRef로 콜백 관리
 
   // 바텀 시트를 열 때 onClose 콜백 설정
-  const openBottomSheet = useCallback(({ content, onClose }: OpenBottomSheetParams) => {
+  const openBottomSheet = useCallback(({ content, footer, onClose }: OpenBottomSheetParams) => {
     setIsOpen(true);
     setContent(content);
+    setFooter(footer ?? null);
     if (onClose) {
       onCloseCallbackRef.current = onClose; // 콜백을 ref에 저장
     }
@@ -35,6 +39,7 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const closeBottomSheet = useCallback(() => {
     setIsOpen(false);
     setContent(null);
+    setFooter(null);
     if (onCloseCallbackRef.current) {
       onCloseCallbackRef.current(); // 바텀 시트가 닫힐 때 콜백 호출
       onCloseCallbackRef.current = null; // 콜백 초기화
@@ -42,7 +47,7 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   return (
-    <BottomSheetContext.Provider value={{ isOpen, content, openBottomSheet, closeBottomSheet }}>
+    <BottomSheetContext.Provider value={{ isOpen, content, footer, openBottomSheet, closeBottomSheet }}>
       {children}
     </BottomSheetContext.Provider>
   );

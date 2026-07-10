@@ -28,7 +28,7 @@ const SideMenu = () => {
 
       <nav
         className={clsx(
-          'surface-panel fixed left-0 top-0 z-40 flex h-dvh w-[92vw] max-w-sm flex-col gap-8 rounded-r-[32px] p-5 transition-transform duration-300 sm:p-6',
+          'surface-panel fixed left-0 top-0 z-40 flex h-dvh w-[92vw] max-w-sm flex-col gap-8 rounded-r-[24px] p-5 transition-transform duration-300 sm:p-6',
           {
             '-translate-x-full': !isOpen,
             'translate-x-0': isOpen,
@@ -42,13 +42,13 @@ const SideMenu = () => {
               alt='CultureWalk'
               width={52}
               height={52}
-              className='rounded-3xl shadow-[0_22px_44px_-28px_rgba(31,118,95,0.95)]'
+              className='rounded-[16px] shadow-[0_18px_38px_-28px_rgba(31,118,95,0.8)]'
             />
             <div>
-              <p className='text-[0.62rem] font-semibold uppercase tracking-[0.3em] text-[#1f765f] dark:text-[#8dc5b5]'>
-                Seoul Culture Map
+              <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+                서울 문화행사 지도
               </p>
-              <h2 className='text-xl font-semibold tracking-[-0.03em]'>CultureWalk</h2>
+              <h2 className='text-xl font-semibold'>CultureWalk</h2>
             </div>
           </Link>
           <IconButton

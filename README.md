@@ -58,6 +58,7 @@ npm run dev
 - `npm run start`: 빌드 결과 실행
 - `npm run lint`: ESLint
 - `npm run typecheck`: TypeScript 타입 체크
+- `npm test`: 동기화 식별키, 데이터 검증, 한국 날짜 경계 테스트
 - `npm run db:generate`: drizzle migration 파일 생성
 - `npm run db:migrate:local`: 로컬 D1 마이그레이션 적용
 - `npm run db:migrate:remote`: 원격 D1 마이그레이션 적용
@@ -71,7 +72,9 @@ npm run dev
 - 공개 문화행사 목록: `GET /api/cultures`
 - 수동 동기화: `POST /api/initialize` with `x-sync-token`
 
-`/api/health`는 전체 데이터 수, 진행 중 데이터 수, 좌표 정합성, 최신 업데이트 시각을 반환합니다. `ok: false`면 cron 이후 데이터가 비어 있거나 좌표가 비정상인 상태입니다.
+`/api/health`는 활성/비활성 데이터 수, 좌표와 날짜 정합성, 최신 동기화 결과와 경과 시간을 반환합니다. 최근 36시간 안에 성공한 동기화가 없거나 데이터 품질 기준을 통과하지 못하면 `ok: false`를 반환합니다.
+
+동기화는 외부 API 전체 페이지를 staging에 적재한 뒤 `source_key` 기준으로 기존 행을 갱신합니다. 기존 상세 ID는 유지되고, 신규 행만 추가되며, 외부 API에서 사라진 행은 즉시 삭제하지 않고 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단합니다.
 
 ## Cloudflare
 
@@ -79,6 +82,8 @@ npm run dev
 - OpenNext 설정: `open-next.config.ts`
 - Worker 진입점: `worker.js`
 - 스케줄: `wrangler.jsonc`의 cron에서 `/api/initialize` 호출
+
+배포할 때는 애플리케이션 배포 전에 `npm run db:migrate:remote`로 D1 마이그레이션을 먼저 적용해야 합니다. `0002_snapshot_sync.sql` 적용 직후에는 성공 이력이 없으므로 `/api/health`가 503을 반환하며, 첫 동기화가 성공하면 정상 상태로 전환됩니다.
 
 주의:
 

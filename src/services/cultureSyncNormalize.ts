@@ -1,5 +1,7 @@
 import { NewCultureRow } from '@/db/schema';
 
+import { createCultureSourceKey } from './cultureIdentity';
+
 import {
   KOREA_LAT_MAX,
   KOREA_LAT_MIN,
@@ -9,24 +11,12 @@ import {
   MIN_VALID_COORDINATE_RATIO,
 } from './cultureSyncTypes';
 
-const toDedupeKey = (row: NewCultureRow) =>
-  [
-    row.title ?? '',
-    row.startDate ?? '',
-    row.endDate ?? '',
-    row.place ?? '',
-    row.guName ?? '',
-    row.organizationName ?? '',
-    row.lat == null ? '' : row.lat.toFixed(6),
-    row.lng == null ? '' : row.lng.toFixed(6),
-  ].join('||');
-
 export const deduplicateCultureRows = (rows: NewCultureRow[]) => {
   const deduped = new Map<string, NewCultureRow>();
   let duplicateCount = 0;
 
   for (const row of rows) {
-    const key = toDedupeKey(row);
+    const key = row.sourceKey ?? createCultureSourceKey(row);
     const existing = deduped.get(key);
     if (!existing) {
       deduped.set(key, row);
@@ -68,22 +58,56 @@ const normalizeCoordinates = (
     return { lat: lng, lng: lat, status: 'swapped' };
   }
 
-  const isValidGlobalLat = isBetween(lat, -90, 90);
-  const isValidGlobalLng = isBetween(lng, -180, 180);
-
-  if (!isValidGlobalLat || !isValidGlobalLng) {
-    return { lat: null, lng: null, status: 'invalid' };
+  if (looksLikeKoreaLat(lat) && looksLikeKoreaLng(lng)) {
+    return { lat, lng, status: 'kept' };
   }
 
-  return { lat, lng, status: 'kept' };
+  return { lat: null, lng: null, status: 'invalid' };
 };
 
-export const normalizeAndValidateCultureRows = (rows: NewCultureRow[]) => {
+const hasRequiredFields = (row: NewCultureRow) => Boolean(row.title && row.startDate && row.endDate);
+
+const hasPlausibleDates = (row: NewCultureRow, currentYear: number) => {
+  if (!row.startDate || !row.endDate) {
+    return false;
+  }
+
+  const startDate = new Date(row.startDate);
+  const endDate = new Date(row.endDate);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return false;
+  }
+
+  const minimumYear = 2000;
+  const maximumYear = currentYear + 5;
+  return (
+    startDate.getUTCFullYear() >= minimumYear &&
+    endDate.getUTCFullYear() >= minimumYear &&
+    startDate.getUTCFullYear() <= maximumYear &&
+    endDate.getUTCFullYear() <= maximumYear &&
+    endDate.getTime() >= startDate.getTime()
+  );
+};
+
+export const normalizeAndValidateCultureRows = (rows: NewCultureRow[], now = new Date()) => {
   let swappedCount = 0;
   let validCoordinateCount = 0;
   let invalidCoordinateCount = 0;
+  let invalidDateCount = 0;
+  let missingRequiredFieldCount = 0;
+  const normalizedRows: NewCultureRow[] = [];
 
-  const normalizedRows = rows.map(row => {
+  for (const row of rows) {
+    if (!hasRequiredFields(row)) {
+      missingRequiredFieldCount += 1;
+      continue;
+    }
+
+    if (!hasPlausibleDates(row, now.getUTCFullYear())) {
+      invalidDateCount += 1;
+      continue;
+    }
+
     const normalized = normalizeCoordinates(row.lat ?? null, row.lng ?? null);
 
     if (normalized.status === 'swapped') {
@@ -95,10 +119,11 @@ export const normalizeAndValidateCultureRows = (rows: NewCultureRow[]) => {
       invalidCoordinateCount += 1;
     }
 
-    return { ...row, lat: normalized.lat, lng: normalized.lng };
-  });
+    const normalizedRow = { ...row, lat: normalized.lat, lng: normalized.lng };
+    normalizedRows.push({ ...normalizedRow, sourceKey: createCultureSourceKey(normalizedRow) });
+  }
 
-  const validRatio = validCoordinateCount / normalizedRows.length;
+  const validRatio = normalizedRows.length > 0 ? validCoordinateCount / normalizedRows.length : 0;
 
   if (validCoordinateCount < MIN_VALID_COORDINATE_COUNT || validRatio < MIN_VALID_COORDINATE_RATIO) {
     throw new Error(
@@ -110,5 +135,11 @@ export const normalizeAndValidateCultureRows = (rows: NewCultureRow[]) => {
     `좌표 정규화 완료: valid=${validCoordinateCount}, invalid=${invalidCoordinateCount}, swapped=${swappedCount}, total=${normalizedRows.length}`
   );
 
-  return normalizedRows;
+  return {
+    rows: normalizedRows,
+    invalidCoordinateCount,
+    invalidDateCount,
+    missingRequiredFieldCount,
+    swappedCoordinateCount: swappedCount,
+  };
 };
