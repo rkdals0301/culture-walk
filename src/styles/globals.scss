@@ -7,12 +7,11 @@
     --map-header-height: 72px;
     --map-sidebar-width: 400px;
     color-scheme: light;
-    --app-bg: #f4efe7;
-    --app-bg-accent: rgba(31, 118, 95, 0.16);
+    --app-bg: #f3f5f2;
     --app-text: #10211d;
     --app-muted: #4f615c;
-    --app-surface: rgba(255, 251, 245, 0.78);
-    --app-card: rgba(255, 255, 255, 0.82);
+    --app-surface: rgba(250, 252, 249, 0.9);
+    --app-card: rgba(255, 255, 255, 0.92);
     --app-border: rgba(16, 33, 29, 0.08);
     --app-shadow: 0 24px 48px -34px rgba(16, 33, 29, 0.38);
     --app-shadow-soft: 0 14px 30px -26px rgba(16, 33, 29, 0.24);
@@ -21,12 +20,11 @@
 
   .dark {
     color-scheme: dark;
-    --app-bg: #081311;
-    --app-bg-accent: rgba(95, 191, 157, 0.18);
+    --app-bg: #111614;
     --app-text: #f8f4eb;
     --app-muted: #a8beb7;
-    --app-surface: rgba(10, 25, 22, 0.8);
-    --app-card: rgba(15, 34, 29, 0.86);
+    --app-surface: rgba(16, 25, 22, 0.94);
+    --app-card: rgba(24, 33, 30, 0.94);
     --app-border: rgba(248, 244, 235, 0.08);
     --app-shadow: 0 28px 56px -38px rgba(0, 0, 0, 0.62);
     --app-shadow-soft: 0 18px 38px -30px rgba(0, 0, 0, 0.46);
@@ -40,11 +38,7 @@
 
   body {
     color: var(--app-text);
-    background:
-      radial-gradient(circle at top left, var(--app-bg-accent), transparent 28%),
-      radial-gradient(circle at bottom right, rgba(246, 176, 68, 0.12), transparent 24%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 42%),
-      var(--app-bg);
+    background: var(--app-bg);
     overscroll-behavior: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

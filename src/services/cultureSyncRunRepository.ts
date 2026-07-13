@@ -1,4 +1,4 @@
-import { D1Binding, SyncResult } from './cultureSyncTypes';
+import { D1Binding, INITIALIZE_LOCK_TTL_MINUTES, SyncResult } from './cultureSyncTypes';
 
 const toRunId = (value: unknown) => {
   const parsed = Number(value);
@@ -6,6 +6,17 @@ const toRunId = (value: unknown) => {
 };
 
 export const createCultureSyncRun = async (d1: D1Binding, trigger: string) => {
+  await d1
+    .prepare(
+      `UPDATE culture_sync_runs
+       SET status = 'failed',
+           error_message = '동기화 실행 제한 시간을 초과했습니다.',
+           completed_at = CURRENT_TIMESTAMP
+       WHERE status = 'running'
+         AND datetime(started_at) <= datetime('now', '-${INITIALIZE_LOCK_TTL_MINUTES} minutes')`
+    )
+    .run();
+
   const result = await d1
     .prepare(
       `INSERT INTO culture_sync_runs (trigger, status)

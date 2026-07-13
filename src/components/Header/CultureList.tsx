@@ -1,5 +1,6 @@
 import CultureItem from '@/components/Header/CultureItem';
 import { FormattedCulture } from '@/types/culture';
+import { GeoPoint } from '@/utils/geo';
 
 import React, { useEffect, useMemo, useRef } from 'react';
 
@@ -10,9 +11,10 @@ interface CultureListProps {
   cultures: FormattedCulture[];
   onItemClick: (culture: FormattedCulture) => void;
   selectedCultureId?: number | null;
+  currentLocation?: GeoPoint | null;
 }
 
-const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: CultureListProps) => {
+const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentLocation = null }: CultureListProps) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const itemCount = cultures.length;
   const selectedIndex = useMemo(() => {
@@ -29,7 +31,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
     getItemKey: index => cultures[index]?.id ?? index,
     // Card content can be 1~2 lines, so measure real row height to avoid overlap.
     measureElement: element => element?.getBoundingClientRect().height ?? 0,
-    estimateSize: () => 194,
+    estimateSize: () => 130,
   });
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
   }, [rowVirtualizer, selectedIndex]);
 
   return (
-    <div ref={parentRef} className='h-full overflow-y-auto pr-1.5'>
+    <div ref={parentRef} className='h-full overflow-y-auto'>
       <div
         className='relative'
         style={{
@@ -51,9 +53,6 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
         {rowVirtualizer.getVirtualItems().map(virtualItem => {
           const culture = cultures[virtualItem.index];
           const isSelected = selectedCultureId != null && culture.id === selectedCultureId;
-          const isFirst = virtualItem.index === 0;
-          const isLast = virtualItem.index === cultures.length - 1;
-
           return (
             <button
               type='button'
@@ -61,11 +60,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
               className={clsx(
-                'absolute left-0 right-0 rounded-[20px] px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/45',
-                {
-                  'pt-1': isFirst,
-                  'pb-1': isLast,
-                }
+                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#d98b2f]/60'
               )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
@@ -75,21 +70,19 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null }: Cultur
             >
               <div
                 className={clsx(
-                  'surface-card relative mb-2 overflow-hidden rounded-[18px] px-4 py-4 transition duration-200 hover:border-[#1f765f]/20 hover:shadow-[0_18px_36px_-30px_rgba(31,118,95,0.45)]',
+                  'relative border-b border-[var(--app-border)] px-3 py-3 transition-colors duration-150 hover:bg-black/[0.035] dark:hover:bg-white/[0.045]',
                   {
-                    'mt-1': isFirst,
-                    'mb-0': isLast,
-                    'border-[#1f765f]/55 bg-[#eaf5f1] shadow-[0_20px_42px_-34px_rgba(31,118,95,0.65)] ring-2 ring-[#1f765f]/30 dark:bg-[#10352d]': isSelected,
+                    'bg-[#fff3e5] dark:bg-[#38291c]': isSelected,
                   }
                 )}
               >
                 {isSelected && (
                   <>
-                    <span className='absolute bottom-4 left-0 top-4 w-1.5 rounded-r-full bg-[#1f765f] shadow-[0_10px_22px_-14px_rgba(31,118,95,0.9)] dark:bg-[#2f9b7d]' />
+                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[#d98b2f]' />
                     <span className='sr-only'>선택됨</span>
                   </>
                 )}
-                <CultureItem culture={culture} isSelected={isSelected} />
+                <CultureItem culture={culture} isSelected={isSelected} currentLocation={currentLocation} />
               </div>
             </button>
           );

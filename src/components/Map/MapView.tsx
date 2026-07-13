@@ -130,7 +130,7 @@ const MapView = () => {
   const pathname = usePathname();
   const { openBottomSheet } = useBottomSheet();
 
-  const { cultures } = useCultureContext();
+  const { cultures, mapCultures, currentLocation, setCurrentLocation } = useCultureContext();
   const { isLoading, error } = useCultures();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -142,7 +142,6 @@ const MapView = () => {
   const [centerPosition, setCenterPosition] = useState(DEFAULT_MAP_CENTER);
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
 
@@ -159,7 +158,7 @@ const MapView = () => {
   const markerGroups = useMemo(() => {
     const groupMap = new Map<string, MarkerGroup>();
 
-    cultures.forEach(culture => {
+    mapCultures.forEach(culture => {
       const key = `${culture.lat.toFixed(6)}:${culture.lng.toFixed(6)}`;
       const existing = groupMap.get(key);
 
@@ -177,7 +176,7 @@ const MapView = () => {
     });
 
     return Array.from(groupMap.values());
-  }, [cultures]);
+  }, [mapCultures]);
 
   const goToMapDetail = useCallback(
     (id: number) => {
@@ -240,21 +239,8 @@ const MapView = () => {
   const handleLocationUpdate = useCallback(
     (lat: number, lng: number) => {
       setCurrentLocation({ lat, lng });
-      setCenterPosition({ lat, lng });
-
-      if (!mapInstance || !window.kakao?.maps) {
-        return;
-      }
-
-      const nextCenter = new window.kakao.maps.LatLng(lat, lng);
-      mapInstance.setCenter(nextCenter);
-
-      const currentLevel = mapInstance.getLevel();
-      if (currentLevel > 4) {
-        mapInstance.setLevel(4);
-      }
     },
-    [mapInstance]
+    [setCurrentLocation]
   );
 
   useEffect(() => {
@@ -358,6 +344,18 @@ const MapView = () => {
 
     mapInstance.setCenter(new window.kakao.maps.LatLng(centerPosition.lat, centerPosition.lng));
   }, [centerPosition, mapInstance]);
+
+  useEffect(() => {
+    if (!currentLocation || selectedCultureId || !mapInstance || !window.kakao?.maps) {
+      return;
+    }
+
+    setCenterPosition(currentLocation);
+    mapInstance.setCenter(new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng));
+    if (mapInstance.getLevel() > 4) {
+      mapInstance.setLevel(4);
+    }
+  }, [currentLocation, mapInstance, selectedCultureId]);
 
   useEffect(() => {
     if (!mapInstance) {

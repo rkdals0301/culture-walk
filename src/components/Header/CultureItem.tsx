@@ -1,5 +1,7 @@
-import { FormattedCulture } from '@/types/culture';
+import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
+import { FormattedCulture } from '@/types/culture';
+import { calculateDistanceMeters, formatDistance, GeoPoint } from '@/utils/geo';
 
 import React, { useEffect, useState } from 'react';
 
@@ -9,9 +11,10 @@ import Image from 'next/image';
 interface CultureItemProps {
   culture: FormattedCulture;
   isSelected?: boolean;
+  currentLocation?: GeoPoint | null;
 }
 
-const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
+const CultureItem = ({ culture, isSelected = false, currentLocation = null }: CultureItemProps) => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
@@ -31,10 +34,13 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
   };
 
   const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc.includes('/assets/images/logo');
+  const distance = currentLocation
+    ? formatDistance(calculateDistanceMeters(currentLocation, { lat: culture.lat, lng: culture.lng }))
+    : null;
 
   return (
-    <div className='flex size-full items-center gap-3'>
-      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-[14px] bg-black/[0.04] dark:bg-white/[0.05] sm:h-28 sm:w-24 lg:h-24 lg:w-20 xl:h-28 xl:w-24'>
+    <div className='flex size-full min-h-[104px] items-center gap-3'>
+      <div className='relative h-24 w-[72px] flex-none overflow-hidden rounded-xl bg-black/[0.04] dark:bg-white/[0.05]'>
         {hasCultureImage ? (
           <Image
             src={imgSrc}
@@ -48,7 +54,7 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
             }
             onError={handleImageError}
             fill
-            sizes='(min-width: 1024px) 104px, (min-width: 640px) 96px, 80px'
+            sizes='72px'
             className='object-cover'
           />
         ) : (
@@ -56,22 +62,15 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
         )}
       </div>
       <div className='min-w-0 grow overflow-hidden'>
-        <div className='mb-2.5 flex flex-wrap items-center gap-1.5'>
-          <span
-            className={
-              isSelected
-                ? 'rounded-full bg-[#1f765f] px-2.5 py-1 text-[0.68rem] font-semibold text-[#fff8f1] dark:bg-[#2f9b7d] dark:text-[#081311]'
-                : 'rounded-full bg-[#e3f1ec] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'
-            }
-          >
-            {culture.classification || '문화행사'}
-          </span>
-          <span className='rounded-full bg-black/[0.04] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--app-muted)] dark:bg-white/[0.06]'>
+        <div className='mb-1.5 flex items-center gap-2'>
+          <CultureCategoryBadge classification={culture.classification} />
+          <span className='truncate text-[0.72rem] font-medium text-[var(--app-muted)]'>
             {culture.guName}
           </span>
+          {isSelected && <span className='ml-auto size-2 shrink-0 rounded-full bg-[#d98b2f]' aria-hidden='true' />}
         </div>
         <p
-          className='text-[1rem] font-semibold leading-[1.4] tracking-[-0.01em] sm:text-[1.02rem]'
+          className='text-[0.96rem] font-semibold leading-[1.35]'
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -81,19 +80,13 @@ const CultureItem = ({ culture, isSelected = false }: CultureItemProps) => {
         >
           {culture.title}
         </p>
-        <div className='mt-2.5 space-y-1.5 text-[0.84rem] font-medium leading-[1.35] text-[var(--app-muted)] sm:text-sm'>
-          <p
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {culture.displayPlace}
-          </p>
-          <p className='truncate'>{culture.displayDate}</p>
-          <p className='truncate'>{culture.displayPrice}</p>
+        <div className='mt-1.5 space-y-1 text-[0.78rem] font-medium leading-[1.35] text-[var(--app-muted)]'>
+          <p className='truncate'>{culture.displayPlace}</p>
+          <div className='flex min-w-0 items-center gap-2'>
+            <p className='min-w-0 flex-1 truncate'>{culture.displayDate}</p>
+            {distance && <span className='shrink-0 font-semibold text-[#c47722] dark:text-[#e2a35d]'>{distance}</span>}
+            <span className='shrink-0 text-[0.72rem]'>{culture.displayPrice}</span>
+          </div>
         </div>
       </div>
     </div>

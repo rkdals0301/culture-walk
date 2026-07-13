@@ -3,7 +3,9 @@
 import useApiError from '@/hooks/useApiError';
 import { FormattedCulture } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
+import { CultureCategoryKey, isFreeCulture, matchesCultureCategory } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
+import { GeoPoint } from '@/utils/geo';
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
@@ -11,12 +13,20 @@ interface CultureContextValue {
   culture: FormattedCulture | null;
   cultures: FormattedCulture[];
   filteredCultures: FormattedCulture[];
+  mapCultures: FormattedCulture[];
   searchQuery: string;
+  mapCategory: CultureCategoryKey;
+  mapFreeOnly: boolean;
+  currentLocation: GeoPoint | null;
   isCulturesLoading: boolean;
   culturesError: Error | null;
   isCultureLoading: boolean;
   cultureError: Error | null;
   setSearchQuery: (query: string) => void;
+  setMapCategory: (category: CultureCategoryKey) => void;
+  setMapFreeOnly: (freeOnly: boolean) => void;
+  setCurrentLocation: (location: GeoPoint | null) => void;
+  resetMapFilters: () => void;
   loadCultures: (options?: { force?: boolean }) => Promise<void>;
   loadCultureById: (id: number) => Promise<void>;
 }
@@ -29,6 +39,9 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [culture, setCultureState] = useState<FormattedCulture | null>(null);
   const [cultures, setCulturesState] = useState<FormattedCulture[]>([]);
   const [searchQuery, setSearchQueryState] = useState('');
+  const [mapCategory, setMapCategory] = useState<CultureCategoryKey>('all');
+  const [mapFreeOnly, setMapFreeOnly] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<GeoPoint | null>(null);
   const [isCulturesLoading, setIsCulturesLoading] = useState(false);
   const [culturesError, setCulturesError] = useState<Error | null>(null);
   const [isCultureLoading, setIsCultureLoading] = useState(false);
@@ -128,17 +141,41 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     return cultures.filter(cultureItem => cultureItem.title.toLowerCase().includes(query));
   }, [cultures, searchQuery]);
 
+  const mapCultures = useMemo(
+    () =>
+      filteredCultures.filter(
+        cultureItem =>
+          matchesCultureCategory(cultureItem.classification, mapCategory) &&
+          (!mapFreeOnly || isFreeCulture(cultureItem))
+      ),
+    [filteredCultures, mapCategory, mapFreeOnly]
+  );
+
+  const resetMapFilters = useCallback(() => {
+    setSearchQueryState('');
+    setMapCategory('all');
+    setMapFreeOnly(false);
+  }, []);
+
   const value = useMemo(
     () => ({
       culture,
       cultures,
       filteredCultures,
+      mapCultures,
       searchQuery,
+      mapCategory,
+      mapFreeOnly,
+      currentLocation,
       isCulturesLoading,
       culturesError,
       isCultureLoading,
       cultureError,
       setSearchQuery,
+      setMapCategory,
+      setMapFreeOnly,
+      setCurrentLocation,
+      resetMapFilters,
       loadCultures,
       loadCultureById,
     }),
@@ -146,12 +183,17 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       culture,
       cultures,
       filteredCultures,
+      mapCultures,
       searchQuery,
+      mapCategory,
+      mapFreeOnly,
+      currentLocation,
       isCulturesLoading,
       culturesError,
       isCultureLoading,
       cultureError,
       setSearchQuery,
+      resetMapFilters,
       loadCultures,
       loadCultureById,
     ]

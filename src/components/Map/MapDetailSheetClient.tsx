@@ -2,6 +2,7 @@
 
 import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import Button from '@/components/Common/Button';
+import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import Loader from '@/components/Loader/Loader';
 import { useBottomSheet } from '@/context/BottomSheetContext';
@@ -142,9 +143,7 @@ const MapDetailSheetClient = () => {
           )}
         </div>
         <div className='flex flex-wrap items-center gap-2'>
-          <span className='inline-flex items-center rounded-full bg-[#e3f1ec] px-3 py-1.5 text-[0.72rem] font-semibold leading-none text-[#1f765f] dark:bg-[#12382f] dark:text-[#8dc5b5]'>
-            {culture.classification || '문화행사'}
-          </span>
+          <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
           <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>{culture.guName}</span>
           <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
             {culture.displayPrice}

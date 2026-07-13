@@ -2,7 +2,7 @@ import InfoPageShell from '@/components/Info/InfoPageShell';
 
 import type { Metadata } from 'next';
 
-const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contact@gangmin.dev';
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'rkdals0301@naver.com';
 
 export const metadata: Metadata = {
   title: '문의',

@@ -1,6 +1,7 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
+import { getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
 
 import React, { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -11,11 +12,6 @@ interface MapFindMyLocationControlProps {
   onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백
 }
 
-const getCurrentPosition = (options: PositionOptions) =>
-  new Promise<GeolocationPosition>((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, options);
-  });
-
 const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControlProps) => {
   const [loading, setLoading] = useState(false);
 
@@ -24,49 +20,13 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
       return;
     }
 
-    if (!navigator.geolocation) {
-      toast.error('브라우저가 위치 정보 기능을 지원하지 않습니다.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      let position: GeolocationPosition;
-
-      try {
-        position = await getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 7000,
-          maximumAge: 0,
-        });
-      } catch {
-        position = await getCurrentPosition({
-          enableHighAccuracy: false,
-          timeout: 7000,
-          maximumAge: 120000,
-        });
-      }
-
-      const { latitude, longitude } = position.coords;
-      onLocationUpdate(latitude, longitude);
+      const location = await requestCurrentLocation();
+      onLocationUpdate(location.lat, location.lng);
     } catch (error) {
-      const geolocationError = error as GeolocationPositionError;
-      let errorMessage = '알 수 없는 오류가 발생했습니다.';
-
-      switch (geolocationError.code) {
-        case geolocationError.PERMISSION_DENIED:
-          errorMessage = '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
-          break;
-        case geolocationError.POSITION_UNAVAILABLE:
-          errorMessage = '현재 위치 정보를 사용할 수 없습니다.';
-          break;
-        case geolocationError.TIMEOUT:
-          errorMessage = '위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
-          break;
-      }
-
-      toast.error(errorMessage);
+      toast.error(getGeolocationErrorMessage(error));
     } finally {
       setLoading(false);
     }

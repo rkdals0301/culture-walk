@@ -17,11 +17,13 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ onClose, onCloseWithoutHistory }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const { filteredCultures, searchQuery } = useCultureContext();
+  const { filteredCultures, searchQuery, setMapCategory, setMapFreeOnly } = useCultureContext();
   const { isLoading, isError, error } = useCultures();
   const normalizedQuery = searchQuery.trim();
 
   const handleOnClick = (culture: FormattedCulture) => {
+    setMapCategory('all');
+    setMapFreeOnly(false);
     onCloseWithoutHistory();
     router.push(`/map/${culture.id}`);
   };
