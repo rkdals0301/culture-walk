@@ -1,5 +1,5 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
-import { RECOVERY_SYNC_CRON, shouldRunRecoverySync } from './src/services/cultureSyncSchedule';
+import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
 
 async function runScheduledInitialize(env, ctx, options = {}) {
   if (!env.SYNC_TOKEN) {
@@ -26,7 +26,7 @@ async function runScheduledInitialize(env, ctx, options = {}) {
   }
 }
 
-async function runScheduledRecovery(env, ctx) {
+async function runScheduledSync(env, ctx, trigger) {
   const healthResponse = await openNextWorker.fetch(
     new Request('https://internal.culturewalk/api/health'),
     env,
@@ -35,12 +35,12 @@ async function runScheduledRecovery(env, ctx) {
 
   if (healthResponse.ok) {
     const health = await healthResponse.json();
-    if (!shouldRunRecoverySync(health)) {
+    if (!shouldRunScheduledSync(health)) {
       return;
     }
   }
 
-  await runScheduledInitialize(env, ctx, { force: true, trigger: 'cron-recovery' });
+  await runScheduledInitialize(env, ctx, { force: true, trigger });
 }
 
 const worker = {
@@ -48,11 +48,10 @@ const worker = {
     return openNextWorker.fetch(request, env, ctx);
   },
   async scheduled(event, env, ctx) {
-    const task = event.cron === RECOVERY_SYNC_CRON
-      ? runScheduledRecovery(env, ctx)
-      : runScheduledInitialize(env, ctx);
+    const scheduledHour = new Date(event.scheduledTime).getUTCHours();
+    const trigger = scheduledHour === RECOVERY_SYNC_UTC_HOUR ? 'cron-recovery' : 'cron';
 
-    ctx.waitUntil(task);
+    ctx.waitUntil(runScheduledSync(env, ctx, trigger));
   },
 };
 

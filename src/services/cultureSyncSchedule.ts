@@ -1,5 +1,5 @@
-export const PRIMARY_SYNC_CRON = '10 19 * * *';
-export const RECOVERY_SYNC_CRON = '10 20 * * *';
+export const SYNC_CRON = '10 19,20 * * *';
+export const RECOVERY_SYNC_UTC_HOUR = 20;
 export const RECOVERY_FRESHNESS_HOURS = 2;
 
 interface SyncHealthPayload {
@@ -9,7 +9,7 @@ interface SyncHealthPayload {
   } | null;
 }
 
-export const shouldRunRecoverySync = (health: SyncHealthPayload | null) => {
+export const shouldRunScheduledSync = (health: SyncHealthPayload | null) => {
   const latestSync = health?.latestSync;
   if (!latestSync || latestSync.status !== 'success') {
     return true;
