@@ -9,9 +9,10 @@ import {
   MIN_SNAPSHOT_EXISTING_RATIO,
   MIN_VALID_COORDINATE_COUNT,
   RETRY_LIMIT,
-  SnapshotStats,
   STAGING_COLUMNS,
+  STAGING_STATEMENTS_PER_BATCH,
   STAGING_TABLE,
+  SnapshotStats,
   toStagingValues,
 } from './cultureSyncTypes';
 
@@ -47,6 +48,9 @@ const createStagingTableSql = `
 `;
 
 const LIVE_MUTABLE_COLUMNS = STAGING_COLUMNS.filter(column => column !== 'source_key');
+
+export const createCultureContentDifferenceSql = (liveAlias = 'live', stagingAlias = 'staging') =>
+  LIVE_MUTABLE_COLUMNS.map(column => `${liveAlias}.${column} IS NOT ${stagingAlias}.${column}`).join(' OR ');
 
 const toCount = (value: unknown) => {
   const parsed = Number(value);
@@ -97,7 +101,45 @@ const retryInsertStagingBatch = async (
   }
 };
 
+const retryInsertStagingStatementGroup = async (
+  d1: D1Binding,
+  batches: NewCultureRow[][],
+  retries: number
+): Promise<InsertStats> => {
+  const jsonColumns = STAGING_COLUMNS.map((_, index) => `json_extract(value, '$[${index}]')`).join(', ');
+  const query = `INSERT INTO ${STAGING_TABLE} (${STAGING_COLUMNS.join(', ')})
+                 SELECT ${jsonColumns} FROM json_each(?)`;
+
+  try {
+    await d1.batch(batches.map(batch => d1.prepare(query).bind(JSON.stringify(batch.map(toStagingValues)))));
+
+    return {
+      inserted: batches.reduce((total, batch) => total + batch.length, 0),
+      skipped: 0,
+    };
+  } catch (error) {
+    if (retries > 0) {
+      console.warn(`staging statement batch 재시도. 남은 횟수: ${retries}`, error);
+      return retryInsertStagingStatementGroup(d1, batches, retries - 1);
+    }
+
+    if (batches.length > 1) {
+      const mid = Math.floor(batches.length / 2);
+      const leftStats = await retryInsertStagingStatementGroup(d1, batches.slice(0, mid), RETRY_LIMIT);
+      const rightStats = await retryInsertStagingStatementGroup(d1, batches.slice(mid), RETRY_LIMIT);
+
+      return {
+        inserted: leftStats.inserted + rightStats.inserted,
+        skipped: leftStats.skipped + rightStats.skipped,
+      };
+    }
+
+    return retryInsertStagingBatch(d1, batches[0], RETRY_LIMIT);
+  }
+};
+
 const readSnapshotStats = async (d1: D1Binding) => {
+  const contentDiffers = createCultureContentDifferenceSql();
   const result = await d1
     .prepare(
       `SELECT
@@ -105,6 +147,10 @@ const readSnapshotStats = async (d1: D1Binding) => {
         (SELECT COUNT(*) FROM cultures WHERE is_active = 1) AS current_active,
         (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
           INNER JOIN cultures live ON live.source_key = staging.source_key) AS matched,
+        (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
+          INNER JOIN cultures live ON live.source_key = staging.source_key
+          WHERE live.is_active = 1
+            AND (${contentDiffers})) AS updated,
         (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
           INNER JOIN cultures live ON live.source_key = staging.source_key
           WHERE live.is_active = 0) AS reactivated,
@@ -121,12 +167,14 @@ const readSnapshotStats = async (d1: D1Binding) => {
     staged: toCount(row?.staged),
     currentActive: toCount(row?.current_active),
     matched: toCount(row?.matched),
+    updated: toCount(row?.updated),
     reactivated: toCount(row?.reactivated),
     deactivated: toCount(row?.deactivated),
   };
 };
 
 const applySnapshot = async (d1: D1Binding) => {
+  const contentDiffers = createCultureContentDifferenceSql();
   const updateLive = d1.prepare(`
     UPDATE cultures AS live
     SET (${LIVE_MUTABLE_COLUMNS.join(', ')}, is_active, last_seen_at, deactivated_at, updated_at) = (
@@ -141,6 +189,15 @@ const applySnapshot = async (d1: D1Binding) => {
     WHERE EXISTS (
       SELECT 1 FROM ${STAGING_TABLE} AS staging WHERE staging.source_key = live.source_key
     )
+      AND (
+        live.is_active = 0
+        OR EXISTS (
+          SELECT 1
+          FROM ${STAGING_TABLE} AS staging
+          WHERE staging.source_key = live.source_key
+            AND (${contentDiffers})
+        )
+      )
   `);
   const insertNew = d1.prepare(`
     INSERT INTO cultures (
@@ -182,9 +239,18 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
   await d1.prepare(`DELETE FROM ${STAGING_TABLE}`).run();
 
   let insertStats: InsertStats = { inserted: 0, skipped: 0 };
+  const batches: NewCultureRow[][] = [];
 
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    const stats = await retryInsertStagingBatch(d1, rows.slice(i, i + BATCH_SIZE), RETRY_LIMIT);
+    batches.push(rows.slice(i, i + BATCH_SIZE));
+  }
+
+  for (let i = 0; i < batches.length; i += STAGING_STATEMENTS_PER_BATCH) {
+    const stats = await retryInsertStagingStatementGroup(
+      d1,
+      batches.slice(i, i + STAGING_STATEMENTS_PER_BATCH),
+      RETRY_LIMIT
+    );
     insertStats = {
       inserted: insertStats.inserted + stats.inserted,
       skipped: insertStats.skipped + stats.skipped,
@@ -192,7 +258,9 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
   }
 
   const skippedRatio = insertStats.skipped / rows.length;
-  console.info(`staging insert 완료: inserted=${insertStats.inserted}, skipped=${insertStats.skipped}, total=${rows.length}`);
+  console.info(
+    `staging insert 완료: inserted=${insertStats.inserted}, skipped=${insertStats.skipped}, total=${rows.length}`
+  );
 
   if (insertStats.inserted < MIN_VALID_COORDINATE_COUNT || skippedRatio > MAX_SKIPPED_ROW_RATIO) {
     throw new Error(
@@ -220,7 +288,7 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
 
   return {
     inserted: Math.max(stats.staged - stats.matched, 0),
-    updated: stats.matched,
+    updated: stats.updated,
     reactivated: stats.reactivated,
     deactivated: stats.deactivated,
     staged: stats.staged,

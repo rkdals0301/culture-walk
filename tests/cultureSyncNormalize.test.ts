@@ -1,10 +1,10 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-
 import { NewCultureRow } from '@/db/schema';
-import { createCultureSourceKey } from '@/services/cultureIdentity';
+import { createCultureSourceKey, extractSeoulCultureCode } from '@/services/cultureIdentity';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from '@/services/cultureSyncNormalize';
 import { STAGING_COLUMNS, toStagingValues } from '@/services/cultureSyncTypes';
+
+import assert from 'node:assert/strict';
+import test from 'node:test';
 
 const createRow = (overrides: Partial<NewCultureRow> = {}): NewCultureRow => ({
   title: '서울 문화 행사',
@@ -24,6 +24,25 @@ test('source key trims fields and stays deterministic', () => {
   const padded = createRow({ title: `  ${base.title}  `, place: ` ${base.place} ` });
 
   assert.equal(createCultureSourceKey(base), createCultureSourceKey(padded));
+});
+
+test('source key prefers the culture portal code over mutable event fields', () => {
+  const homepageAddress =
+    'https://culture.seoul.go.kr/culture/culture/cultureEvent/view.do?cultcode=158497&menuNo=200011';
+  const original = createRow({ homepageAddress });
+  const changed = createRow({ homepageAddress, title: '변경된 행사명', place: '변경된 장소' });
+
+  assert.equal(extractSeoulCultureCode(homepageAddress), '158497');
+  assert.equal(createCultureSourceKey(original), 'culture:seoul:158497');
+  assert.equal(createCultureSourceKey(changed), createCultureSourceKey(original));
+});
+
+test('source key falls back to the composite identity when the culture code is unavailable', () => {
+  const row = createRow({ homepageAddress: 'https://example.com/event/1' });
+
+  assert.equal(extractSeoulCultureCode(row.homepageAddress), null);
+  assert.match(createCultureSourceKey(row), /^culture:/);
+  assert.doesNotMatch(createCultureSourceKey(row), /^culture:seoul:/);
 });
 
 test('normalization swaps Seoul coordinates and assigns a source key', () => {

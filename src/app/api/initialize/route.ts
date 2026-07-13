@@ -1,11 +1,6 @@
-import {
-  acquireInitializeLock,
-  forceResetInitializeLock,
-  getD1Binding,
-  releaseInitializeLock,
-} from '@/services/cultureSyncLock';
-import { syncCultures } from '@/services/cultureSyncService';
 import { getWorkerEnv } from '@/server/cloudflare';
+import { acquireInitializeLock, getD1Binding, releaseInitializeLock } from '@/services/cultureSyncLock';
+import { syncCultures } from '@/services/cultureSyncService';
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -28,7 +23,6 @@ const resolveSeoulApiUrl = (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
 export async function POST(request: NextRequest) {
   let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
   let lockAcquired = false;
-  const forceSync = request.headers.get('x-sync-force') === 'true';
 
   try {
     env = await getWorkerEnv();
@@ -54,11 +48,6 @@ export async function POST(request: NextRequest) {
     }
 
     lockAcquired = await acquireInitializeLock(env);
-    if (!lockAcquired && forceSync) {
-      await forceResetInitializeLock(env);
-      lockAcquired = await acquireInitializeLock(env);
-    }
-
     if (!lockAcquired) {
       return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
     }

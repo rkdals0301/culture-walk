@@ -1,7 +1,7 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
 import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
 
-async function runScheduledInitialize(env, ctx, options = {}) {
+async function runScheduledInitialize(env, ctx, trigger) {
   if (!env.SYNC_TOKEN) {
     throw new Error('SYNC_TOKEN is required for scheduled initialize');
   }
@@ -12,8 +12,7 @@ async function runScheduledInitialize(env, ctx, options = {}) {
     method: 'POST',
     headers: {
       'x-sync-token': env.SYNC_TOKEN,
-      'x-sync-trigger': options.trigger ?? 'cron',
-      ...(options.force ? { 'x-sync-force': 'true' } : {}),
+      'x-sync-trigger': trigger,
       'user-agent': 'culturewalk-cron-initialize',
     },
   });
@@ -27,11 +26,7 @@ async function runScheduledInitialize(env, ctx, options = {}) {
 }
 
 async function runScheduledSync(env, ctx, trigger) {
-  const healthResponse = await openNextWorker.fetch(
-    new Request('https://internal.culturewalk/api/health'),
-    env,
-    ctx
-  );
+  const healthResponse = await openNextWorker.fetch(new Request('https://internal.culturewalk/api/health'), env, ctx);
 
   if (healthResponse.ok) {
     const health = await healthResponse.json();
@@ -40,7 +35,7 @@ async function runScheduledSync(env, ctx, trigger) {
     }
   }
 
-  await runScheduledInitialize(env, ctx, { force: true, trigger });
+  await runScheduledInitialize(env, ctx, trigger);
 }
 
 const worker = {
@@ -51,7 +46,7 @@ const worker = {
     const scheduledHour = new Date(event.scheduledTime).getUTCHours();
     const trigger = scheduledHour === RECOVERY_SYNC_UTC_HOUR ? 'cron-recovery' : 'cron';
 
-    ctx.waitUntil(runScheduledSync(env, ctx, trigger));
+    await runScheduledSync(env, ctx, trigger);
   },
 };
 

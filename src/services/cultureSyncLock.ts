@@ -58,16 +58,6 @@ export const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWo
   return (result.results?.length ?? 0) > 0;
 };
 
-export const forceResetInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
-  const d1 = getD1Binding(env);
-  if (!d1) {
-    return;
-  }
-
-  await ensureInitializeLockTable(d1);
-  await d1.prepare(`DELETE FROM ${INITIALIZE_LOCK_TABLE} WHERE name = ?`).bind(INITIALIZE_LOCK_NAME).run();
-};
-
 export const releaseInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
   const d1 = getD1Binding(env);
   if (!d1) {

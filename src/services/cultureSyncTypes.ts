@@ -4,6 +4,7 @@ import { getWorkerEnv } from '@/server/cloudflare';
 export const INITIAL_START_INDEX = 1;
 export const PAGE_SIZE = 1000;
 export const BATCH_SIZE = 100;
+export const STAGING_STATEMENTS_PER_BATCH = 10;
 export const RETRY_LIMIT = 3;
 export const SOURCE_REQUEST_RETRY_LIMIT = 2;
 export const SOURCE_PAGE_CONCURRENCY = 3;
