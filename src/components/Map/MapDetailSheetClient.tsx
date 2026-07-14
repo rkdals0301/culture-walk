@@ -13,11 +13,106 @@ import type { FormattedCulture } from '@/types/culture';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+
+import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
 
-const MapDetailSheetClient = () => {
+interface MapDetailSheetClientProps {
+  initialCulture: FormattedCulture;
+}
+
+interface MapDetailFallbackProps {
+  culture: FormattedCulture;
+}
+
+const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
+  const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
+
+  return (
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-0 lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'>
+      <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
+        <Link
+          href='/map'
+          className='mb-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--app-muted)] hover:text-[var(--app-text)]'
+        >
+          <ArrowBackIcon className='size-4' />
+          지도 목록
+        </Link>
+        <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+          {culture.classification || '서울 문화행사'}
+        </p>
+        <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.25] sm:text-[1.75rem]'>{culture.title}</h1>
+      </header>
+
+      <div className='min-h-0 flex-1 overflow-y-auto px-5 py-5'>
+        <dl className='grid gap-4 text-sm leading-6'>
+          <div>
+            <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>일정</dt>
+            <dd className='mt-1 font-semibold'>{culture.displayDate}</dd>
+          </div>
+          <div>
+            <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>장소</dt>
+            <dd className='mt-1 font-semibold'>{culture.place || culture.guName}</dd>
+          </div>
+          <div>
+            <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>요금</dt>
+            <dd className='mt-1 font-semibold'>{culture.displayPrice}</dd>
+          </div>
+          <div>
+            <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>대상</dt>
+            <dd className='mt-1'>{culture.useTarget || '누구나'}</dd>
+          </div>
+          <div>
+            <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>주최</dt>
+            <dd className='mt-1'>{culture.organizationName || '정보 없음'}</dd>
+          </div>
+        </dl>
+
+        {culture.programIntroduction && (
+          <section className='mt-6 border-t border-[var(--app-border)] pt-5'>
+            <h2 className='text-sm font-semibold'>프로그램 안내</h2>
+            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.programIntroduction}
+            </p>
+          </section>
+        )}
+
+        {hasExternalLinks && (
+          <nav
+            className='mt-6 grid auto-cols-fr grid-flow-col gap-2.5 border-t border-[var(--app-border)] pt-5'
+            aria-label='행사 링크'
+          >
+            {culture.homepageAddress && (
+              <a
+                href={culture.homepageAddress}
+                target='_blank'
+                rel='noreferrer'
+                className='soft-chip flex h-11 items-center justify-center rounded-xl px-3 text-sm font-semibold'
+              >
+                문화포털
+              </a>
+            )}
+            {culture.homepageDetailAddress && (
+              <a
+                href={culture.homepageDetailAddress}
+                target='_blank'
+                rel='noreferrer'
+                className='flex h-11 items-center justify-center rounded-xl bg-[#1f765f] px-3 text-sm font-semibold text-[#fff8f1]'
+              >
+                예약 / 상세
+              </a>
+            )}
+          </nav>
+        )}
+      </div>
+    </article>
+  );
+};
+
+const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const cultureId = useMemo(() => {
@@ -27,12 +122,19 @@ const MapDetailSheetClient = () => {
   }, [params]);
 
   const { isLoading, error } = useCultureById(cultureId);
-  const { culture } = useCultureContext();
+  const { culture: loadedCulture } = useCultureContext();
+  const culture =
+    loadedCulture?.id === cultureId ? loadedCulture : initialCulture.id === cultureId ? initialCulture : null;
   const { openBottomSheet } = useBottomSheet();
   const lastSheetSignatureRef = useRef('');
 
+  const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleImageError = useCallback(() => {
     setImageFailed(true);
@@ -86,10 +188,10 @@ const MapDetailSheetClient = () => {
   }, [culture, handleOpenExternalLink]);
 
   const renderContent = useCallback(() => {
-    if (isLoading) {
+    if (isLoading && !culture) {
       return <Loader />;
     }
-    if (error) {
+    if (error && !culture) {
       return (
         <div className='flex size-full flex-col items-center justify-center gap-4'>
           <p>죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.</p>
@@ -239,7 +341,7 @@ const MapDetailSheetClient = () => {
     renderFooter,
   ]);
 
-  return null;
+  return mounted ? null : <MapDetailFallback culture={initialCulture} />;
 };
 
 export default MapDetailSheetClient;

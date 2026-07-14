@@ -172,7 +172,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             rel='stylesheet'
             href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
           />
-          You need to enable JavaScript to run this app.
         </noscript>
       </head>
       <body suppressHydrationWarning className='safe-area min-h-dvh font-pretendard'>

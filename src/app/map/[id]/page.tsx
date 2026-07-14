@@ -5,15 +5,18 @@ import { cultures } from '@/db/schema';
 import { mapCultureRowToCulture } from '@/services/cultureService';
 import { formatCultureData } from '@/utils/cultureUtils';
 
+import { cache } from 'react';
+
 import type { Metadata } from 'next';
-import { and, eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
+
+import { and, eq } from 'drizzle-orm';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png`;
 const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 
-const getCultureById = async (id: number) => {
+const getCultureById = cache(async (id: number) => {
   const db = await getDb();
   if (!db) {
     return null;
@@ -28,6 +31,15 @@ const getCultureById = async (id: number) => {
   }
 
   return mapCultureRowToCulture(row);
+});
+
+const parseOfferPrice = (value?: string) => {
+  if (!value) {
+    return null;
+  }
+
+  const match = value.replaceAll(',', '').match(/\d+/);
+  return match ? Number(match[0]) : null;
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -61,7 +73,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     .slice(0, 155);
 
   return {
-    title: `${title} | 문화산책`,
+    title,
     description: description || '서울 문화행사 상세 정보',
     alternates: {
       canonical: `/map/${parsedId}`,
@@ -106,45 +118,60 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
     notFound();
   }
 
-  const formatted = culture ? formatCultureData([culture])[0] : null;
+  const formatted = formatCultureData([culture])[0];
+  if (!formatted) {
+    notFound();
+  }
 
-  const eventStructuredData =
-    formatted &&
-    JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Event',
-      name: formatted.title,
-      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-      eventStatus: 'https://schema.org/EventScheduled',
-      startDate: formatted.startDate instanceof Date ? formatted.startDate.toISOString() : undefined,
-      endDate: formatted.endDate instanceof Date ? formatted.endDate.toISOString() : undefined,
-      location: {
-        '@type': 'Place',
-        name: formatted.place || formatted.displayPlace,
-        address: formatted.guName || '서울시',
+  const eventUrl = `${SITE_URL}/map/${parsedId}`;
+  const isFree = formatted.isFree.includes('무료') || formatted.useFee?.includes('무료');
+  const offerPrice = isFree ? 0 : parseOfferPrice(formatted.useFee);
+  const hasEnded = formatted.endDate instanceof Date && formatted.endDate.getTime() < Date.now();
+  const eventStructuredData = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: formatted.title,
+    url: eventUrl,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: hasEnded ? 'https://schema.org/EventCompleted' : 'https://schema.org/EventScheduled',
+    startDate: formatted.startDate instanceof Date ? formatted.startDate.toISOString() : undefined,
+    endDate: formatted.endDate instanceof Date ? formatted.endDate.toISOString() : undefined,
+    location: {
+      '@type': 'Place',
+      name: formatted.place || formatted.displayPlace,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: formatted.guName || '서울특별시',
+        addressRegion: '서울특별시',
+        addressCountry: 'KR',
       },
-      image: formatted.mainImage ? [formatted.mainImage] : undefined,
-      description: formatted.etcDescription || formatted.displayDate,
-      organizer: {
-        '@type': 'Organization',
-        name: formatted.organizationName || '문화산책',
-      },
-      offers: {
-        '@type': 'Offer',
-        price: formatted.useFee || '0',
-        priceCurrency: 'KRW',
-        availability: 'https://schema.org/InStock',
-        url: `${SITE_URL}/map/${parsedId}`,
-      },
-    });
+    },
+    image: formatted.mainImage ? [formatted.mainImage] : undefined,
+    description:
+      formatted.programIntroduction || formatted.etcDescription || `${formatted.displayDate} ${formatted.displayPlace}`,
+    organizer: {
+      '@type': 'Organization',
+      name: formatted.organizationName || '문화산책',
+      url: formatted.homepageAddress || SITE_URL,
+    },
+    isAccessibleForFree: isFree,
+    offers:
+      offerPrice !== null
+        ? {
+            '@type': 'Offer',
+            price: offerPrice,
+            priceCurrency: 'KRW',
+            availability: hasEnded ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+            url: formatted.homepageDetailAddress || formatted.homepageAddress || eventUrl,
+          }
+        : undefined,
+  });
 
   return (
     <>
-      {eventStructuredData && (
-        <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: eventStructuredData }} />
-      )}
+      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: eventStructuredData }} />
       <MapDashboard />
-      <MapDetailSheetClient />
+      <MapDetailSheetClient initialCulture={formatted} />
     </>
   );
 };
