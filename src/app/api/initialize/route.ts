@@ -22,7 +22,7 @@ const resolveSeoulApiUrl = (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
 
 export async function POST(request: NextRequest) {
   let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
-  let lockAcquired = false;
+  let lockOwner: string | null = null;
 
   try {
     env = await getWorkerEnv();
@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.' }, { status: 503 });
     }
 
-    lockAcquired = await acquireInitializeLock(env);
-    if (!lockAcquired) {
+    lockOwner = await acquireInitializeLock(env);
+    if (!lockOwner) {
       return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
     }
 
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
     console.error('데이터베이스 업데이트 실패:', error);
     return NextResponse.json({ error: '데이터베이스 업데이트 실패' }, { status: 500 });
   } finally {
-    if (env && lockAcquired) {
+    if (env && lockOwner) {
       try {
-        await releaseInitializeLock(env);
+        await releaseInitializeLock(env, lockOwner);
       } catch (error) {
         console.error('동기화 락 해제 실패:', error);
       }

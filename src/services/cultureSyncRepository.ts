@@ -19,6 +19,7 @@ import {
 const createStagingTableSql = `
   CREATE TABLE IF NOT EXISTS ${STAGING_TABLE} (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    sync_run_key TEXT NOT NULL,
     source_key TEXT NOT NULL,
     classification TEXT,
     date TEXT,
@@ -47,6 +48,8 @@ const createStagingTableSql = `
   )
 `;
 
+const STAGING_RUN_KEY_COLUMN = 'sync_run_key';
+const STAGING_INSERT_COLUMNS = [STAGING_RUN_KEY_COLUMN, ...STAGING_COLUMNS];
 const LIVE_MUTABLE_COLUMNS = STAGING_COLUMNS.filter(column => column !== 'source_key');
 
 export const createCultureContentDifferenceSql = (liveAlias = 'live', stagingAlias = 'staging') =>
@@ -64,15 +67,18 @@ export const ensureCultureSyncStagingTable = async (d1: D1Binding) => {
 const retryInsertStagingBatch = async (
   d1: D1Binding,
   batch: NewCultureRow[],
+  stagingRunKey: string,
   retries: number
 ): Promise<InsertStats> => {
-  const jsonRows = JSON.stringify(batch.map(toStagingValues));
-  const jsonColumns = STAGING_COLUMNS.map((_, index) => `json_extract(value, '$[${index}]')`).join(', ');
+  const jsonRows = JSON.stringify(batch.map(row => [stagingRunKey, ...toStagingValues(row)]));
+  const jsonColumns = STAGING_INSERT_COLUMNS.map((_, index) => `json_extract(value, '$[${index}]')`).join(
+    ', '
+  );
 
   try {
     await d1
       .prepare(
-        `INSERT INTO ${STAGING_TABLE} (${STAGING_COLUMNS.join(', ')})
+        `INSERT INTO ${STAGING_TABLE} (${STAGING_INSERT_COLUMNS.join(', ')})
          SELECT ${jsonColumns} FROM json_each(?)`
       )
       .bind(jsonRows)
@@ -82,13 +88,13 @@ const retryInsertStagingBatch = async (
   } catch (error) {
     if (retries > 0) {
       console.warn(`staging insert 재시도. 남은 횟수: ${retries}`, error);
-      return retryInsertStagingBatch(d1, batch, retries - 1);
+      return retryInsertStagingBatch(d1, batch, stagingRunKey, retries - 1);
     }
 
     if (batch.length > 1) {
       const mid = Math.floor(batch.length / 2);
-      const leftStats = await retryInsertStagingBatch(d1, batch.slice(0, mid), RETRY_LIMIT);
-      const rightStats = await retryInsertStagingBatch(d1, batch.slice(mid), RETRY_LIMIT);
+      const leftStats = await retryInsertStagingBatch(d1, batch.slice(0, mid), stagingRunKey, RETRY_LIMIT);
+      const rightStats = await retryInsertStagingBatch(d1, batch.slice(mid), stagingRunKey, RETRY_LIMIT);
 
       return {
         inserted: leftStats.inserted + rightStats.inserted,
@@ -104,14 +110,19 @@ const retryInsertStagingBatch = async (
 const retryInsertStagingStatementGroup = async (
   d1: D1Binding,
   batches: NewCultureRow[][],
+  stagingRunKey: string,
   retries: number
 ): Promise<InsertStats> => {
-  const jsonColumns = STAGING_COLUMNS.map((_, index) => `json_extract(value, '$[${index}]')`).join(', ');
-  const query = `INSERT INTO ${STAGING_TABLE} (${STAGING_COLUMNS.join(', ')})
+  const jsonColumns = STAGING_INSERT_COLUMNS.map((_, index) => `json_extract(value, '$[${index}]')`).join(', ');
+  const query = `INSERT INTO ${STAGING_TABLE} (${STAGING_INSERT_COLUMNS.join(', ')})
                  SELECT ${jsonColumns} FROM json_each(?)`;
 
   try {
-    await d1.batch(batches.map(batch => d1.prepare(query).bind(JSON.stringify(batch.map(toStagingValues)))));
+    await d1.batch(
+      batches.map(batch =>
+        d1.prepare(query).bind(JSON.stringify(batch.map(row => [stagingRunKey, ...toStagingValues(row)])))
+      )
+    );
 
     return {
       inserted: batches.reduce((total, batch) => total + batch.length, 0),
@@ -120,13 +131,23 @@ const retryInsertStagingStatementGroup = async (
   } catch (error) {
     if (retries > 0) {
       console.warn(`staging statement batch 재시도. 남은 횟수: ${retries}`, error);
-      return retryInsertStagingStatementGroup(d1, batches, retries - 1);
+      return retryInsertStagingStatementGroup(d1, batches, stagingRunKey, retries - 1);
     }
 
     if (batches.length > 1) {
       const mid = Math.floor(batches.length / 2);
-      const leftStats = await retryInsertStagingStatementGroup(d1, batches.slice(0, mid), RETRY_LIMIT);
-      const rightStats = await retryInsertStagingStatementGroup(d1, batches.slice(mid), RETRY_LIMIT);
+      const leftStats = await retryInsertStagingStatementGroup(
+        d1,
+        batches.slice(0, mid),
+        stagingRunKey,
+        RETRY_LIMIT
+      );
+      const rightStats = await retryInsertStagingStatementGroup(
+        d1,
+        batches.slice(mid),
+        stagingRunKey,
+        RETRY_LIMIT
+      );
 
       return {
         inserted: leftStats.inserted + rightStats.inserted,
@@ -134,32 +155,36 @@ const retryInsertStagingStatementGroup = async (
       };
     }
 
-    return retryInsertStagingBatch(d1, batches[0], RETRY_LIMIT);
+    return retryInsertStagingBatch(d1, batches[0], stagingRunKey, RETRY_LIMIT);
   }
 };
 
-const readSnapshotStats = async (d1: D1Binding) => {
+const readSnapshotStats = async (d1: D1Binding, stagingRunKey: string) => {
   const contentDiffers = createCultureContentDifferenceSql();
   const result = await d1
     .prepare(
-      `SELECT
-        (SELECT COUNT(*) FROM ${STAGING_TABLE}) AS staged,
+      `WITH scoped_staging AS (
+        SELECT * FROM ${STAGING_TABLE} WHERE ${STAGING_RUN_KEY_COLUMN} = ?
+      )
+      SELECT
+        (SELECT COUNT(*) FROM scoped_staging) AS staged,
         (SELECT COUNT(*) FROM cultures WHERE is_active = 1) AS current_active,
-        (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
+        (SELECT COUNT(*) FROM scoped_staging staging
           INNER JOIN cultures live ON live.source_key = staging.source_key) AS matched,
-        (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
+        (SELECT COUNT(*) FROM scoped_staging staging
           INNER JOIN cultures live ON live.source_key = staging.source_key
           WHERE live.is_active = 1
             AND (${contentDiffers})) AS updated,
-        (SELECT COUNT(*) FROM ${STAGING_TABLE} staging
+        (SELECT COUNT(*) FROM scoped_staging staging
           INNER JOIN cultures live ON live.source_key = staging.source_key
           WHERE live.is_active = 0) AS reactivated,
         (SELECT COUNT(*) FROM cultures live
           WHERE live.is_active = 1
             AND NOT EXISTS (
-              SELECT 1 FROM ${STAGING_TABLE} staging WHERE staging.source_key = live.source_key
+              SELECT 1 FROM scoped_staging staging WHERE staging.source_key = live.source_key
             )) AS deactivated`
     )
+    .bind(stagingRunKey)
     .all();
 
   const row = result.results?.[0];
@@ -173,7 +198,7 @@ const readSnapshotStats = async (d1: D1Binding) => {
   };
 };
 
-const applySnapshot = async (d1: D1Binding) => {
+const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
   const contentDiffers = createCultureContentDifferenceSql();
   const updateLive = d1.prepare(`
     UPDATE cultures AS live
@@ -185,9 +210,12 @@ const applySnapshot = async (d1: D1Binding) => {
         CURRENT_TIMESTAMP
       FROM ${STAGING_TABLE} AS staging
       WHERE staging.source_key = live.source_key
+        AND staging.${STAGING_RUN_KEY_COLUMN} = ?1
     )
     WHERE EXISTS (
-      SELECT 1 FROM ${STAGING_TABLE} AS staging WHERE staging.source_key = live.source_key
+      SELECT 1 FROM ${STAGING_TABLE} AS staging
+      WHERE staging.source_key = live.source_key
+        AND staging.${STAGING_RUN_KEY_COLUMN} = ?1
     )
       AND (
         live.is_active = 0
@@ -195,10 +223,11 @@ const applySnapshot = async (d1: D1Binding) => {
           SELECT 1
           FROM ${STAGING_TABLE} AS staging
           WHERE staging.source_key = live.source_key
+            AND staging.${STAGING_RUN_KEY_COLUMN} = ?1
             AND (${contentDiffers})
         )
       )
-  `);
+  `).bind(stagingRunKey);
   const insertNew = d1.prepare(`
     INSERT INTO cultures (
       ${STAGING_COLUMNS.join(', ')}, is_active, last_seen_at, deactivated_at, created_at, updated_at
@@ -211,10 +240,11 @@ const applySnapshot = async (d1: D1Binding) => {
       CURRENT_TIMESTAMP,
       CURRENT_TIMESTAMP
     FROM ${STAGING_TABLE} AS staging
-    WHERE NOT EXISTS (
+    WHERE staging.${STAGING_RUN_KEY_COLUMN} = ?1
+      AND NOT EXISTS (
       SELECT 1 FROM cultures AS live WHERE live.source_key = staging.source_key
     )
-  `);
+  `).bind(stagingRunKey);
   const deactivateMissing = d1.prepare(`
     UPDATE cultures AS live
     SET is_active = 0,
@@ -222,9 +252,11 @@ const applySnapshot = async (d1: D1Binding) => {
         updated_at = CURRENT_TIMESTAMP
     WHERE is_active = 1
       AND NOT EXISTS (
-        SELECT 1 FROM ${STAGING_TABLE} AS staging WHERE staging.source_key = live.source_key
+        SELECT 1 FROM ${STAGING_TABLE} AS staging
+        WHERE staging.source_key = live.source_key
+          AND staging.${STAGING_RUN_KEY_COLUMN} = ?1
       )
-  `);
+  `).bind(stagingRunKey);
   const removeExpiredInactive = d1.prepare(`
     DELETE FROM cultures
     WHERE is_active = 0
@@ -234,9 +266,20 @@ const applySnapshot = async (d1: D1Binding) => {
   await d1.batch([updateLive, insertNew, deactivateMissing, removeExpiredInactive]);
 };
 
-export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultureRow[]): Promise<SnapshotStats> => {
+export const reconcileCulturesViaStaging = async (
+  d1: D1Binding,
+  rows: NewCultureRow[],
+  stagingRunKey: string
+): Promise<SnapshotStats> => {
   await ensureCultureSyncStagingTable(d1);
-  await d1.prepare(`DELETE FROM ${STAGING_TABLE}`).run();
+  await d1
+    .prepare(
+      `DELETE FROM ${STAGING_TABLE}
+       WHERE ${STAGING_RUN_KEY_COLUMN} = ?
+          OR datetime(created_at) < datetime('now', '-1 day')`
+    )
+    .bind(stagingRunKey)
+    .run();
 
   let insertStats: InsertStats = { inserted: 0, skipped: 0 };
   const batches: NewCultureRow[][] = [];
@@ -249,6 +292,7 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
     const stats = await retryInsertStagingStatementGroup(
       d1,
       batches.slice(i, i + STAGING_STATEMENTS_PER_BATCH),
+      stagingRunKey,
       RETRY_LIMIT
     );
     insertStats = {
@@ -268,7 +312,7 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
     );
   }
 
-  const stats = await readSnapshotStats(d1);
+  const stats = await readSnapshotStats(d1, stagingRunKey);
   if (
     stats.currentActive >= MIN_VALID_COORDINATE_COUNT &&
     stats.staged / stats.currentActive < MIN_SNAPSHOT_EXISTING_RATIO
@@ -278,10 +322,13 @@ export const reconcileCulturesViaStaging = async (d1: D1Binding, rows: NewCultur
     );
   }
 
-  await applySnapshot(d1);
+  await applySnapshot(d1, stagingRunKey);
 
   try {
-    await d1.prepare(`DELETE FROM ${STAGING_TABLE}`).run();
+    await d1
+      .prepare(`DELETE FROM ${STAGING_TABLE} WHERE ${STAGING_RUN_KEY_COLUMN} = ?`)
+      .bind(stagingRunKey)
+      .run();
   } catch (error) {
     console.warn('반영 완료 후 staging 정리에 실패했습니다.', error);
   }

@@ -30,15 +30,15 @@ async function runScheduledSync(env, ctx, trigger) {
     throw new Error('Seoul cultural API URL is required for scheduled synchronization');
   }
 
-  const lockAcquired = await acquireInitializeLock(env);
-  if (!lockAcquired) {
+  const lockOwner = await acquireInitializeLock(env);
+  if (!lockOwner) {
     return;
   }
 
   try {
     await syncCultures(baseUrl, env.DB, { trigger });
   } finally {
-    await releaseInitializeLock(env);
+    await releaseInitializeLock(env, lockOwner);
   }
 }
 

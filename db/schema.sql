@@ -44,12 +44,14 @@ END;
 
 CREATE TABLE IF NOT EXISTS initialize_sync_locks (
   name TEXT PRIMARY KEY,
+  owner_token TEXT NOT NULL,
   acquired_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
   expires_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS culture_sync_staging (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  sync_run_key TEXT NOT NULL,
   source_key TEXT NOT NULL,
   classification TEXT,
   date TEXT,
@@ -77,7 +79,9 @@ CREATE TABLE IF NOT EXISTS culture_sync_staging (
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS culture_sync_staging_source_key_idx ON culture_sync_staging(source_key);
+CREATE UNIQUE INDEX IF NOT EXISTS culture_sync_staging_run_source_key_idx
+ON culture_sync_staging(sync_run_key, source_key);
+CREATE INDEX IF NOT EXISTS culture_sync_staging_run_key_idx ON culture_sync_staging(sync_run_key);
 
 CREATE TABLE IF NOT EXISTS culture_sync_runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

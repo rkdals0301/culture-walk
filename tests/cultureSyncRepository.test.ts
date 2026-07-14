@@ -63,9 +63,10 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
     },
   };
 
-  const stats = await reconcileCulturesViaStaging(d1, createRows());
+  const stats = await reconcileCulturesViaStaging(d1, createRows(), 'test-run');
   const updateQuery = appliedQueries.find(query => query.includes('UPDATE cultures AS live')) ?? '';
   const deactivateQuery = appliedQueries.find(query => query.includes('SET is_active = 0,')) ?? '';
+  const insertQuery = appliedQueries.find(query => query.includes('INSERT INTO cultures')) ?? '';
 
   assert.deepEqual(stats, {
     inserted: 1,
@@ -78,7 +79,10 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   assert.match(updateQuery, /live\.is_active = 0/);
   assert.match(updateQuery, /live\.title IS NOT staging\.title/);
   assert.match(updateQuery, /AND \(\s*live\.is_active = 0\s*OR EXISTS/);
+  assert.match(updateQuery, /staging\.sync_run_key = \?1/);
+  assert.match(insertQuery, /staging\.sync_run_key = \?1/);
   assert.match(deactivateQuery, /deactivated_at = CURRENT_TIMESTAMP/);
+  assert.match(deactivateQuery, /staging\.sync_run_key = \?1/);
   assert.doesNotMatch(deactivateQuery, /COALESCE/);
   assert.deepEqual(batchSizes, [1, 4]);
 });

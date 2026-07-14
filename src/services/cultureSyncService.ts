@@ -35,7 +35,8 @@ export const syncCultures = async (
       throw new Error('검증과 중복 제거 이후 남은 문화 데이터가 없습니다.');
     }
 
-    const snapshotStats = await reconcileCulturesViaStaging(d1, deduplicatedRows);
+    const stagingRunKey = `sync:${runId ?? 'untracked'}:${crypto.randomUUID()}`;
+    const snapshotStats = await reconcileCulturesViaStaging(d1, deduplicatedRows, stagingRunKey);
     await bumpCulturesCacheVersion();
 
     const result: SyncResult = {
