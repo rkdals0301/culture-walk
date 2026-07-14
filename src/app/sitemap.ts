@@ -39,19 +39,6 @@ const parseLastModified = (value: string) => {
   return Number.isNaN(date.getTime()) ? undefined : date;
 };
 
-const resolveImageUrl = (value: string | null) => {
-  if (!value) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(value, SITE_URL);
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const db = await getDb();
   if (!db) {
@@ -65,24 +52,18 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const rows = await db
     .select({
       id: cultures.id,
-      mainImage: cultures.mainImage,
       updatedAt: cultures.updatedAt,
     })
     .from(cultures)
     .where(and(eq(cultures.isActive, true), gte(cultures.endDate, getKoreaDateStartIso())))
     .orderBy(asc(cultures.id));
 
-  const cultureEntries: MetadataRoute.Sitemap = rows.map(row => {
-    const imageUrl = resolveImageUrl(row.mainImage);
-
-    return {
-      url: `${SITE_URL}/map/${row.id}`,
-      lastModified: parseLastModified(row.updatedAt),
-      changeFrequency: 'daily',
-      priority: 0.8,
-      images: imageUrl ? [imageUrl] : undefined,
-    };
-  });
+  const cultureEntries: MetadataRoute.Sitemap = rows.map(row => ({
+    url: `${SITE_URL}/map/${row.id}`,
+    lastModified: parseLastModified(row.updatedAt),
+    changeFrequency: 'daily',
+    priority: 0.8,
+  }));
 
   return [...STATIC_ENTRIES, ...cultureEntries];
 };
