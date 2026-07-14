@@ -103,7 +103,7 @@ const SortControl = ({ mode, hasLocation, isLocating, onChange }: SortControlPro
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={
         mode === 'distance'
-          ? 'h-7 rounded-md bg-[var(--app-card)] px-2.5 text-[0.72rem] font-semibold text-[#bd6d18] shadow-sm dark:text-[#e2a35d]'
+          ? 'h-7 rounded-md bg-[var(--app-card)] px-2.5 text-[0.72rem] font-semibold text-[var(--app-warm-text)] shadow-sm'
           : 'h-7 rounded-md px-2.5 text-[0.72rem] font-semibold text-[var(--app-muted)] disabled:cursor-not-allowed disabled:opacity-45'
       }
     >
@@ -129,7 +129,7 @@ const LocationControl = ({ isActive, isLocating, onToggle }: LocationControlProp
     className={clsx(
       'flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[0.72rem] font-semibold transition',
       isActive
-        ? 'border-[#d98b2f]/35 bg-[#d98b2f]/10 text-[#bd6d18] dark:text-[#e2a35d]'
+        ? 'border-[#d98b2f]/35 bg-[#d98b2f]/10 text-[var(--app-warm-text)]'
         : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
       isLocating && 'cursor-wait opacity-70'
     )}

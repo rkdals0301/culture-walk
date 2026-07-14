@@ -22,11 +22,15 @@ const ThemeToggle = () => {
   const isDark = mounted && resolvedTheme === 'dark';
 
   useEffect(() => {
-    const metaThemeColor = document.querySelector("meta[name='theme-color']") as HTMLMetaElement;
-    if (metaThemeColor) {
-      metaThemeColor.content = isDark ? '#081311' : '#f4efe7';
+    if (!mounted) {
+      return;
     }
-  }, [isDark]);
+
+    const themeColor = isDark ? '#111614' : '#f3f5f2';
+    document.querySelectorAll<HTMLMetaElement>("meta[name='theme-color']").forEach(meta => {
+      meta.content = themeColor;
+    });
+  }, [isDark, mounted]);
 
   const handleClick = () => {
     setTheme(isDark ? 'light' : 'dark');
@@ -34,7 +38,7 @@ const ThemeToggle = () => {
 
   return (
     <IconButton
-      ariaLabel='다크모드 토글'
+      ariaLabel={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
       onClick={handleClick}
       icon={isDark ? <LightModeIcon /> : <DarkModeIcon />}
     />

@@ -84,7 +84,7 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
           <p className='truncate'>{culture.displayPlace}</p>
           <div className='flex min-w-0 items-center gap-2'>
             <p className='min-w-0 flex-1 truncate'>{culture.displayDate}</p>
-            {distance && <span className='shrink-0 font-semibold text-[#c47722] dark:text-[#e2a35d]'>{distance}</span>}
+            {distance && <span className='shrink-0 font-semibold text-[var(--app-warm-text)]'>{distance}</span>}
             <span className='shrink-0 text-[0.72rem]'>{culture.displayPrice}</span>
           </div>
         </div>

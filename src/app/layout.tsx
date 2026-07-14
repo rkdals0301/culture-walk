@@ -54,10 +54,15 @@ export const metadata: Metadata = {
     default: '문화산책',
     template: '%s | 문화산책',
   },
-  icons: [
-    { rel: 'icon', type: 'image/svg+xml', url: '/favicon.svg' },
-    { rel: 'shortcut icon', type: 'image/svg+xml', url: '/favicon.svg' },
-  ],
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-48x48.png', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [{ url: '/apple-touch-icon-180x180.png', type: 'image/png', sizes: '180x180' }],
+  },
   description:
     '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
   keywords:
@@ -121,7 +126,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#ffffff',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f3f5f2' },
+    { media: '(prefers-color-scheme: dark)', color: '#111614' },
+  ],
   colorScheme: 'light dark',
 };
 
@@ -167,10 +175,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           You need to enable JavaScript to run this app.
         </noscript>
       </head>
-      <body
-        suppressHydrationWarning
-        className={`safe-area min-h-dvh bg-white font-pretendard text-gray-900 dark:bg-neutral-900 dark:text-gray-100`}
-      >
+      <body suppressHydrationWarning className='safe-area min-h-dvh font-pretendard'>
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_STRUCTURED_DATA) }}

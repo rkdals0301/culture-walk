@@ -16,6 +16,7 @@
     --app-shadow: 0 24px 48px -34px rgba(16, 33, 29, 0.38);
     --app-shadow-soft: 0 14px 30px -26px rgba(16, 33, 29, 0.24);
     --app-chip: rgba(16, 33, 29, 0.06);
+    --app-warm-text: #ad5d10;
   }
 
   .dark {
@@ -29,6 +30,7 @@
     --app-shadow: 0 28px 56px -38px rgba(0, 0, 0, 0.62);
     --app-shadow-soft: 0 18px 38px -30px rgba(0, 0, 0, 0.46);
     --app-chip: rgba(248, 244, 235, 0.08);
+    --app-warm-text: #e2a35d;
   }
 
   html,
@@ -104,6 +106,10 @@
   inset: 0;
 }
 
+.map-side-scrim {
+  opacity: 0;
+}
+
 @media (min-width: 1024px) {
   .map-viewport {
     bottom: 0;
@@ -118,6 +124,21 @@
     right: 0;
     top: var(--map-header-height);
     transition: left 280ms ease;
+  }
+
+  .map-side-scrim {
+    bottom: 0;
+    left: var(--map-sidebar-width);
+    top: var(--map-header-height);
+    width: 48px;
+    background: linear-gradient(90deg, rgba(8, 19, 17, 0.18) 0%, rgba(8, 19, 17, 0.06) 46%, transparent 100%);
+    transition:
+      left 280ms ease,
+      opacity 180ms ease;
+  }
+
+  .dark .map-side-scrim {
+    opacity: 1;
   }
 }
 
