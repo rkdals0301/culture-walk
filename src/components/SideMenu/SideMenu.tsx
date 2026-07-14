@@ -2,13 +2,15 @@
 
 import IconButton from '@/components/Common/IconButton';
 import { useSideMenu } from '@/context/SideMenuContext';
+import { useDialogFocusTrap } from '@/hooks/useDialogFocusTrap';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+import clsx from 'clsx';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
@@ -22,27 +24,22 @@ const NAVIGATION_LINKS = [
 const SideMenu = () => {
   const { isOpen, closeSideMenu } = useSideMenu();
   const pathname = usePathname();
+  const panelRef = useRef<HTMLElement>(null);
+
+  useDialogFocusTrap(isOpen, panelRef, closeSideMenu, '[aria-label="사이드메뉴 닫기"]');
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeSideMenu();
-      }
-    };
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [closeSideMenu, isOpen]);
+  }, [isOpen]);
 
   return (
     <>
@@ -56,6 +53,7 @@ const SideMenu = () => {
       />
 
       <aside
+        ref={panelRef}
         className={clsx(
           'fixed left-0 top-0 z-40 flex h-dvh w-[calc(100vw-16px)] max-w-[320px] flex-col rounded-r-lg border-r border-[var(--app-border)] bg-[#fafcf9] p-5 shadow-[var(--app-shadow)] transition-transform duration-300 dark:bg-[#101916] sm:p-6',
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -65,6 +63,7 @@ const SideMenu = () => {
         aria-labelledby='side-menu-title'
         aria-hidden={!isOpen}
         inert={!isOpen}
+        tabIndex={-1}
       >
         <div className='flex items-center justify-between gap-4 border-b border-[var(--app-border)] pb-5'>
           <Link href='/map' className='flex min-w-0 items-center gap-3' onClick={closeSideMenu}>
@@ -76,20 +75,13 @@ const SideMenu = () => {
               className='rounded-lg shadow-[0_18px_38px_-28px_rgba(31,118,95,0.8)]'
             />
             <div className='min-w-0'>
-              <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
-                서울 문화행사 지도
-              </p>
+              <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>서울 문화행사 지도</p>
               <h2 id='side-menu-title' className='truncate text-lg font-semibold'>
                 CultureWalk
               </h2>
             </div>
           </Link>
-          <IconButton
-            icon={<CloseIcon />}
-            ariaLabel='사이드메뉴 닫기'
-            onClick={closeSideMenu}
-            variant='secondary'
-          />
+          <IconButton icon={<CloseIcon />} ariaLabel='사이드메뉴 닫기' onClick={closeSideMenu} variant='secondary' />
         </div>
 
         <nav className='mt-6' aria-label='주요 메뉴'>

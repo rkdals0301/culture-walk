@@ -10,9 +10,10 @@ import { CULTURE_CATEGORY_OPTIONS, CultureCategoryKey } from '@/utils/cultureCat
 import { calculateDistanceMeters, getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
 
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
+
 import clsx from 'clsx';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
@@ -71,11 +72,16 @@ type MapSortMode = 'date' | 'distance';
 interface SortControlProps {
   mode: MapSortMode;
   hasLocation: boolean;
+  isLocating: boolean;
   onChange: (mode: MapSortMode) => void;
 }
 
-const SortControl = ({ mode, hasLocation, onChange }: SortControlProps) => (
-  <div className='flex rounded-lg border border-[var(--app-border)] bg-[var(--app-chip)] p-0.5' role='group' aria-label='행사 정렬 방식'>
+const SortControl = ({ mode, hasLocation, isLocating, onChange }: SortControlProps) => (
+  <div
+    className='flex rounded-lg border border-[var(--app-border)] bg-[var(--app-chip)] p-0.5'
+    role='group'
+    aria-label='행사 정렬 방식'
+  >
     <button
       type='button'
       onClick={() => onChange('date')}
@@ -91,9 +97,10 @@ const SortControl = ({ mode, hasLocation, onChange }: SortControlProps) => (
     <button
       type='button'
       onClick={() => onChange('distance')}
-      disabled={!hasLocation}
+      disabled={isLocating}
       aria-pressed={mode === 'distance'}
-      title={hasLocation ? '거리순으로 정렬' : '내 위치를 먼저 사용해 주세요'}
+      aria-label={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
+      title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={
         mode === 'distance'
           ? 'h-7 rounded-md bg-[var(--app-card)] px-2.5 text-[0.72rem] font-semibold text-[#bd6d18] shadow-sm dark:text-[#e2a35d]'
@@ -181,12 +188,38 @@ const MapDashboard = () => {
   }, [currentLocation, mapCultures, sortMode]);
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapFreeOnly;
 
-  const handleSortChange = (nextMode: MapSortMode) => {
-    if (nextMode === 'distance' && !currentLocation) {
+  const requestLocation = async () => {
+    if (currentLocation) {
+      return currentLocation;
+    }
+
+    if (isLocating) {
+      return null;
+    }
+
+    setIsLocating(true);
+    try {
+      const location = await requestCurrentLocation();
+      setCurrentLocation(location);
+      return location;
+    } catch (locationError) {
+      toast.error(getGeolocationErrorMessage(locationError));
+      return null;
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  const handleSortChange = async (nextMode: MapSortMode) => {
+    if (nextMode === 'date') {
+      setSortMode('date');
       return;
     }
 
-    setSortMode(nextMode);
+    const location = await requestLocation();
+    if (location) {
+      setSortMode('distance');
+    }
   };
 
   const handleLocationToggle = async () => {
@@ -198,19 +231,7 @@ const MapDashboard = () => {
       return;
     }
 
-    if (isLocating) {
-      return;
-    }
-
-    setIsLocating(true);
-    try {
-      const location = await requestCurrentLocation();
-      setCurrentLocation(location);
-    } catch (locationError) {
-      toast.error(getGeolocationErrorMessage(locationError));
-    } finally {
-      setIsLocating(false);
-    }
+    await requestLocation();
   };
 
   const handleOpenCulture = (culture: FormattedCulture) => {
@@ -352,7 +373,12 @@ const MapDashboard = () => {
 
               <div className='mt-2.5 flex items-center justify-between gap-3 text-xs text-[var(--app-muted)]'>
                 <div className='flex min-w-0 items-center gap-2'>
-                  <SortControl mode={sortMode} hasLocation={Boolean(currentLocation)} onChange={handleSortChange} />
+                  <SortControl
+                    mode={sortMode}
+                    hasLocation={Boolean(currentLocation)}
+                    isLocating={isLocating}
+                    onChange={handleSortChange}
+                  />
                   <LocationControl
                     isActive={Boolean(currentLocation)}
                     isLocating={isLocating}
@@ -390,7 +416,7 @@ const MapDashboard = () => {
 
       <div className='pointer-events-none flex h-full w-full flex-col px-4 pb-4 pt-[5.4rem] sm:px-6 sm:pb-6 sm:pt-[6rem] lg:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] min-h-[390px] max-h-[82dvh] w-full flex-col overflow-hidden rounded-[24px] text-[var(--app-text)]'>
+          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[24px] text-[var(--app-text)]'>
             <div className='border-b border-[var(--app-border)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
                 <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
@@ -398,7 +424,9 @@ const MapDashboard = () => {
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
                   <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>행사 목록</p>
-                  <p className='mt-1 truncate text-sm font-medium text-[var(--app-muted)]'>총 {visibleCultures.length}개</p>
+                  <p className='mt-1 truncate text-sm font-medium text-[var(--app-muted)]'>
+                    총 {visibleCultures.length}개
+                  </p>
                 </div>
                 <button
                   type='button'
@@ -418,7 +446,12 @@ const MapDashboard = () => {
               </div>
               <div className='mt-2.5 flex items-center justify-between gap-3'>
                 <div className='flex min-w-0 items-center gap-2'>
-                  <SortControl mode={sortMode} hasLocation={Boolean(currentLocation)} onChange={handleSortChange} />
+                  <SortControl
+                    mode={sortMode}
+                    hasLocation={Boolean(currentLocation)}
+                    isLocating={isLocating}
+                    onChange={handleSortChange}
+                  />
                   <LocationControl
                     isActive={Boolean(currentLocation)}
                     isLocating={isLocating}

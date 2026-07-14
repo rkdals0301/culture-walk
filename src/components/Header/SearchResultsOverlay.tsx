@@ -11,11 +11,10 @@ import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 
 interface SearchResultsOverlayProps {
-  onClose: () => void;
   onCloseWithoutHistory: () => void;
 }
 
-const SearchResultsOverlay = ({ onClose, onCloseWithoutHistory }: SearchResultsOverlayProps) => {
+const SearchResultsOverlay = ({ onCloseWithoutHistory }: SearchResultsOverlayProps) => {
   const router = useRouter();
   const { filteredCultures, searchQuery, setMapCategory, setMapFreeOnly } = useCultureContext();
   const { isLoading, isError, error } = useCultures();
@@ -54,7 +53,9 @@ const SearchResultsOverlay = ({ onClose, onCloseWithoutHistory }: SearchResultsO
   };
 
   return (
-    <div className={clsx('pointer-events-auto flex size-full min-h-0 flex-col gap-2.5 sm:gap-3 text-[var(--app-text)]')}>
+    <div
+      className={clsx('pointer-events-auto flex size-full min-h-0 flex-col gap-2.5 text-[var(--app-text)] sm:gap-3')}
+    >
       <div className='surface-card flex flex-wrap items-center justify-between gap-3 rounded-[22px] px-3.5 py-3 sm:rounded-[24px] sm:px-5 sm:py-4'>
         <div className='min-w-0'>
           <p className='text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#1f765f] dark:text-[#8dc5b5]'>
@@ -67,17 +68,8 @@ const SearchResultsOverlay = ({ onClose, onCloseWithoutHistory }: SearchResultsO
             {normalizedQuery ? `검색어: ${normalizedQuery}` : '전체 행사 목록'}
           </p>
         </div>
-        <button
-          type='button'
-          onClick={onClose}
-          className='soft-chip hidden rounded-full px-4 py-2 text-sm font-medium text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08] sm:inline-flex'
-        >
-          결과 닫기
-        </button>
       </div>
-      <div className='min-h-0 flex-1'>
-        {renderContent()}
-      </div>
+      <div className='min-h-0 flex-1'>{renderContent()}</div>
     </div>
   );
 };

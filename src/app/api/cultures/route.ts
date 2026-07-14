@@ -1,13 +1,15 @@
 import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } from '@/cache/kv';
-import { cultures } from '@/db/schema';
 import { getDb } from '@/db/client';
+import { cultures } from '@/db/schema';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
 import { normalizeCultureCoordinates } from '@/services/cultureService';
 import { CultureListItem } from '@/types/culture';
+import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 import { NextResponse } from 'next/server';
-import { and, asc, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
+
+import { and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +47,7 @@ export async function GET() {
     const koreaToday = getKoreaDateStartIso();
 
     const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v4', {
+    const cacheKey = createCacheKey('cultures:list:v5', {
       version: cacheVersion,
       koreaDate: koreaToday.slice(0, 10),
     });
@@ -90,8 +92,7 @@ export async function GET() {
           ),
           gte(cultures.endDate, koreaToday)
         )
-      )
-      .orderBy(asc(cultures.startDate));
+      );
 
     const result: CultureListItem[] = rows.map(row => {
       const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
@@ -111,9 +112,10 @@ export async function GET() {
         useFee: row.useFee ?? '',
       };
     });
-    await writeKvCache(cacheKey, result, CACHE_TTL_SECONDS);
+    const sortedResult = sortCulturesByRelevantDate(result, koreaToday);
+    await writeKvCache(cacheKey, sortedResult, CACHE_TTL_SECONDS);
 
-    return listResponse(result);
+    return listResponse(sortedResult);
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {
       console.error('cultures 테이블이 없어 문화 목록을 제공할 수 없습니다.');

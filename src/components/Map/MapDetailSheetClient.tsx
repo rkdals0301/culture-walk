@@ -8,7 +8,6 @@ import Loader from '@/components/Loader/Loader';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureById } from '@/hooks/cultureHooks';
-
 import type { FormattedCulture } from '@/types/culture';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -17,14 +16,6 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
-
-const buildCultureSummary = (culture: FormattedCulture) => {
-  const regionText = culture.guName ? `${culture.guName}에서 열리는` : '서울에서 열리는';
-  const placeText = culture.displayPlace || culture.place || '공개된 장소';
-  const priceText = culture.displayPrice ? `요금은 ${culture.displayPrice}입니다.` : '요금 정보는 공식 페이지에서 확인할 수 있습니다.';
-
-  return `${culture.title}은 ${regionText} ${culture.classification || '문화행사'}입니다. ${placeText}에서 진행되며, 일정은 ${culture.displayDate}입니다. ${priceText}`;
-};
 
 const MapDetailSheetClient = () => {
   const router = useRouter();
@@ -119,13 +110,11 @@ const MapDetailSheetClient = () => {
       );
     }
 
-    const cultureSummary = buildCultureSummary(culture);
-    const hasCultureImage =
-      Boolean(imgSrc) && !imageFailed && !imgSrc?.includes('/assets/images/logo');
+    const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc?.includes('/assets/images/logo');
 
     return (
       <div className='flex flex-col gap-4'>
-        <div className='relative aspect-[16/9] overflow-hidden rounded-[18px] bg-black/[0.04] dark:bg-white/[0.05]'>
+        <div className='relative aspect-[4/3] overflow-hidden rounded-[18px] bg-black/[0.04] dark:bg-white/[0.05]'>
           {hasCultureImage ? (
             <Image
               src={imgSrc as string}
@@ -136,7 +125,7 @@ const MapDetailSheetClient = () => {
               fill
               sizes='(min-width: 1024px) 520px, 100dvw'
               priority
-              className='object-cover'
+              className='object-contain'
             />
           ) : (
             <CultureImageFallback classification={culture.classification || '문화행사'} />
@@ -144,30 +133,32 @@ const MapDetailSheetClient = () => {
         </div>
         <div className='flex flex-wrap items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
-          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>{culture.guName}</span>
+          {culture.guName && (
+            <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+              {culture.guName}
+            </span>
+          )}
           <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
             {culture.displayPrice}
           </span>
         </div>
         <div>
           <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>선택한 행사</p>
-          <h2 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>
-            {culture.title}
-          </h2>
+          <h2 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h2>
         </div>
 
-        <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+        <div className='grid grid-cols-1 gap-2'>
           <div className='soft-chip rounded-[14px] px-3 py-2.5'>
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>일정</p>
             <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
           </div>
           <div className='soft-chip rounded-[14px] px-3 py-2.5'>
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>장소</p>
-            <p className='mt-1 line-clamp-2 text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
+            <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
           </div>
           <div className='soft-chip rounded-[14px] px-3 py-2.5'>
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>요금</p>
-            <p className='mt-1 line-clamp-2 text-sm font-semibold leading-5'>{culture.displayPrice}</p>
+            <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.displayPrice}</p>
           </div>
         </div>
 
@@ -184,10 +175,23 @@ const MapDetailSheetClient = () => {
           </dl>
         </div>
 
-        <div className='surface-card rounded-[18px] p-4'>
-          <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>행사 요약</p>
-          <p className='mt-2 break-words text-sm leading-6 text-[var(--app-muted)]'>{cultureSummary}</p>
-        </div>
+        {culture.programIntroduction && (
+          <div className='surface-card rounded-[18px] p-4'>
+            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>프로그램 안내</p>
+            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.programIntroduction}
+            </p>
+          </div>
+        )}
+
+        {culture.performerInformation && (
+          <div className='surface-card rounded-[18px] p-4'>
+            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>출연 안내</p>
+            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.performerInformation}
+            </p>
+          </div>
+        )}
 
         {culture.etcDescription && (
           <details className='surface-card group rounded-[18px] p-4'>
@@ -207,7 +211,6 @@ const MapDetailSheetClient = () => {
             <GoogleAdSlot slot={ADSENSE_DETAIL_SLOT} className='min-h-[88px]' />
           </div>
         )}
-
       </div>
     );
   }, [isLoading, error, culture, imgSrc, imageFailed, handleImageError, router]);
