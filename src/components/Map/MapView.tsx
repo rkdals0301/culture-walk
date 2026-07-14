@@ -16,6 +16,8 @@ const KAKAO_MAPS_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY;
 const KAKAO_MAPS_SCRIPT_ID = 'kakao-maps-sdk';
 const DEFAULT_MAP_CENTER = { lat: 37.5665, lng: 126.978 };
 const DEFAULT_MAP_LEVEL = 7;
+const DEFAULT_MARKER_PIXEL_SIZE = 32;
+const EMPHASIZED_MARKER_PIXEL_SIZE = 40;
 const CLUSTER_STYLES: Array<Record<string, string>> = [
   {
     width: '40px',
@@ -204,7 +206,9 @@ const MapView = () => {
               <p className='text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#1f765f] dark:text-[#8dc5b5]'>
                 Shared Place
               </p>
-              <h3 className='mt-2 text-xl font-semibold tracking-[-0.03em]'>같은 위치에서 여러 행사가 열리고 있습니다.</h3>
+              <h3 className='mt-2 text-xl font-semibold tracking-[-0.03em]'>
+                같은 위치에서 여러 행사가 열리고 있습니다.
+              </h3>
               <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>
                 아래 목록에서 원하는 행사를 선택하면 상세 화면으로 이동합니다.
               </p>
@@ -391,7 +395,8 @@ const MapView = () => {
       const iconUrl = isSelected
         ? '/assets/images/map-marker-active-icon.svg'
         : '/assets/images/map-marker-default-icon.svg';
-      const iconSize = isSelected ? new kakaoMaps.Size(40, 40) : new kakaoMaps.Size(32, 32);
+      const markerPixelSize = isSelected ? EMPHASIZED_MARKER_PIXEL_SIZE : DEFAULT_MARKER_PIXEL_SIZE;
+      const iconSize = new kakaoMaps.Size(markerPixelSize, markerPixelSize);
 
       const marker = new kakaoMaps.Marker({
         map: useCluster ? null : mapInstance,
@@ -437,7 +442,10 @@ const MapView = () => {
       map: mapInstance,
       title: '현재 위치',
       position: new kakaoMaps.LatLng(currentLocation.lat, currentLocation.lng),
-      image: new kakaoMaps.MarkerImage('/assets/images/map-marker-current-location-icon.svg', new kakaoMaps.Size(40, 40)),
+      image: new kakaoMaps.MarkerImage(
+        '/assets/images/map-marker-current-location-icon.svg',
+        new kakaoMaps.Size(EMPHASIZED_MARKER_PIXEL_SIZE, EMPHASIZED_MARKER_PIXEL_SIZE)
+      ),
       zIndex: markerGroups.length + 2,
     });
 
@@ -468,7 +476,7 @@ const MapView = () => {
   return (
     <div className='relative size-full'>
       <div ref={mapContainerRef} className='size-full' style={{ pointerEvents: 'auto', touchAction: 'auto' }} />
-      <div className='absolute right-3 top-[6.85rem] z-20 flex flex-col items-end gap-2 md:right-6 md:top-auto md:bottom-6'>
+      <div className='absolute right-3 top-[6.85rem] z-20 flex flex-col items-end gap-2 md:bottom-6 md:right-6 md:top-auto'>
         <MapZoomControls map={mapInstance} />
         <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
       </div>

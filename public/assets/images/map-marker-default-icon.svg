@@ -1,13 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <filter id="marker-shadow" x="-30%" y="-20%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#10211D" flood-opacity="0.24" />
+    </filter>
+  </defs>
   <path
     d="M24 2C14.6112 2 7 9.46939 7 18.6818C7 27.041 11.5714 32.7529 14.9778 36.9552L22.4454 46.1828C23.2468 47.1738 24.7532 47.1738 25.5546 46.1828L33.0222 36.9552C36.4286 32.7529 41 27.041 41 18.6818C41 9.46939 33.3888 2 24 2Z"
     fill="#1F765F"
+    stroke="#FFFDF7"
+    stroke-width="2"
+    filter="url(#marker-shadow)"
   />
   <path
     d="M24 33.2C15.4952 33.2 8.6 26.3568 8.6 17.9091C8.6 9.4614 15.4952 2.61818 24 2.61818C32.5048 2.61818 39.4 9.4614 39.4 17.9091C39.4 26.3568 32.5048 33.2 24 33.2Z"
     fill="#2F8D75"
     opacity="0.5"
   />
-  <circle cx="24" cy="18.6" r="7.4" fill="#F7F3EA" />
+  <circle cx="24" cy="18.6" r="7.4" fill="#FFFDF7" />
   <circle cx="24" cy="18.6" r="3.3" fill="#1F765F" />
 </svg>
