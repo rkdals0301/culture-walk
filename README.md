@@ -74,14 +74,14 @@ npm run dev
 
 `/api/health`는 활성/비활성 데이터 수, 좌표와 날짜 정합성, 최신 동기화 결과와 경과 시간을 반환합니다. 최근 36시간 안에 성공한 동기화가 없거나 데이터 품질 기준을 통과하지 못하면 `ok: false`를 반환합니다.
 
-동기화는 외부 API 전체 페이지를 staging에 적재한 뒤 `source_key` 기준으로 기존 행을 갱신합니다. 기존 상세 ID는 유지되고, 신규 행만 추가되며, 외부 API에서 사라진 행은 즉시 삭제하지 않고 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단합니다.
+동기화는 외부 API 전체 페이지를 staging에 적재한 뒤 `source_key` 기준으로 기존 행을 갱신합니다. 기존 상세 ID는 유지되고, 신규 행만 추가되며, 외부 API에서 사라진 행은 즉시 삭제하지 않고 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단하며, 활성 행의 직접 삭제는 DB 트리거가 차단합니다.
 
 ## Cloudflare
 
 - 설정 파일: `wrangler.jsonc`
 - OpenNext 설정: `open-next.config.ts`
 - Worker 진입점: `worker.js`
-- 스케줄: `wrangler.jsonc`의 cron에서 `/api/initialize` 호출
+- 스케줄: `wrangler.jsonc`의 cron에서 동기화 서비스를 직접 실행
 
 배포할 때는 애플리케이션 배포 전에 `npm run db:migrate:remote`로 D1 마이그레이션을 먼저 적용해야 합니다. `0002_snapshot_sync.sql` 적용 직후에는 성공 이력이 없으므로 `/api/health`가 503을 반환하며, 첫 동기화가 성공하면 정상 상태로 전환됩니다.
 

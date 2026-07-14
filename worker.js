@@ -1,28 +1,14 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
+import { acquireInitializeLock, releaseInitializeLock } from './src/services/cultureSyncLock';
 import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
+import { syncCultures } from './src/services/cultureSyncService';
 
-async function runScheduledInitialize(env, ctx, trigger) {
-  if (!env.SYNC_TOKEN) {
-    throw new Error('SYNC_TOKEN is required for scheduled initialize');
+function resolveSeoulApiUrl(env) {
+  if (env.SEOUL_API_CULTURAL_BASE_URL && env.SEOUL_API_KEY) {
+    return `${env.SEOUL_API_CULTURAL_BASE_URL.replace(/\/$/, '')}/${env.SEOUL_API_KEY}/json/culturalEventInfo`;
   }
 
-  const url = new URL('https://internal.culturewalk/api/initialize');
-
-  const request = new Request(url, {
-    method: 'POST',
-    headers: {
-      'x-sync-token': env.SYNC_TOKEN,
-      'x-sync-trigger': trigger,
-      'user-agent': 'culturewalk-cron-initialize',
-    },
-  });
-
-  const response = await openNextWorker.fetch(request, env, ctx);
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Scheduled initialize failed with ${response.status}: ${message}`);
-  }
+  return env.SEOUL_API_CULTURAL_URL;
 }
 
 async function runScheduledSync(env, ctx, trigger) {
@@ -35,7 +21,25 @@ async function runScheduledSync(env, ctx, trigger) {
     }
   }
 
-  await runScheduledInitialize(env, ctx, trigger);
+  if (!env.DB) {
+    throw new Error('DB binding is required for scheduled synchronization');
+  }
+
+  const baseUrl = resolveSeoulApiUrl(env);
+  if (!baseUrl) {
+    throw new Error('Seoul cultural API URL is required for scheduled synchronization');
+  }
+
+  const lockAcquired = await acquireInitializeLock(env);
+  if (!lockAcquired) {
+    return;
+  }
+
+  try {
+    await syncCultures(baseUrl, env.DB, { trigger });
+  } finally {
+    await releaseInitializeLock(env);
+  }
 }
 
 const worker = {

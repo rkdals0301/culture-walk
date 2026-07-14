@@ -35,6 +35,13 @@ CREATE INDEX IF NOT EXISTS cultures_end_date_idx ON cultures(end_date);
 CREATE UNIQUE INDEX IF NOT EXISTS cultures_source_key_idx ON cultures(source_key);
 CREATE INDEX IF NOT EXISTS cultures_active_end_date_idx ON cultures(is_active, end_date);
 
+CREATE TRIGGER IF NOT EXISTS protect_active_cultures_from_delete
+BEFORE DELETE ON cultures
+WHEN OLD.is_active = 1
+BEGIN
+  SELECT RAISE(ABORT, 'active cultures must be deactivated before deletion');
+END;
+
 CREATE TABLE IF NOT EXISTS initialize_sync_locks (
   name TEXT PRIMARY KEY,
   acquired_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,

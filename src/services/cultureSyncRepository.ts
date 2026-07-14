@@ -218,7 +218,7 @@ const applySnapshot = async (d1: D1Binding) => {
   const deactivateMissing = d1.prepare(`
     UPDATE cultures AS live
     SET is_active = 0,
-        deactivated_at = COALESCE(deactivated_at, CURRENT_TIMESTAMP),
+        deactivated_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
     WHERE is_active = 1
       AND NOT EXISTS (
