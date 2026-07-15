@@ -1,4 +1,10 @@
-import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } from '@/cache/kv';
+import {
+  bumpCulturesCacheVersion,
+  createCacheKey,
+  getCulturesCacheVersion,
+  readKvCache,
+  writeKvCache,
+} from '@/cache/kv';
 import { getDb } from '@/db/client';
 import { cultures, cultureTourApiDetails } from '@/db/schema';
 import { getWorkerEnv } from '@/server/cloudflare';
@@ -56,7 +62,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const hasCurrentCompleteDetails = Boolean(
       storedDetails?.isComplete && storedDetails.sourceModifiedAt === row.registrationDate
     );
-    const cacheVersion = await getCulturesCacheVersion();
+    let cacheVersion = await getCulturesCacheVersion();
     const cacheKey = createCacheKey('cultures:detail:v2', {
       version: cacheVersion,
       id: parsedId,
@@ -111,6 +117,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
               updatedAt: syncedAt,
             })
             .where(eq(cultures.id, row.id));
+          cacheVersion = await bumpCulturesCacheVersion();
 
           storedDetails = {
             sourceKey: row.sourceKey as string,
