@@ -42,7 +42,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           지도 목록
         </Link>
         <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
-          {culture.classification || '서울 문화행사'}
+          {culture.classification || '문화행사'}
         </p>
         <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.25] sm:text-[1.75rem]'>{culture.title}</h1>
       </header>
@@ -92,7 +92,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
                 rel='noreferrer'
                 className='soft-chip flex h-11 items-center justify-center rounded-xl px-3 text-sm font-semibold'
               >
-                문화포털
+                공식 홈페이지
               </a>
             )}
             {culture.homepageDetailAddress && (
@@ -162,12 +162,12 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       <div className='grid grid-cols-2 gap-2.5'>
         <Button
           fullWidth
-          ariaLabel='서울문화포털 웹사이트로 이동'
+          ariaLabel='행사 공식 홈페이지로 이동'
           onClick={() => handleOpenExternalLink(culture.homepageAddress)}
           variant='secondary'
           disabled={!culture.homepageAddress}
         >
-          <span>문화포털</span>
+          <span>공식 홈페이지</span>
           <span className='ml-1.5 text-base' aria-hidden='true'>
             ↗
           </span>

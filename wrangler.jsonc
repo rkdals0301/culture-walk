@@ -17,7 +17,7 @@
   "vars": {
     "APP_BASE_URL": "https://culturewalk.gangmin.dev",
     "SITE_URL": "https://culturewalk.gangmin.dev",
-    "SEOUL_API_CULTURAL_BASE_URL": "http://openapi.seoul.go.kr:8088"
+    "TOUR_API_BASE_URL": "https://apis.data.go.kr/B551011/KorService2"
   },
   "kv_namespaces": [
     {

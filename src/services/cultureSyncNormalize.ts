@@ -120,7 +120,10 @@ export const normalizeAndValidateCultureRows = (rows: NewCultureRow[], now = new
     }
 
     const normalizedRow = { ...row, lat: normalized.lat, lng: normalized.lng };
-    normalizedRows.push({ ...normalizedRow, sourceKey: createCultureSourceKey(normalizedRow) });
+    normalizedRows.push({
+      ...normalizedRow,
+      sourceKey: normalizedRow.sourceKey ?? createCultureSourceKey(normalizedRow),
+    });
   }
 
   const validRatio = normalizedRows.length > 0 ? validCoordinateCount / normalizedRows.length : 0;

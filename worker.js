@@ -2,14 +2,7 @@ import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } f
 import { acquireInitializeLock, releaseInitializeLock } from './src/services/cultureSyncLock';
 import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
 import { syncCultures } from './src/services/cultureSyncService';
-
-function resolveSeoulApiUrl(env) {
-  if (env.SEOUL_API_CULTURAL_BASE_URL && env.SEOUL_API_KEY) {
-    return `${env.SEOUL_API_CULTURAL_BASE_URL.replace(/\/$/, '')}/${env.SEOUL_API_KEY}/json/culturalEventInfo`;
-  }
-
-  return env.SEOUL_API_CULTURAL_URL;
-}
+import { TOUR_API_BASE_URL } from './src/services/cultureSyncTypes';
 
 async function runScheduledSync(env, ctx, trigger) {
   const healthResponse = await openNextWorker.fetch(new Request('https://internal.culturewalk/api/health'), env, ctx);
@@ -25,9 +18,8 @@ async function runScheduledSync(env, ctx, trigger) {
     throw new Error('DB binding is required for scheduled synchronization');
   }
 
-  const baseUrl = resolveSeoulApiUrl(env);
-  if (!baseUrl) {
-    throw new Error('Seoul cultural API URL is required for scheduled synchronization');
+  if (!env.TOUR_API_KEY) {
+    throw new Error('TOUR_API_KEY is required for scheduled synchronization');
   }
 
   const lockOwner = await acquireInitializeLock(env);
@@ -36,7 +28,11 @@ async function runScheduledSync(env, ctx, trigger) {
   }
 
   try {
-    await syncCultures(baseUrl, env.DB, { trigger });
+    await syncCultures(
+      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
+      env.DB,
+      { trigger }
+    );
   } finally {
     await releaseInitializeLock(env, lockOwner);
   }

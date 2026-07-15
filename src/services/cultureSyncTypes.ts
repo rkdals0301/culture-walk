@@ -1,13 +1,14 @@
 import { NewCultureRow } from '@/db/schema';
 import { getWorkerEnv } from '@/server/cloudflare';
 
-export const INITIAL_START_INDEX = 1;
-export const PAGE_SIZE = 1000;
+export const INITIAL_PAGE_NUMBER = 1;
+export const PAGE_SIZE = 500;
 export const BATCH_SIZE = 100;
 export const STAGING_STATEMENTS_PER_BATCH = 10;
 export const RETRY_LIMIT = 3;
 export const SOURCE_REQUEST_RETRY_LIMIT = 2;
 export const SOURCE_PAGE_CONCURRENCY = 3;
+export const SOURCE_DETAIL_LIMIT = 40;
 export const INITIALIZE_LOCK_TABLE = 'initialize_sync_locks';
 export const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
 export const INITIALIZE_LOCK_TTL_MINUTES = 30;
@@ -21,6 +22,12 @@ export const KOREA_LAT_MIN = 33;
 export const KOREA_LAT_MAX = 39.8;
 export const KOREA_LNG_MIN = 124;
 export const KOREA_LNG_MAX = 132;
+export const TOUR_API_BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
+
+export type TourApiConfig = {
+  baseUrl: string;
+  serviceKey: string;
+};
 
 export type WorkerEnv = Awaited<ReturnType<typeof getWorkerEnv>>;
 export type InsertStats = { inserted: number; skipped: number };

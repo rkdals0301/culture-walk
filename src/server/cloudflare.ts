@@ -3,9 +3,8 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 export interface WorkerEnv {
   APP_BASE_URL?: string;
   SITE_URL?: string;
-  SEOUL_API_CULTURAL_URL?: string;
-  SEOUL_API_CULTURAL_BASE_URL?: string;
-  SEOUL_API_KEY?: string;
+  TOUR_API_BASE_URL?: string;
+  TOUR_API_KEY?: string;
   NEXT_PUBLIC_KAKAO_MAPS_APP_KEY?: string;
   SYNC_TOKEN?: string;
   DB?: unknown;
@@ -27,9 +26,8 @@ export async function getWorkerEnv(): Promise<WorkerEnv> {
   const fallbackEnv: WorkerEnv = {
     APP_BASE_URL: process.env.APP_BASE_URL,
     SITE_URL: process.env.SITE_URL,
-    SEOUL_API_CULTURAL_URL: process.env.SEOUL_API_CULTURAL_URL,
-    SEOUL_API_CULTURAL_BASE_URL: process.env.SEOUL_API_CULTURAL_BASE_URL,
-    SEOUL_API_KEY: process.env.SEOUL_API_KEY,
+    TOUR_API_BASE_URL: process.env.TOUR_API_BASE_URL,
+    TOUR_API_KEY: process.env.TOUR_API_KEY,
     NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY,
     SYNC_TOKEN: process.env.SYNC_TOKEN,
   };
@@ -43,11 +41,8 @@ export async function getWorkerEnv(): Promise<WorkerEnv> {
   return {
     APP_BASE_URL: (runtimeEnv.APP_BASE_URL as string | undefined) ?? fallbackEnv.APP_BASE_URL,
     SITE_URL: (runtimeEnv.SITE_URL as string | undefined) ?? fallbackEnv.SITE_URL,
-    SEOUL_API_CULTURAL_URL:
-      (runtimeEnv.SEOUL_API_CULTURAL_URL as string | undefined) ?? fallbackEnv.SEOUL_API_CULTURAL_URL,
-    SEOUL_API_CULTURAL_BASE_URL:
-      (runtimeEnv.SEOUL_API_CULTURAL_BASE_URL as string | undefined) ?? fallbackEnv.SEOUL_API_CULTURAL_BASE_URL,
-    SEOUL_API_KEY: (runtimeEnv.SEOUL_API_KEY as string | undefined) ?? fallbackEnv.SEOUL_API_KEY,
+    TOUR_API_BASE_URL: (runtimeEnv.TOUR_API_BASE_URL as string | undefined) ?? fallbackEnv.TOUR_API_BASE_URL,
+    TOUR_API_KEY: (runtimeEnv.TOUR_API_KEY as string | undefined) ?? fallbackEnv.TOUR_API_KEY,
     NEXT_PUBLIC_KAKAO_MAPS_APP_KEY:
       (runtimeEnv.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY as string | undefined) ?? fallbackEnv.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY,
     SYNC_TOKEN: (runtimeEnv.SYNC_TOKEN as string | undefined) ?? fallbackEnv.SYNC_TOKEN,

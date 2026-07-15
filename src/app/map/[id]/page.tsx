@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (parsedId === null) {
     return {
       title: '행사 정보',
-      description: '서울 문화행사 상세 정보',
+      description: '전국 문화행사 상세 정보',
       robots: { index: false, follow: true },
       alternates: { canonical: `/map/${id}` },
     };
@@ -59,14 +59,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!culture) {
     return {
       title: '행사 정보를 찾을 수 없습니다',
-      description: '요청한 서울 문화행사 상세 정보를 찾을 수 없습니다.',
+      description: '요청한 문화행사 상세 정보를 찾을 수 없습니다.',
       robots: { index: false, follow: true },
       alternates: { canonical: `/map/${parsedId}` },
     };
   }
 
   const formatted = formatCultureData([culture])[0];
-  const title = formatted?.title || '서울 문화행사 상세';
+  const title = formatted?.title || '문화행사 상세';
   const description = [formatted?.displayDate, formatted?.displayPlace, formatted?.useTarget]
     .filter(Boolean)
     .join(' · ')
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   return {
     title,
-    description: description || '서울 문화행사 상세 정보',
+    description: description || '문화행사 상세 정보',
     alternates: {
       canonical: `/map/${parsedId}`,
     },
@@ -83,7 +83,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       locale: 'ko_KR',
       url: `/map/${parsedId}`,
       title,
-      description: description || '서울 문화행사 상세 정보',
+      description: description || '문화행사 상세 정보',
       siteName: '문화산책',
       images: [
         {
@@ -97,10 +97,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     twitter: {
       card: 'summary_large_image',
       title,
-      description: description || '서울 문화행사 상세 정보',
+      description: description || '문화행사 상세 정보',
       images: [formatted?.mainImage || OG_IMAGE_URL],
     },
-    keywords: [formatted?.classification, formatted?.guName, '서울 문화행사', '전시', '공연'].filter(
+    keywords: [formatted?.classification, formatted?.guName, '전국 문화행사', '지역 축제', '공연'].filter(
       Boolean
     ) as string[],
   };
@@ -127,6 +127,7 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
   const isFree = formatted.isFree.includes('무료') || formatted.useFee?.includes('무료');
   const offerPrice = isFree ? 0 : parseOfferPrice(formatted.useFee);
   const hasEnded = formatted.endDate instanceof Date && formatted.endDate.getTime() < Date.now();
+  const [addressRegion = '대한민국', addressLocality = ''] = formatted.guName.split(/\s+/).filter(Boolean);
   const eventStructuredData = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -141,8 +142,8 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
       name: formatted.place || formatted.displayPlace,
       address: {
         '@type': 'PostalAddress',
-        addressLocality: formatted.guName || '서울특별시',
-        addressRegion: '서울특별시',
+        addressLocality,
+        addressRegion,
         addressCountry: 'KR',
       },
     },

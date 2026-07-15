@@ -35,7 +35,7 @@ const WEBSITE_STRUCTURED_DATA = {
       url: SITE_URL,
       inLanguage: 'ko-KR',
       description:
-        '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인할 수 있는 서비스',
+        '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인할 수 있는 서비스',
     },
     {
       '@type': 'Organization',
@@ -64,9 +64,9 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon-180x180.png', type: 'image/png', sizes: '180x180' }],
   },
   description:
-    '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
+    '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',
   keywords:
-    '서울시 문화행사, 서울 문화 행사, 서울 공연, 서울 전시회, 서울시 이벤트, 서울 문화 축제, 서울 시내 행사, 서울 문화 지도, 서울 문화 활동, 서울 시민 문화',
+    '전국 문화행사, 전국 축제, 지역 축제, 국내 행사, 문화 행사, 공연, 전시, 체험, 문화 지도, 여행 행사',
   category: 'travel',
   verification: {
     other: {
@@ -90,7 +90,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: '문화산책 - 서울 문화행사 지도',
+        alt: '문화산책 - 전국 문화행사 지도',
         type: 'image/png',
       },
     ],
@@ -99,13 +99,13 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '문화산책',
     description:
-      '서울시 문화행사 지도를 통해 서울의 다양한 문화행사 정보를 한눈에 확인하세요. 실시간으로 업데이트되는 행사와 공연 정보를 지도에서 직접 찾아보세요.',
+      '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',
     images: [
       {
         url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: '문화산책 - 서울 문화행사 지도',
+        alt: '문화산책 - 전국 문화행사 지도',
         type: 'image/png',
       },
     ],
@@ -141,9 +141,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko' suppressHydrationWarning>
       <head>
-        {/* Culture Seoul */}
-        <link rel='dns-prefetch' href='https://culture.seoul.go.kr' />
-        <link rel='preconnect' href='https://culture.seoul.go.kr' crossOrigin='anonymous' />
+        {/* TourAPI images */}
+        <link rel='dns-prefetch' href='https://tong.visitkorea.or.kr' />
+        <link rel='preconnect' href='https://tong.visitkorea.or.kr' crossOrigin='anonymous' />
 
         {/* Kakao Maps */}
         <link rel='preconnect' href='https://dapi.kakao.com' crossOrigin='anonymous' />

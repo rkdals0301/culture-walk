@@ -1,5 +1,7 @@
 import { NewCultureRow } from '@/db/schema';
 
+import { TOUR_API_SOURCE_KEY_PREFIX } from './cultureIdentity';
+
 import {
   BATCH_SIZE,
   D1Binding,
@@ -168,7 +170,8 @@ const readSnapshotStats = async (d1: D1Binding, stagingRunKey: string) => {
       )
       SELECT
         (SELECT COUNT(*) FROM scoped_staging) AS staged,
-        (SELECT COUNT(*) FROM cultures WHERE is_active = 1) AS current_active,
+        (SELECT COUNT(*) FROM cultures
+          WHERE is_active = 1 AND source_key LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%') AS current_source_active,
         (SELECT COUNT(*) FROM scoped_staging staging
           INNER JOIN cultures live ON live.source_key = staging.source_key) AS matched,
         (SELECT COUNT(*) FROM scoped_staging staging
@@ -190,7 +193,7 @@ const readSnapshotStats = async (d1: D1Binding, stagingRunKey: string) => {
   const row = result.results?.[0];
   return {
     staged: toCount(row?.staged),
-    currentActive: toCount(row?.current_active),
+    currentSourceActive: toCount(row?.current_source_active),
     matched: toCount(row?.matched),
     updated: toCount(row?.updated),
     reactivated: toCount(row?.reactivated),
@@ -262,8 +265,13 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
     WHERE is_active = 0
       AND datetime(deactivated_at) < datetime('now', '-${INACTIVE_RETENTION_DAYS} days')
   `);
+  const removeLegacySources = d1.prepare(`
+    DELETE FROM cultures
+    WHERE is_active = 0
+      AND (source_key IS NULL OR source_key NOT LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%')
+  `);
 
-  await d1.batch([updateLive, insertNew, deactivateMissing, removeExpiredInactive]);
+  await d1.batch([updateLive, insertNew, deactivateMissing, removeLegacySources, removeExpiredInactive]);
 };
 
 export const reconcileCulturesViaStaging = async (
@@ -314,11 +322,11 @@ export const reconcileCulturesViaStaging = async (
 
   const stats = await readSnapshotStats(d1, stagingRunKey);
   if (
-    stats.currentActive >= MIN_VALID_COORDINATE_COUNT &&
-    stats.staged / stats.currentActive < MIN_SNAPSHOT_EXISTING_RATIO
+    stats.currentSourceActive >= MIN_VALID_COORDINATE_COUNT &&
+    stats.staged / stats.currentSourceActive < MIN_SNAPSHOT_EXISTING_RATIO
   ) {
     throw new Error(
-      `스냅샷 건수가 기존 활성 데이터 대비 급감했습니다. staged=${stats.staged}, currentActive=${stats.currentActive}`
+      `TourAPI 스냅샷 건수가 기존 활성 데이터 대비 급감했습니다. staged=${stats.staged}, currentSourceActive=${stats.currentSourceActive}`
     );
   }
 

@@ -14,8 +14,8 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const KAKAO_MAPS_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY;
 const KAKAO_MAPS_SCRIPT_ID = 'kakao-maps-sdk';
-const DEFAULT_MAP_CENTER = { lat: 37.5665, lng: 126.978 };
-const DEFAULT_MAP_LEVEL = 7;
+const DEFAULT_MAP_CENTER = { lat: 36.35, lng: 127.8 };
+const DEFAULT_MAP_LEVEL = 13;
 const DEFAULT_MARKER_PIXEL_SIZE = 32;
 const EMPHASIZED_MARKER_PIXEL_SIZE = 40;
 const CLUSTER_STYLES: Array<Record<string, string>> = [
@@ -132,7 +132,7 @@ const MapView = () => {
   const pathname = usePathname();
   const { openBottomSheet } = useBottomSheet();
 
-  const { cultures, mapCultures, currentLocation, setCurrentLocation } = useCultureContext();
+  const { cultures, mapCultures, mapRegion, currentLocation, setCurrentLocation } = useCultureContext();
   const { isLoading, error } = useCultures();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -348,6 +348,22 @@ const MapView = () => {
 
     mapInstance.setCenter(new window.kakao.maps.LatLng(centerPosition.lat, centerPosition.lng));
   }, [centerPosition, mapInstance]);
+
+  useEffect(() => {
+    if (
+      !mapInstance ||
+      !window.kakao?.maps ||
+      selectedCultureId ||
+      currentLocation ||
+      mapCultures.length === 0
+    ) {
+      return;
+    }
+
+    const bounds = new window.kakao.maps.LatLngBounds();
+    mapCultures.forEach(culture => bounds.extend(new window.kakao!.maps.LatLng(culture.lat, culture.lng)));
+    mapInstance.setBounds(bounds, 80, 80, 80, 80);
+  }, [currentLocation, mapCultures, mapInstance, mapRegion, selectedCultureId]);
 
   useEffect(() => {
     if (!currentLocation || selectedCultureId || !mapInstance || !window.kakao?.maps) {

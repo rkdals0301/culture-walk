@@ -75,7 +75,7 @@ const SideMenu = () => {
               className='rounded-lg shadow-[0_18px_38px_-28px_rgba(31,118,95,0.8)]'
             />
             <div className='min-w-0'>
-              <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>서울 문화행사 지도</p>
+              <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사 지도</p>
               <h2 id='side-menu-title' className='truncate text-lg font-semibold'>
                 CultureWalk
               </h2>
@@ -119,7 +119,7 @@ const SideMenu = () => {
           >
             개인정보처리방침
           </Link>
-          <p className='mt-2 text-xs text-[var(--app-muted)]'>CultureWalk · 서울 문화행사</p>
+          <p className='mt-2 text-xs text-[var(--app-muted)]'>CultureWalk · 전국 문화행사</p>
         </div>
       </aside>
     </>

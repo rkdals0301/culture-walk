@@ -1,14 +1,14 @@
 import { bumpCulturesCacheVersion } from '@/cache/kv';
-import { mapRawCultureToCulture } from '@/services/cultureService';
+import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
 import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from './cultureSyncRunRepository';
-import { fetchCulturesFromSeoul } from './cultureSyncSource';
-import { D1Binding, SyncResult } from './cultureSyncTypes';
+import { fetchCulturesFromTourApi } from './cultureSyncSource';
+import { D1Binding, SyncResult, TourApiConfig } from './cultureSyncTypes';
 
 export const syncCultures = async (
-  baseUrl: string,
+  config: TourApiConfig,
   d1: D1Binding,
   options: { trigger?: string } = {}
 ): Promise<SyncResult> => {
@@ -22,12 +22,12 @@ export const syncCultures = async (
   }
 
   try {
-    const externalRows = await fetchCulturesFromSeoul(baseUrl);
+    const externalRows = await fetchCulturesFromTourApi(config);
     if (externalRows.length === 0) {
       throw new Error('외부 API에서 가져온 데이터가 없습니다.');
     }
 
-    const mappedRows = externalRows.map(mapRawCultureToCulture);
+    const mappedRows = externalRows.map(mapTourApiFestivalToCulture);
     const normalization = normalizeAndValidateCultureRows(mappedRows);
     const deduplicatedRows = deduplicateCultureRows(normalization.rows);
 

@@ -1,6 +1,7 @@
 import { getWorkerEnv } from '@/server/cloudflare';
 import { acquireInitializeLock, getD1Binding, releaseInitializeLock } from '@/services/cultureSyncLock';
 import { syncCultures } from '@/services/cultureSyncService';
+import { TOUR_API_BASE_URL } from '@/services/cultureSyncTypes';
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -8,17 +9,6 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
-
-const resolveSeoulApiUrl = (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
-  const baseUrl = env.SEOUL_API_CULTURAL_BASE_URL ?? process.env.SEOUL_API_CULTURAL_BASE_URL;
-  const apiKey = env.SEOUL_API_KEY ?? process.env.SEOUL_API_KEY;
-
-  if (baseUrl && apiKey) {
-    return `${baseUrl.replace(/\/$/, '')}/${apiKey}/json/culturalEventInfo`;
-  }
-
-  return env.SEOUL_API_CULTURAL_URL ?? process.env.SEOUL_API_CULTURAL_URL;
-};
 
 export async function POST(request: NextRequest) {
   let env: Awaited<ReturnType<typeof getWorkerEnv>> | null = null;
@@ -37,9 +27,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const baseUrl = resolveSeoulApiUrl(env);
-    if (!baseUrl) {
-      return NextResponse.json({ error: 'SEOUL_API_CULTURAL_URL이 설정되지 않았습니다.' }, { status: 500 });
+    const serviceKey = env.TOUR_API_KEY ?? process.env.TOUR_API_KEY;
+    if (!serviceKey) {
+      return NextResponse.json({ error: 'TOUR_API_KEY가 설정되지 않았습니다.' }, { status: 500 });
     }
 
     const d1 = getD1Binding(env);
@@ -53,7 +43,11 @@ export async function POST(request: NextRequest) {
     }
 
     const trigger = request.headers.get('x-sync-trigger')?.trim() || 'manual';
-    const result = await syncCultures(baseUrl, d1, { trigger });
+    const result = await syncCultures(
+      { baseUrl: env.TOUR_API_BASE_URL ?? process.env.TOUR_API_BASE_URL ?? TOUR_API_BASE_URL, serviceKey },
+      d1,
+      { trigger }
+    );
 
     return NextResponse.json(
       {

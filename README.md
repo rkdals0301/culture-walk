@@ -1,6 +1,6 @@
 # Culture Walk
 
-서울시 문화행사 정보를 지도에서 탐색하는 Next.js 앱입니다.
+한국관광공사 TourAPI의 전국 문화행사 정보를 지도에서 탐색하는 Next.js 앱입니다.
 
 ## Runtime / Platform
 
@@ -28,8 +28,8 @@ cp .env.example .env
 
 필수 환경 변수:
 
-- `SEOUL_API_CULTURAL_BASE_URL`
-- `SEOUL_API_KEY`
+- `TOUR_API_BASE_URL`
+- `TOUR_API_KEY`
 - `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`
 - `SYNC_TOKEN` (권장, initialize 보호)
 
@@ -74,7 +74,7 @@ npm run dev
 
 `/api/health`는 활성/비활성 데이터 수, 좌표와 날짜 정합성, 최신 동기화 결과와 경과 시간을 반환합니다. 최근 36시간 안에 성공한 동기화가 없거나 데이터 품질 기준을 통과하지 못하면 `ok: false`를 반환합니다.
 
-동기화는 외부 API 전체 페이지를 실행별 staging 영역에 적재한 뒤 `source_key` 기준으로 기존 행을 갱신합니다. 기존 상세 ID는 유지되고, 신규 행만 추가되며, 외부 API에서 사라진 행은 즉시 삭제하지 않고 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단합니다. 동시 실행은 소유권 기반 락과 실행별 staging 키로 격리하며, 활성 행의 직접 삭제는 DB 트리거가 차단합니다.
+동기화는 TourAPI `searchFestival2`의 현재·예정 행사 전체 페이지를 실행별 staging 영역에 적재한 뒤 `tourapi:{contentid}` 식별키로 기존 행을 갱신합니다. 신규 행은 추가하고, 변경된 행만 갱신하며, 원본에서 사라진 행은 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 TourAPI 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단합니다. 최초 TourAPI 스냅샷이 품질 검증을 통과한 경우에만 이전 데이터 소스를 비활성화 후 삭제합니다. 동시 실행은 소유권 기반 락과 실행별 staging 키로 격리하며, 활성 행의 직접 삭제는 DB 트리거가 차단합니다.
 
 ## Cloudflare
 
@@ -89,4 +89,4 @@ npm run dev
 
 - `wrangler.jsonc`의 D1/KV id는 실제 리소스 값으로 교체해야 합니다.
 - `SYNC_TOKEN`은 `wrangler secret put SYNC_TOKEN`으로 설정하는 것을 권장합니다.
-- `SEOUL_API_KEY`는 `wrangler secret put SEOUL_API_KEY`로 설정하고, `wrangler.jsonc`에는 base URL만 둡니다.
+- `TOUR_API_KEY`는 `wrangler secret put TOUR_API_KEY`로 설정하고, `wrangler.jsonc`에는 base URL만 둡니다.

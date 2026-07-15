@@ -1,26 +1,50 @@
-export interface RawCulture {
-  CODENAME: string;
-  DATE: string;
-  END_DATE: string;
-  ETC_DESC: string;
-  GUNAME: string;
-  HMPG_ADDR: string;
-  IS_FREE: string;
-  LAT: string; // 위도, string 형태로 들어올 수 있음
-  LOT: string; // 경도, string 형태로 들어올 수 있음
-  MAIN_IMG: string;
-  ORG_LINK: string;
-  ORG_NAME: string;
-  PLACE: string;
-  PLAYER: string;
-  PROGRAM: string;
-  RGSTDATE: string;
-  STRTDATE: string;
-  THEMECODE: string;
-  TICKET: string;
-  TITLE: string;
-  USE_FEE: string;
-  USE_TRGT: string;
+export interface TourApiFestivalIntro {
+  agelimit?: string;
+  bookingplace?: string;
+  eventhomepage?: string;
+  eventplace?: string;
+  festivalgrade?: string;
+  placeinfo?: string;
+  playtime?: string;
+  program?: string;
+  spendtimefestival?: string;
+  sponsor1?: string;
+  sponsor1tel?: string;
+  sponsor2?: string;
+  sponsor2tel?: string;
+  subevent?: string;
+  usetimefestival?: string;
+}
+
+export interface TourApiFestival {
+  addr1?: string;
+  addr2?: string;
+  areacode?: string;
+  cat1?: string;
+  cat2?: string;
+  cat3?: string;
+  contentid: string;
+  contenttypeid?: string;
+  createdtime?: string;
+  eventenddate: string;
+  eventstartdate: string;
+  festivaltype?: string;
+  firstimage?: string;
+  firstimage2?: string;
+  lclsSystm1?: string;
+  lclsSystm2?: string;
+  lclsSystm3?: string;
+  lDongRegnCd?: string;
+  lDongSignguCd?: string;
+  mapx?: string;
+  mapy?: string;
+  modifiedtime?: string;
+  progresstype?: string;
+  sigungucode?: string;
+  tel?: string;
+  title: string;
+  zipcode?: string;
+  intro?: TourApiFestivalIntro;
 }
 
 export interface Culture {
@@ -29,8 +53,8 @@ export interface Culture {
   date: string; // 날짜/시간
   endDate: Date; // 종료일
   etcDescription: string; // 기타내용
-  guName: string; // 자치구
-  homepageDetailAddress: string; // 문화포털상세URL
+  guName: string; // 시도·시군구
+  homepageDetailAddress: string; // 행사 상세 URL
   isFree: string; // 유무료
   lat: number; // 위도
   lng: number; // 경도

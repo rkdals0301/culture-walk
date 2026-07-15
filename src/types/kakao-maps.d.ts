@@ -9,6 +9,11 @@ declare namespace kakao.maps {
     constructor(width: number, height: number);
   }
 
+  class LatLngBounds {
+    constructor();
+    extend(position: LatLng): void;
+  }
+
   interface MapOptions {
     center: LatLng;
     level: number;
@@ -22,6 +27,7 @@ declare namespace kakao.maps {
     getLevel(): number;
     setLevel(level: number): void;
     setCenter(position: LatLng): void;
+    setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
     panTo(position: LatLng): void;
     setDraggable(draggable: boolean): void;
     setZoomable(zoomable: boolean): void;

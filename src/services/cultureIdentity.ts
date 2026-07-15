@@ -9,26 +9,18 @@ type CultureIdentityFields = Pick<
   'title' | 'startDate' | 'endDate' | 'place' | 'guName' | 'organizationName' | 'homepageAddress'
 >;
 
-export const extractSeoulCultureCode = (homepageAddress: string | null | undefined) => {
-  const value = homepageAddress?.trim();
-  if (!value) {
-    return null;
+export const TOUR_API_SOURCE_KEY_PREFIX = 'tourapi:';
+
+export const createTourApiSourceKey = (contentId: string) => {
+  const normalizedContentId = contentId.trim();
+  if (!/^\d+$/.test(normalizedContentId)) {
+    throw new Error(`TourAPI contentid가 유효하지 않습니다: ${contentId}`);
   }
 
-  try {
-    const cultureCode = new URL(value, 'https://culture.seoul.go.kr').searchParams.get('cultcode')?.trim();
-    return cultureCode && /^\d+$/.test(cultureCode) ? cultureCode : null;
-  } catch {
-    return null;
-  }
+  return `${TOUR_API_SOURCE_KEY_PREFIX}${normalizedContentId}`;
 };
 
 export const createCultureSourceKey = (culture: CultureIdentityFields) => {
-  const cultureCode = extractSeoulCultureCode(culture.homepageAddress);
-  if (cultureCode) {
-    return `culture:seoul:${cultureCode}`;
-  }
-
   return `culture:${[
     culture.title,
     culture.startDate,

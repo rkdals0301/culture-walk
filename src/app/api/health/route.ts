@@ -41,6 +41,12 @@ export async function GET() {
       db.select({
         total: sql<number>`COUNT(*)`,
         sourceActiveTotal: sql<number>`SUM(CASE WHEN ${cultures.isActive} = 1 THEN 1 ELSE 0 END)`,
+        tourApiActiveTotal: sql<number>`SUM(
+          CASE WHEN ${cultures.isActive} = 1 AND ${cultures.sourceKey} LIKE 'tourapi:%' THEN 1 ELSE 0 END
+        )`,
+        legacyTotal: sql<number>`SUM(
+          CASE WHEN ${cultures.sourceKey} IS NULL OR ${cultures.sourceKey} NOT LIKE 'tourapi:%' THEN 1 ELSE 0 END
+        )`,
         deactivatedTotal: sql<number>`SUM(CASE WHEN ${cultures.isActive} = 0 THEN 1 ELSE 0 END)`,
         activeTotal: sql<number>`SUM(
           CASE WHEN ${cultures.isActive} = 1 AND ${cultures.endDate} >= ${koreaToday} THEN 1 ELSE 0 END
@@ -76,6 +82,8 @@ export async function GET() {
     const row = aggregateRows[0];
     const total = toCount(row?.total);
     const sourceActiveTotal = toCount(row?.sourceActiveTotal);
+    const tourApiActiveTotal = toCount(row?.tourApiActiveTotal);
+    const legacyTotal = toCount(row?.legacyTotal);
     const deactivatedTotal = toCount(row?.deactivatedTotal);
     const activeTotal = toCount(row?.activeTotal);
     const activeNormalCoordinates = toCount(row?.activeNormalCoordinates);
@@ -95,6 +103,8 @@ export async function GET() {
     const ok =
       total > 0 &&
       sourceActiveTotal > 0 &&
+      tourApiActiveTotal === sourceActiveTotal &&
+      legacyTotal === 0 &&
       activeVisible > 0 &&
       activeInvalidCoordinates === 0 &&
       implausibleActiveDates === 0 &&
@@ -106,6 +116,8 @@ export async function GET() {
         checkedAt: now.toISOString(),
         total,
         sourceActiveTotal,
+        tourApiActiveTotal,
+        legacyTotal,
         deactivatedTotal,
         activeTotal,
         activeVisible,

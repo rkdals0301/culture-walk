@@ -16,6 +16,7 @@ interface CultureContextValue {
   mapCultures: FormattedCulture[];
   searchQuery: string;
   mapCategory: CultureCategoryKey;
+  mapRegion: string;
   mapFreeOnly: boolean;
   currentLocation: GeoPoint | null;
   isCulturesLoading: boolean;
@@ -24,6 +25,7 @@ interface CultureContextValue {
   cultureError: Error | null;
   setSearchQuery: (query: string) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
+  setMapRegion: (region: string) => void;
   setMapFreeOnly: (freeOnly: boolean) => void;
   setCurrentLocation: (location: GeoPoint | null) => void;
   resetMapFilters: () => void;
@@ -40,6 +42,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [cultures, setCulturesState] = useState<FormattedCulture[]>([]);
   const [searchQuery, setSearchQueryState] = useState('');
   const [mapCategory, setMapCategory] = useState<CultureCategoryKey>('all');
+  const [mapRegion, setMapRegion] = useState('all');
   const [mapFreeOnly, setMapFreeOnly] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<GeoPoint | null>(null);
   const [isCulturesLoading, setIsCulturesLoading] = useState(false);
@@ -138,7 +141,9 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       return cultures;
     }
 
-    return cultures.filter(cultureItem => cultureItem.title.toLowerCase().includes(query));
+    return cultures.filter(cultureItem =>
+      [cultureItem.title, cultureItem.guName, cultureItem.place].some(value => value.toLowerCase().includes(query))
+    );
   }, [cultures, searchQuery]);
 
   const mapCultures = useMemo(
@@ -146,14 +151,16 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       filteredCultures.filter(
         cultureItem =>
           matchesCultureCategory(cultureItem.classification, mapCategory) &&
+          (mapRegion === 'all' || cultureItem.guName.split(/\s+/)[0] === mapRegion) &&
           (!mapFreeOnly || isFreeCulture(cultureItem))
       ),
-    [filteredCultures, mapCategory, mapFreeOnly]
+    [filteredCultures, mapCategory, mapFreeOnly, mapRegion]
   );
 
   const resetMapFilters = useCallback(() => {
     setSearchQueryState('');
     setMapCategory('all');
+    setMapRegion('all');
     setMapFreeOnly(false);
   }, []);
 
@@ -165,6 +172,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       mapCultures,
       searchQuery,
       mapCategory,
+      mapRegion,
       mapFreeOnly,
       currentLocation,
       isCulturesLoading,
@@ -173,6 +181,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       cultureError,
       setSearchQuery,
       setMapCategory,
+      setMapRegion,
       setMapFreeOnly,
       setCurrentLocation,
       resetMapFilters,
@@ -186,6 +195,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       mapCultures,
       searchQuery,
       mapCategory,
+      mapRegion,
       mapFreeOnly,
       currentLocation,
       isCulturesLoading,

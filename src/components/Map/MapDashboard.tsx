@@ -24,12 +24,36 @@ import SearchIcon from '../../../public/assets/images/search-icon.svg';
 interface FilterControlsProps {
   category: CultureCategoryKey;
   freeOnly: boolean;
+  region: string;
+  regionOptions: string[];
   onCategoryChange: (category: CultureCategoryKey) => void;
   onFreeOnlyChange: (freeOnly: boolean) => void;
+  onRegionChange: (region: string) => void;
 }
 
-const FilterControls = ({ category, freeOnly, onCategoryChange, onFreeOnlyChange }: FilterControlsProps) => (
+const FilterControls = ({
+  category,
+  freeOnly,
+  region,
+  regionOptions,
+  onCategoryChange,
+  onFreeOnlyChange,
+  onRegionChange,
+}: FilterControlsProps) => (
   <div className='flex items-center gap-2'>
+    <select
+      value={region}
+      onChange={event => onRegionChange(event.target.value)}
+      aria-label='지역 필터'
+      className='h-8 w-[6.7rem] shrink-0 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
+    >
+      <option value='all'>전국</option>
+      {regionOptions.map(option => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
     <div className='min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
       <div className='flex w-max gap-1.5' role='group' aria-label='행사 분류 필터'>
         {CULTURE_CATEGORY_OPTIONS.map(option => {
@@ -150,9 +174,11 @@ const MapDashboard = () => {
     mapCultures,
     searchQuery,
     mapCategory,
+    mapRegion,
     mapFreeOnly,
     setSearchQuery,
     setMapCategory,
+    setMapRegion,
     setMapFreeOnly,
     resetMapFilters,
     currentLocation,
@@ -175,6 +201,13 @@ const MapDashboard = () => {
   }, [pathname]);
 
   const totalCount = cultures.length;
+  const regionOptions = useMemo(
+    () =>
+      Array.from(new Set(cultures.map(culture => culture.guName.split(/\s+/)[0]).filter(Boolean))).sort((a, b) =>
+        a.localeCompare(b, 'ko')
+      ),
+    [cultures]
+  );
   const visibleCultures = useMemo(() => {
     if (sortMode !== 'distance' || !currentLocation) {
       return mapCultures;
@@ -186,7 +219,7 @@ const MapDashboard = () => {
         calculateDistanceMeters(currentLocation, { lat: right.lat, lng: right.lng })
     );
   }, [currentLocation, mapCultures, sortMode]);
-  const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapFreeOnly;
+  const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;
 
   const requestLocation = async () => {
     if (currentLocation) {
@@ -317,7 +350,7 @@ const MapDashboard = () => {
             <div className='shrink-0 border-b border-[var(--app-border)] px-5 pb-3.5 pt-4'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='min-w-0'>
-                  <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>서울 문화행사</p>
+                  <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사</p>
                   <h2 className='mt-1 text-xl font-semibold leading-[1.2]'>행사 찾기</h2>
                 </div>
                 {!isDetailRoute && (
@@ -366,8 +399,11 @@ const MapDashboard = () => {
                 <FilterControls
                   category={mapCategory}
                   freeOnly={mapFreeOnly}
+                  region={mapRegion}
+                  regionOptions={regionOptions}
                   onCategoryChange={setMapCategory}
                   onFreeOnlyChange={setMapFreeOnly}
+                  onRegionChange={setMapRegion}
                 />
               </div>
 
@@ -440,8 +476,11 @@ const MapDashboard = () => {
                 <FilterControls
                   category={mapCategory}
                   freeOnly={mapFreeOnly}
+                  region={mapRegion}
+                  regionOptions={regionOptions}
                   onCategoryChange={setMapCategory}
                   onFreeOnlyChange={setMapFreeOnly}
+                  onRegionChange={setMapRegion}
                 />
               </div>
               <div className='mt-2.5 flex items-center justify-between gap-3'>

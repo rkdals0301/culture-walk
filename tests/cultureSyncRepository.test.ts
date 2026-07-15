@@ -40,7 +40,7 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
         ? [
             {
               staged: 5,
-              current_active: 5,
+              current_source_active: 5,
               matched: 4,
               updated: 1,
               reactivated: 1,
@@ -84,5 +84,6 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   assert.match(deactivateQuery, /deactivated_at = CURRENT_TIMESTAMP/);
   assert.match(deactivateQuery, /staging\.sync_run_key = \?1/);
   assert.doesNotMatch(deactivateQuery, /COALESCE/);
-  assert.deepEqual(batchSizes, [1, 4]);
+  assert.deepEqual(batchSizes, [1, 5]);
+  assert.ok(appliedQueries.some(query => query.includes("source_key NOT LIKE 'tourapi:%'")));
 });

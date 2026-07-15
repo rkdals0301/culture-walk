@@ -1,5 +1,6 @@
 import { NewCultureRow } from '@/db/schema';
-import { createCultureSourceKey, extractSeoulCultureCode } from '@/services/cultureIdentity';
+import { createCultureSourceKey, createTourApiSourceKey } from '@/services/cultureIdentity';
+import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from '@/services/cultureSyncNormalize';
 import { STAGING_COLUMNS, toStagingValues } from '@/services/cultureSyncTypes';
 
@@ -26,34 +27,52 @@ test('source key trims fields and stays deterministic', () => {
   assert.equal(createCultureSourceKey(base), createCultureSourceKey(padded));
 });
 
-test('source key prefers the culture portal code over mutable event fields', () => {
-  const homepageAddress =
-    'https://culture.seoul.go.kr/culture/culture/cultureEvent/view.do?cultcode=158497&menuNo=200011';
-  const original = createRow({ homepageAddress });
-  const changed = createRow({ homepageAddress, title: '변경된 행사명', place: '변경된 장소' });
-
-  assert.equal(extractSeoulCultureCode(homepageAddress), '158497');
-  assert.equal(createCultureSourceKey(original), 'culture:seoul:158497');
-  assert.equal(createCultureSourceKey(changed), createCultureSourceKey(original));
+test('TourAPI source key uses the stable content id', () => {
+  assert.equal(createTourApiSourceKey(' 2786391 '), 'tourapi:2786391');
+  assert.throws(() => createTourApiSourceKey('invalid-id'));
 });
 
-test('source key falls back to the composite identity when the culture code is unavailable', () => {
-  const row = createRow({ homepageAddress: 'https://example.com/event/1' });
+test('TourAPI festival fields map to the culture schema', () => {
+  const row = mapTourApiFestivalToCulture({
+    contentid: '2786391',
+    contenttypeid: '15',
+    title: '광안리 드론 공연',
+    addr1: '부산광역시 수영구 광안해변로 219',
+    eventstartdate: '20260710',
+    eventenddate: '20261231',
+    firstimage: 'http://tong.visitkorea.or.kr/example.jpg',
+    mapx: '129.1186',
+    mapy: '35.1532',
+    modifiedtime: '20260701120000',
+    intro: {
+      eventplace: '광안리 해변 일원',
+      sponsor1: '부산광역시 수영구',
+      usetimefestival: '무료',
+    },
+  });
 
-  assert.equal(extractSeoulCultureCode(row.homepageAddress), null);
-  assert.match(createCultureSourceKey(row), /^culture:/);
-  assert.doesNotMatch(createCultureSourceKey(row), /^culture:seoul:/);
+  assert.equal(row.sourceKey, 'tourapi:2786391');
+  assert.equal(row.guName, '부산 수영구');
+  assert.equal(row.classification, '공연');
+  assert.equal(row.place, '광안리 해변 일원');
+  assert.equal(row.isFree, '무료');
+  assert.equal(row.mainImage, 'https://tong.visitkorea.or.kr/example.jpg');
+  assert.equal(row.lat, 35.1532);
+  assert.equal(row.lng, 129.1186);
+  assert.equal(row.startDate, '2026-07-10T00:00:00.000Z');
+  assert.equal(row.endDate, '2026-12-31T00:00:00.000Z');
 });
 
-test('normalization swaps Seoul coordinates and assigns a source key', () => {
+test('normalization swaps coordinates and preserves an official source key', () => {
   const rows = Array.from({ length: 5 }, (_, index) => createRow({ title: `서울 문화 행사 ${index}` }));
+  rows[0].sourceKey = 'tourapi:1';
   const result = normalizeAndValidateCultureRows(rows, new Date('2026-07-10T00:00:00.000Z'));
 
   assert.equal(result.rows.length, 5);
   assert.equal(result.swappedCoordinateCount, 5);
   assert.equal(result.rows[0]?.lat, 37.5665);
   assert.equal(result.rows[0]?.lng, 126.978);
-  assert.match(result.rows[0]?.sourceKey ?? '', /^culture:/);
+  assert.equal(result.rows[0]?.sourceKey, 'tourapi:1');
 });
 
 test('normalization excludes implausible dates and missing required fields', () => {

@@ -73,7 +73,7 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
         <div className='border-b border-[var(--app-border)] px-4 py-3.5 sm:px-6 sm:py-5'>
           <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0 flex-1'>
-              <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>서울 문화행사 검색</p>
+              <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사 검색</p>
               <h2 className='mt-1 text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.02em] sm:text-[1.9rem] sm:tracking-[-0.03em]'>
                 문화행사를 빠르게 검색하세요
               </h2>

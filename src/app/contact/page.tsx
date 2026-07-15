@@ -48,7 +48,7 @@ const ContactPage = () => {
       <article className='surface-card rounded-[28px] p-5 sm:p-6'>
         <h2 className='text-xl font-semibold tracking-[-0.03em]'>데이터 출처 안내</h2>
         <p className='mt-3 text-sm leading-7 text-[var(--app-muted)]'>
-          문화산책의 행사 정보는 서울시 문화행사 공개 데이터를 기반으로 구성됩니다. 행사 취소, 시간 변경, 예약 마감은
+          문화산책의 행사 정보는 한국관광공사 TourAPI 공개 데이터를 기반으로 구성됩니다. 행사 취소, 시간 변경, 예약 마감은
           원천 기관에서 먼저 반영될 수 있으므로 실제 방문 전 공식 상세 페이지를 확인해 주세요.
         </p>
       </article>

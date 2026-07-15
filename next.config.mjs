@@ -10,7 +10,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'culture.seoul.go.kr',
+        hostname: 'tong.visitkorea.or.kr',
         port: '',
         pathname: '/**',
       },
