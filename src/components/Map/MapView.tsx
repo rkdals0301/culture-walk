@@ -139,6 +139,8 @@ const MapView = () => {
   const markerRefs = useRef<kakao.maps.Marker[]>([]);
   const markerClustererRef = useRef<kakao.maps.MarkerClusterer | null>(null);
   const currentLocationMarkerRef = useRef<kakao.maps.Marker | null>(null);
+  // Route selection controls focus, but closing a detail must not retrigger viewport fitting.
+  const selectedCultureIdRef = useRef<number | null>(null);
 
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
   const [centerPosition, setCenterPosition] = useState(DEFAULT_MAP_CENTER);
@@ -268,6 +270,10 @@ const MapView = () => {
   }, [selectedCultureId, cultures, mapInstance]);
 
   useEffect(() => {
+    selectedCultureIdRef.current = selectedCultureId;
+  }, [selectedCultureId]);
+
+  useEffect(() => {
     if (pathname === '/map') {
       setPendingDetailId(null);
       return;
@@ -353,7 +359,7 @@ const MapView = () => {
     if (
       !mapInstance ||
       !window.kakao?.maps ||
-      selectedCultureId ||
+      selectedCultureIdRef.current ||
       currentLocation ||
       mapCultures.length === 0
     ) {
@@ -363,10 +369,10 @@ const MapView = () => {
     const bounds = new window.kakao.maps.LatLngBounds();
     mapCultures.forEach(culture => bounds.extend(new window.kakao!.maps.LatLng(culture.lat, culture.lng)));
     mapInstance.setBounds(bounds, 80, 80, 80, 80);
-  }, [currentLocation, mapCultures, mapInstance, mapRegion, selectedCultureId]);
+  }, [currentLocation, mapCultures, mapInstance, mapRegion]);
 
   useEffect(() => {
-    if (!currentLocation || selectedCultureId || !mapInstance || !window.kakao?.maps) {
+    if (!currentLocation || selectedCultureIdRef.current || !mapInstance || !window.kakao?.maps) {
       return;
     }
 
@@ -375,7 +381,7 @@ const MapView = () => {
     if (mapInstance.getLevel() > 4) {
       mapInstance.setLevel(4);
     }
-  }, [currentLocation, mapInstance, selectedCultureId]);
+  }, [currentLocation, mapInstance]);
 
   useEffect(() => {
     if (!mapInstance) {

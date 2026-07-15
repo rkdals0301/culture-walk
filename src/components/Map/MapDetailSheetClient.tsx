@@ -154,7 +154,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   }, []);
 
   const handleBottomSheetClose = useCallback(() => {
-    router.push('/map');
+    router.replace('/map', { scroll: false });
   }, [router]);
 
   useEffect(() => {
