@@ -1,14 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">문화산책</title>
-  <desc id="desc">문화산책 경로와 위치를 표현한 심볼</desc>
-  <rect width="64" height="64" rx="15" fill="#1F765F" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">문화산책 로고</title>
+  <desc id="desc">문화산책을 표현한 산책 경로 심볼</desc>
+  <rect width="512" height="512" rx="120" fill="#1F765F" />
   <path
-    d="M45 16.5C41.3 12.9 36.3 11 30.9 11C19.9 11 11 20.4 11 32C11 43.6 19.9 53 30.9 53C36.2 53 41.1 51.1 44.8 47.7"
+    d="M336 152C308 133 277 124 243 124C163 124 104 184 104 256C104 328 163 388 243 388C286 388 322 376 351 351"
     fill="none"
-    stroke="#FFFDF7"
-    stroke-width="7"
+    stroke="#FFF8F1"
+    stroke-width="52"
     stroke-linecap="round"
+    stroke-linejoin="round"
   />
-  <circle cx="44" cy="41.5" r="8" fill="#D98B2F" stroke="#FFFDF7" stroke-width="3" />
-  <circle cx="44" cy="41.5" r="2.5" fill="#FFFDF7" />
+  <circle cx="360" cy="344" r="31" fill="#FFF8F1" />
 </svg>
