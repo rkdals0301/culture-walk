@@ -59,7 +59,6 @@ npm run dev
 - `npm run lint`: ESLint
 - `npm run typecheck`: TypeScript 타입 체크
 - `npm test`: 동기화 식별키, 데이터 검증, 한국 날짜 경계 테스트
-- `npm run db:generate`: drizzle migration 파일 생성
 - `npm run db:migrate:local`: 로컬 D1 마이그레이션 적용
 - `npm run db:migrate:remote`: 원격 D1 마이그레이션 적용
 - `npm run cf:build`: OpenNext Cloudflare 빌드
