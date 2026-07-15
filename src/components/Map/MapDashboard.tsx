@@ -40,54 +40,54 @@ const FilterControls = ({
   onFreeOnlyChange,
   onRegionChange,
 }: FilterControlsProps) => (
-  <div className='flex items-center gap-2'>
-    <select
-      value={region}
-      onChange={event => onRegionChange(event.target.value)}
-      aria-label='지역 필터'
-      className='h-8 w-[6.7rem] shrink-0 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
-    >
-      <option value='all'>전국</option>
-      {regionOptions.map(option => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-    <div className='min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'>
-      <div className='flex w-max gap-1.5' role='group' aria-label='행사 분류 필터'>
-        {CULTURE_CATEGORY_OPTIONS.map(option => {
-          const isActive = category === option.key;
-          return (
-            <button
-              key={option.key}
-              type='button'
-              onClick={() => onCategoryChange(option.key)}
-              aria-pressed={isActive}
-              className={
-                isActive
-                  ? 'h-8 whitespace-nowrap rounded-lg bg-[#1f765f] px-2.5 text-xs font-semibold text-white dark:bg-[#3c9d80] dark:text-[#071410]'
-                  : 'h-8 whitespace-nowrap rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
-              }
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+  <div className='grid gap-2'>
+    <div className='grid grid-cols-5 gap-1.5' role='group' aria-label='행사 분류 필터'>
+      {CULTURE_CATEGORY_OPTIONS.map(option => {
+        const isActive = category === option.key;
+        return (
+          <button
+            key={option.key}
+            type='button'
+            onClick={() => onCategoryChange(option.key)}
+            aria-pressed={isActive}
+            className={
+              isActive
+                ? 'h-8 min-w-0 whitespace-nowrap rounded-lg bg-[#1f765f] px-1 text-xs font-semibold text-white dark:bg-[#3c9d80] dark:text-[#071410]'
+                : 'h-8 min-w-0 whitespace-nowrap rounded-lg border border-[var(--app-border)] px-1 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
+            }
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
-    <label className='flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)]'>
-      <input
-        type='checkbox'
-        checked={freeOnly}
-        onChange={event => onFreeOnlyChange(event.target.checked)}
-        className='peer sr-only'
-      />
-      <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--app-border)] bg-[var(--app-card)] peer-checked:border-[#2f9b7f] peer-checked:bg-[#2f9b7f]'>
-        <span className={freeOnly ? 'size-1.5 rounded-[2px] bg-white' : 'hidden'} />
-      </span>
-      무료
-    </label>
+    <div className='flex items-center gap-2'>
+      <select
+        value={region}
+        onChange={event => onRegionChange(event.target.value)}
+        aria-label='지역 필터'
+        className='h-8 min-w-0 flex-1 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
+      >
+        <option value='all'>전국</option>
+        {regionOptions.map(option => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <label className='flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)]'>
+        <input
+          type='checkbox'
+          checked={freeOnly}
+          onChange={event => onFreeOnlyChange(event.target.checked)}
+          className='peer sr-only'
+        />
+        <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--app-border)] bg-[var(--app-card)] peer-checked:border-[#2f9b7f] peer-checked:bg-[#2f9b7f]'>
+          <span className={freeOnly ? 'size-1.5 rounded-[2px] bg-white' : 'hidden'} />
+        </span>
+        무료
+      </label>
+    </div>
   </div>
 );
 

@@ -56,12 +56,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-48x48.png', type: 'image/png', sizes: '48x48' },
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg?v=20260715-2', type: 'image/svg+xml' },
+      { url: '/favicon-48x48.png?v=20260715-2', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.ico?v=20260715-2', sizes: 'any' },
     ],
-    shortcut: '/favicon.ico',
-    apple: [{ url: '/apple-touch-icon-180x180.png', type: 'image/png', sizes: '180x180' }],
+    shortcut: '/favicon.ico?v=20260715-2',
+    apple: [
+      { url: '/apple-touch-icon-180x180.png?v=20260715-2', type: 'image/png', sizes: '180x180' },
+    ],
   },
   description:
     '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">CultureWalk Logo</title>
-  <desc id="desc">Simple walking route mark for CultureWalk</desc>
+  <title id="title">문화산책 로고</title>
+  <desc id="desc">문화산책을 표현한 산책 경로 심볼</desc>
   <rect width="512" height="512" rx="120" fill="#1F765F" />
   <path
     d="M336 152C308 133 277 124 243 124C163 124 104 184 104 256C104 328 163 388 243 388C286 388 322 376 351 351"

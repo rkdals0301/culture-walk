@@ -69,7 +69,7 @@ const SideMenu = () => {
           <Link href='/map' className='flex min-w-0 items-center gap-3' onClick={closeSideMenu}>
             <Image
               src='/assets/images/logo-128.png'
-              alt='CultureWalk'
+              alt='문화산책'
               width={44}
               height={44}
               className='rounded-lg shadow-[0_18px_38px_-28px_rgba(31,118,95,0.8)]'
@@ -77,7 +77,7 @@ const SideMenu = () => {
             <div className='min-w-0'>
               <p className='text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사 지도</p>
               <h2 id='side-menu-title' className='truncate text-lg font-semibold'>
-                CultureWalk
+                문화산책
               </h2>
             </div>
           </Link>
@@ -119,7 +119,7 @@ const SideMenu = () => {
           >
             개인정보처리방침
           </Link>
-          <p className='mt-2 text-xs text-[var(--app-muted)]'>CultureWalk · 전국 문화행사</p>
+          <p className='mt-2 text-xs text-[var(--app-muted)]'>문화산책 · 전국 문화행사</p>
         </div>
       </aside>
     </>

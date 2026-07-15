@@ -85,7 +85,7 @@ const Header = () => {
           <Link href='/' className='flex min-w-0 flex-1 items-center gap-3'>
             <Image
               src='/assets/images/logo-128.png'
-              alt='CultureWalk'
+              alt='문화산책'
               width={44}
               height={44}
               className='rounded-[14px] shadow-[0_16px_34px_-26px_rgba(31,118,95,0.8)]'
@@ -94,7 +94,7 @@ const Header = () => {
               <p className='truncate text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
                 전국 문화행사 지도
               </p>
-              <h1 className='truncate text-base font-semibold sm:text-lg'>CultureWalk</h1>
+              <h1 className='truncate text-base font-semibold sm:text-lg'>문화산책</h1>
             </div>
           </Link>
         </div>

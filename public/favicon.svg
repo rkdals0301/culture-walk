@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">CultureWalk</title>
-  <desc id="desc">A walking route leading to a cultural event location</desc>
-  <rect width="64" height="64" rx="16" fill="#1F765F" />
+  <title id="title">문화산책</title>
+  <desc id="desc">문화산책 경로와 위치를 표현한 심볼</desc>
+  <rect width="64" height="64" rx="15" fill="#1F765F" />
   <path
-    d="M15.5 46.5C15.5 40.3 21.5 37.5 27.7 39.4C32.4 40.8 35.5 42.2 40 42.2"
+    d="M45 16.5C41.3 12.9 36.3 11 30.9 11C19.9 11 11 20.4 11 32C11 43.6 19.9 53 30.9 53C36.2 53 41.1 51.1 44.8 47.7"
     fill="none"
-    stroke="#FFF8F1"
-    stroke-width="5.5"
+    stroke="#FFFDF7"
+    stroke-width="7"
     stroke-linecap="round"
   />
-  <circle cx="15.5" cy="46.5" r="3.8" fill="#FFF8F1" />
-  <path d="M40 8.5C32.1 8.5 26 14.6 26 22.2C26 31.9 40 43.5 40 43.5C40 43.5 54 31.9 54 22.2C54 14.6 47.9 8.5 40 8.5Z" fill="#FFF8F1" />
-  <circle cx="40" cy="22" r="6" fill="#D98B2F" />
+  <circle cx="44" cy="41.5" r="8" fill="#D98B2F" stroke="#FFFDF7" stroke-width="3" />
+  <circle cx="44" cy="41.5" r="2.5" fill="#FFFDF7" />
 </svg>
