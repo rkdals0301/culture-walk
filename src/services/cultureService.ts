@@ -1,7 +1,8 @@
 import { CultureRow, NewCultureRow } from '@/db/schema';
-import { Culture, TourApiFestival } from '@/types/culture';
+import { Culture, TourApiFestival, TourApiFestivalDetails } from '@/types/culture';
 
 import { createTourApiSourceKey } from './cultureIdentity';
+import { classifyTourApiFee, normalizeTourApiDetails, normalizeTourApiImageUrl } from './tourApiDetails';
 
 const parseTourApiDateToIso = (value?: string) => {
   const match = value?.match(/^(\d{4})(\d{2})(\d{2})$/);
@@ -29,11 +30,6 @@ const parseNumber = (value?: string) => {
 };
 
 const toText = (value?: string) => value?.trim() || null;
-
-const normalizeImageUrl = (value?: string) => {
-  const url = toText(value);
-  return url?.startsWith('http://tong.visitkorea.or.kr/') ? url.replace('http://', 'https://') : url;
-};
 
 const formatTourApiDate = (value?: string) => {
   const match = value?.match(/^(\d{4})(\d{2})(\d{2})$/);
@@ -78,18 +74,6 @@ const resolveClassification = (festival: TourApiFestival) => {
   return festival.festivaltype?.trim() || '축제';
 };
 
-const toSafeExternalUrl = (value?: string) => {
-  const candidate = value?.trim();
-  if (!candidate) return null;
-
-  try {
-    const url = new URL(candidate);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
-  } catch {
-    return null;
-  }
-};
-
 const toDateOrNow = (value?: string | null) => {
   if (!value) return new Date();
 
@@ -114,11 +98,8 @@ export const normalizeCultureCoordinates = (lat: number | null | undefined, lng:
 };
 
 export function mapTourApiFestivalToCulture(festival: TourApiFestival): NewCultureRow {
-  const intro = festival.intro;
-  const useFee = toText(intro?.usetimefestival);
   const address = [festival.addr1, festival.addr2].map(value => value?.trim()).filter(Boolean).join(' ');
-  const place = toText(intro?.eventplace) ?? toText(address);
-  const contact = toText(intro?.sponsor1tel) ?? toText(festival.tel);
+  const contact = toText(festival.tel);
 
   return {
     sourceKey: createTourApiSourceKey(festival.contentid),
@@ -127,55 +108,72 @@ export function mapTourApiFestivalToCulture(festival: TourApiFestival): NewCultu
     endDate: parseTourApiDateToIso(festival.eventenddate),
     etcDescription: contact ? `문의 ${contact}` : null,
     guName: resolveRegionName(festival.addr1),
-    homepageDetailAddress: toSafeExternalUrl(intro?.bookingplace),
-    isFree: useFee?.includes('무료') ? '무료' : useFee ? '유료 또는 부분 유료' : '정보 없음',
+    homepageDetailAddress: null,
+    isFree: '정보 없음',
     lat: parseNumber(festival.mapy),
     lng: parseNumber(festival.mapx),
-    mainImage: normalizeImageUrl(festival.firstimage || festival.firstimage2),
-    homepageAddress: toSafeExternalUrl(intro?.eventhomepage),
-    organizationName: toText(intro?.sponsor1) ?? toText(intro?.sponsor2),
-    place,
-    performerInformation: toText(intro?.playtime),
-    programIntroduction: toText(intro?.program) ?? toText(intro?.subevent),
+    mainImage: normalizeTourApiImageUrl(festival.firstimage || festival.firstimage2) || null,
+    homepageAddress: null,
+    organizationName: null,
+    place: toText(address),
+    performerInformation: null,
+    programIntroduction: null,
     registrationDate: parseTourApiTimestampToIso(festival.modifiedtime || festival.createdtime),
     startDate: parseTourApiDateToIso(festival.eventstartdate),
     themeClassification: toText(festival.festivaltype),
     register: toText(festival.progresstype),
     title: toText(festival.title),
-    useFee: useFee ?? '요금 정보 확인 필요',
-    useTarget: toText(intro?.agelimit) ?? '누구나',
+    useFee: '요금 정보 확인 필요',
+    useTarget: '정보 없음',
   };
 }
 
-export function mapCultureRowToCulture(row: CultureRow): Culture {
+export function mapCultureRowToCulture(row: CultureRow, tourApiDetails?: TourApiFestivalDetails): Culture {
   const startDate = toDateOrNow(row.startDate);
   const endDate = toDateOrNow(row.endDate ?? row.startDate);
   const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
+  const details = tourApiDetails ? normalizeTourApiDetails(tourApiDetails) : null;
+  const programIntroduction = details
+    ? Array.from(new Set([details.program, details.subevent].filter(Boolean))).join('\n\n')
+    : row.programIntroduction ?? '';
+  const mainImage = row.mainImage || details?.additionalImages[0]?.url || '/assets/images/logo.svg';
+  const additionalImages = (details?.additionalImages ?? []).filter(image => image.url !== mainImage);
+  const useFee = details?.useFee || row.useFee || '';
 
   return {
     id: row.id,
     classification: row.classification ?? '',
     date: row.date ?? '',
     endDate,
-    etcDescription: row.etcDescription ?? '',
+    etcDescription: details?.contact || row.etcDescription || '',
     guName: row.guName ?? '',
-    homepageDetailAddress: row.homepageDetailAddress ?? '',
-    isFree: row.isFree ?? '',
+    homepageDetailAddress: details?.bookingUrl || row.homepageDetailAddress || '',
+    isFree: details?.useFee ? classifyTourApiFee(details.useFee) : row.isFree ?? '',
     lat: coordinates.lat,
     lng: coordinates.lng,
-    mainImage: row.mainImage ?? '/assets/images/logo.svg',
-    homepageAddress: row.homepageAddress ?? '',
-    organizationName: row.organizationName ?? '',
-    place: row.place ?? '',
-    performerInformation: row.performerInformation ?? '',
-    programIntroduction: row.programIntroduction ?? '',
+    mainImage,
+    homepageAddress: details?.eventHomepage || row.homepageAddress || '',
+    organizationName: details?.organizationName || row.organizationName || '',
+    place: details?.eventPlace || row.place || '',
+    performerInformation: details?.eventTime || row.performerInformation || '',
+    programIntroduction,
     registrationDate: row.registrationDate ?? '',
     startDate,
     themeClassification: row.themeClassification ?? '',
     register: row.register ?? '',
     title: row.title ?? '',
-    useFee: row.useFee ?? '',
-    useTarget: row.useTarget ?? '',
+    useFee,
+    useTarget: details?.useTarget || row.useTarget || '',
+    overview: details?.overview || '',
+    eventTime: details?.eventTime || row.performerInformation || '',
+    duration: details?.duration || '',
+    bookingPlace: details?.bookingPlace || '',
+    placeInformation: details?.placeInformation || '',
+    contact: details?.contact || row.etcDescription || '',
+    festivalGrade: details?.festivalGrade || '',
+    discountInformation: details?.discountInformation || '',
+    additionalInformation: details?.additionalInformation || [],
+    additionalImages,
     createdAt: row.createdAt ? new Date(row.createdAt) : undefined,
     updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
   };

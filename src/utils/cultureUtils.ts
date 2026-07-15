@@ -31,7 +31,12 @@ const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => 
 export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture[] => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');
-    const displayPrice = culture.isFree === '유료' ? formatString(culture, ['isFree', 'useFee']) : culture.isFree;
+    const displayPrice = (() => {
+      if (culture.isFree === '무료' || culture.isFree === '부분 무료') return culture.isFree;
+      if (culture.isFree === '유료') return '유료 · 요금 안내';
+      if (culture.isFree === '요금 확인') return '요금 확인';
+      return culture.isFree;
+    })();
 
     return {
       ...culture,

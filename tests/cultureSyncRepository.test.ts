@@ -24,6 +24,7 @@ test('content comparison is null-safe and excludes the source key', () => {
   assert.match(sql, /existing\.title IS NOT incoming\.title/);
   assert.match(sql, /existing\.lat IS NOT incoming\.lat/);
   assert.doesNotMatch(sql, /source_key/);
+  assert.doesNotMatch(sql, /is_free|use_fee|homepage_address|program_introduction/);
   assert.doesNotMatch(sql, /!=|<>/);
 });
 

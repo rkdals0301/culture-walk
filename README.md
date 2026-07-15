@@ -75,6 +75,8 @@ npm run dev
 
 동기화는 TourAPI `searchFestival2`의 현재·예정 행사 전체 페이지를 실행별 staging 영역에 적재한 뒤 `tourapi:{contentid}` 식별키로 기존 행을 갱신합니다. 신규 행은 추가하고, 변경된 행만 갱신하며, 원본에서 사라진 행은 비활성화한 뒤 90일간 보관합니다. 전체 수집 건수가 기존 TourAPI 활성 데이터의 70% 미만으로 급감하면 운영 DB 반영을 중단합니다. 최초 TourAPI 스냅샷이 품질 검증을 통과한 경우에만 이전 데이터 소스를 비활성화 후 삭제합니다. 동시 실행은 소유권 기반 락과 실행별 staging 키로 격리하며, 활성 행의 직접 삭제는 DB 트리거가 차단합니다.
 
+행사 상세를 처음 열거나 원본 `modifiedtime`이 변경된 경우 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 서버에서 조회합니다. 응답 원문은 `culture_tour_api_details`에 JSON으로 보관하고, 요금·이용 대상·홈페이지처럼 목록 필터에 필요한 요약 필드는 행사 행에도 반영합니다. 이후 상세 조회는 D1과 KV 캐시를 사용하며, 외부 API 일부가 실패하면 기존 상세 데이터를 유지합니다.
+
 ## Cloudflare
 
 - 설정 파일: `wrangler.jsonc`

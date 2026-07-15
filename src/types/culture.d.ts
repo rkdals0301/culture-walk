@@ -1,6 +1,7 @@
 export interface TourApiFestivalIntro {
   agelimit?: string;
   bookingplace?: string;
+  discountinfofestival?: string;
   eventhomepage?: string;
   eventplace?: string;
   festivalgrade?: string;
@@ -14,6 +15,43 @@ export interface TourApiFestivalIntro {
   sponsor2tel?: string;
   subevent?: string;
   usetimefestival?: string;
+}
+
+export interface TourApiFestivalCommon {
+  contentid?: string;
+  contenttypeid?: string;
+  firstimage?: string;
+  firstimage2?: string;
+  homepage?: string;
+  overview?: string;
+  tel?: string;
+  telname?: string;
+}
+
+export interface TourApiFestivalInfo {
+  contentid?: string;
+  contenttypeid?: string;
+  fldgubun?: string;
+  infoname?: string;
+  infotext?: string;
+  serialnum?: string;
+}
+
+export interface TourApiFestivalImage {
+  contentid?: string;
+  cpyrhtDivCd?: string;
+  imgname?: string;
+  originimgurl?: string;
+  serialnum?: string;
+  smallimageurl?: string;
+}
+
+export interface TourApiFestivalDetails {
+  common?: TourApiFestivalCommon;
+  intro?: TourApiFestivalIntro;
+  info: TourApiFestivalInfo[];
+  images: TourApiFestivalImage[];
+  complete: boolean;
 }
 
 export interface TourApiFestival {
@@ -44,7 +82,17 @@ export interface TourApiFestival {
   tel?: string;
   title: string;
   zipcode?: string;
-  intro?: TourApiFestivalIntro;
+}
+
+export interface CultureAdditionalInformation {
+  name: string;
+  text: string;
+}
+
+export interface CultureDetailImage {
+  name: string;
+  thumbnailUrl: string;
+  url: string;
 }
 
 export interface Culture {
@@ -62,7 +110,7 @@ export interface Culture {
   homepageAddress: string; // 홈페이지 주소
   organizationName: string; // 기관명
   place: string; // 장소
-  performerInformation: string; // 출연자 정보
+  performerInformation: string; // 운영·공연 시간(기존 DB 필드명)
   programIntroduction: string; // 프로그램 소개
   registrationDate: string; // 신청일
   startDate: Date; // 시작일
@@ -71,6 +119,16 @@ export interface Culture {
   title: string; // 공연/행사명
   useFee: string; // 이용 요금
   useTarget: string; // 이용 대상
+  overview: string; // 행사 소개
+  eventTime: string; // 운영·공연 시간
+  duration: string; // 관람 소요시간
+  bookingPlace: string; // 예매처 안내
+  placeInformation: string; // 행사장 안내
+  contact: string; // 문의처
+  festivalGrade: string; // 축제 등급
+  discountInformation: string; // 할인 정보
+  additionalInformation: CultureAdditionalInformation[]; // 반복 상세정보
+  additionalImages: CultureDetailImage[]; // 추가 이미지
   createdAt?: Date; // 생성일
   updatedAt?: Date; // 수정일
 }

@@ -3,6 +3,9 @@ export const TOUR_API_SOURCE_KEY_PREFIX = 'tourapi:';
 export const isTourApiSourceKey = (sourceKey: string | null | undefined): sourceKey is string =>
   /^tourapi:\d+$/.test(sourceKey?.trim() ?? '');
 
+export const getTourApiContentId = (sourceKey: string | null | undefined) =>
+  isTourApiSourceKey(sourceKey) ? sourceKey.slice(TOUR_API_SOURCE_KEY_PREFIX.length) : null;
+
 export const createTourApiSourceKey = (contentId: string) => {
   const normalizedContentId = contentId.trim();
   if (!/^\d+$/.test(normalizedContentId)) {

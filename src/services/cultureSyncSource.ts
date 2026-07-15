@@ -1,9 +1,15 @@
-import { TourApiFestival, TourApiFestivalIntro } from '@/types/culture';
+import {
+  TourApiFestival,
+  TourApiFestivalCommon,
+  TourApiFestivalDetails,
+  TourApiFestivalImage,
+  TourApiFestivalInfo,
+  TourApiFestivalIntro,
+} from '@/types/culture';
 
 import {
   INITIAL_PAGE_NUMBER,
   PAGE_SIZE,
-  SOURCE_DETAIL_LIMIT,
   SOURCE_PAGE_CONCURRENCY,
   SOURCE_REQUEST_RETRY_LIMIT,
   TourApiConfig,
@@ -91,47 +97,54 @@ const fetchTourApiPage = async <T>(
   throw lastError instanceof Error ? lastError : new Error('TourAPI 요청에 실패했습니다.');
 };
 
-const enrichRelevantFestivals = async (config: TourApiConfig, festivals: TourApiFestival[]) => {
-  const relevant = [...festivals]
-    .sort((left, right) => left.eventstartdate.localeCompare(right.eventstartdate))
-    .slice(0, SOURCE_DETAIL_LIMIT);
-  const introByContentId = new Map<string, TourApiFestivalIntro>();
+export const fetchTourApiFestivalDetails = async (
+  config: TourApiConfig,
+  contentId: string,
+  contentTypeId = '15'
+): Promise<TourApiFestivalDetails> => {
+  const requests = await Promise.allSettled([
+    fetchTourApiPage<TourApiFestivalCommon>(config, 'detailCommon2', { contentId, pageNo: 1, numOfRows: 1 }, 1),
+    fetchTourApiPage<TourApiFestivalIntro>(
+      config,
+      'detailIntro2',
+      { contentId, contentTypeId, pageNo: 1, numOfRows: 1 },
+      1
+    ),
+    fetchTourApiPage<TourApiFestivalInfo>(
+      config,
+      'detailInfo2',
+      { contentId, contentTypeId, pageNo: 1, numOfRows: 100 },
+      1
+    ),
+    fetchTourApiPage<TourApiFestivalImage>(
+      config,
+      'detailImage2',
+      { contentId, pageNo: 1, numOfRows: 100, imageYN: 'Y' },
+      1
+    ),
+  ]);
 
-  for (let index = 0; index < relevant.length; index += SOURCE_PAGE_CONCURRENCY) {
-    const chunk = relevant.slice(index, index + SOURCE_PAGE_CONCURRENCY);
-    const results = await Promise.all(
-      chunk.map(async festival => {
-        try {
-          const page = await fetchTourApiPage<TourApiFestivalIntro>(
-            config,
-            'detailIntro2',
-            {
-              contentId: festival.contentid,
-              contentTypeId: festival.contenttypeid || '15',
-              pageNo: 1,
-              numOfRows: 1,
-            },
-            0
-          );
-          return { contentId: festival.contentid, intro: page.items[0] };
-        } catch (error) {
-          console.warn(`TourAPI 상세 조회를 건너뜁니다. contentid=${festival.contentid}`, error);
-          return { contentId: festival.contentid, intro: undefined };
-        }
-      })
-    );
-
-    for (const result of results) {
-      if (result.intro) {
-        introByContentId.set(result.contentId, result.intro);
-      }
-    }
+  const failedCount = requests.filter(result => result.status === 'rejected').length;
+  if (failedCount === requests.length) {
+    throw new Error(`TourAPI 상세정보 전체 조회에 실패했습니다. contentid=${contentId}`);
   }
 
-  return festivals.map(festival => ({
-    ...festival,
-    intro: introByContentId.get(festival.contentid),
-  }));
+  if (failedCount > 0) {
+    console.warn(`TourAPI 상세정보 일부 조회 실패: contentid=${contentId}, failed=${failedCount}`);
+  }
+
+  const pageItems = <T>(index: number): T[] => {
+    const result = requests[index];
+    return result?.status === 'fulfilled' ? (result.value.items as T[]) : [];
+  };
+
+  return {
+    common: pageItems<TourApiFestivalCommon>(0)[0],
+    intro: pageItems<TourApiFestivalIntro>(1)[0],
+    info: pageItems<TourApiFestivalInfo>(2),
+    images: pageItems<TourApiFestivalImage>(3),
+    complete: failedCount === 0,
+  };
 };
 
 export const fetchCulturesFromTourApi = async (config: TourApiConfig, now = new Date()) => {
@@ -178,5 +191,5 @@ export const fetchCulturesFromTourApi = async (config: TourApiConfig, now = new 
     );
   }
 
-  return enrichRelevantFestivals(config, allFestivals);
+  return allFestivals;
 };

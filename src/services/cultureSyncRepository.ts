@@ -52,7 +52,19 @@ const createStagingTableSql = `
 
 const STAGING_RUN_KEY_COLUMN = 'sync_run_key';
 const STAGING_INSERT_COLUMNS = [STAGING_RUN_KEY_COLUMN, ...STAGING_COLUMNS];
-const LIVE_MUTABLE_COLUMNS = STAGING_COLUMNS.filter(column => column !== 'source_key');
+const DETAIL_ENRICHED_COLUMNS = new Set([
+  'homepage_detail_address',
+  'is_free',
+  'homepage_address',
+  'organization_name',
+  'performer_information',
+  'program_introduction',
+  'use_fee',
+  'use_target',
+]);
+const LIVE_MUTABLE_COLUMNS = STAGING_COLUMNS.filter(
+  column => column !== 'source_key' && !DETAIL_ENRICHED_COLUMNS.has(column)
+);
 
 export const createCultureContentDifferenceSql = (liveAlias = 'live', stagingAlias = 'staging') =>
   LIVE_MUTABLE_COLUMNS.map(column => `${liveAlias}.${column} IS NOT ${stagingAlias}.${column}`).join(' OR ');

@@ -53,18 +53,13 @@ test('TourAPI festival fields map to the culture schema', () => {
     mapx: '129.1186',
     mapy: '35.1532',
     modifiedtime: '20260701120000',
-    intro: {
-      eventplace: '광안리 해변 일원',
-      sponsor1: '부산광역시 수영구',
-      usetimefestival: '무료',
-    },
   });
 
   assert.equal(row.sourceKey, 'tourapi:2786391');
   assert.equal(row.guName, '부산 수영구');
   assert.equal(row.classification, '공연');
-  assert.equal(row.place, '광안리 해변 일원');
-  assert.equal(row.isFree, '무료');
+  assert.equal(row.place, '부산광역시 수영구 광안해변로 219');
+  assert.equal(row.isFree, '정보 없음');
   assert.equal(row.mainImage, 'https://tong.visitkorea.or.kr/example.jpg');
   assert.equal(row.lat, 35.1532);
   assert.equal(row.lng, 129.1186);

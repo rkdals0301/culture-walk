@@ -1,8 +1,9 @@
 import MapDashboard from '@/components/Map/MapDashboard';
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
 import { getDb } from '@/db/client';
-import { cultures } from '@/db/schema';
+import { cultures, cultureTourApiDetails } from '@/db/schema';
 import { mapCultureRowToCulture } from '@/services/cultureService';
+import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { formatCultureData } from '@/utils/cultureUtils';
 
 import { cache } from 'react';
@@ -30,7 +31,13 @@ const getCultureById = cache(async (id: number) => {
     return null;
   }
 
-  return mapCultureRowToCulture(row);
+  const details = row.sourceKey
+    ? await db.query.cultureTourApiDetails.findFirst({
+        where: eq(cultureTourApiDetails.sourceKey, row.sourceKey),
+      })
+    : null;
+
+  return mapCultureRowToCulture(row, details ? parseStoredTourApiDetails(details) : undefined);
 });
 
 const parseOfferPrice = (value?: string) => {

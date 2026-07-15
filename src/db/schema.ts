@@ -65,5 +65,17 @@ export const cultureSyncRuns = sqliteTable(
   })
 );
 
+export const cultureTourApiDetails = sqliteTable('culture_tour_api_details', {
+  sourceKey: text('source_key').primaryKey(),
+  sourceModifiedAt: text('source_modified_at'),
+  commonJson: text('common_json').notNull().default('{}'),
+  introJson: text('intro_json').notNull().default('{}'),
+  infoJson: text('info_json').notNull().default('[]'),
+  imagesJson: text('images_json').notNull().default('[]'),
+  isComplete: integer('is_complete', { mode: 'boolean' }).notNull().default(false),
+  syncedAt: text('synced_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export type CultureRow = typeof cultures.$inferSelect;
 export type NewCultureRow = typeof cultures.$inferInsert;
+export type CultureTourApiDetailsRow = typeof cultureTourApiDetails.$inferSelect;

@@ -59,11 +59,11 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           </div>
           <div>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>요금</dt>
-            <dd className='mt-1 font-semibold'>{culture.displayPrice}</dd>
+            <dd className='mt-1 whitespace-pre-line font-semibold'>{culture.useFee || culture.displayPrice}</dd>
           </div>
           <div>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>대상</dt>
-            <dd className='mt-1'>{culture.useTarget || '누구나'}</dd>
+            <dd className='mt-1'>{culture.useTarget || '정보 없음'}</dd>
           </div>
           <div>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>주최</dt>
@@ -71,9 +71,18 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           </div>
         </dl>
 
+        {culture.overview && (
+          <section className='mt-6 border-t border-[var(--app-border)] pt-5'>
+            <h2 className='text-sm font-semibold'>행사 소개</h2>
+            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.overview}
+            </p>
+          </section>
+        )}
+
         {culture.programIntroduction && (
           <section className='mt-6 border-t border-[var(--app-border)] pt-5'>
-            <h2 className='text-sm font-semibold'>프로그램 안내</h2>
+            <h2 className='text-sm font-semibold'>프로그램</h2>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.programIntroduction}
             </p>
@@ -158,31 +167,37 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       return null;
     }
 
+    const hasHomepage = Boolean(culture.homepageAddress);
+    const hasBookingLink = Boolean(culture.homepageDetailAddress);
+    if (!hasHomepage && !hasBookingLink) return null;
+
     return (
-      <div className='grid grid-cols-2 gap-2.5'>
-        <Button
-          fullWidth
-          ariaLabel='행사 공식 홈페이지로 이동'
-          onClick={() => handleOpenExternalLink(culture.homepageAddress)}
-          variant='secondary'
-          disabled={!culture.homepageAddress}
-        >
-          <span>공식 홈페이지</span>
-          <span className='ml-1.5 text-base' aria-hidden='true'>
-            ↗
-          </span>
-        </Button>
-        <Button
-          fullWidth
-          ariaLabel='예약 / 상세 웹사이트로 이동'
-          onClick={() => handleOpenExternalLink(culture.homepageDetailAddress)}
-          disabled={!culture.homepageDetailAddress}
-        >
-          <span>예약 / 상세</span>
-          <span className='ml-1.5 text-base' aria-hidden='true'>
-            ↗
-          </span>
-        </Button>
+      <div className={`grid gap-2.5 ${hasHomepage && hasBookingLink ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        {hasHomepage && (
+          <Button
+            fullWidth
+            ariaLabel='행사 공식 홈페이지로 이동'
+            onClick={() => handleOpenExternalLink(culture.homepageAddress)}
+            variant='secondary'
+          >
+            <span>공식 홈페이지</span>
+            <span className='ml-1.5 text-base' aria-hidden='true'>
+              ↗
+            </span>
+          </Button>
+        )}
+        {hasBookingLink && (
+          <Button
+            fullWidth
+            ariaLabel='예약 웹사이트로 이동'
+            onClick={() => handleOpenExternalLink(culture.homepageDetailAddress)}
+          >
+            <span>예약하기</span>
+            <span className='ml-1.5 text-base' aria-hidden='true'>
+              ↗
+            </span>
+          </Button>
+        )}
       </div>
     );
   }, [culture, handleOpenExternalLink]);
@@ -233,6 +248,31 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             <CultureImageFallback classification={culture.classification || '문화행사'} />
           )}
         </div>
+        {(culture.additionalImages ?? []).length > 0 && (
+          <div className='flex gap-2 overflow-x-auto pb-1' aria-label='행사 추가 이미지'>
+            {(culture.additionalImages ?? []).map(image => (
+              <button
+                type='button'
+                key={image.url}
+                onClick={() => {
+                  setImgSrc(image.url);
+                  setImageFailed(false);
+                }}
+                className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/50'
+                aria-label={image.name || '추가 이미지 보기'}
+                aria-pressed={imgSrc === image.url}
+              >
+                <Image
+                  src={image.thumbnailUrl}
+                  alt=''
+                  fill
+                  sizes='72px'
+                  className='object-cover'
+                />
+              </button>
+            ))}
+          </div>
+        )}
         <div className='flex flex-wrap items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
           {culture.guName && (
@@ -260,7 +300,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </div>
           <div className='soft-chip rounded-[14px] px-3 py-2.5'>
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>요금</p>
-            <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.displayPrice}</p>
+            <p className='mt-1 whitespace-pre-line break-words text-sm font-semibold leading-5'>
+              {culture.useFee || culture.displayPrice}
+            </p>
           </div>
         </div>
 
@@ -268,43 +310,102 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           <dl className='grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
             <div className='grid grid-cols-[3.3rem_1fr] gap-3'>
               <dt className='font-semibold text-[var(--app-text)]'>대상</dt>
-              <dd className='break-words'>{culture.useTarget || '누구나'}</dd>
+              <dd className='break-words'>{culture.useTarget || '정보 없음'}</dd>
             </div>
             <div className='grid grid-cols-[3.3rem_1fr] gap-3'>
               <dt className='font-semibold text-[var(--app-text)]'>주최</dt>
               <dd className='break-words'>{culture.organizationName || '정보 없음'}</dd>
             </div>
+            {culture.eventTime && (
+              <div className='grid grid-cols-[3.3rem_1fr] gap-3'>
+                <dt className='font-semibold text-[var(--app-text)]'>시간</dt>
+                <dd className='whitespace-pre-line break-words'>{culture.eventTime}</dd>
+              </div>
+            )}
+            {culture.duration && (
+              <div className='grid grid-cols-[3.3rem_1fr] gap-3'>
+                <dt className='font-semibold text-[var(--app-text)]'>소요</dt>
+                <dd className='whitespace-pre-line break-words'>{culture.duration}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
+        {culture.overview && (
+          <div className='surface-card rounded-[18px] p-4'>
+            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>행사 소개</p>
+            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.overview}
+            </p>
+          </div>
+        )}
+
         {culture.programIntroduction && (
           <div className='surface-card rounded-[18px] p-4'>
-            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>프로그램 안내</p>
+            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>프로그램</p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.programIntroduction}
             </p>
           </div>
         )}
 
-        {culture.performerInformation && (
+        {(culture.bookingPlace ||
+          culture.placeInformation ||
+          culture.contact ||
+          culture.festivalGrade ||
+          culture.discountInformation) && (
           <div className='surface-card rounded-[18px] p-4'>
-            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>출연 안내</p>
-            <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
-              {culture.performerInformation}
-            </p>
+            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>이용 안내</p>
+            <dl className='mt-2 grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
+              {culture.bookingPlace && (
+                <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
+                  <dt className='font-semibold text-[var(--app-text)]'>예매처</dt>
+                  <dd className='whitespace-pre-line break-words'>{culture.bookingPlace}</dd>
+                </div>
+              )}
+              {culture.placeInformation && (
+                <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
+                  <dt className='font-semibold text-[var(--app-text)]'>행사장</dt>
+                  <dd className='whitespace-pre-line break-words'>{culture.placeInformation}</dd>
+                </div>
+              )}
+              {culture.contact && (
+                <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
+                  <dt className='font-semibold text-[var(--app-text)]'>문의</dt>
+                  <dd className='whitespace-pre-line break-words'>{culture.contact}</dd>
+                </div>
+              )}
+              {culture.festivalGrade && (
+                <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
+                  <dt className='font-semibold text-[var(--app-text)]'>등급</dt>
+                  <dd className='break-words'>{culture.festivalGrade}</dd>
+                </div>
+              )}
+              {culture.discountInformation && (
+                <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
+                  <dt className='font-semibold text-[var(--app-text)]'>할인</dt>
+                  <dd className='whitespace-pre-line break-words'>{culture.discountInformation}</dd>
+                </div>
+              )}
+            </dl>
           </div>
         )}
 
-        {culture.etcDescription && (
+        {(culture.additionalInformation ?? []).length > 0 && (
           <details className='surface-card group rounded-[18px] p-4'>
             <summary className='flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
-              <span className='text-[0.72rem] text-[#1f765f] dark:text-[#8dc5b5]'>추가 안내</span>
+              <span className='text-[0.72rem] text-[#1f765f] dark:text-[#8dc5b5]'>상세 안내</span>
               <span className='text-xs text-[var(--app-muted)] group-open:hidden'>열기</span>
               <span className='hidden text-xs text-[var(--app-muted)] group-open:inline'>닫기</span>
             </summary>
-            <p className='mt-3 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
-              {culture.etcDescription}
-            </p>
+            <dl className='mt-3 grid gap-3 text-sm leading-6 text-[var(--app-muted)]'>
+              {(culture.additionalInformation ?? []).map((item, index) => (
+                <div key={`${item.name}:${index}`}>
+                  <dt className='font-semibold text-[var(--app-text)]'>{item.name}</dt>
+                  <dd className='mt-1 whitespace-pre-line break-words'>{item.text}</dd>
+                </div>
+              ))}
+            </dl>
           </details>
         )}
 

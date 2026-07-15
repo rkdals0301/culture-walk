@@ -8,7 +8,6 @@ export const STAGING_STATEMENTS_PER_BATCH = 10;
 export const RETRY_LIMIT = 3;
 export const SOURCE_REQUEST_RETRY_LIMIT = 2;
 export const SOURCE_PAGE_CONCURRENCY = 3;
-export const SOURCE_DETAIL_LIMIT = 40;
 export const INITIALIZE_LOCK_TABLE = 'initialize_sync_locks';
 export const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
 export const INITIALIZE_LOCK_TTL_MINUTES = 30;

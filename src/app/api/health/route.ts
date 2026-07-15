@@ -1,4 +1,4 @@
-import { cultureSyncRuns, cultures } from '@/db/schema';
+import { cultureSyncRuns, cultures, cultureTourApiDetails } from '@/db/schema';
 import { getDb } from '@/db/client';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -74,6 +74,20 @@ export async function GET() {
         latestEndDate: sql<string | null>`MAX(
           CASE WHEN ${cultures.isActive} = 1 THEN ${cultures.endDate} ELSE NULL END
         )`,
+        detailCachedTotal: sql<number>`(
+          SELECT COUNT(*) FROM ${cultureTourApiDetails}
+        )`,
+        detailCompleteTotal: sql<number>`(
+          SELECT COUNT(*) FROM ${cultureTourApiDetails} WHERE ${cultureTourApiDetails.isComplete} = 1
+        )`,
+        detailCurrentTotal: sql<number>`(
+          SELECT COUNT(*)
+          FROM culture_tour_api_details details
+          INNER JOIN cultures detail_culture ON detail_culture.source_key = details.source_key
+          WHERE details.is_complete = 1
+            AND detail_culture.is_active = 1
+            AND details.source_modified_at IS detail_culture.registration_date
+        )`,
       })
       .from(cultures),
       db.query.cultureSyncRuns.findFirst({ orderBy: [desc(cultureSyncRuns.startedAt)] }),
@@ -91,6 +105,9 @@ export async function GET() {
     const activeVisible = activeNormalCoordinates + activeSwappedCoordinates;
     const activeInvalidCoordinates = Math.max(activeTotal - activeVisible, 0);
     const implausibleActiveDates = toCount(row?.implausibleActiveDates);
+    const detailCachedTotal = toCount(row?.detailCachedTotal);
+    const detailCompleteTotal = toCount(row?.detailCompleteTotal);
+    const detailCurrentTotal = toCount(row?.detailCurrentTotal);
     const latestSyncCompletedAt = latestSyncRun?.completedAt ?? null;
     const latestSyncAgeHours = latestSyncCompletedAt
       ? (now.getTime() - new Date(`${latestSyncCompletedAt.replace(' ', 'T')}Z`).getTime()) / (60 * 60 * 1000)
@@ -125,6 +142,9 @@ export async function GET() {
         activeSwappedCoordinates,
         activeInvalidCoordinates,
         implausibleActiveDates,
+        detailCachedTotal,
+        detailCompleteTotal,
+        detailCurrentTotal,
         latestUpdatedAt: row?.latestUpdatedAt ?? null,
         latestEndDate: row?.latestEndDate ?? null,
         latestSync: latestSyncRun
