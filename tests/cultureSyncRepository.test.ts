@@ -7,7 +7,7 @@ import test from 'node:test';
 
 const createRows = (): NewCultureRow[] =>
   Array.from({ length: 5 }, (_, index) => ({
-    sourceKey: `culture:${index}`,
+    sourceKey: `tourapi:${index}`,
     title: `문화 행사 ${index}`,
     startDate: '2026-07-13T00:00:00.000Z',
     endDate: '2026-07-14T00:00:00.000Z',

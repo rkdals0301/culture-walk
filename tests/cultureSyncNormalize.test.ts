@@ -1,5 +1,5 @@
 import { NewCultureRow } from '@/db/schema';
-import { createCultureSourceKey, createTourApiSourceKey } from '@/services/cultureIdentity';
+import { createTourApiSourceKey } from '@/services/cultureIdentity';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from '@/services/cultureSyncNormalize';
 import { STAGING_COLUMNS, toStagingValues } from '@/services/cultureSyncTypes';
@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 const createRow = (overrides: Partial<NewCultureRow> = {}): NewCultureRow => ({
+  sourceKey: 'tourapi:2786391',
   title: '서울 문화 행사',
   startDate: '2026-07-10T00:00:00.000Z',
   endDate: '2026-07-11T00:00:00.000Z',
@@ -20,16 +21,24 @@ const createRow = (overrides: Partial<NewCultureRow> = {}): NewCultureRow => ({
   ...overrides,
 });
 
-test('source key trims fields and stays deterministic', () => {
-  const base = createRow();
-  const padded = createRow({ title: `  ${base.title}  `, place: ` ${base.place} ` });
-
-  assert.equal(createCultureSourceKey(base), createCultureSourceKey(padded));
-});
-
 test('TourAPI source key uses the stable content id', () => {
   assert.equal(createTourApiSourceKey(' 2786391 '), 'tourapi:2786391');
   assert.throws(() => createTourApiSourceKey('invalid-id'));
+});
+
+test('normalization rejects missing or legacy source keys', () => {
+  const rows = Array.from({ length: 5 }, (_, index) =>
+    createRow({ sourceKey: `tourapi:${index + 1}` })
+  );
+
+  assert.throws(
+    () =>
+      normalizeAndValidateCultureRows(
+        [...rows, createRow({ sourceKey: 'culture:legacy' })],
+        new Date('2026-07-10T00:00:00.000Z')
+      ),
+    /유효하지 않은 TourAPI source key/
+  );
 });
 
 test('TourAPI festival fields map to the culture schema', () => {
@@ -88,7 +97,7 @@ test('normalization excludes implausible dates and missing required fields', () 
 });
 
 test('deduplication keeps the most recently registered event', () => {
-  const older = createRow({ sourceKey: createCultureSourceKey(createRow()), registrationDate: '2026-06-01' });
+  const older = createRow({ registrationDate: '2026-06-01' });
   const newer = createRow({ sourceKey: older.sourceKey, registrationDate: '2026-07-01', useFee: '무료' });
 
   const result = deduplicateCultureRows([older, newer]);
@@ -98,10 +107,10 @@ test('deduplication keeps the most recently registered event', () => {
 });
 
 test('staging values stay aligned with staging columns', () => {
-  const row = createRow({ sourceKey: 'culture:test', title: '컬럼 정렬 테스트' });
+  const row = createRow({ sourceKey: 'tourapi:123', title: '컬럼 정렬 테스트' });
   const values = toStagingValues(row);
 
   assert.equal(values.length, STAGING_COLUMNS.length);
-  assert.equal(values[STAGING_COLUMNS.indexOf('source_key')], 'culture:test');
+  assert.equal(values[STAGING_COLUMNS.indexOf('source_key')], 'tourapi:123');
   assert.equal(values[STAGING_COLUMNS.indexOf('title')], '컬럼 정렬 테스트');
 });

@@ -1,6 +1,6 @@
 import { NewCultureRow } from '@/db/schema';
 
-import { createCultureSourceKey } from './cultureIdentity';
+import { isTourApiSourceKey } from './cultureIdentity';
 
 import {
   KOREA_LAT_MAX,
@@ -16,7 +16,11 @@ export const deduplicateCultureRows = (rows: NewCultureRow[]) => {
   let duplicateCount = 0;
 
   for (const row of rows) {
-    const key = row.sourceKey ?? createCultureSourceKey(row);
+    const key = row.sourceKey;
+    if (!isTourApiSourceKey(key)) {
+      throw new Error('유효한 TourAPI source key가 없는 데이터는 중복 제거할 수 없습니다.');
+    }
+
     const existing = deduped.get(key);
     if (!existing) {
       deduped.set(key, row);
@@ -98,6 +102,10 @@ export const normalizeAndValidateCultureRows = (rows: NewCultureRow[], now = new
   const normalizedRows: NewCultureRow[] = [];
 
   for (const row of rows) {
+    if (!isTourApiSourceKey(row.sourceKey)) {
+      throw new Error(`유효하지 않은 TourAPI source key입니다: ${row.sourceKey ?? 'missing'}`);
+    }
+
     if (!hasRequiredFields(row)) {
       missingRequiredFieldCount += 1;
       continue;
@@ -119,11 +127,7 @@ export const normalizeAndValidateCultureRows = (rows: NewCultureRow[], now = new
       invalidCoordinateCount += 1;
     }
 
-    const normalizedRow = { ...row, lat: normalized.lat, lng: normalized.lng };
-    normalizedRows.push({
-      ...normalizedRow,
-      sourceKey: normalizedRow.sourceKey ?? createCultureSourceKey(normalizedRow),
-    });
+    normalizedRows.push({ ...row, lat: normalized.lat, lng: normalized.lng });
   }
 
   const validRatio = normalizedRows.length > 0 ? validCoordinateCount / normalizedRows.length : 0;
