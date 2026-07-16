@@ -68,8 +68,10 @@ export async function GET() {
             AND (${cultures.endDate} > ${maximumPlausibleEndDate} OR ${cultures.endDate} < ${cultures.startDate})
           THEN 1 ELSE 0 END
         )`,
-        latestUpdatedAt: sql<string | null>`MAX(
-          CASE WHEN ${cultures.isActive} = 1 THEN ${cultures.updatedAt} ELSE NULL END
+        // updated_at contains both SQLite and ISO 8601 timestamps, so compare them chronologically.
+        latestUpdatedAt: sql<string | null>`strftime(
+          '%Y-%m-%dT%H:%M:%fZ',
+          MAX(CASE WHEN ${cultures.isActive} = 1 THEN julianday(${cultures.updatedAt}) ELSE NULL END)
         )`,
         latestEndDate: sql<string | null>`MAX(
           CASE WHEN ${cultures.isActive} = 1 THEN ${cultures.endDate} ELSE NULL END

@@ -78,6 +78,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     .filter(Boolean)
     .join(' · ')
     .slice(0, 155);
+  const mainImage = formatted?.mainImage?.trim();
+  const eventImageUrl = mainImage && mainImage !== '/assets/images/logo.svg' ? mainImage : null;
+  const shareImageUrl = eventImageUrl ?? OG_IMAGE_URL;
+  const openGraphImage =
+    eventImageUrl
+      ? { url: eventImageUrl, alt: title }
+      : {
+          url: shareImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+          type: 'image/png' as const,
+        };
 
   return {
     title,
@@ -92,20 +105,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title,
       description: description || '문화행사 상세 정보',
       siteName: '문화산책',
-      images: [
-        {
-          url: formatted?.mainImage || OG_IMAGE_URL,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      images: [openGraphImage],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description: description || '문화행사 상세 정보',
-      images: [formatted?.mainImage || OG_IMAGE_URL],
+      images: [shareImageUrl],
     },
     keywords: [formatted?.classification, formatted?.guName, '전국 문화행사', '지역 축제', '공연'].filter(
       Boolean
