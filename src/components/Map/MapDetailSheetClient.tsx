@@ -549,13 +549,13 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
               alt={`${culture?.title || '문화행사'} - ${selectedViewerImage.name}`}
               fill
               sizes='100vw'
-              className='object-contain'
+              className='pointer-events-none object-contain'
               priority
             />
             <button
               type='button'
               onClick={closeImageViewer}
-              className='absolute right-0 top-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+              className='absolute right-0 top-0 z-10 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
               aria-label='이미지 확대 보기 닫기'
             >
               <CloseIcon className='size-5' />
@@ -569,7 +569,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                       index === null ? 0 : (index - 1 + galleryImages.length) % galleryImages.length
                     )
                   }
-                  className='absolute left-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+                  className='absolute left-0 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
                   aria-label='이전 이미지'
                 >
                   &lt;
@@ -577,12 +577,12 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 <button
                   type='button'
                   onClick={() => setImageViewerIndex(index => (index === null ? 0 : (index + 1) % galleryImages.length))}
-                  className='absolute right-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+                  className='absolute right-0 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
                   aria-label='다음 이미지'
                 >
                   &gt;
                 </button>
-                <span className='absolute bottom-0 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white'>
+                <span className='absolute bottom-0 z-10 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white'>
                   {viewerPosition + 1} / {galleryImages.length}
                 </span>
               </>

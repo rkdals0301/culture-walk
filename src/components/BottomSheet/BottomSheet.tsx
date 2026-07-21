@@ -54,17 +54,25 @@ const BottomSheet = () => {
 
   return (
     <>
-      {isActive && (
+      {isOpen && (
         <LazyMotion features={domAnimation}>
-          <div className='bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full lg:hidden' />
+          <div
+            className={`bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full transition-opacity duration-150 lg:hidden ${
+              isOverlayOpen ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
           <m.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-0 lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
+            className={`surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-0 lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none ${
+              isOverlayOpen ? 'pointer-events-none invisible' : ''
+            }`}
             role='dialog'
             aria-modal='true'
             aria-label='행사 상세 정보'
+            aria-hidden={isOverlayOpen}
+            inert={isOverlayOpen}
             tabIndex={-1}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: isOverlayOpen ? 0 : 1, y: 0 }}
             initial={{ opacity: 0, y: 48 }}
             transition={{ duration: 0.28 }}
           >
