@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.20.1",
+    "@opennextjs/cloudflare": "1.19.11",
     "@tanstack/react-virtual": "^3.10.8",
     "axios": "^1.18.1",
     "clsx": "^2.1.1",
