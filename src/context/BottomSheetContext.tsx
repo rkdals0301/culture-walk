@@ -10,19 +10,16 @@ interface OpenBottomSheetParams {
 
 interface BottomSheetContextProps {
   isOpen: boolean;
-  isOverlayOpen: boolean;
   content: React.ReactNode | null;
   footer: React.ReactNode | null;
   openBottomSheet: (params: OpenBottomSheetParams) => void;
   closeBottomSheet: () => void;
-  setOverlayOpen: (isOpen: boolean) => void;
 }
 
 const BottomSheetContext = createContext<BottomSheetContextProps | undefined>(undefined);
 
 export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [content, setContent] = useState<React.ReactNode | null>(null);
   const [footer, setFooter] = useState<React.ReactNode | null>(null);
 
@@ -31,7 +28,6 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // 바텀 시트를 열 때 onClose 콜백 설정
   const openBottomSheet = useCallback(({ content, footer, onClose }: OpenBottomSheetParams) => {
     setIsOpen(true);
-    setIsOverlayOpen(false);
     setContent(content);
     setFooter(footer ?? null);
     if (onClose) {
@@ -42,7 +38,6 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // 바텀 시트를 닫을 때 onCloseCallback을 호출
   const closeBottomSheet = useCallback(() => {
     setIsOpen(false);
-    setIsOverlayOpen(false);
     setContent(null);
     setFooter(null);
     if (onCloseCallbackRef.current) {
@@ -52,9 +47,7 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   return (
-    <BottomSheetContext.Provider
-      value={{ isOpen, isOverlayOpen, content, footer, openBottomSheet, closeBottomSheet, setOverlayOpen: setIsOverlayOpen }}
-    >
+    <BottomSheetContext.Provider value={{ isOpen, content, footer, openBottomSheet, closeBottomSheet }}>
       {children}
     </BottomSheetContext.Provider>
   );
