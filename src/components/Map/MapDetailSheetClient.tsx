@@ -419,7 +419,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   }, [isLoading, error, culture, imgSrc, imageFailed, handleImageError, router]);
 
   useEffect(() => {
-    const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${culture?.id ?? 'no-culture'}`;
+    const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${culture?.id ?? 'no-culture'}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;
     if (lastSheetSignatureRef.current === signature) {
       return;
     }
@@ -436,6 +436,8 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     cultureId,
     error?.message,
     handleBottomSheetClose,
+    imageFailed,
+    imgSrc,
     isLoading,
     openBottomSheet,
     renderContent,
