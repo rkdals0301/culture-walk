@@ -517,14 +517,6 @@ const MapView = () => {
         </div>
       )}
 
-      {pendingDetailId !== null && (
-        <div className='pointer-events-none absolute left-3 right-3 top-32 z-20 md:left-auto md:right-6 md:max-w-xs'>
-          <div className='surface-panel rounded-[16px] px-3 py-2 text-xs font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
-            행사 상세를 여는 중입니다.
-          </div>
-        </div>
-      )}
-
       {error && (
         <div className='absolute left-3 right-3 top-20 z-20 rounded-[20px] border border-rose-500/20 bg-rose-50/90 p-3 text-sm text-rose-800 backdrop-blur-md dark:bg-rose-900/30 dark:text-rose-100 md:left-6 md:right-auto md:max-w-sm'>
           행사 데이터를 불러오지 못했습니다: {error.message}
