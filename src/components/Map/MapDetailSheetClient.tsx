@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
+import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
 
@@ -134,12 +135,33 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   const { culture: loadedCulture } = useCultureContext();
   const culture =
     loadedCulture?.id === cultureId ? loadedCulture : initialCulture.id === cultureId ? initialCulture : null;
-  const { openBottomSheet } = useBottomSheet();
+  const { openBottomSheet, setOverlayOpen } = useBottomSheet();
   const lastSheetSignatureRef = useRef('');
+  const galleryImages = useMemo(() => {
+    if (!culture) {
+      return [];
+    }
+
+    const images = [
+      ...(culture.mainImage ? [{ url: culture.mainImage, name: '대표 이미지' }] : []),
+      ...(culture.additionalImages ?? []).map(image => ({ url: image.url, name: image.name || '추가 이미지' })),
+    ];
+    const seen = new Set<string>();
+
+    return images.filter(image => {
+      if (!image.url || seen.has(image.url)) {
+        return false;
+      }
+
+      seen.add(image.url);
+      return true;
+    });
+  }, [culture]);
 
   const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
+  const [imageViewerIndex, setImageViewerIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -160,7 +182,60 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   useEffect(() => {
     setImgSrc(culture?.mainImage);
     setImageFailed(false);
-  }, [culture?.mainImage]);
+    setImageViewerIndex(null);
+    setOverlayOpen(false);
+  }, [culture?.mainImage, setOverlayOpen]);
+
+  const openImageViewer = useCallback(
+    (imageUrl?: string) => {
+      if (!imageUrl) {
+        return;
+      }
+
+      const index = galleryImages.findIndex(image => image.url === imageUrl);
+      if (index >= 0) {
+        setImageViewerIndex(index);
+        setOverlayOpen(true);
+      }
+    },
+    [galleryImages, setOverlayOpen]
+  );
+
+  const closeImageViewer = useCallback(() => {
+    setImageViewerIndex(null);
+    setOverlayOpen(false);
+  }, [setOverlayOpen]);
+
+  useEffect(() => {
+    return () => setOverlayOpen(false);
+  }, [setOverlayOpen]);
+
+  useEffect(() => {
+    if (imageViewerIndex === null) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeImageViewer();
+      }
+
+      if (galleryImages.length < 2) {
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        setImageViewerIndex(index => (index === null ? 0 : (index - 1 + galleryImages.length) % galleryImages.length));
+      }
+
+      if (event.key === 'ArrowRight') {
+        setImageViewerIndex(index => (index === null ? 0 : (index + 1) % galleryImages.length));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeImageViewer, galleryImages.length, imageViewerIndex]);
 
   const renderFooter = useCallback(() => {
     if (!culture) {
@@ -233,6 +308,12 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       <div className='flex flex-col gap-4'>
         <div className='relative aspect-[4/3] overflow-hidden rounded-[18px] bg-black/[0.04] dark:bg-white/[0.05]'>
           {hasCultureImage ? (
+            <button
+              type='button'
+              onClick={() => openImageViewer(imgSrc)}
+              className='group relative size-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-surface)]'
+              aria-label={`${culture.title} 이미지 확대`}
+            >
             <Image
               src={imgSrc as string}
               alt={culture.title}
@@ -244,6 +325,10 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
               priority
               className='object-contain'
             />
+              <span className='absolute bottom-3 right-3 flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100'>
+                +
+              </span>
+            </button>
           ) : (
             <CultureImageFallback classification={culture.classification || '문화행사'} />
           )}
@@ -257,6 +342,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 onClick={() => {
                   setImgSrc(image.url);
                   setImageFailed(false);
+                  openImageViewer(image.url);
                 }}
                 className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/50'
                 aria-label={image.name || '추가 이미지 보기'}
@@ -416,7 +502,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         )}
       </div>
     );
-  }, [isLoading, error, culture, imgSrc, imageFailed, handleImageError, router]);
+  }, [isLoading, error, culture, imgSrc, imageFailed, handleImageError, openImageViewer, router]);
 
   useEffect(() => {
     const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${culture?.id ?? 'no-culture'}`;
@@ -442,7 +528,70 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     renderFooter,
   ]);
 
-  return mounted ? null : <MapDetailFallback culture={initialCulture} />;
+  const viewerPosition = imageViewerIndex ?? 0;
+  const selectedViewerImage = imageViewerIndex === null ? null : galleryImages[viewerPosition];
+
+  return (
+    <>
+      {!mounted && <MapDetailFallback culture={initialCulture} />}
+      {selectedViewerImage && (
+        <div
+          data-image-viewer
+          className='fixed inset-0 z-[70] flex items-center justify-center bg-black/85 p-4 sm:p-8'
+          role='dialog'
+          aria-modal='true'
+          aria-label='행사 이미지 확대 보기'
+          onClick={closeImageViewer}
+        >
+          <div className='relative flex size-full max-w-6xl items-center justify-center' onClick={event => event.stopPropagation()}>
+            <Image
+              src={selectedViewerImage.url}
+              alt={`${culture?.title || '문화행사'} - ${selectedViewerImage.name}`}
+              fill
+              sizes='100vw'
+              className='object-contain'
+              priority
+            />
+            <button
+              type='button'
+              onClick={closeImageViewer}
+              className='absolute right-0 top-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+              aria-label='이미지 확대 보기 닫기'
+            >
+              <CloseIcon className='size-5' />
+            </button>
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  type='button'
+                  onClick={() =>
+                    setImageViewerIndex(index =>
+                      index === null ? 0 : (index - 1 + galleryImages.length) % galleryImages.length
+                    )
+                  }
+                  className='absolute left-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+                  aria-label='이전 이미지'
+                >
+                  &lt;
+                </button>
+                <button
+                  type='button'
+                  onClick={() => setImageViewerIndex(index => (index === null ? 0 : (index + 1) % galleryImages.length))}
+                  className='absolute right-0 flex size-11 items-center justify-center rounded-full bg-black/55 text-xl font-medium text-white transition hover:bg-black/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white'
+                  aria-label='다음 이미지'
+                >
+                  &gt;
+                </button>
+                <span className='absolute bottom-0 rounded-full bg-black/55 px-3 py-1.5 text-xs font-semibold text-white'>
+                  {viewerPosition + 1} / {galleryImages.length}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default MapDetailSheetClient;

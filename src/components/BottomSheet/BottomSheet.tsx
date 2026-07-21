@@ -12,11 +12,11 @@ import * as m from 'framer-motion/m';
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const BottomSheet = () => {
-  const { isOpen, content, footer, closeBottomSheet } = useBottomSheet();
+  const { isOpen, isOverlayOpen, content, footer, closeBottomSheet } = useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
-  const isActive = isOpen && !isSideMenuOpen;
+  const isActive = isOpen && !isSideMenuOpen && !isOverlayOpen;
 
   useDialogFocusTrap(isActive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
