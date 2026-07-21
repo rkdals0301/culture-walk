@@ -1,6 +1,7 @@
 'use client';
 
 import { useBottomSheet } from '@/context/BottomSheetContext';
+import { useSideMenu } from '@/context/SideMenuContext';
 import { useDialogFocusTrap } from '@/hooks/useDialogFocusTrap';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -12,17 +13,19 @@ import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const BottomSheet = () => {
   const { isOpen, content, footer, closeBottomSheet } = useBottomSheet();
+  const { isOpen: isSideMenuOpen } = useSideMenu();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
+  const isActive = isOpen && !isSideMenuOpen;
 
-  useDialogFocusTrap(isOpen, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
+  useDialogFocusTrap(isActive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isActive) {
       return;
     }
 
@@ -43,7 +46,7 @@ const BottomSheet = () => {
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown, true);
     };
-  }, [isOpen, closeBottomSheet]);
+  }, [isActive, closeBottomSheet]);
 
   if (!mounted) {
     return null;
@@ -51,7 +54,7 @@ const BottomSheet = () => {
 
   return (
     <>
-      {isOpen && (
+      {isActive && (
         <LazyMotion features={domAnimation}>
           <div className='bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full lg:hidden' />
           <m.div

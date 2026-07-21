@@ -45,7 +45,7 @@ const SideMenu = () => {
     <>
       <div
         className={clsx(
-          'fixed inset-0 z-30 size-full bg-[#081311]/55 backdrop-blur-sm transition-opacity duration-300',
+          'fixed inset-0 z-50 size-full bg-[#081311]/55 backdrop-blur-sm transition-opacity duration-300',
           isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         )}
         onClick={closeSideMenu}
@@ -55,7 +55,7 @@ const SideMenu = () => {
       <aside
         ref={panelRef}
         className={clsx(
-          'fixed left-0 top-0 z-40 flex h-dvh w-[calc(100vw-16px)] max-w-[320px] flex-col rounded-r-lg border-r border-[var(--app-border)] bg-[#fafcf9] p-5 shadow-[var(--app-shadow)] transition-transform duration-300 dark:bg-[#101916] sm:p-6',
+          'fixed left-0 top-0 z-[60] flex h-dvh w-[calc(100vw-16px)] max-w-[320px] flex-col rounded-r-lg border-r border-[var(--app-border)] bg-[#fafcf9] p-5 shadow-[var(--app-shadow)] transition-transform duration-300 dark:bg-[#101916] sm:p-6',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         role='dialog'
