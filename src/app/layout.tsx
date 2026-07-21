@@ -26,7 +26,7 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GOOGLE_SITE_VERIFICATION =
   process.env.GOOGLE_SITE_VERIFICATION || '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF-ZoOEKo';
 const NAVER_SITE_VERIFICATION =
-  process.env.NAVER_SITE_VERIFICATION || '9be5b4849e8b76cfe8b1b4e00d9bc16c9d3d5db5';
+  process.env.NAVER_SITE_VERIFICATION || 'a33276bf6f5a8e13bf6f4009af7828cbaa3cdbb1';
 const WEBSITE_STRUCTURED_DATA = {
   '@context': 'https://schema.org',
   '@graph': [
