@@ -268,7 +268,13 @@ const MapDashboard = () => {
   };
 
   const handleOpenCulture = (culture: FormattedCulture) => {
-    router.push(`/map/${culture.id}`);
+    const detailPath = `/map/${culture.id}`;
+    if (isDetailRoute) {
+      router.replace(detailPath);
+      return;
+    }
+
+    router.push(detailPath);
   };
 
   useEffect(() => {

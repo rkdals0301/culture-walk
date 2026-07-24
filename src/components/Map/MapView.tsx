@@ -186,9 +186,15 @@ const MapView = () => {
     (id: number) => {
       setPendingDetailId(id);
       setActiveMarkerId(id);
-      router.push(`/map/${id}`);
+      const detailPath = `/map/${id}`;
+      if (selectedCultureId !== null) {
+        router.replace(detailPath);
+        return;
+      }
+
+      router.push(detailPath);
     },
-    [router]
+    [router, selectedCultureId]
   );
 
   const handleMarkerGroupClick = useCallback(
