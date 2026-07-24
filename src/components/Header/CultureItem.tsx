@@ -58,7 +58,7 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
             className='object-cover'
           />
         ) : (
-          <CultureImageFallback compact />
+          <CultureImageFallback compact classification={culture.classification} />
         )}
       </div>
       <div className='min-w-0 grow overflow-hidden'>
