@@ -3,13 +3,14 @@
 import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import CultureList from '@/components/Header/CultureList';
 import CultureListLoading from '@/components/Header/CultureListLoading';
+import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, CultureCategoryKey } from '@/utils/cultureCategory';
 import { calculateDistanceMeters, getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -169,6 +170,7 @@ const DESKTOP_PANEL_WIDTH = 400;
 const MapDashboard = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const { isOpen: isBottomSheetOpen, closeBottomSheet } = useBottomSheet();
   const {
     cultures,
     mapCultures,
@@ -190,6 +192,7 @@ const MapDashboard = () => {
   const [sortMode, setSortMode] = useState<MapSortMode>('date');
   const [isLocating, setIsLocating] = useState(false);
   const isDetailRoute = /^\/map\/\d+/.test(pathname ?? '');
+  const wasDetailRouteRef = useRef(isDetailRoute);
   const selectedCultureId = useMemo(() => {
     const match = (pathname ?? '').match(/^\/map\/(\d+)/);
     if (!match) {
@@ -284,6 +287,14 @@ const MapDashboard = () => {
 
     setIsMobileSheetVisible(false);
   }, [isDetailRoute]);
+
+  useEffect(() => {
+    if (wasDetailRouteRef.current && !isDetailRoute && isBottomSheetOpen) {
+      closeBottomSheet();
+    }
+
+    wasDetailRouteRef.current = isDetailRoute;
+  }, [closeBottomSheet, isBottomSheetOpen, isDetailRoute]);
 
   useEffect(() => {
     const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
