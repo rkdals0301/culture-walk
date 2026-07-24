@@ -6,13 +6,16 @@ import { useDialogFocusTrap } from '@/hooks/useDialogFocusTrap';
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { usePathname } from 'next/navigation';
+
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion';
 
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const BottomSheet = () => {
-  const { isOpen, content, footer, closeBottomSheet } = useBottomSheet();
+  const { isOpen, content, footer, closeOnRouteExit, closeBottomSheet, dismissBottomSheet } = useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
+  const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -46,6 +49,12 @@ const BottomSheet = () => {
       setMobileSheetMode('peek');
     }
   }, [isActive]);
+
+  useEffect(() => {
+    if (isOpen && closeOnRouteExit && !/^\/map\/\d+$/.test(pathname ?? '')) {
+      dismissBottomSheet();
+    }
+  }, [closeOnRouteExit, dismissBottomSheet, isOpen, pathname]);
 
   useEffect(() => {
     if (!isActive) {

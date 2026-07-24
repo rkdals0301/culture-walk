@@ -262,13 +262,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 aria-label={image.name || '추가 이미지 보기'}
                 aria-pressed={imgSrc === image.url}
               >
-                <Image
-                  src={image.thumbnailUrl}
-                  alt=''
-                  fill
-                  sizes='72px'
-                  className='object-cover'
-                />
+                <Image src={image.thumbnailUrl} alt='' fill sizes='72px' className='object-cover' />
               </button>
             ))}
           </div>
@@ -430,6 +424,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       content: renderContent(),
       footer: renderFooter(),
       onClose: handleBottomSheetClose,
+      closeOnRouteExit: true,
     });
   }, [
     culture?.id,
