@@ -32,9 +32,15 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
   const label = classification || '문화행사';
 
   return (
-    <div className='flex size-full flex-col items-center justify-center gap-2 bg-[#edf4f0] text-center text-[#397662] dark:bg-[#10251f] dark:text-[#8dc5b5]'>
+    <div
+      className={`flex size-full flex-col items-center justify-center bg-[#edf4f0] text-center text-[#397662] dark:bg-[#10251f] dark:text-[#8dc5b5] ${
+        compact ? 'gap-1.5 px-1' : 'gap-2'
+      }`}
+    >
       <ClassificationIcon classification={classification} compact={compact} />
-      {!compact && <span className='text-xs font-semibold'>{label}</span>}
+      <span className={compact ? 'max-w-full truncate text-[0.65rem] font-semibold leading-none' : 'text-xs font-semibold'}>
+        {label}
+      </span>
     </div>
   );
 };

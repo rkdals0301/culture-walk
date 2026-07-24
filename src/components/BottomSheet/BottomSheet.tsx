@@ -59,7 +59,7 @@ const BottomSheet = () => {
           <div className='bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full lg:hidden' />
           <m.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-0 lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
+            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-auto lg:right-0 lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-r-0 lg:border-t-0 lg:shadow-none'
             role='dialog'
             aria-modal='true'
             aria-label='행사 상세 정보'

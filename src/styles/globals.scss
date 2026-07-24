@@ -6,6 +6,7 @@
   :root {
     --map-header-height: 72px;
     --map-sidebar-width: 400px;
+    --map-detail-width: 0px;
     color-scheme: light;
     --app-bg: #f3f5f2;
     --app-text: #10211d;
@@ -114,16 +115,20 @@
   .map-viewport {
     bottom: 0;
     left: var(--map-sidebar-width);
-    right: 0;
+    right: var(--map-detail-width);
     top: var(--map-header-height);
-    transition: left 280ms ease;
+    transition:
+      left 280ms ease,
+      right 280ms ease;
   }
 
   .map-top-scrim {
     left: var(--map-sidebar-width);
-    right: 0;
+    right: var(--map-detail-width);
     top: var(--map-header-height);
-    transition: left 280ms ease;
+    transition:
+      left 280ms ease,
+      right 280ms ease;
   }
 
   .map-side-scrim {

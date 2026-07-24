@@ -280,8 +280,10 @@ const MapDashboard = () => {
   }, [isDetailRoute]);
 
   useEffect(() => {
-    const panelWidth = isDetailRoute || !isDesktopPanelCollapsed ? DESKTOP_PANEL_WIDTH : 0;
-    document.documentElement.style.setProperty('--map-sidebar-width', `${panelWidth}px`);
+    const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
+    const detailPanelWidth = isDetailRoute ? DESKTOP_PANEL_WIDTH : 0;
+    document.documentElement.style.setProperty('--map-sidebar-width', `${listPanelWidth}px`);
+    document.documentElement.style.setProperty('--map-detail-width', `${detailPanelWidth}px`);
 
     const notifyMapResize = () => window.dispatchEvent(new Event('resize'));
     const animationFrame = window.requestAnimationFrame(notifyMapResize);
@@ -338,14 +340,14 @@ const MapDashboard = () => {
       <aside
         className={clsx(
           'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-300 lg:flex',
-          isDesktopPanelCollapsed && !isDetailRoute
+          isDesktopPanelCollapsed
             ? 'border-r-0'
             : 'border-r border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur-2xl'
         )}
         style={{ width: 'var(--map-sidebar-width)' }}
         aria-label='문화행사 탐색 패널'
       >
-        {(!isDesktopPanelCollapsed || isDetailRoute) && (
+        {!isDesktopPanelCollapsed && (
           <section className='flex h-full w-[400px] min-w-[400px] flex-col overflow-hidden'>
             <div className='shrink-0 border-b border-[var(--app-border)] px-5 pb-3.5 pt-4'>
               <div className='flex items-start justify-between gap-3'>
@@ -353,17 +355,15 @@ const MapDashboard = () => {
                   <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사</p>
                   <h2 className='mt-1 text-xl font-semibold leading-[1.2]'>행사 찾기</h2>
                 </div>
-                {!isDetailRoute && (
-                  <button
-                    type='button'
-                    onClick={() => setIsDesktopPanelCollapsed(true)}
-                    className='soft-chip flex size-9 shrink-0 items-center justify-center rounded-xl text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
-                    aria-label='행사 목록 패널 접기'
-                    title='행사 목록 접기'
-                  >
-                    <ArrowBackIcon className='size-4' />
-                  </button>
-                )}
+                <button
+                  type='button'
+                  onClick={() => setIsDesktopPanelCollapsed(true)}
+                  className='soft-chip flex size-9 shrink-0 items-center justify-center rounded-xl text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+                  aria-label='행사 목록 패널 접기'
+                  title='행사 목록 접기'
+                >
+                  <ArrowBackIcon className='size-4' />
+                </button>
               </div>
 
               <form
@@ -437,7 +437,7 @@ const MapDashboard = () => {
         )}
       </aside>
 
-      {isDesktopPanelCollapsed && !isDetailRoute && (
+      {isDesktopPanelCollapsed && (
         <button
           type='button'
           onClick={() => setIsDesktopPanelCollapsed(false)}
