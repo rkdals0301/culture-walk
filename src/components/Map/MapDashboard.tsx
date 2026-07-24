@@ -287,7 +287,7 @@ const MapDashboard = () => {
 
     const notifyMapResize = () => window.dispatchEvent(new Event('resize'));
     const animationFrame = window.requestAnimationFrame(notifyMapResize);
-    const transitionTimer = window.setTimeout(notifyMapResize, 300);
+    const transitionTimer = window.setTimeout(notifyMapResize, 280);
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
@@ -340,7 +340,7 @@ const MapDashboard = () => {
       <aside
         data-keeps-detail-open
         className={clsx(
-          'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-300 lg:flex',
+          'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-[280ms] lg:flex',
           isDesktopPanelCollapsed
             ? 'border-r-0'
             : 'border-r border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur-2xl'

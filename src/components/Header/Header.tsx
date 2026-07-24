@@ -10,6 +10,9 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { AnimatePresence, LazyMotion, domAnimation, useReducedMotion } from 'framer-motion';
+import * as m from 'framer-motion/m';
+
 import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
 import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
@@ -21,6 +24,8 @@ const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
   const hasSearchHistoryEntryRef = useRef(false);
+  const shouldReduceMotion = useReducedMotion();
+  const searchTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
 
   useEffect(() => {
     void import('@/components/Header/SearchView');
@@ -43,23 +48,20 @@ const Header = () => {
     }
   };
 
-  const handleCloseOverlay = useCallback(
-    (options?: { syncHistory?: boolean }) => {
-      const syncHistory = options?.syncHistory ?? true;
-      setIsSearchBarVisible(false);
+  const handleCloseOverlay = useCallback((options?: { syncHistory?: boolean }) => {
+    const syncHistory = options?.syncHistory ?? true;
+    setIsSearchBarVisible(false);
 
-      if (!syncHistory) {
-        hasSearchHistoryEntryRef.current = false;
-        return;
-      }
+    if (!syncHistory) {
+      hasSearchHistoryEntryRef.current = false;
+      return;
+    }
 
-      if (typeof window !== 'undefined' && hasSearchHistoryEntryRef.current) {
-        hasSearchHistoryEntryRef.current = false;
-        window.history.back();
-      }
-    },
-    []
-  );
+    if (typeof window !== 'undefined' && hasSearchHistoryEntryRef.current) {
+      hasSearchHistoryEntryRef.current = false;
+      window.history.back();
+    }
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -81,7 +83,12 @@ const Header = () => {
     <header className='pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-4 sm:px-6 lg:h-[72px] lg:px-0 lg:pt-0'>
       <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-[20px] px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
-          <IconButton icon={<SideMenuIcon />} ariaLabel='사이드메뉴 열기' onClick={handleOpenSideMenu} variant='secondary' />
+          <IconButton
+            icon={<SideMenuIcon />}
+            ariaLabel='사이드메뉴 열기'
+            onClick={handleOpenSideMenu}
+            variant='secondary'
+          />
           <Link href='/' className='flex min-w-0 flex-1 items-center gap-3'>
             <Image
               src='/assets/images/logo-128.png'
@@ -109,12 +116,24 @@ const Header = () => {
           <ThemeToggleButton />
         </div>
       </div>
-      {isSearchBarVisible && (
-        <SearchView
-          onClose={() => handleCloseOverlay({ syncHistory: true })}
-          onCloseWithoutHistory={() => handleCloseOverlay({ syncHistory: false })}
-        />
-      )}
+      <LazyMotion features={domAnimation}>
+        <AnimatePresence initial={false}>
+          {isSearchBarVisible && (
+            <m.div
+              className='fixed inset-0 z-50'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={searchTransition}
+            >
+              <SearchView
+                onClose={() => handleCloseOverlay({ syncHistory: true })}
+                onCloseWithoutHistory={() => handleCloseOverlay({ syncHistory: false })}
+              />
+            </m.div>
+          )}
+        </AnimatePresence>
+      </LazyMotion>
     </header>
   );
 };
