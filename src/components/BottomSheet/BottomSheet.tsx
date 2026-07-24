@@ -30,12 +30,15 @@ const BottomSheet = () => {
     }
 
     const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node | null;
-      if (!target) {
+      const target = event.target;
+      if (!(target instanceof Node)) {
         return;
       }
 
-      if (panelRef.current?.contains(target)) {
+      if (
+        panelRef.current?.contains(target) ||
+        (target instanceof Element && target.closest('[data-keeps-detail-open]'))
+      ) {
         return;
       }
 

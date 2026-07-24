@@ -338,6 +338,7 @@ const MapDashboard = () => {
   return (
     <div className='pointer-events-none absolute inset-0'>
       <aside
+        data-keeps-detail-open
         className={clsx(
           'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-300 lg:flex',
           isDesktopPanelCollapsed
