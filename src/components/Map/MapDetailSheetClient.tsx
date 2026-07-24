@@ -32,7 +32,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-auto lg:right-0 lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-r-0 lg:border-t-0 lg:shadow-none'>
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'>
       <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
         <Link
           href='/map'

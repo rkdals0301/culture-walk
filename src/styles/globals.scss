@@ -114,26 +114,22 @@
 @media (min-width: 1024px) {
   .map-viewport {
     bottom: 0;
-    left: var(--map-sidebar-width);
-    right: var(--map-detail-width);
+    left: calc(var(--map-sidebar-width) + var(--map-detail-width));
+    right: 0;
     top: var(--map-header-height);
-    transition:
-      left 280ms ease,
-      right 280ms ease;
+    transition: left 280ms ease;
   }
 
   .map-top-scrim {
-    left: var(--map-sidebar-width);
-    right: var(--map-detail-width);
+    left: calc(var(--map-sidebar-width) + var(--map-detail-width));
+    right: 0;
     top: var(--map-header-height);
-    transition:
-      left 280ms ease,
-      right 280ms ease;
+    transition: left 280ms ease;
   }
 
   .map-side-scrim {
     bottom: 0;
-    left: var(--map-sidebar-width);
+    left: calc(var(--map-sidebar-width) + var(--map-detail-width));
     top: var(--map-header-height);
     width: 48px;
     background: linear-gradient(90deg, rgba(8, 19, 17, 0.18) 0%, rgba(8, 19, 17, 0.06) 46%, transparent 100%);
