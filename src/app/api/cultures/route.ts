@@ -2,7 +2,7 @@ import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } fr
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
-import { normalizeCultureCoordinates } from '@/services/cultureService';
+import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
 import { CultureListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -47,7 +47,7 @@ export async function GET() {
     const koreaToday = getKoreaDateStartIso();
 
     const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v5', {
+    const cacheKey = createCacheKey('cultures:list:v6', {
       version: cacheVersion,
       koreaDate: koreaToday.slice(0, 10),
     });
@@ -99,7 +99,7 @@ export async function GET() {
 
       return {
         id: row.id,
-        classification: row.classification ?? '',
+        classification: normalizeCultureClassification(row.classification),
         endDate: toDateOrNow(row.endDate ?? row.startDate),
         guName: row.guName ?? '',
         isFree: row.isFree ?? '',
