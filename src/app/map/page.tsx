@@ -1,5 +1,3 @@
-import MapDashboard from '@/components/Map/MapDashboard';
-
 import type { Metadata } from 'next';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
@@ -48,8 +46,6 @@ export const metadata: Metadata = {
   },
 };
 
-const MapPage = () => {
-  return <MapDashboard />;
-};
+const MapPage = () => null;
 
 export default MapPage;

@@ -35,6 +35,7 @@ export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture
       if (culture.isFree === '무료' || culture.isFree === '부분 무료') return culture.isFree;
       if (culture.isFree === '유료') return '유료 · 요금 안내';
       if (culture.isFree === '요금 확인') return '요금 확인';
+      if (culture.isFree === '정보 없음') return '요금 정보 확인';
       return culture.isFree;
     })();
 
