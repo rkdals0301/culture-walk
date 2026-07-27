@@ -1,6 +1,7 @@
 import { bumpCulturesCacheVersion } from '@/cache/kv';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 
+import { refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
 import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from './cultureSyncRunRepository';
@@ -39,6 +40,16 @@ export const syncCultures = async (
     const snapshotStats = await reconcileCulturesViaStaging(d1, deduplicatedRows, stagingRunKey);
     await bumpCulturesCacheVersion();
 
+    // Detail enrichment is best-effort: the core snapshot remains authoritative and must not fail because of it.
+    try {
+      const refreshedDetails = await refreshStaleCachedTourApiDetails(config, d1);
+      if (refreshedDetails > 0) {
+        await bumpCulturesCacheVersion();
+      }
+    } catch (error) {
+      console.warn('TourAPI 상세 캐시 보강을 건너뜁니다.', error);
+    }
+
     const result: SyncResult = {
       runId,
       fetched: externalRows.length,
@@ -46,8 +57,7 @@ export const syncCultures = async (
       updated: snapshotStats.updated,
       reactivated: snapshotStats.reactivated,
       deactivated: snapshotStats.deactivated,
-      skipped:
-        snapshotStats.skipped + normalization.invalidDateCount + normalization.missingRequiredFieldCount,
+      skipped: snapshotStats.skipped + normalization.invalidDateCount + normalization.missingRequiredFieldCount,
       normalized: normalization.rows.length,
       deduplicated: deduplicatedRows.length,
       invalidCoordinates: normalization.invalidCoordinateCount,

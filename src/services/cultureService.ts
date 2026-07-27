@@ -31,6 +31,11 @@ const parseNumber = (value?: string) => {
 
 const toText = (value?: string) => value?.trim() || null;
 
+export const normalizeCultureClassification = (value?: string | null) => {
+  const normalized = value?.trim();
+  return normalized === '선택안함' ? '기타' : normalized || '';
+};
+
 const formatTourApiDate = (value?: string) => {
   const match = value?.match(/^(\d{4})(\d{2})(\d{2})$/);
   return match ? `${match[1]}.${match[2]}.${match[3]}` : value?.trim() || '';
@@ -71,7 +76,7 @@ const resolveClassification = (festival: TourApiFestival) => {
   if (/(전시|미술|박람회|비엔날레)/.test(value)) return '전시';
   if (/(공연|콘서트|연극|뮤지컬|오페라|무용|국악|음악회)/.test(value)) return '공연';
   if (/(교육|체험|워크숍|클래스)/.test(value)) return '교육·체험';
-  return festival.festivaltype?.trim() || '축제';
+  return normalizeCultureClassification(festival.festivaltype) || '축제';
 };
 
 const toDateOrNow = (value?: string | null) => {
@@ -98,7 +103,10 @@ export const normalizeCultureCoordinates = (lat: number | null | undefined, lng:
 };
 
 export function mapTourApiFestivalToCulture(festival: TourApiFestival): NewCultureRow {
-  const address = [festival.addr1, festival.addr2].map(value => value?.trim()).filter(Boolean).join(' ');
+  const address = [festival.addr1, festival.addr2]
+    .map(value => value?.trim())
+    .filter(Boolean)
+    .join(' ');
   const contact = toText(festival.tel);
 
   return {
@@ -135,20 +143,20 @@ export function mapCultureRowToCulture(row: CultureRow, tourApiDetails?: TourApi
   const details = tourApiDetails ? normalizeTourApiDetails(tourApiDetails) : null;
   const programIntroduction = details
     ? Array.from(new Set([details.program, details.subevent].filter(Boolean))).join('\n\n')
-    : row.programIntroduction ?? '';
+    : (row.programIntroduction ?? '');
   const mainImage = row.mainImage || details?.additionalImages[0]?.url || '/assets/images/logo.svg';
   const additionalImages = (details?.additionalImages ?? []).filter(image => image.url !== mainImage);
   const useFee = details?.useFee || row.useFee || '';
 
   return {
     id: row.id,
-    classification: row.classification ?? '',
+    classification: normalizeCultureClassification(row.classification),
     date: row.date ?? '',
     endDate,
     etcDescription: details?.contact || row.etcDescription || '',
     guName: row.guName ?? '',
     homepageDetailAddress: details?.bookingUrl || row.homepageDetailAddress || '',
-    isFree: details?.useFee ? classifyTourApiFee(details.useFee) : row.isFree ?? '',
+    isFree: details?.useFee ? classifyTourApiFee(details.useFee) : (row.isFree ?? ''),
     lat: coordinates.lat,
     lng: coordinates.lng,
     mainImage,

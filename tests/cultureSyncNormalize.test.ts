@@ -67,6 +67,21 @@ test('TourAPI festival fields map to the culture schema', () => {
   assert.equal(row.endDate, '2026-12-31T00:00:00.000Z');
 });
 
+test('TourAPI placeholder classifications are normalized to a user-facing category', () => {
+  const row = mapTourApiFestivalToCulture({
+    contentid: '2786400',
+    contenttypeid: '15',
+    title: '사천에어쇼',
+    festivaltype: '선택안함',
+    eventstartdate: '20261022',
+    eventenddate: '20261025',
+    mapx: '128.064',
+    mapy: '35.003',
+  });
+
+  assert.equal(row.classification, '기타');
+});
+
 test('normalization swaps coordinates and preserves an official source key', () => {
   const rows = Array.from({ length: 5 }, (_, index) => createRow({ title: `서울 문화 행사 ${index}` }));
   rows[0].sourceKey = 'tourapi:1';
