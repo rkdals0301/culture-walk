@@ -1,7 +1,5 @@
-import MapDashboard from '@/components/Map/MapDashboard';
-import MapShell from '@/components/Map/MapShell';
-
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: {
@@ -13,12 +11,6 @@ export const metadata: Metadata = {
   },
 };
 
-const HomePage = () => {
-  return (
-    <MapShell>
-      <MapDashboard />
-    </MapShell>
-  );
-};
+const HomePage = () => redirect('/map');
 
 export default HomePage;
