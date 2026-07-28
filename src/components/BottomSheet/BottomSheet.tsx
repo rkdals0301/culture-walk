@@ -22,14 +22,14 @@ const BottomSheet = () => {
   const [mobileSheetMode, setMobileSheetMode] = useState<'peek' | 'expanded'>('peek');
   const dragControls = useDragControls();
   const shouldReduceMotion = useReducedMotion();
-  const isActive = isOpen && !isSideMenuOpen;
+  const isInteractive = isOpen && !isSideMenuOpen;
   const mobileSheetHeight = mobileSheetMode === 'expanded' ? 'calc(100dvh - 3rem)' : '52dvh';
   const panelTransition = shouldReduceMotion
     ? { duration: 0.01 }
     : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
   const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
 
-  useDialogFocusTrap(isActive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
+  useDialogFocusTrap(isInteractive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
   useEffect(() => {
     setMounted(true);
@@ -45,10 +45,10 @@ const BottomSheet = () => {
   }, []);
 
   useEffect(() => {
-    if (isActive) {
+    if (isOpen) {
       setMobileSheetMode('peek');
     }
-  }, [isActive]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && closeOnRouteExit && !/^\/map\/\d+$/.test(pathname ?? '')) {
@@ -57,7 +57,7 @@ const BottomSheet = () => {
   }, [closeOnRouteExit, dismissBottomSheet, isOpen, pathname]);
 
   useEffect(() => {
-    if (!isActive) {
+    if (!isInteractive) {
       return;
     }
 
@@ -81,7 +81,7 @@ const BottomSheet = () => {
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown, true);
     };
-  }, [isActive, closeBottomSheet]);
+  }, [isInteractive, closeBottomSheet]);
 
   if (!mounted) {
     return null;
@@ -108,7 +108,7 @@ const BottomSheet = () => {
 
   return (
     <AnimatePresence initial={false}>
-      {isActive && (
+      {isOpen && (
         <React.Fragment>
           <motion.div
             className='bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full lg:hidden'
@@ -121,8 +121,10 @@ const BottomSheet = () => {
             ref={panelRef}
             className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
             role='dialog'
-            aria-modal='true'
+            aria-hidden={isSideMenuOpen}
+            aria-modal={isInteractive}
             aria-label='행사 상세 정보'
+            inert={isSideMenuOpen}
             tabIndex={-1}
             drag={isDesktop ? false : 'y'}
             dragControls={dragControls}
