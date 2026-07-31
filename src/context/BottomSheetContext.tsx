@@ -6,6 +6,8 @@ interface OpenBottomSheetParams {
   content: React.ReactNode;
   footer?: React.ReactNode;
   onClose?: () => void;
+  onBack?: () => void;
+  backLabel?: string;
   closeOnRouteExit?: boolean;
 }
 
@@ -14,7 +16,9 @@ interface BottomSheetContextProps {
   content: React.ReactNode | null;
   footer: React.ReactNode | null;
   closeOnRouteExit: boolean;
+  backLabel: string | null;
   openBottomSheet: (params: OpenBottomSheetParams) => void;
+  backBottomSheet: () => void;
   closeBottomSheet: () => void;
   dismissBottomSheet: () => void;
 }
@@ -26,25 +30,36 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [content, setContent] = useState<React.ReactNode | null>(null);
   const [footer, setFooter] = useState<React.ReactNode | null>(null);
   const [closeOnRouteExit, setCloseOnRouteExit] = useState(false);
+  const [backLabel, setBackLabel] = useState<string | null>(null);
 
-  const onCloseCallbackRef = useRef<(() => void) | null>(null); // useRef로 콜백 관리
+  const onCloseCallbackRef = useRef<(() => void) | null>(null);
+  const onBackCallbackRef = useRef<(() => void) | null>(null);
 
-  // 바텀 시트를 열 때 onClose 콜백 설정
   const dismissBottomSheet = useCallback(() => {
     setIsOpen(false);
     setContent(null);
     setFooter(null);
     setCloseOnRouteExit(false);
+    setBackLabel(null);
     onCloseCallbackRef.current = null;
+    onBackCallbackRef.current = null;
   }, []);
 
-  const openBottomSheet = useCallback(({ content, footer, onClose, closeOnRouteExit }: OpenBottomSheetParams) => {
+  const openBottomSheet = useCallback(({ content, footer, onClose, onBack, backLabel, closeOnRouteExit }: OpenBottomSheetParams) => {
     setIsOpen(true);
     setContent(content);
     setFooter(footer ?? null);
     setCloseOnRouteExit(Boolean(closeOnRouteExit));
+    setBackLabel(onBack ? backLabel ?? '뒤로' : null);
     onCloseCallbackRef.current = onClose ?? null;
+    onBackCallbackRef.current = onBack ?? null;
   }, []);
+
+  const backBottomSheet = useCallback(() => {
+    const onBack = onBackCallbackRef.current;
+    dismissBottomSheet();
+    onBack?.();
+  }, [dismissBottomSheet]);
 
   const closeBottomSheet = useCallback(() => {
     const onClose = onCloseCallbackRef.current;
@@ -59,7 +74,9 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         content,
         footer,
         closeOnRouteExit,
+        backLabel,
         openBottomSheet,
+        backBottomSheet,
         closeBottomSheet,
         dismissBottomSheet,
       }}

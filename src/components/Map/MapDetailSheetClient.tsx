@@ -157,6 +157,10 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     router.replace('/map', { scroll: false });
   }, [router]);
 
+  const handleBottomSheetBack = useCallback(() => {
+    router.replace('/map?list=open', { scroll: false });
+  }, [router]);
+
   useEffect(() => {
     setImgSrc(culture?.mainImage);
     setImageFailed(false);
@@ -418,6 +422,8 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       content: renderContent(),
       footer: renderFooter(),
       onClose: handleBottomSheetClose,
+      onBack: handleBottomSheetBack,
+      backLabel: '목록',
       closeOnRouteExit: true,
     });
   }, [
@@ -425,6 +431,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     cultureId,
     error?.message,
     handleBottomSheetClose,
+    handleBottomSheetBack,
     imageFailed,
     imgSrc,
     isLoading,

@@ -11,9 +11,11 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion';
 
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
+import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 
 const BottomSheet = () => {
-  const { isOpen, content, footer, closeOnRouteExit, closeBottomSheet, dismissBottomSheet } = useBottomSheet();
+  const { isOpen, content, footer, closeOnRouteExit, backLabel, backBottomSheet, closeBottomSheet, dismissBottomSheet } =
+    useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -119,7 +121,7 @@ const BottomSheet = () => {
       {isOpen && (
         <React.Fragment>
           <motion.div
-            className='bg-[#081311]/18 pointer-events-none fixed inset-0 z-40 size-full lg:hidden'
+            className='pointer-events-none fixed inset-0 z-40 size-full bg-[var(--app-sheet-scrim)] lg:hidden'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -146,7 +148,19 @@ const BottomSheet = () => {
             transition={panelTransition}
           >
             <div className='grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-4 pt-3 lg:flex lg:justify-end'>
-              <div className='lg:hidden' />
+              {backLabel ? (
+                <button
+                  type='button'
+                  onClick={backBottomSheet}
+                  className='flex h-11 min-w-11 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-[var(--app-muted)] lg:hidden'
+                  aria-label={`${backLabel}으로 돌아가기`}
+                >
+                  <ArrowBackIcon className='size-4' />
+                  {backLabel}
+                </button>
+              ) : (
+                <div className='lg:hidden' />
+              )}
               <button
                 type='button'
                 onPointerDown={event => dragControls.start(event)}
@@ -158,12 +172,12 @@ const BottomSheet = () => {
                 className='flex h-7 w-16 touch-none items-center justify-center rounded-full lg:hidden'
                 aria-label={mobileSheetMode === 'peek' ? '상세 정보 확장' : '상세 정보 축소'}
               >
-                <span className='h-1.5 w-14 rounded-full bg-[#1f765f]/20' />
+                <span className='h-1.5 w-14 rounded-full bg-[var(--app-primary)]/20' />
               </button>
               <button
                 type='button'
                 onClick={closeBottomSheet}
-                className='soft-chip flex size-8 items-center justify-center justify-self-end rounded-full text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+                className='soft-chip flex size-11 items-center justify-center justify-self-end rounded-full text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
                 aria-label='상세 패널 닫기'
               >
                 <CloseIcon className='size-4' />
