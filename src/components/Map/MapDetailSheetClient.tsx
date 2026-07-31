@@ -32,7 +32,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:top-[88px] lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
