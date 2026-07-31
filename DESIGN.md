@@ -1,65 +1,65 @@
-# Culture Walk Design Guide
+# 문화산책 디자인 가이드
 
-## Product Character
+## 제품 성격
 
-Culture Walk is a practical cultural-event map, not a marketing site. The interface should help users scan nearby events, compare schedules, and open details quickly. Keep the visual tone calm, contemporary, and grounded in real place information.
+문화산책은 마케팅 페이지가 아니라 문화행사를 탐색하는 실용적인 지도 서비스입니다. 사용자가 가까운 행사를 빠르게 훑고, 일정을 비교하고, 상세 정보를 열 수 있어야 합니다. 시각적 인상은 차분하고 현대적이며 실제 장소 정보에 기반해야 합니다.
 
-## Foundations
+## 기본 원칙
 
-- Use the existing Pretendard-first font stack from `tailwind.config.ts`.
-- Keep letter spacing at `0`; do not scale font sizes with viewport width.
-- Use the semantic CSS variables in `src/app/globals.css` rather than hard-coded page-level palette values.
-- Light mode uses a soft green-gray background with near-white surfaces. Dark mode uses deep green-black surfaces with warm white text.
-- Preserve the warm accent (`--app-warm-text`) for exceptional status or price-related emphasis only. Do not turn it into a dominant UI color.
+- `tailwind.config.ts`에 정의된 Pretendard 우선 글꼴 스택을 사용합니다.
+- 자간은 `0`으로 유지하고 뷰포트 너비에 따라 글꼴 크기를 확대하지 않습니다.
+- 페이지별 하드코딩 팔레트 대신 `src/app/globals.css`의 의미 기반 CSS 변수를 사용합니다.
+- 라이트 모드는 부드러운 녹색 계열 회색 배경과 거의 흰색에 가까운 surface를 사용합니다. 다크 모드는 짙은 녹흑색 surface와 따뜻한 흰색 텍스트를 사용합니다.
+- 따뜻한 강조색(`--app-warm-text`)은 예외 상태나 요금 강조에만 제한적으로 사용합니다. 주된 UI 색으로 사용하지 않습니다.
 
-## Surfaces And Hierarchy
+## Surface와 정보 위계
 
-- Use `.surface-panel` for persistent map controls, sidebars, and detail panels.
-- Use `.surface-card` for repeated event cards and clearly framed content.
-- Use `.soft-chip` for compact filters, tags, and low-emphasis state controls.
-- Do not nest cards inside cards. Sections should be open layouts; only repeated items, dialogs, and tools need a framed surface.
-- Keep border radii restrained. Existing components should lead; new cards should not exceed 8px unless a modal or platform component requires it.
+- 지속적으로 보이는 지도 컨트롤, 사이드바, 상세 패널에는 `.surface-panel`을 사용합니다.
+- 반복되는 행사 카드와 명확히 구획된 콘텐츠에는 `.surface-card`를 사용합니다.
+- 작은 필터, 태그, 낮은 강조도의 상태 컨트롤에는 `.soft-chip`을 사용합니다.
+- 카드 안에 카드를 넣지 않습니다. 섹션은 열린 레이아웃을 사용하고, 반복 항목, 다이얼로그, 도구에만 framed surface를 사용합니다.
+- 모서리 둥글기는 절제합니다. 기존 컴포넌트를 우선하며 새 카드는 모달이나 플랫폼 컴포넌트가 아닌 한 8px를 넘지 않습니다.
 
-## Map Experience
+## 지도 경험
 
-- The map is the primary workspace. Desktop layout uses a fixed header, a list panel, and an adjacent detail panel; the map fills the remaining viewport.
-- Selecting a list item opens details beside the list. Selecting a map marker opens the map-context detail flow. Selecting another item should replace the existing detail immediately.
-- Do not reset map position, zoom, filters, or sort state when closing details.
-- Marker states must remain distinguishable by size, contrast, and selected state. Avoid relying on color alone.
-- Location permission belongs to actions that need it, such as distance sorting. Show a clear fallback when permission is unavailable.
+- 지도는 핵심 작업 공간입니다. 데스크톱은 고정 헤더, 목록 패널, 그 옆의 상세 패널로 구성하고 지도는 남은 뷰포트를 채웁니다.
+- 목록 항목을 선택하면 목록 옆에 상세를 열고, 마커를 선택하면 지도 문맥의 상세 흐름을 엽니다. 다른 항목을 선택하면 이미 열린 상세를 즉시 교체합니다.
+- 상세를 닫아도 지도 위치, 줌, 필터, 정렬 상태를 초기화하지 않습니다.
+- 마커 상태는 크기, 대비, 선택 상태만으로도 구분되어야 합니다. 색상만으로 상태를 표현하지 않습니다.
+- 위치 권한은 거리순 정렬처럼 실제로 필요한 동작에서 요청합니다. 권한을 얻지 못했을 때의 대체 동작을 명확히 제공합니다.
 
-## Responsive Behavior
+## 반응형 동작
 
-- Design mobile first. On small screens, list and detail content use bottom-sheet or full-height flows instead of desktop side panels.
-- Keep primary touch targets at least 44px in either dimension.
-- Reserve stable dimensions for headers, toolbars, marker controls, thumbnails, and icon buttons so state changes do not shift layout.
-- Ensure text wraps or truncates intentionally; no labels, buttons, or metadata may overlap adjacent content.
-- Verify both light and dark mode at mobile and desktop widths for any visual change.
+- 모바일 우선으로 설계합니다. 작은 화면에서는 데스크톱 사이드 패널 대신 bottom sheet 또는 전체 높이 흐름으로 목록과 상세를 제공합니다.
+- 주요 터치 대상은 가로 또는 세로가 최소 44px이 되게 합니다.
+- 헤더, 툴바, 마커 컨트롤, 썸네일, 아이콘 버튼은 상태 변경으로 레이아웃이 흔들리지 않도록 안정적인 크기를 확보합니다.
+- 텍스트 줄바꿈과 말줄임은 의도적으로 처리합니다. 라벨, 버튼, 메타데이터가 인접 콘텐츠와 겹치면 안 됩니다.
+- 시각 변경마다 모바일과 데스크톱 너비에서 라이트·다크 모드를 확인합니다.
 
-## Components And Controls
+## 컴포넌트와 컨트롤
 
-- Reuse `Button`, `IconButton`, `CultureCategoryBadge`, and existing shared styles before introducing a new component.
-- Use Lucide icons for familiar actions such as close, menu, location, share, navigation, zoom, and image controls.
-- Icon-only controls need an accessible label and a tooltip where the meaning is not obvious.
-- Use segmented controls for mutually exclusive sort modes, toggles or checkboxes for binary filters, and chips only for compact filter sets.
-- Keep Korean UI copy short, specific, and action-oriented.
+- 새 컴포넌트를 만들기 전 `Button`, `IconButton`, `CultureCategoryBadge`, 기존 공용 스타일을 재사용합니다.
+- 닫기, 메뉴, 위치, 공유, 길찾기, 줌, 이미지 조작처럼 익숙한 동작에는 Lucide 아이콘을 사용합니다.
+- 의미가 명확하지 않은 아이콘 전용 컨트롤에는 접근 가능한 이름과 툴팁이 필요합니다.
+- 상호 배타적인 정렬 모드에는 segmented control을, 이진 필터에는 토글 또는 체크박스를, 작은 필터 집합에는 chip을 사용합니다.
+- 한국어 UI 문구는 짧고 구체적이며 행동 중심으로 작성합니다.
 
-## Motion And Feedback
+## 모션과 피드백
 
-- Use motion to explain panel entry, replacement, and dismissal, not as decoration.
-- Existing map-panel transitions use approximately 280ms easing. Keep new transitions within that visual rhythm.
-- Respect `prefers-reduced-motion`; do not introduce motion that bypasses the global reduced-motion rule.
-- Loading states should preserve the final layout dimensions. Failure states should retain useful context and offer a clear retry path.
+- 모션은 패널의 진입, 교체, 닫힘을 설명하기 위해 사용하며 장식으로 사용하지 않습니다.
+- 기존 지도 패널 전환은 약 280ms easing을 사용합니다. 새 전환도 이 리듬을 유지합니다.
+- `prefers-reduced-motion`을 존중하며 전역 reduced-motion 규칙을 우회하는 모션을 추가하지 않습니다.
+- 로딩 상태는 최종 레이아웃의 크기를 유지해야 합니다. 실패 상태는 유용한 문맥을 남기고 명확한 재시도 경로를 제공합니다.
 
-## Images And Empty States
+## 이미지와 빈 상태
 
-- Prefer official event images supplied by the source. Keep image cropping consistent and avoid blurred decorative imagery.
-- When images are absent or fail, show the existing restrained place/category icon treatment so list density remains stable.
-- Image galleries must support changing the representative image and opening images without accidentally moving the map.
+- 원본이 제공하는 공식 행사 이미지를 우선하고 이미지 크롭은 일관되게 유지합니다. 흐린 장식용 이미지는 사용하지 않습니다.
+- 이미지가 없거나 불러오기에 실패하면 기존의 절제된 장소·카테고리 아이콘 처리를 보여주어 목록 밀도를 유지합니다.
+- 이미지 갤러리는 지도가 의도치 않게 움직이지 않도록 대표 이미지를 교체하고 이미지를 열어 볼 수 있어야 합니다.
 
-## Accessibility And Quality Checks
+## 접근성과 품질 확인
 
-- Maintain text contrast in both themes and visible keyboard focus.
-- Do not communicate event status, price, or selection through color alone.
-- Give all interactive elements an accessible name.
-- Before release, inspect the map, list, details, filters, and header at mobile and desktop widths, in light and dark mode.
+- 두 테마 모두에서 텍스트 대비와 키보드 포커스 표시를 유지합니다.
+- 행사 상태, 요금, 선택 상태를 색상만으로 전달하지 않습니다.
+- 모든 상호작용 요소에는 접근 가능한 이름을 제공합니다.
+- 출시 전 모바일과 데스크톱 너비에서 지도, 목록, 상세, 필터, 헤더를 라이트·다크 모드로 점검합니다.
