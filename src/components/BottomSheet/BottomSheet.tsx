@@ -19,6 +19,7 @@ const BottomSheet = () => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [mobileSheetMode, setMobileSheetMode] = useState<'peek' | 'expanded'>('peek');
   const dragControls = useDragControls();
   const shouldReduceMotion = useReducedMotion();
@@ -37,11 +38,18 @@ const BottomSheet = () => {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const wideMediaQuery = window.matchMedia('(min-width: 1280px)');
     const updateViewport = () => setIsDesktop(mediaQuery.matches);
+    const updateWideViewport = () => setIsWideDesktop(wideMediaQuery.matches);
 
     updateViewport();
+    updateWideViewport();
     mediaQuery.addEventListener('change', updateViewport);
-    return () => mediaQuery.removeEventListener('change', updateViewport);
+    wideMediaQuery.addEventListener('change', updateWideViewport);
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport);
+      wideMediaQuery.removeEventListener('change', updateWideViewport);
+    };
   }, []);
 
   useEffect(() => {
@@ -119,7 +127,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
+            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}
@@ -133,8 +141,8 @@ const BottomSheet = () => {
             dragElastic={shouldReduceMotion ? 0 : 0.08}
             onDragEnd={handleMobileDragEnd}
             animate={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1, y: 0, height: mobileSheetHeight }}
-            initial={isDesktop ? { opacity: 0, x: -32 } : { opacity: 0, y: 48, height: '52dvh' }}
-            exit={isDesktop ? { opacity: 0, x: -24 } : { opacity: 0, y: 48 }}
+            initial={isDesktop ? { opacity: 0, x: isWideDesktop ? -32 : 32 } : { opacity: 0, y: 48, height: '52dvh' }}
+            exit={isDesktop ? { opacity: 0, x: isWideDesktop ? -24 : 24 } : { opacity: 0, y: 48 }}
             transition={panelTransition}
           >
             <div className='grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-4 pt-3 lg:flex lg:justify-end'>

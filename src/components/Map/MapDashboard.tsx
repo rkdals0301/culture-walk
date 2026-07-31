@@ -52,8 +52,8 @@ const FilterControls = ({
             aria-pressed={isActive}
             className={
               isActive
-                ? 'h-8 min-w-0 whitespace-nowrap rounded-lg bg-[#1f765f] px-1 text-xs font-semibold text-white dark:bg-[#3c9d80] dark:text-[#071410]'
-                : 'h-8 min-w-0 whitespace-nowrap rounded-lg border border-[var(--app-border)] px-1 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
+                ? 'h-11 min-w-0 whitespace-nowrap rounded-lg bg-[var(--app-primary)] px-1 text-xs font-semibold text-[var(--app-on-primary)]'
+                : 'h-11 min-w-0 whitespace-nowrap rounded-lg border border-[var(--app-border)] px-1 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
             }
           >
             {option.label}
@@ -66,7 +66,7 @@ const FilterControls = ({
         value={region}
         onChange={event => onRegionChange(event.target.value)}
         aria-label='지역 필터'
-        className='h-8 min-w-0 flex-1 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
+        className='h-11 min-w-0 flex-1 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
       >
         <option value='all'>전국</option>
         {regionOptions.map(option => (
@@ -75,14 +75,14 @@ const FilterControls = ({
           </option>
         ))}
       </select>
-      <label className='flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)]'>
+      <label className='flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)]'>
         <input
           type='checkbox'
           checked={freeOnly}
           onChange={event => onFreeOnlyChange(event.target.checked)}
           className='peer sr-only'
         />
-        <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--app-border)] bg-[var(--app-card)] peer-checked:border-[#2f9b7f] peer-checked:bg-[#2f9b7f]'>
+        <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--app-border)] bg-[var(--app-card)] peer-checked:border-[var(--app-primary)] peer-checked:bg-[var(--app-primary)]'>
           <span className={freeOnly ? 'size-1.5 rounded-[2px] bg-white' : 'hidden'} />
         </span>
         무료
@@ -112,8 +112,8 @@ const SortControl = ({ mode, hasLocation, isLocating, onChange }: SortControlPro
       aria-pressed={mode === 'date'}
       className={
         mode === 'date'
-          ? 'h-7 rounded-md bg-[var(--app-card)] px-2.5 text-[0.72rem] font-semibold text-[var(--app-text)] shadow-sm'
-          : 'h-7 rounded-md px-2.5 text-[0.72rem] font-semibold text-[var(--app-muted)]'
+          ? 'h-11 rounded-md bg-[var(--app-card)] px-3 text-xs font-semibold text-[var(--app-text)] shadow-sm'
+          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--app-muted)]'
       }
     >
       일정순
@@ -127,8 +127,8 @@ const SortControl = ({ mode, hasLocation, isLocating, onChange }: SortControlPro
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={
         mode === 'distance'
-          ? 'h-7 rounded-md bg-[var(--app-card)] px-2.5 text-[0.72rem] font-semibold text-[var(--app-warm-text)] shadow-sm'
-          : 'h-7 rounded-md px-2.5 text-[0.72rem] font-semibold text-[var(--app-muted)] disabled:cursor-not-allowed disabled:opacity-45'
+          ? 'h-11 rounded-md bg-[var(--app-card)] px-3 text-xs font-semibold text-[var(--app-primary)] shadow-sm'
+          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--app-muted)] disabled:cursor-not-allowed disabled:opacity-45'
       }
     >
       거리순
@@ -151,9 +151,9 @@ const LocationControl = ({ isActive, isLocating, onToggle }: LocationControlProp
     aria-label={isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
     title={isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
     className={clsx(
-      'flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[0.72rem] font-semibold transition',
+      'flex h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition',
       isActive
-        ? 'border-[#d98b2f]/35 bg-[#d98b2f]/10 text-[var(--app-warm-text)]'
+        ? 'border-[var(--app-primary)]/35 bg-[var(--app-primary)]/10 text-[var(--app-primary)]'
         : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
       isLocating && 'cursor-wait opacity-70'
     )}
@@ -186,6 +186,7 @@ const MapDashboard = () => {
   } = useCultureContext();
   const { isLoading, error } = useCultures();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
+  const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
   const [sortMode, setSortMode] = useState<MapSortMode>('date');
   const [isLocating, setIsLocating] = useState(false);
@@ -286,8 +287,18 @@ const MapDashboard = () => {
   }, [isDetailRoute]);
 
   useEffect(() => {
-    const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
-    const detailPanelWidth = isDetailRoute ? DESKTOP_PANEL_WIDTH : 0;
+    const mediaQuery = window.matchMedia('(min-width: 1280px)');
+    const updateViewport = () => setIsWideDesktop(mediaQuery.matches);
+
+    updateViewport();
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
+
+  useEffect(() => {
+    const isDetailOverlay = isDetailRoute && !isWideDesktop;
+    const listPanelWidth = isDesktopPanelCollapsed || isDetailOverlay ? 0 : DESKTOP_PANEL_WIDTH;
+    const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_PANEL_WIDTH : 0;
     document.documentElement.style.setProperty('--map-sidebar-width', `${listPanelWidth}px`);
     document.documentElement.style.setProperty('--map-detail-width', `${detailPanelWidth}px`);
 
@@ -299,7 +310,7 @@ const MapDashboard = () => {
       window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(transitionTimer);
     };
-  }, [isDesktopPanelCollapsed, isDetailRoute]);
+  }, [isDesktopPanelCollapsed, isDetailRoute, isWideDesktop]);
 
   const renderListPanel = () => {
     if (isLoading) {
@@ -323,7 +334,7 @@ const MapDashboard = () => {
           <button
             type='button'
             onClick={resetMapFilters}
-            className='mt-4 rounded-xl bg-[#1f765f] px-4 py-2 text-sm font-semibold text-[#fff8f1] transition hover:bg-[#175846]'
+            className='mt-4 rounded-xl bg-[var(--app-primary)] px-4 py-2 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
           >
             필터 초기화
           </button>
@@ -346,7 +357,8 @@ const MapDashboard = () => {
       <aside
         data-keeps-detail-open
         className={clsx(
-          'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-[280ms] lg:flex',
+          'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--app-text)] transition-[width] duration-[280ms]',
+          isDetailRoute ? 'min-[1280px]:flex' : 'lg:flex',
           isDesktopPanelCollapsed
             ? 'border-r-0'
             : 'border-r border-[var(--app-border)] bg-[var(--app-surface)] backdrop-blur-2xl'
@@ -359,7 +371,7 @@ const MapDashboard = () => {
             <div className='shrink-0 border-b border-[var(--app-border)] px-5 pb-3.5 pt-4'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='min-w-0'>
-                  <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사</p>
+                  <p className='text-[0.7rem] font-semibold text-[var(--app-primary)]'>전국 문화행사</p>
                   <h2 className='mt-1 text-xl font-semibold leading-[1.2]'>행사 찾기</h2>
                 </div>
                 <button
@@ -378,7 +390,7 @@ const MapDashboard = () => {
                 className='mt-3.5 flex h-11 items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] px-3'
                 onSubmit={event => event.preventDefault()}
               >
-                <SearchIcon className='size-[18px] shrink-0 text-[#1f765f]' />
+                <SearchIcon className='size-[18px] shrink-0 text-[var(--app-primary)]' />
                 <input
                   type='text'
                   value={searchQuery}
@@ -444,7 +456,7 @@ const MapDashboard = () => {
         )}
       </aside>
 
-      {isDesktopPanelCollapsed && (
+      {isDesktopPanelCollapsed && !isDetailRoute && (
         <button
           type='button'
           onClick={() => setIsDesktopPanelCollapsed(false)}
@@ -453,7 +465,7 @@ const MapDashboard = () => {
           title='행사 목록 펼치기'
         >
           <ArrowBackIcon className='size-4 rotate-180' />
-          {hasActiveFilters && <span className='absolute right-1 top-1.5 size-1.5 rounded-full bg-[#d98b2f]' />}
+          {hasActiveFilters && <span className='absolute right-1 top-1.5 size-1.5 rounded-full bg-[var(--app-accent)]' />}
         </button>
       )}
 
@@ -462,11 +474,11 @@ const MapDashboard = () => {
           <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[20px] text-[var(--app-text)]'>
             <div className='border-b border-[var(--app-border)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
-                <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
+                <div className='h-1.5 w-12 rounded-full bg-[var(--app-primary)]/20' />
               </div>
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
-                  <p className='text-[0.7rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>행사 목록</p>
+                  <p className='text-[0.7rem] font-semibold text-[var(--app-primary)]'>행사 목록</p>
                   <p className='mt-1 truncate text-sm font-medium text-[var(--app-muted)]'>
                     총 {visibleCultures.length}개
                   </p>

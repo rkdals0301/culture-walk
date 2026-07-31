@@ -32,7 +32,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'>
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:top-[88px] lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
@@ -41,7 +41,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           <ArrowBackIcon className='size-4' />
           지도 목록
         </Link>
-        <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+        <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>
           {culture.classification || '문화행사'}
         </p>
         <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.25] sm:text-[1.75rem]'>{culture.title}</h1>
@@ -109,7 +109,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
                 href={culture.homepageDetailAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='flex h-11 items-center justify-center rounded-xl bg-[#1f765f] px-3 text-sm font-semibold text-[#fff8f1]'
+                className='flex h-11 items-center justify-center rounded-xl bg-[var(--app-primary)] px-3 text-sm font-semibold text-[var(--app-on-primary)]'
               >
                 예약 / 상세
               </a>
@@ -279,11 +279,11 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </span>
         </div>
         <div>
-          <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>선택한 행사</p>
+          <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>선택한 행사</p>
           <h2 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h2>
         </div>
 
-        <div className='grid grid-cols-1 gap-2'>
+        <div className='grid grid-cols-2 gap-2'>
           <div className='soft-chip rounded-[14px] px-3 py-2.5'>
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>일정</p>
             <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
@@ -292,15 +292,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>장소</p>
             <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
           </div>
-          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
-            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>요금</p>
-            <p className='mt-1 whitespace-pre-line break-words text-sm font-semibold leading-5'>
-              {culture.useFee || culture.displayPrice}
-            </p>
-          </div>
         </div>
 
-        <div className='surface-card rounded-[18px] p-4'>
+        <div className='border-t border-[var(--app-border)] pt-4'>
           <dl className='grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
             <div className='grid grid-cols-[3.3rem_1fr] gap-3'>
               <dt className='font-semibold text-[var(--app-text)]'>대상</dt>
@@ -326,21 +320,21 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         </div>
 
         {culture.overview && (
-          <div className='surface-card rounded-[18px] p-4'>
-            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>행사 소개</p>
+          <section className='border-t border-[var(--app-border)] pt-4'>
+            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>행사 소개</p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.overview}
             </p>
-          </div>
+          </section>
         )}
 
         {culture.programIntroduction && (
-          <div className='surface-card rounded-[18px] p-4'>
-            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>프로그램</p>
+          <section className='border-t border-[var(--app-border)] pt-4'>
+            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>프로그램</p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.programIntroduction}
             </p>
-          </div>
+          </section>
         )}
 
         {(culture.bookingPlace ||
@@ -348,8 +342,8 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           culture.contact ||
           culture.festivalGrade ||
           culture.discountInformation) && (
-          <div className='surface-card rounded-[18px] p-4'>
-            <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>이용 안내</p>
+          <section className='border-t border-[var(--app-border)] pt-4'>
+            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>이용 안내</p>
             <dl className='mt-2 grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
               {culture.bookingPlace && (
                 <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
@@ -382,13 +376,13 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 </div>
               )}
             </dl>
-          </div>
+          </section>
         )}
 
         {(culture.additionalInformation ?? []).length > 0 && (
-          <details className='surface-card group rounded-[18px] p-4'>
+          <details className='group border-t border-[var(--app-border)] pt-4'>
             <summary className='flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
-              <span className='text-[0.72rem] text-[#1f765f] dark:text-[#8dc5b5]'>상세 안내</span>
+              <span className='text-[0.72rem] text-[var(--app-primary)]'>상세 안내</span>
               <span className='text-xs text-[var(--app-muted)] group-open:hidden'>열기</span>
               <span className='hidden text-xs text-[var(--app-muted)] group-open:inline'>닫기</span>
             </summary>
