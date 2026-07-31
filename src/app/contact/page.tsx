@@ -20,8 +20,8 @@ const ContactPage = () => {
       description='문화산책 이용 중 발견한 오류, 행사 정보 수정 요청, 개인정보 및 광고 관련 문의를 남길 수 있습니다.'
     >
       <div className='grid gap-4 md:grid-cols-2'>
-        <article className='surface-card rounded-[28px] p-5 sm:p-6'>
-          <h2 className='text-xl font-semibold tracking-[-0.03em]'>문의 가능 항목</h2>
+        <article className='surface-card rounded-2xl p-5 sm:p-6'>
+          <h2 className='text-xl font-semibold'>문의 가능 항목</h2>
           <ul className='mt-3 grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
             <li>행사 위치, 일정, 링크 오류 제보</li>
             <li>검색 또는 지도 이용 중 발생한 문제</li>
@@ -30,8 +30,8 @@ const ContactPage = () => {
           </ul>
         </article>
 
-        <article className='surface-card rounded-[28px] p-5 sm:p-6'>
-          <h2 className='text-xl font-semibold tracking-[-0.03em]'>문의 방법</h2>
+        <article className='surface-card rounded-2xl p-5 sm:p-6'>
+          <h2 className='text-xl font-semibold'>문의 방법</h2>
           <p className='mt-3 text-sm leading-7 text-[var(--app-muted)]'>
             사이트 운영 및 데이터 관련 문의는 아래 이메일로 전달해 주세요. 브라우저 주소와 오류 화면, 행사명, 발생 시간을
             함께 정리하면 더 정확하게 확인할 수 있습니다.
@@ -45,8 +45,8 @@ const ContactPage = () => {
         </article>
       </div>
 
-      <article className='surface-card rounded-[28px] p-5 sm:p-6'>
-        <h2 className='text-xl font-semibold tracking-[-0.03em]'>데이터 출처 안내</h2>
+      <article className='surface-card rounded-2xl p-5 sm:p-6'>
+        <h2 className='text-xl font-semibold'>데이터 출처 안내</h2>
         <p className='mt-3 text-sm leading-7 text-[var(--app-muted)]'>
           문화산책의 행사 정보는 한국관광공사 TourAPI 공개 데이터를 기반으로 구성됩니다. 행사 취소, 시간 변경, 예약 마감은
           원천 기관에서 먼저 반영될 수 있으므로 실제 방문 전 공식 상세 페이지를 확인해 주세요.

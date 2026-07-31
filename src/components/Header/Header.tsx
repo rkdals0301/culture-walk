@@ -81,7 +81,7 @@ const Header = () => {
 
   return (
     <header className='pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-4 sm:px-6 lg:h-[72px] lg:px-0 lg:pt-0'>
-      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-[20px] px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
+      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
           <IconButton
             icon={<SideMenuIcon />}
@@ -95,7 +95,7 @@ const Header = () => {
               alt='문화산책'
               width={44}
               height={44}
-              className='rounded-[14px] shadow-[0_16px_34px_-26px_rgba(31,118,95,0.8)]'
+              className='rounded-xl shadow-[0_12px_26px_-22px_rgba(31,118,95,0.62)]'
             />
             <div className='min-w-0'>
               <p className='truncate text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>

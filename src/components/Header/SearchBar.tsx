@@ -17,10 +17,10 @@ const SearchBar = ({ searchQuery, onSearchChange, onReset, onSubmit, autoFocus =
   return (
     <form
       onSubmit={onSubmit}
-      className='surface-card relative flex min-h-[3.25rem] w-full items-center gap-2 rounded-[22px] px-2.5 py-2 text-[var(--app-text)] sm:min-h-[3.65rem] sm:px-3'
+      className='surface-card relative flex min-h-[3.25rem] w-full items-center gap-2 rounded-2xl px-2.5 py-2 text-[var(--app-text)] sm:min-h-[3.65rem] sm:px-3'
     >
       <div className='flex min-w-0 flex-1 items-center gap-3'>
-        <span className='flex size-10 flex-none items-center justify-center rounded-2xl bg-[#1f765f] text-[#fff8f1] shadow-[0_18px_36px_-24px_rgba(31,118,95,0.95)] sm:size-11'>
+        <span className='flex size-10 flex-none items-center justify-center rounded-xl bg-[var(--app-primary)] text-[var(--app-on-primary)] shadow-[0_12px_26px_-22px_rgba(31,118,95,0.68)] sm:size-11'>
           <SearchIcon className='size-[18px] sm:size-5' />
         </span>
         <input

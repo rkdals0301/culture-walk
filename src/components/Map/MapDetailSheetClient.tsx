@@ -32,7 +32,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'>
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:max-h-[calc(100dvh-8rem)] md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'>
       <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
@@ -218,8 +218,8 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     }
     if (!culture) {
       return (
-        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-[28px] p-6 text-center'>
-          <p className='text-lg font-semibold tracking-[-0.03em]'>행사 정보를 찾을 수 없습니다.</p>
+        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-2xl p-6 text-center'>
+          <p className='text-lg font-semibold'>행사 정보를 찾을 수 없습니다.</p>
           <Button ariaLabel='목록으로 돌아가기' onClick={() => router.push('/map')}>
             목록으로 돌아가기
           </Button>
@@ -258,7 +258,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                   setImgSrc(image.url);
                   setImageFailed(false);
                 }}
-                className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/50'
+                className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-black/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]'
                 aria-label={image.name || '추가 이미지 보기'}
                 aria-pressed={imgSrc === image.url}
               >

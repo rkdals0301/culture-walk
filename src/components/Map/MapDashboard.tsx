@@ -448,7 +448,7 @@ const MapDashboard = () => {
         <button
           type='button'
           onClick={() => setIsDesktopPanelCollapsed(false)}
-          className='pointer-events-auto absolute left-0 top-1/2 z-20 hidden h-14 w-8 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)] shadow-[var(--app-shadow-soft)] backdrop-blur-xl transition hover:w-9 hover:bg-[var(--app-card)] lg:flex'
+          className='pointer-events-auto absolute left-0 top-1/2 z-20 hidden h-14 w-8 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-text)] shadow-[var(--app-shadow-soft)] backdrop-blur-md transition hover:w-9 hover:bg-[var(--app-card)] lg:flex'
           aria-label='행사 목록 패널 펼치기'
           title='행사 목록 펼치기'
         >
@@ -459,7 +459,7 @@ const MapDashboard = () => {
 
       <div className='pointer-events-none flex h-full w-full flex-col px-4 pb-4 pt-[5.4rem] sm:px-6 sm:pb-6 sm:pt-[6rem] lg:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[24px] text-[var(--app-text)]'>
+          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[20px] text-[var(--app-text)]'>
             <div className='border-b border-[var(--app-border)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
                 <div className='h-1.5 w-12 rounded-full bg-[#1f765f]/20' />
@@ -474,7 +474,7 @@ const MapDashboard = () => {
                 <button
                   type='button'
                   onClick={() => setIsMobileSheetVisible(false)}
-                  className='shrink-0 rounded-full bg-[#1f765f] px-3.5 py-2 text-xs font-semibold text-[#fff8f1] shadow-[0_14px_30px_-22px_rgba(31,118,95,0.9)]'
+                  className='shrink-0 rounded-xl bg-[var(--app-primary)] px-3.5 py-2 text-xs font-semibold text-[var(--app-on-primary)] shadow-[0_10px_22px_-18px_rgba(31,118,95,0.64)]'
                 >
                   지도만 보기
                 </button>
@@ -514,7 +514,7 @@ const MapDashboard = () => {
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel rounded-full border-[#1f765f]/20 px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-[0_20px_44px_-30px_rgba(16,33,29,0.6)]'
+              className='surface-panel rounded-xl border-[var(--app-primary)]/20 px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-[0_14px_30px_-24px_rgba(16,33,29,0.38)]'
             >
               목록 보기 {visibleCultures.length > 0 ? `· ${visibleCultures.length}개` : ''}
             </button>

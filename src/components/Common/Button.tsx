@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 interface ButtonProps {
   children: React.ReactNode;
   type?: 'button' | 'submit' | 'reset';
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'gradient';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   ariaLabel: string;
@@ -29,29 +29,26 @@ const Button = ({
 }: ButtonProps) => {
   const baseClass = clsx(
     'inline-flex items-center justify-center rounded-xl border font-semibold transition duration-200',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1f765f]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]',
     disabled && 'cursor-not-allowed opacity-50'
   );
 
   const colorClasses = {
     primary:
-      'border-transparent bg-[#1f765f] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(31,118,95,0.95)] hover:bg-[#175846]',
+      'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)] shadow-[0_14px_30px_-24px_rgba(31,118,95,0.72)] hover:bg-[var(--app-primary-hover)]',
     secondary:
       'border-[var(--app-border)] bg-white/70 text-[var(--app-text)] hover:bg-white dark:bg-white/5 dark:hover:bg-white/10',
     success:
-      'border-transparent bg-[#d98b2f] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(217,139,47,0.9)] hover:bg-[#c17824]',
+      'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)] shadow-[0_14px_30px_-24px_rgba(217,139,47,0.66)] hover:bg-[var(--app-accent-hover)]',
     danger:
-      'border-transparent bg-[#8e3b34] text-[#fff8f1] shadow-[0_20px_40px_-24px_rgba(142,59,52,0.9)] hover:bg-[#733029]',
-    gradient:
-      'border-transparent bg-gradient-to-r from-[#1f765f] via-[#2b8a6e] to-[#d98b2f] text-[#fff8f1] hover:brightness-105',
+      'border-transparent bg-[var(--app-danger)] text-[var(--app-on-danger)] shadow-[0_14px_30px_-24px_rgba(142,59,52,0.66)] hover:bg-[var(--app-danger-hover)]',
   };
 
   const disabledColorClasses = {
-    primary: 'border-transparent bg-[#8bb8ab] text-[#eef4f1]',
+    primary: 'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)]',
     secondary: 'border-[var(--app-border)] bg-white/40 text-[var(--app-muted)] dark:bg-white/5',
-    success: 'border-transparent bg-[#d5a56f] text-[#fff8f1]',
-    danger: 'border-transparent bg-[#b7847f] text-[#fff8f1]',
-    gradient: 'border-transparent bg-[#8bb8ab] text-[#eef4f1]',
+    success: 'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)]',
+    danger: 'border-transparent bg-[var(--app-danger)] text-[var(--app-on-danger)]',
   };
 
   const colorClass = disabled ? disabledColorClasses[variant] : colorClasses[variant];

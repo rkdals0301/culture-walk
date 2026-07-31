@@ -33,13 +33,13 @@ const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControl
   }, [loading, onLocationUpdate]);
 
   return (
-    <div className='surface-panel rounded-[22px] p-1'>
+    <div className='surface-panel rounded-xl p-1'>
       <IconButton
         ariaLabel='내 위치 찾기'
         fullWidth={false}
         disabled={loading}
         onClick={handleFindMyLocation}
-        className='rounded-[16px]'
+        className='rounded-lg'
         icon={<MapFindMyLocationIcon className={loading ? 'animate-spin' : undefined} />}
         variant='secondary'
       />

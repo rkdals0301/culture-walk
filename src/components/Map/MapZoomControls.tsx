@@ -30,9 +30,9 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
   }, [map]);
 
   return (
-    <div className='surface-panel flex flex-col items-center justify-center gap-1 rounded-[22px] p-1'>
+    <div className='surface-panel flex flex-col items-center justify-center gap-1 rounded-xl p-1'>
       <IconButton
-        className='rounded-[16px]'
+        className='rounded-lg'
         icon={<MapAddIcon />}
         ariaLabel='지도 확대'
         onClick={handleZoomIn}
@@ -40,7 +40,7 @@ const MapZoomControls = ({ map }: MapZoomControlsProps) => {
       />
       <IconButton
         icon={<MapRemoveIcon />}
-        className='rounded-[16px]'
+        className='rounded-lg'
         ariaLabel='지도 축소'
         onClick={handleZoomOut}
         variant='secondary'

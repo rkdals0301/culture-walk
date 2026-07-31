@@ -119,7 +119,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
+            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:bottom-0 lg:left-[var(--map-sidebar-width)] lg:right-auto lg:top-[72px] lg:h-[calc(100dvh-72px)] lg:max-h-none lg:w-[400px] lg:rounded-none lg:border-b-0 lg:border-l-0 lg:border-t-0 lg:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}

@@ -60,7 +60,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
               className={clsx(
-                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#d98b2f]/60'
+                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--app-focus)]'
               )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,

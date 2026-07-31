@@ -64,7 +64,7 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
 
       <div
         ref={panelRef}
-        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[24px] text-[var(--app-text)] sm:h-full sm:rounded-[32px]'
+        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] sm:h-full sm:rounded-[24px]'
         role='dialog'
         aria-modal='true'
         aria-label='문화행사 검색'
@@ -74,7 +74,7 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
           <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0 flex-1'>
               <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사 검색</p>
-              <h2 className='mt-1 text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.02em] sm:text-[1.9rem] sm:tracking-[-0.03em]'>
+              <h2 className='mt-1 text-[1.3rem] font-semibold leading-[1.24] sm:text-[1.9rem]'>
                 문화행사를 빠르게 검색하세요
               </h2>
               <p className='mt-1 hidden max-w-2xl text-[0.86rem] text-[var(--app-muted)] sm:mt-1.5 sm:block sm:text-[0.96rem]'>

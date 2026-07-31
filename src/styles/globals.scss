@@ -14,9 +14,19 @@
     --app-surface: rgba(250, 252, 249, 0.9);
     --app-card: rgba(255, 255, 255, 0.92);
     --app-border: rgba(16, 33, 29, 0.08);
-    --app-shadow: 0 24px 48px -34px rgba(16, 33, 29, 0.38);
-    --app-shadow-soft: 0 14px 30px -26px rgba(16, 33, 29, 0.24);
+    --app-shadow: 0 18px 40px -30px rgba(16, 33, 29, 0.3);
+    --app-shadow-soft: 0 10px 24px -22px rgba(16, 33, 29, 0.18);
     --app-chip: rgba(16, 33, 29, 0.06);
+    --app-primary: #1f765f;
+    --app-primary-hover: #175846;
+    --app-on-primary: #fff8f1;
+    --app-accent: #d98b2f;
+    --app-accent-hover: #c17824;
+    --app-on-accent: #24180a;
+    --app-danger: #8e3b34;
+    --app-danger-hover: #733029;
+    --app-on-danger: #fff8f1;
+    --app-focus: #1f765f;
     --app-warm-text: #ad5d10;
   }
 
@@ -28,9 +38,19 @@
     --app-surface: rgba(16, 25, 22, 0.94);
     --app-card: rgba(24, 33, 30, 0.94);
     --app-border: rgba(248, 244, 235, 0.08);
-    --app-shadow: 0 28px 56px -38px rgba(0, 0, 0, 0.62);
-    --app-shadow-soft: 0 18px 38px -30px rgba(0, 0, 0, 0.46);
+    --app-shadow: 0 20px 44px -32px rgba(0, 0, 0, 0.52);
+    --app-shadow-soft: 0 12px 28px -24px rgba(0, 0, 0, 0.38);
     --app-chip: rgba(248, 244, 235, 0.08);
+    --app-primary: #3c9d80;
+    --app-primary-hover: #51ad91;
+    --app-on-primary: #071410;
+    --app-accent: #e2a35d;
+    --app-accent-hover: #efb46f;
+    --app-on-accent: #071410;
+    --app-danger: #d88a80;
+    --app-danger-hover: #e79d93;
+    --app-on-danger: #071410;
+    --app-focus: #8dc5b5;
     --app-warm-text: #e2a35d;
   }
 
@@ -86,20 +106,20 @@
   border: 1px solid var(--app-border);
   background: var(--app-surface);
   box-shadow: var(--app-shadow);
-  backdrop-filter: blur(24px);
+  backdrop-filter: blur(16px);
 }
 
 .surface-card {
   border: 1px solid var(--app-border);
   background: var(--app-card);
   box-shadow: var(--app-shadow-soft);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
 }
 
 .soft-chip {
   border: 1px solid var(--app-border);
   background: var(--app-chip);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
 }
 
 .map-viewport,
@@ -148,11 +168,15 @@ input,
 optgroup,
 select,
 textarea {
-  background: none; /* 배경 없애기 */
+  background: none;
   box-shadow: none;
-  appearance: none; /* 기본 스타일 제거 */
-  touch-action: manipulation; /* 터치 동작 최적화 */
-  outline: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+:where(a, button, input, optgroup, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--app-focus);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
