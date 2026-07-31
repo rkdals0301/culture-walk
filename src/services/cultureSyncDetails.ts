@@ -10,6 +10,27 @@ type StaleDetailRow = {
   culture_id?: number;
   source_key?: string;
   registration_date?: string | null;
+  detail_sync_fail_count?: number | null;
+};
+
+const retryDelayMinutes = (failCount: number, sourceKey: string) => {
+  const base = failCount <= 1 ? 10 : failCount === 2 ? 30 : Math.min(120 * 2 ** (failCount - 3), 24 * 60);
+  let hash = 0;
+  for (let index = 0; index < sourceKey.length; index += 1) hash = (hash * 31 + sourceKey.charCodeAt(index)) | 0;
+  return Math.min(24 * 60, Math.max(1, Math.round(base * (0.9 + (Math.abs(hash) % 21) / 100))));
+};
+
+export const requestCultureDetailRefresh = async (d1: D1Binding, sourceKey: string) => {
+  await d1
+    .prepare(
+      `UPDATE cultures
+       SET detail_refresh_requested_at = CURRENT_TIMESTAMP,
+           detail_refresh_priority = 1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE source_key = ? AND is_active = 1`
+    )
+    .bind(sourceKey)
+    .run();
 };
 
 const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: StaleDetailRow) => {
@@ -60,6 +81,11 @@ const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: St
           program_introduction = ?,
           use_fee = ?,
           use_target = ?,
+          detail_refresh_requested_at = NULL,
+          detail_refresh_priority = 0,
+          detail_sync_fail_count = 0,
+          detail_next_retry_at = NULL,
+          detail_last_error = NULL,
           updated_at = ?
         WHERE id = ?`
       )
@@ -80,16 +106,28 @@ const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: St
   return true;
 };
 
-export const refreshStaleCachedTourApiDetails = async (config: TourApiConfig, d1: D1Binding) => {
+export const refreshStaleCachedTourApiDetails = async (
+  config: TourApiConfig,
+  d1: D1Binding,
+  options: { beforeEach?: () => Promise<boolean> } = {}
+) => {
   const result = await d1
     .prepare(
-      `SELECT cultures.id AS culture_id, cultures.source_key, cultures.registration_date
+      `SELECT cultures.id AS culture_id, cultures.source_key, cultures.registration_date, cultures.detail_sync_fail_count
        FROM cultures
-       INNER JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
+       LEFT JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
        WHERE cultures.is_active = 1
          AND cultures.source_key LIKE 'tourapi:%'
-         AND (details.is_complete != 1 OR details.source_modified_at IS NOT cultures.registration_date)
-       ORDER BY details.synced_at DESC
+         AND (cultures.detail_next_retry_at IS NULL OR cultures.detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (
+           cultures.detail_refresh_requested_at IS NOT NULL
+           OR details.source_key IS NULL
+           OR details.is_complete != 1
+           OR details.source_modified_at IS NOT cultures.registration_date
+         )
+       ORDER BY cultures.detail_refresh_priority DESC,
+                cultures.detail_refresh_requested_at ASC,
+                details.synced_at ASC
        LIMIT ?`
     )
     .bind(STALE_DETAIL_REFRESH_LIMIT)
@@ -97,10 +135,24 @@ export const refreshStaleCachedTourApiDetails = async (config: TourApiConfig, d1
 
   let refreshed = 0;
   for (const row of result.results ?? []) {
+    if (options.beforeEach && !(await options.beforeEach())) {
+      throw new Error('Culture detail lock lease was lost');
+    }
     try {
       refreshed += (await refreshCachedDetail(config, d1, row as StaleDetailRow)) ? 1 : 0;
     } catch (error) {
-      console.warn(`TourAPI 상세 캐시 보강을 건너뜁니다. sourceKey=${String(row.source_key ?? 'unknown')}`, error);
+      const sourceKey = String(row.source_key ?? '');
+      const failCount = Number(row.detail_sync_fail_count ?? 0) + 1;
+      const retryAt = new Date(Date.now() + retryDelayMinutes(failCount, sourceKey) * 60 * 1000).toISOString();
+      await d1
+        .prepare(
+          `UPDATE cultures
+           SET detail_sync_fail_count = ?, detail_next_retry_at = ?, detail_last_error = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE source_key = ?`
+        )
+        .bind(failCount, retryAt, error instanceof Error ? error.message.slice(0, 1000) : '상세 API 요청 실패', sourceKey)
+        .run();
+      console.warn(`TourAPI 상세 캐시 보강을 재시도합니다. sourceKey=${sourceKey}`, error);
     }
   }
 

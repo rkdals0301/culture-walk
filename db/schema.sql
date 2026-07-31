@@ -25,7 +25,13 @@ CREATE TABLE IF NOT EXISTS cultures (
   use_target TEXT,
   is_active INTEGER DEFAULT 1 NOT NULL,
   last_seen_at TEXT,
+  missing_snapshot_count INTEGER DEFAULT 0 NOT NULL,
   deactivated_at TEXT,
+  detail_refresh_requested_at TEXT,
+  detail_refresh_priority INTEGER DEFAULT 0 NOT NULL,
+  detail_sync_fail_count INTEGER DEFAULT 0 NOT NULL,
+  detail_next_retry_at TEXT,
+  detail_last_error TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -34,6 +40,8 @@ CREATE INDEX IF NOT EXISTS cultures_start_date_idx ON cultures(start_date);
 CREATE INDEX IF NOT EXISTS cultures_end_date_idx ON cultures(end_date);
 CREATE UNIQUE INDEX IF NOT EXISTS cultures_source_key_idx ON cultures(source_key);
 CREATE INDEX IF NOT EXISTS cultures_active_end_date_idx ON cultures(is_active, end_date);
+CREATE INDEX IF NOT EXISTS cultures_detail_refresh_idx
+ON cultures(is_active, detail_refresh_priority, detail_refresh_requested_at);
 
 CREATE TRIGGER IF NOT EXISTS protect_active_cultures_from_delete
 BEFORE DELETE ON cultures

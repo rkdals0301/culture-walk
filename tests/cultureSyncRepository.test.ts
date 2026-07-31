@@ -66,7 +66,7 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
 
   const stats = await reconcileCulturesViaStaging(d1, createRows(), 'test-run');
   const updateQuery = appliedQueries.find(query => query.includes('UPDATE cultures AS live')) ?? '';
-  const deactivateQuery = appliedQueries.find(query => query.includes('SET is_active = 0,')) ?? '';
+  const deactivateQuery = appliedQueries.find(query => query.includes('SET missing_snapshot_count = missing_snapshot_count + 1,')) ?? '';
   const insertQuery = appliedQueries.find(query => query.includes('INSERT INTO cultures')) ?? '';
 
   assert.deepEqual(stats, {
@@ -79,10 +79,11 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   });
   assert.match(updateQuery, /live\.is_active = 0/);
   assert.match(updateQuery, /live\.title IS NOT staging\.title/);
-  assert.match(updateQuery, /AND \(\s*live\.is_active = 0\s*OR EXISTS/);
+  assert.match(updateQuery, /AND \(\s*live\.is_active = 0\s*OR live\.missing_snapshot_count <> 0\s*OR EXISTS/);
   assert.match(updateQuery, /staging\.sync_run_key = \?1/);
   assert.match(insertQuery, /staging\.sync_run_key = \?1/);
-  assert.match(deactivateQuery, /deactivated_at = CURRENT_TIMESTAMP/);
+  assert.match(deactivateQuery, /is_active = CASE WHEN missing_snapshot_count \+ 1 >= 2 THEN 0 ELSE 1 END/);
+  assert.match(deactivateQuery, /deactivated_at = CASE WHEN missing_snapshot_count \+ 1 >= 2 THEN CURRENT_TIMESTAMP/);
   assert.match(deactivateQuery, /staging\.sync_run_key = \?1/);
   assert.doesNotMatch(deactivateQuery, /COALESCE/);
   assert.deepEqual(batchSizes, [1, 5]);

@@ -30,7 +30,13 @@ export const cultures = sqliteTable(
     useTarget: text('use_target'),
     isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
     lastSeenAt: text('last_seen_at'),
+    missingSnapshotCount: integer('missing_snapshot_count').notNull().default(0),
     deactivatedAt: text('deactivated_at'),
+    detailRefreshRequestedAt: text('detail_refresh_requested_at'),
+    detailRefreshPriority: integer('detail_refresh_priority').notNull().default(0),
+    detailSyncFailCount: integer('detail_sync_fail_count').notNull().default(0),
+    detailNextRetryAt: text('detail_next_retry_at'),
+    detailLastError: text('detail_last_error'),
     createdAt: text('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
   },
@@ -39,6 +45,7 @@ export const cultures = sqliteTable(
     startDateIdx: index('cultures_start_date_idx').on(table.startDate),
     endDateIdx: index('cultures_end_date_idx').on(table.endDate),
     activeEndDateIdx: index('cultures_active_end_date_idx').on(table.isActive, table.endDate),
+    detailRefreshIdx: index('cultures_detail_refresh_idx').on(table.isActive, table.detailRefreshPriority, table.detailRefreshRequestedAt),
   })
 );
 

@@ -74,3 +74,26 @@ export const releaseInitializeLock = async (
     .bind(INITIALIZE_LOCK_NAME, ownerToken)
     .run();
 };
+
+export const renewInitializeLock = async (
+  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  ownerToken: string
+) => {
+  const d1 = getD1Binding(env);
+  if (!d1) return true;
+
+  const result = await d1
+    .prepare(
+      `UPDATE ${INITIALIZE_LOCK_TABLE}
+       SET expires_at = datetime('now', '+${INITIALIZE_LOCK_TTL_MINUTES} minutes'),
+           acquired_at = CURRENT_TIMESTAMP
+       WHERE name = ?
+         AND owner_token = ?
+         AND datetime(expires_at) >= datetime('now')
+       RETURNING owner_token`
+    )
+    .bind(INITIALIZE_LOCK_NAME, ownerToken)
+    .all();
+
+  return result.results?.[0]?.owner_token === ownerToken;
+};

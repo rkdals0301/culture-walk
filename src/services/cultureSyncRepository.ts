@@ -195,6 +195,8 @@ const readSnapshotStats = async (d1: D1Binding, stagingRunKey: string) => {
           WHERE live.is_active = 0) AS reactivated,
         (SELECT COUNT(*) FROM cultures live
           WHERE live.is_active = 1
+            AND live.source_key LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%'
+            AND live.missing_snapshot_count >= 1
             AND NOT EXISTS (
               SELECT 1 FROM scoped_staging staging WHERE staging.source_key = live.source_key
             )) AS deactivated`
@@ -217,10 +219,11 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
   const contentDiffers = createCultureContentDifferenceSql();
   const updateLive = d1.prepare(`
     UPDATE cultures AS live
-    SET (${LIVE_MUTABLE_COLUMNS.join(', ')}, is_active, last_seen_at, deactivated_at, updated_at) = (
+    SET (${LIVE_MUTABLE_COLUMNS.join(', ')}, is_active, last_seen_at, missing_snapshot_count, deactivated_at, updated_at) = (
       SELECT ${LIVE_MUTABLE_COLUMNS.map(column => `staging.${column}`).join(', ')},
         1,
         CURRENT_TIMESTAMP,
+        0,
         NULL,
         CURRENT_TIMESTAMP
       FROM ${STAGING_TABLE} AS staging
@@ -234,6 +237,7 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
     )
       AND (
         live.is_active = 0
+        OR live.missing_snapshot_count <> 0
         OR EXISTS (
           SELECT 1
           FROM ${STAGING_TABLE} AS staging
@@ -245,12 +249,13 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
   `).bind(stagingRunKey);
   const insertNew = d1.prepare(`
     INSERT INTO cultures (
-      ${STAGING_COLUMNS.join(', ')}, is_active, last_seen_at, deactivated_at, created_at, updated_at
+      ${STAGING_COLUMNS.join(', ')}, is_active, last_seen_at, missing_snapshot_count, deactivated_at, created_at, updated_at
     )
     SELECT
       ${STAGING_COLUMNS.map(column => `staging.${column}`).join(', ')},
       1,
       CURRENT_TIMESTAMP,
+      0,
       NULL,
       CURRENT_TIMESTAMP,
       CURRENT_TIMESTAMP
@@ -262,10 +267,12 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
   `).bind(stagingRunKey);
   const deactivateMissing = d1.prepare(`
     UPDATE cultures AS live
-    SET is_active = 0,
-        deactivated_at = CURRENT_TIMESTAMP,
+    SET missing_snapshot_count = missing_snapshot_count + 1,
+        is_active = CASE WHEN missing_snapshot_count + 1 >= 2 THEN 0 ELSE 1 END,
+        deactivated_at = CASE WHEN missing_snapshot_count + 1 >= 2 THEN CURRENT_TIMESTAMP ELSE deactivated_at END,
         updated_at = CURRENT_TIMESTAMP
     WHERE is_active = 1
+      AND source_key LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%'
       AND NOT EXISTS (
         SELECT 1 FROM ${STAGING_TABLE} AS staging
         WHERE staging.source_key = live.source_key
