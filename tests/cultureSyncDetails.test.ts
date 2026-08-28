@@ -1,4 +1,4 @@
-import { refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
+import { refreshStaleCachedTourApiDetails, requestCultureDetailRefresh } from '@/services/cultureSyncDetails';
 import { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
 
 import assert from 'node:assert/strict';
@@ -73,4 +73,28 @@ test('partial detail responses preserve stored data and schedule a retry', async
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('detail refresh requests respect a cooldown and retry backoff', async () => {
+  const executed: Array<{ query: string; values: unknown[] }> = [];
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, nextValues),
+    run: async () => {
+      executed.push({ query, values });
+      return {};
+    },
+    all: async () => ({ results: [] }),
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+
+  await requestCultureDetailRefresh(d1, 'tourapi:123');
+
+  assert.equal(executed.length, 1);
+  assert.equal(executed[0].values[0], 'tourapi:123');
+  assert.match(executed[0].query, /detail_next_retry_at IS NULL/);
+  assert.match(executed[0].query, /detail_refresh_requested_at IS NULL/);
+  assert.match(executed[0].query, /datetime\('now', '-5 minutes'\)/);
 });

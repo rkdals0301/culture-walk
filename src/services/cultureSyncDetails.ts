@@ -5,6 +5,7 @@ import { fetchTourApiFestivalDetails } from './cultureSyncSource';
 import { D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, TourApiConfig } from './cultureSyncTypes';
 
 const STALE_DETAIL_REFRESH_LIMIT = 12;
+const DETAIL_REFRESH_REQUEST_COOLDOWN_MINUTES = 5;
 
 type StaleDetailRow = {
   culture_id?: number;
@@ -27,7 +28,13 @@ export const requestCultureDetailRefresh = async (d1: D1Binding, sourceKey: stri
        SET detail_refresh_requested_at = CURRENT_TIMESTAMP,
            detail_refresh_priority = 1,
            updated_at = CURRENT_TIMESTAMP
-       WHERE source_key = ? AND is_active = 1`
+       WHERE source_key = ?
+         AND is_active = 1
+         AND (detail_next_retry_at IS NULL OR detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (
+           detail_refresh_requested_at IS NULL
+           OR datetime(detail_refresh_requested_at) <= datetime('now', '-${DETAIL_REFRESH_REQUEST_COOLDOWN_MINUTES} minutes')
+         )`
     )
     .bind(sourceKey)
     .run();
