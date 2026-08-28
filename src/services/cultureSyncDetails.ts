@@ -41,6 +41,10 @@ const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: St
   if (!Number.isInteger(cultureId) || !sourceKey || !contentId) return false;
 
   const details = await fetchTourApiFestivalDetails(config, contentId);
+  if (!details.complete) {
+    throw new Error(`TourAPI 상세정보 일부 조회로 저장하지 않습니다. sourceKey=${sourceKey}`);
+  }
+
   const serialized = serializeTourApiDetails(details);
   const summary = createTourApiDetailSummary(details);
   const syncedAt = new Date().toISOString();
