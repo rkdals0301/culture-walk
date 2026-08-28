@@ -52,6 +52,7 @@ const createStagingTableSql = `
 
 const STAGING_RUN_KEY_COLUMN = 'sync_run_key';
 const STAGING_INSERT_COLUMNS = [STAGING_RUN_KEY_COLUMN, ...STAGING_COLUMNS];
+const LEGACY_SOURCE_CONDITION = `(source_key IS NULL OR source_key NOT LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%')`;
 const DETAIL_ENRICHED_COLUMNS = new Set([
   'homepage_detail_address',
   'is_free',
@@ -279,6 +280,16 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
           AND staging.${STAGING_RUN_KEY_COLUMN} = ?1
       )
   `).bind(stagingRunKey);
+  // The active-row delete trigger requires a separate deactivation step. These statements run
+  // after the snapshot quality gates and in this order within the same D1 batch.
+  const deactivateLegacySources = d1.prepare(`
+    UPDATE cultures
+    SET is_active = 0,
+        deactivated_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE is_active = 1
+      AND ${LEGACY_SOURCE_CONDITION}
+  `);
   const removeExpiredInactive = d1.prepare(`
     DELETE FROM cultures
     WHERE is_active = 0
@@ -287,10 +298,17 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
   const removeLegacySources = d1.prepare(`
     DELETE FROM cultures
     WHERE is_active = 0
-      AND (source_key IS NULL OR source_key NOT LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%')
+      AND ${LEGACY_SOURCE_CONDITION}
   `);
 
-  await d1.batch([updateLive, insertNew, deactivateMissing, removeLegacySources, removeExpiredInactive]);
+  await d1.batch([
+    updateLive,
+    insertNew,
+    deactivateMissing,
+    deactivateLegacySources,
+    removeLegacySources,
+    removeExpiredInactive,
+  ]);
 };
 
 export const reconcileCulturesViaStaging = async (
