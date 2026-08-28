@@ -1,6 +1,11 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
 import { bumpCulturesCacheVersion } from './src/cache/kv';
-import { acquireInitializeLock, getD1Binding, releaseInitializeLock, renewInitializeLock } from './src/services/cultureSyncLock';
+import {
+  acquireInitializeLock,
+  getD1Binding,
+  releaseInitializeLock,
+  startInitializeLockHeartbeat,
+} from './src/services/cultureSyncLock';
 import { refreshStaleCachedTourApiDetails } from './src/services/cultureSyncDetails';
 import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
 import { syncCultures } from './src/services/cultureSyncService';
@@ -31,16 +36,20 @@ async function runScheduledSync(env, ctx, trigger) {
     return;
   }
 
+  const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
   try {
-    if (!(await renewInitializeLock(env, lockOwner))) {
-      throw new Error('Culture snapshot lock lease was lost');
-    }
+    await heartbeat.ensureHeld();
     await syncCultures(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       env.DB,
-      { trigger }
+      {
+        trigger,
+        beforeEach: () => heartbeat.renew(),
+        beforeApply: heartbeat.ensureHeld,
+      }
     );
   } finally {
+    await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);
   }
 }
@@ -50,19 +59,19 @@ async function runScheduledDetailRefresh(env) {
   const lockOwner = await acquireInitializeLock(env);
   if (!lockOwner) return;
 
+  const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
   try {
-    if (!(await renewInitializeLock(env, lockOwner))) {
-      throw new Error('Culture detail lock lease was lost');
-    }
+    await heartbeat.ensureHeld();
     const d1 = getD1Binding(env);
     if (!d1) return;
     const refreshed = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       d1,
-      { beforeEach: () => renewInitializeLock(env, lockOwner) }
+      { beforeEach: () => heartbeat.renew() }
     );
     if (refreshed > 0) await bumpCulturesCacheVersion();
   } finally {
+    await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);
   }
 }

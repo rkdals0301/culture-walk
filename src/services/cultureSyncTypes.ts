@@ -11,6 +11,7 @@ export const SOURCE_PAGE_CONCURRENCY = 3;
 export const INITIALIZE_LOCK_TABLE = 'initialize_sync_locks';
 export const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
 export const INITIALIZE_LOCK_TTL_MINUTES = 30;
+export const INITIALIZE_LOCK_LEASE_LOST_MESSAGE = 'Culture snapshot lock lease was lost';
 export const STAGING_TABLE = 'culture_sync_staging';
 export const MIN_VALID_COORDINATE_COUNT = 5;
 export const MIN_VALID_COORDINATE_RATIO = 0.8;

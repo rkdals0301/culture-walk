@@ -2,6 +2,7 @@ import { getWorkerEnv } from '@/server/cloudflare';
 
 import {
   D1Binding,
+  INITIALIZE_LOCK_LEASE_LOST_MESSAGE,
   INITIALIZE_LOCK_NAME,
   INITIALIZE_LOCK_TABLE,
   INITIALIZE_LOCK_TTL_MINUTES,
@@ -96,4 +97,58 @@ export const renewInitializeLock = async (
     .all();
 
   return result.results?.[0]?.owner_token === ownerToken;
+};
+
+const LOCK_HEARTBEAT_INTERVAL_MS = Math.max(
+  1_000,
+  Math.floor((INITIALIZE_LOCK_TTL_MINUTES * 60 * 1000) / 3)
+);
+
+export const startInitializeLockHeartbeat = (
+  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  ownerToken: string,
+  intervalMs = LOCK_HEARTBEAT_INTERVAL_MS
+) => {
+  let leaseLost = false;
+  let renewal: Promise<boolean> | null = null;
+
+  const renew = async () => {
+    if (leaseLost) return false;
+    if (renewal) return renewal;
+
+    renewal = renewInitializeLock(env, ownerToken)
+      .then(renewed => {
+        if (!renewed) leaseLost = true;
+        return renewed;
+      })
+      .catch(error => {
+        leaseLost = true;
+        console.error('동기화 락 갱신 실패:', error);
+        return false;
+      })
+      .finally(() => {
+        renewal = null;
+      });
+
+    return renewal;
+  };
+
+  const ensureHeld = async () => {
+    if (!(await renew())) {
+      throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
+    }
+  };
+
+  const timer = setInterval(() => {
+    void renew();
+  }, Math.max(1, intervalMs));
+
+  return {
+    renew,
+    ensureHeld,
+    stop: async () => {
+      clearInterval(timer);
+      if (renewal) await renewal;
+    },
+  };
 };

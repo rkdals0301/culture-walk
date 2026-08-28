@@ -2,7 +2,7 @@ import { createTourApiDetailSummary, serializeTourApiDetails } from '@/services/
 
 import { getTourApiContentId } from './cultureIdentity';
 import { fetchTourApiFestivalDetails } from './cultureSyncSource';
-import { D1Binding, TourApiConfig } from './cultureSyncTypes';
+import { D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, TourApiConfig } from './cultureSyncTypes';
 
 const STALE_DETAIL_REFRESH_LIMIT = 12;
 
@@ -33,7 +33,12 @@ export const requestCultureDetailRefresh = async (d1: D1Binding, sourceKey: stri
     .run();
 };
 
-const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: StaleDetailRow) => {
+const refreshCachedDetail = async (
+  config: TourApiConfig,
+  d1: D1Binding,
+  row: StaleDetailRow,
+  beforeWrite?: () => Promise<boolean>,
+) => {
   const cultureId = Number(row.culture_id);
   const sourceKey = row.source_key;
   const contentId = getTourApiContentId(sourceKey);
@@ -43,6 +48,10 @@ const refreshCachedDetail = async (config: TourApiConfig, d1: D1Binding, row: St
   const details = await fetchTourApiFestivalDetails(config, contentId);
   if (!details.complete) {
     throw new Error(`TourAPI 상세정보 일부 조회로 저장하지 않습니다. sourceKey=${sourceKey}`);
+  }
+
+  if (beforeWrite && !(await beforeWrite())) {
+    throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
   }
 
   const serialized = serializeTourApiDetails(details);
@@ -140,11 +149,19 @@ export const refreshStaleCachedTourApiDetails = async (
   let refreshed = 0;
   for (const row of result.results ?? []) {
     if (options.beforeEach && !(await options.beforeEach())) {
-      throw new Error('Culture detail lock lease was lost');
+      throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
     }
     try {
-      refreshed += (await refreshCachedDetail(config, d1, row as StaleDetailRow)) ? 1 : 0;
+      refreshed += (await refreshCachedDetail(config, d1, row as StaleDetailRow, options.beforeEach)) ? 1 : 0;
     } catch (error) {
+      if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
+        throw error;
+      }
+
+      if (options.beforeEach && !(await options.beforeEach())) {
+        throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
+      }
+
       const sourceKey = String(row.source_key ?? '');
       const failCount = Number(row.detail_sync_fail_count ?? 0) + 1;
       const retryAt = new Date(Date.now() + retryDelayMinutes(failCount, sourceKey) * 60 * 1000).toISOString();

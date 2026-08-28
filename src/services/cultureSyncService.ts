@@ -6,12 +6,18 @@ import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultu
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
 import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from './cultureSyncRunRepository';
 import { fetchCulturesFromTourApi } from './cultureSyncSource';
-import { D1Binding, SyncResult, TourApiConfig } from './cultureSyncTypes';
+import { D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, SyncResult, TourApiConfig } from './cultureSyncTypes';
+
+type SyncCulturesOptions = {
+  trigger?: string;
+  beforeEach?: () => Promise<boolean>;
+  beforeApply?: () => Promise<void>;
+};
 
 export const syncCultures = async (
   config: TourApiConfig,
   d1: D1Binding,
-  options: { trigger?: string } = {}
+  options: SyncCulturesOptions = {}
 ): Promise<SyncResult> => {
   const trigger = options.trigger?.trim().slice(0, 32) || 'manual';
   let runId: number | null = null;
@@ -37,17 +43,29 @@ export const syncCultures = async (
     }
 
     const stagingRunKey = `sync:${runId ?? 'untracked'}:${crypto.randomUUID()}`;
-    const snapshotStats = await reconcileCulturesViaStaging(d1, deduplicatedRows, stagingRunKey);
+    const snapshotStats = await reconcileCulturesViaStaging(d1, deduplicatedRows, stagingRunKey, {
+      beforeEach: options.beforeEach,
+      beforeApply: options.beforeApply,
+    });
     await bumpCulturesCacheVersion();
 
     // Detail enrichment is best-effort: the core snapshot remains authoritative and must not fail because of it.
     try {
-      const refreshedDetails = await refreshStaleCachedTourApiDetails(config, d1);
+      const refreshedDetails = await refreshStaleCachedTourApiDetails(config, d1, {
+        beforeEach: options.beforeEach,
+      });
       if (refreshedDetails > 0) {
         await bumpCulturesCacheVersion();
       }
     } catch (error) {
+      if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
+        throw error;
+      }
       console.warn('TourAPI 상세 캐시 보강을 건너뜁니다.', error);
+    }
+
+    if (options.beforeEach && !(await options.beforeEach())) {
+      throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
     }
 
     const result: SyncResult = {

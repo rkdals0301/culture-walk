@@ -5,6 +5,7 @@ import { TOUR_API_SOURCE_KEY_PREFIX } from './cultureIdentity';
 import {
   BATCH_SIZE,
   D1Binding,
+  INITIALIZE_LOCK_LEASE_LOST_MESSAGE,
   INACTIVE_RETENTION_DAYS,
   InsertStats,
   MAX_SKIPPED_ROW_RATIO,
@@ -314,7 +315,11 @@ const applySnapshot = async (d1: D1Binding, stagingRunKey: string) => {
 export const reconcileCulturesViaStaging = async (
   d1: D1Binding,
   rows: NewCultureRow[],
-  stagingRunKey: string
+  stagingRunKey: string,
+  options: {
+    beforeEach?: () => Promise<boolean>;
+    beforeApply?: () => Promise<void>;
+  } = {}
 ): Promise<SnapshotStats> => {
   await ensureCultureSyncStagingTable(d1);
   await d1
@@ -334,6 +339,10 @@ export const reconcileCulturesViaStaging = async (
   }
 
   for (let i = 0; i < batches.length; i += STAGING_STATEMENTS_PER_BATCH) {
+    if (options.beforeEach && !(await options.beforeEach())) {
+      throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
+    }
+
     const stats = await retryInsertStagingStatementGroup(
       d1,
       batches.slice(i, i + STAGING_STATEMENTS_PER_BATCH),
@@ -367,6 +376,7 @@ export const reconcileCulturesViaStaging = async (
     );
   }
 
+  await options.beforeApply?.();
   await applySnapshot(d1, stagingRunKey);
 
   try {

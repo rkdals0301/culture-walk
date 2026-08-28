@@ -32,6 +32,7 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   const preparedQueries: string[] = [];
   let appliedQueries: string[] = [];
   const batchSizes: number[] = [];
+  const lifecycleEvents: string[] = [];
 
   const createStatement = (query: string): D1Statement => ({
     bind: () => createStatement(query),
@@ -58,13 +59,22 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
       return createStatement(query);
     },
     batch: async statements => {
+      lifecycleEvents.push('batch');
       batchSizes.push(statements.length);
       appliedQueries = preparedQueries.slice(-statements.length);
       return statements.map(() => ({}));
     },
   };
 
-  const stats = await reconcileCulturesViaStaging(d1, createRows(), 'test-run');
+  const stats = await reconcileCulturesViaStaging(d1, createRows(), 'test-run', {
+    beforeEach: async () => {
+      lifecycleEvents.push('beforeEach');
+      return true;
+    },
+    beforeApply: async () => {
+      lifecycleEvents.push('beforeApply');
+    },
+  });
   const updateQuery = appliedQueries.find(query => query.includes('UPDATE cultures AS live')) ?? '';
   const deactivateQuery = appliedQueries.find(query => query.includes('SET missing_snapshot_count = missing_snapshot_count + 1,')) ?? '';
   const legacyDeactivateQuery = appliedQueries.find(
@@ -98,5 +108,6 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   assert.match(legacyRemoveQuery, /source_key IS NULL OR source_key NOT LIKE 'tourapi:%'/);
   assert.ok(appliedQueries.indexOf(legacyDeactivateQuery) < appliedQueries.indexOf(legacyRemoveQuery));
   assert.deepEqual(batchSizes, [1, 6]);
+  assert.deepEqual(lifecycleEvents, ['beforeEach', 'batch', 'beforeApply', 'batch']);
   assert.ok(appliedQueries.some(query => query.includes("source_key NOT LIKE 'tourapi:%'")));
 });

@@ -1,4 +1,8 @@
-import { acquireInitializeLock, releaseInitializeLock } from '@/services/cultureSyncLock';
+import {
+  acquireInitializeLock,
+  releaseInitializeLock,
+  startInitializeLockHeartbeat,
+} from '@/services/cultureSyncLock';
 import { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
 
 import assert from 'node:assert/strict';
@@ -35,4 +39,44 @@ test('only the lock owner can release an initialize lock', async () => {
 
   assert.equal(acquireCall?.values[1], ownerToken);
   assert.deepEqual(releaseCall?.values, ['initialize-sync-lock', ownerToken]);
+});
+
+test('lock heartbeat renews the lease periodically', async () => {
+  let renewalCount = 0;
+  let resolveRenewal: (() => void) | undefined;
+  const renewalObserved = new Promise<void>(resolve => {
+    resolveRenewal = resolve;
+  });
+
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, nextValues),
+    run: async () => ({}),
+    all: async () => {
+      if (query.includes('UPDATE initialize_sync_locks')) {
+        renewalCount += 1;
+        resolveRenewal?.();
+        return { results: [{ owner_token: values[1] }] };
+      }
+
+      return { results: [] };
+    },
+  });
+
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+  const env = { DB: d1 } as never;
+  const heartbeat = startInitializeLockHeartbeat(env, 'owner-token', 1);
+
+  try {
+    await Promise.race([
+      renewalObserved,
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('heartbeat did not renew')), 100)),
+    ]);
+  } finally {
+    await heartbeat.stop();
+  }
+
+  assert.ok(renewalCount >= 1);
 });
