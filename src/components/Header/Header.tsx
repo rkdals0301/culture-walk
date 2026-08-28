@@ -26,6 +26,9 @@ const Header = () => {
   const hasSearchHistoryEntryRef = useRef(false);
   const shouldReduceMotion = useReducedMotion();
   const searchTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
+  const restoreSearchTriggerFocus = useCallback(() => {
+    document.querySelector<HTMLButtonElement>('button[aria-label="검색바 열기"]')?.focus();
+  }, []);
 
   useEffect(() => {
     void import('@/components/Header/SearchView');
@@ -117,7 +120,7 @@ const Header = () => {
         </div>
       </div>
       <LazyMotion features={domAnimation}>
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} onExitComplete={restoreSearchTriggerFocus}>
           {isSearchBarVisible && (
             <m.div
               className='fixed inset-0 z-50'
