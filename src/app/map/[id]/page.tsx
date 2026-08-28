@@ -4,6 +4,7 @@ import { cultures, cultureTourApiDetails } from '@/db/schema';
 import { mapCultureRowToCulture } from '@/services/cultureService';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { formatCultureData } from '@/utils/cultureUtils';
+import { serializeJsonLd } from '@/utils/jsonLd';
 
 import { cache } from 'react';
 
@@ -140,7 +141,7 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
   const offerPrice = isFree ? 0 : parseOfferPrice(formatted.useFee);
   const hasEnded = formatted.endDate instanceof Date && formatted.endDate.getTime() < Date.now();
   const [addressRegion = '대한민국', addressLocality = ''] = formatted.guName.split(/\s+/).filter(Boolean);
-  const eventStructuredData = JSON.stringify({
+  const eventStructuredData = serializeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: formatted.title,
