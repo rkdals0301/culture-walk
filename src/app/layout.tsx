@@ -204,6 +204,13 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           type='application/ld+json'
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(WEBSITE_STRUCTURED_DATA) }}
         />
+        {/* next-themes 0.4.6 can reference esbuild's __name helper after production transforms. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "globalThis.__name = globalThis.__name || function (target, value) { try { Object.defineProperty(target, 'name', { value: value, configurable: true }); } catch (_) {} return target; };",
+          }}
+        />
         {ADSENSE_CLIENT_ID && (
           <Script
             id='google-adsense-script'
