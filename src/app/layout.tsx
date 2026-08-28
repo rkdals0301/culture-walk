@@ -7,6 +7,7 @@ import { CultureProvider } from '@/context/CultureContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
 import ThemeProvider from '@/providers/ThemeProvider';
 import '@/styles/globals.scss';
+import { serializeJsonLd } from '@/utils/jsonLd';
 
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
@@ -201,7 +202,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <body suppressHydrationWarning className='safe-area min-h-dvh font-pretendard'>
         <script
           type='application/ld+json'
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_STRUCTURED_DATA) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(WEBSITE_STRUCTURED_DATA) }}
         />
         {ADSENSE_CLIENT_ID && (
           <Script
