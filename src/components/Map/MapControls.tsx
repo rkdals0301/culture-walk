@@ -62,7 +62,7 @@ export const MapFilterControls = ({
           </option>
         ))}
       </select>
-      <label className='flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)]'>
+      <label className='flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--app-focus)]'>
         <input
           type='checkbox'
           checked={freeOnly}
