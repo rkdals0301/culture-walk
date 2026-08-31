@@ -1,7 +1,7 @@
 import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { FormattedCulture } from '@/types/culture';
-import { calculateDistanceMeters, formatDistance, GeoPoint } from '@/utils/geo';
+import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 
 import React, { useEffect, useState } from 'react';
 
@@ -40,7 +40,7 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
 
   return (
     <div className='flex size-full min-h-[104px] items-center gap-3'>
-      <div className='relative h-24 w-[72px] flex-none overflow-hidden rounded-xl bg-black/[0.04] dark:bg-white/[0.05]'>
+      <div className='relative h-24 w-[72px] flex-none overflow-hidden rounded-lg bg-[var(--app-chip)]'>
         {hasCultureImage ? (
           <Image
             src={imgSrc}
@@ -64,10 +64,10 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
       <div className='min-w-0 grow overflow-hidden'>
         <div className='mb-1.5 flex items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} />
-          <span className='truncate text-[0.72rem] font-medium text-[var(--app-muted)]'>
-            {culture.guName}
-          </span>
-          {isSelected && <span className='ml-auto size-2 shrink-0 rounded-full bg-[#d98b2f]' aria-hidden='true' />}
+          <span className='truncate text-[0.72rem] font-medium text-[var(--app-muted)]'>{culture.guName}</span>
+          {isSelected && (
+            <span className='ml-auto size-2 shrink-0 rounded-full bg-[var(--app-accent)]' aria-hidden='true' />
+          )}
         </div>
         <p
           className='text-[0.96rem] font-semibold leading-[1.35]'

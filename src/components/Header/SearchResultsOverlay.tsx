@@ -76,14 +76,10 @@ const SearchResultsOverlay = ({ onCloseWithoutHistory, onResetSearch }: SearchRe
     <div
       className={clsx('pointer-events-auto flex size-full min-h-0 flex-col gap-2.5 text-[var(--app-text)] sm:gap-3')}
     >
-      <div className='surface-card flex flex-wrap items-center justify-between gap-3 rounded-2xl px-3.5 py-3 sm:px-5 sm:py-4'>
+      <div className='border-b border-[var(--app-border)] pb-3.5 sm:pb-4'>
         <div className='min-w-0'>
-          <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>
-            행사 검색
-          </p>
-          <p className='mt-0.5 text-[1rem] font-semibold sm:mt-1 sm:text-lg'>
-            검색 결과 {filteredCultures.length}개
-          </p>
+          <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>행사 검색</p>
+          <p className='mt-0.5 text-[1rem] font-semibold sm:mt-1 sm:text-lg'>검색 결과 {filteredCultures.length}개</p>
           <p className='mt-0.5 truncate text-[0.82rem] text-[var(--app-muted)] sm:mt-1 sm:text-sm'>
             {normalizedQuery ? `검색어: ${normalizedQuery}` : '전체 행사 목록'}
           </p>

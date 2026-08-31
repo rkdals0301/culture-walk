@@ -28,7 +28,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseClass = clsx(
-    'inline-flex items-center justify-center rounded-xl border font-semibold transition duration-200',
+    'inline-flex items-center justify-center rounded-lg border font-semibold transition duration-200',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]',
     disabled && 'cursor-not-allowed opacity-50'
   );
@@ -36,8 +36,7 @@ const Button = ({
   const colorClasses = {
     primary:
       'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)] shadow-[0_14px_30px_-24px_rgba(31,118,95,0.72)] hover:bg-[var(--app-primary-hover)]',
-    secondary:
-      'border-[var(--app-border)] bg-white/70 text-[var(--app-text)] hover:bg-white dark:bg-white/5 dark:hover:bg-white/10',
+    secondary: 'border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-text)] hover:bg-[var(--app-chip)]',
     success:
       'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)] shadow-[0_14px_30px_-24px_rgba(217,139,47,0.66)] hover:bg-[var(--app-accent-hover)]',
     danger:
@@ -46,7 +45,7 @@ const Button = ({
 
   const disabledColorClasses = {
     primary: 'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)]',
-    secondary: 'border-[var(--app-border)] bg-white/40 text-[var(--app-muted)] dark:bg-white/5',
+    secondary: 'border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]',
     success: 'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)]',
     danger: 'border-transparent bg-[var(--app-danger)] text-[var(--app-on-danger)]',
   };

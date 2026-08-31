@@ -16,6 +16,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+import { CalendarDays, ExternalLink, MapPin } from 'lucide-react';
+
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
@@ -32,7 +34,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
+    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[18px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <header className='border-b border-[var(--app-border)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
@@ -41,31 +43,29 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           <ArrowBackIcon className='size-4' />
           지도 목록
         </Link>
-        <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>
-          {culture.classification || '문화행사'}
-        </p>
+        <p className='route-kicker'>{culture.classification || '문화행사'}</p>
         <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.25] sm:text-[1.75rem]'>{culture.title}</h1>
       </header>
 
       <div className='min-h-0 flex-1 overflow-y-auto px-5 py-5'>
-        <dl className='grid gap-4 text-sm leading-6'>
-          <div>
+        <dl className='grid gap-px overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-border)] text-sm leading-6'>
+          <div className='bg-[var(--app-card)] p-3'>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>일정</dt>
             <dd className='mt-1 font-semibold'>{culture.displayDate}</dd>
           </div>
-          <div>
+          <div className='bg-[var(--app-card)] p-3'>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>장소</dt>
             <dd className='mt-1 font-semibold'>{culture.place || culture.guName}</dd>
           </div>
-          <div>
+          <div className='bg-[var(--app-card)] p-3'>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>요금</dt>
             <dd className='mt-1 whitespace-pre-line font-semibold'>{culture.useFee || culture.displayPrice}</dd>
           </div>
-          <div>
+          <div className='bg-[var(--app-card)] p-3'>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>대상</dt>
             <dd className='mt-1'>{culture.useTarget || '정보 없음'}</dd>
           </div>
-          <div>
+          <div className='bg-[var(--app-card)] p-3'>
             <dt className='text-[0.7rem] font-semibold text-[var(--app-muted)]'>주최</dt>
             <dd className='mt-1'>{culture.organizationName || '정보 없음'}</dd>
           </div>
@@ -99,7 +99,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
                 href={culture.homepageAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='soft-chip flex h-11 items-center justify-center rounded-xl px-3 text-sm font-semibold'
+                className='soft-chip flex h-11 items-center justify-center rounded-lg px-3 text-sm font-semibold'
               >
                 공식 홈페이지
               </a>
@@ -109,7 +109,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
                 href={culture.homepageDetailAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='flex h-11 items-center justify-center rounded-xl bg-[var(--app-primary)] px-3 text-sm font-semibold text-[var(--app-on-primary)]'
+                className='flex h-11 items-center justify-center rounded-lg bg-[var(--app-primary)] px-3 text-sm font-semibold text-[var(--app-on-primary)]'
               >
                 예약 / 상세
               </a>
@@ -150,7 +150,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   }, []);
 
   const handleOpenExternalLink = useCallback((url?: string) => {
-    if (url) window.open(url, '_blank');
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
   const handleBottomSheetClose = useCallback(() => {
@@ -185,9 +185,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             variant='secondary'
           >
             <span>공식 홈페이지</span>
-            <span className='ml-1.5 text-base' aria-hidden='true'>
-              ↗
-            </span>
+            <ExternalLink aria-hidden='true' className='ml-1.5 size-4' strokeWidth={1.8} />
           </Button>
         )}
         {hasBookingLink && (
@@ -197,9 +195,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             onClick={() => handleOpenExternalLink(culture.homepageDetailAddress)}
           >
             <span>예약하기</span>
-            <span className='ml-1.5 text-base' aria-hidden='true'>
-              ↗
-            </span>
+            <ExternalLink aria-hidden='true' className='ml-1.5 size-4' strokeWidth={1.8} />
           </Button>
         )}
       </div>
@@ -213,7 +209,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     if (error && !culture) {
       return (
         <div className='flex size-full flex-col items-center justify-center gap-4'>
-          <p>죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.</p>
+          <p role='alert' className='text-center'>
+            죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.
+          </p>
           <Button ariaLabel='다시 시도' onClick={() => window.location.reload()}>
             다시 시도
           </Button>
@@ -222,7 +220,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     }
     if (!culture) {
       return (
-        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-2xl p-6 text-center'>
+        <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-xl p-6 text-center'>
           <p className='text-lg font-semibold'>행사 정보를 찾을 수 없습니다.</p>
           <Button ariaLabel='목록으로 돌아가기' onClick={() => router.push('/map')}>
             목록으로 돌아가기
@@ -234,31 +232,39 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc?.includes('/assets/images/logo');
 
     return (
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-5'>
         <div>
-          <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>선택한 행사</p>
-          <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h1>
+          <p className='route-kicker'>선택한 행사</p>
+          <h1 className='mt-3 text-[1.55rem] font-semibold leading-[1.2] tracking-[-0.03em] sm:text-[1.75rem]'>
+            {culture.title}
+          </h1>
         </div>
 
         <div className='flex flex-wrap items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
           {culture.guName && (
-            <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+            <span className='soft-chip rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
               {culture.guName}
             </span>
           )}
-          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+          <span className='soft-chip rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
             {culture.displayPrice}
           </span>
         </div>
 
-        <div className='grid grid-cols-2 gap-2'>
-          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
-            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>일정</p>
+        <div className='grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-[var(--app-border)] bg-[var(--app-border)]'>
+          <div className='bg-[var(--app-card)] px-3 py-3'>
+            <div className='flex items-center gap-1.5 text-[var(--app-muted)]'>
+              <CalendarDays aria-hidden='true' className='size-3.5' strokeWidth={1.8} />
+              <p className='text-[0.68rem] font-semibold'>일정</p>
+            </div>
             <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
           </div>
-          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
-            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>장소</p>
+          <div className='bg-[var(--app-card)] px-3 py-3'>
+            <div className='flex items-center gap-1.5 text-[var(--app-muted)]'>
+              <MapPin aria-hidden='true' className='size-3.5' strokeWidth={1.8} />
+              <p className='text-[0.68rem] font-semibold'>장소</p>
+            </div>
             <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
           </div>
         </div>
@@ -290,7 +296,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                   setImgSrc(image.url);
                   setImageFailed(false);
                 }}
-                className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-black/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]'
+                className='relative size-[4.5rem] shrink-0 overflow-hidden rounded-lg border border-[var(--app-border)] bg-[var(--app-chip)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]'
                 aria-label={image.name || '추가 이미지 보기'}
                 aria-pressed={imgSrc === image.url}
               >
@@ -327,7 +333,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
         {culture.overview && (
           <section className='border-t border-[var(--app-border)] pt-4'>
-            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>행사 소개</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--app-primary)]'>행사 소개</p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.overview}
             </p>
@@ -336,7 +342,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
         {culture.programIntroduction && (
           <section className='border-t border-[var(--app-border)] pt-4'>
-            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>프로그램</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--app-primary)]'>프로그램</p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--app-muted)]'>
               {culture.programIntroduction}
             </p>
@@ -349,7 +355,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           culture.festivalGrade ||
           culture.discountInformation) && (
           <section className='border-t border-[var(--app-border)] pt-4'>
-            <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>이용 안내</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--app-primary)]'>이용 안내</p>
             <dl className='mt-2 grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
               {culture.bookingPlace && (
                 <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
@@ -387,8 +393,10 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
         {(culture.additionalInformation ?? []).length > 0 && (
           <details className='group border-t border-[var(--app-border)] pt-4'>
-            <summary className='flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
-              <span className='text-[0.72rem] text-[var(--app-primary)]'>상세 안내</span>
+            <summary className='flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
+              <span className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--app-primary)]'>
+                상세 안내
+              </span>
               <span className='text-xs text-[var(--app-muted)] group-open:hidden'>열기</span>
               <span className='hidden text-xs text-[var(--app-muted)] group-open:inline'>닫기</span>
             </summary>
@@ -404,7 +412,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         )}
 
         {ADSENSE_DETAIL_SLOT && (
-          <div className='surface-card rounded-[18px] p-2.5'>
+          <div className='surface-card rounded-xl p-2.5'>
             <GoogleAdSlot slot={ADSENSE_DETAIL_SLOT} className='min-h-[88px]' />
           </div>
         )}

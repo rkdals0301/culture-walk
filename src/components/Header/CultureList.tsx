@@ -67,18 +67,19 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               }}
               onClick={() => onItemClick(culture)}
               aria-current={isSelected ? 'true' : undefined}
+              aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}${isSelected ? ', 선택됨' : ''}`}
             >
               <div
                 className={clsx(
-                  'relative border-b border-[var(--app-border)] px-3 py-3 transition-colors duration-150 hover:bg-black/[0.035] dark:hover:bg-white/[0.045]',
+                  'relative border-b border-[var(--app-border)] px-3 py-3.5 transition-colors duration-150 hover:bg-[var(--app-chip)]',
                   {
-                    'bg-[#fff3e5] dark:bg-[#38291c]': isSelected,
+                    'bg-[var(--app-accent)]/10': isSelected,
                   }
                 )}
               >
                 {isSelected && (
                   <>
-                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[#d98b2f]' />
+                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[var(--app-accent)]' />
                     <span className='sr-only'>선택됨</span>
                   </>
                 )}

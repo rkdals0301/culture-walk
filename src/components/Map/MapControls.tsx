@@ -3,6 +3,7 @@
 import { CULTURE_CATEGORY_OPTIONS, CultureCategoryKey } from '@/utils/cultureCategory';
 
 import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
 
 import MapFindMyLocationIcon from '../../../public/assets/images/map-find-my-location-icon.svg';
 
@@ -49,20 +50,34 @@ export const MapFilterControls = ({
       })}
     </div>
     <div className='flex items-center gap-2'>
-      <select
-        value={region}
-        onChange={event => onRegionChange(event.target.value)}
-        aria-label='지역 필터'
-        className='h-11 min-w-0 flex-1 rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 text-xs font-semibold text-[var(--app-text)]'
+      <div className='relative min-w-0 flex-1'>
+        <select
+          value={region}
+          onChange={event => onRegionChange(event.target.value)}
+          aria-label='지역 필터'
+          className='h-11 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 pr-8 text-xs font-semibold text-[var(--app-text)]'
+        >
+          <option value='all'>전국</option>
+          {regionOptions.map(option => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          aria-hidden='true'
+          className='pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--app-muted)]'
+          strokeWidth={1.8}
+        />
+      </div>
+      <label
+        className={clsx(
+          'flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--app-focus)]',
+          freeOnly
+            ? 'border-[var(--app-primary)]/35 bg-[var(--app-primary)]/10 text-[var(--app-primary)]'
+            : 'border-[var(--app-border)] text-[var(--app-muted)]'
+        )}
       >
-        <option value='all'>전국</option>
-        {regionOptions.map(option => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-      <label className='flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--app-border)] px-2.5 text-xs font-semibold text-[var(--app-muted)] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--app-focus)]'>
         <input
           type='checkbox'
           checked={freeOnly}

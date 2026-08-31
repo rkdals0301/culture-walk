@@ -21,6 +21,12 @@ const SearchView = dynamic(() => import('@/components/Header/SearchView'), {
   loading: () => null,
 });
 
+const NAVIGATION_LINKS = [
+  { href: '/map', label: '문화지도' },
+  { href: '/about', label: '서비스 소개' },
+  { href: '/contact', label: '문의하기' },
+];
+
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
@@ -95,19 +101,20 @@ const Header = () => {
         </a>
       )}
       <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
-        <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
+        <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
           <IconButton
             icon={<SideMenuIcon />}
             ariaLabel='사이드메뉴 열기'
             onClick={handleOpenSideMenu}
             variant='secondary'
           />
-          <Link href='/' className='flex min-w-0 flex-1 items-center gap-3'>
+          <Link href='/map' className='flex min-w-0 items-center gap-3'>
             <Image
               src='/assets/images/logo-128.png'
               alt='문화산책'
               width={44}
               height={44}
+              preload
               className='rounded-xl shadow-[0_12px_26px_-22px_rgba(31,118,95,0.62)]'
             />
             <div className='min-w-0'>
@@ -118,6 +125,26 @@ const Header = () => {
             </div>
           </Link>
         </div>
+        <nav className='hidden items-center gap-1 lg:flex' aria-label='주요 메뉴'>
+          {NAVIGATION_LINKS.map(link => {
+            const isActive = link.href === '/map' ? pathname?.startsWith('/map') : pathname === link.href;
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? 'page' : undefined}
+                className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-[var(--app-chip)] text-[var(--app-primary)]'
+                    : 'text-[var(--app-muted)] hover:bg-[var(--app-chip)] hover:text-[var(--app-text)]'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
         <div className='flex shrink-0 items-center gap-2'>
           <IconButton
             icon={<SearchIcon />}

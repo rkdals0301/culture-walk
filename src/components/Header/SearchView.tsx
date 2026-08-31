@@ -64,7 +64,7 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
 
       <div
         ref={panelRef}
-        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] sm:h-full sm:rounded-[24px]'
+        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[18px] text-[var(--app-text)] sm:h-full sm:rounded-[20px]'
         role='dialog'
         aria-modal='true'
         aria-label='문화행사 검색'
