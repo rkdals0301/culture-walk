@@ -1,3 +1,4 @@
+import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import InfoPageShell from '@/components/Info/InfoPageShell';
 
 import type { Metadata } from 'next';
@@ -17,6 +18,13 @@ const AboutPage = () => {
       title='전국 문화행사를 지도 위에서 더 쉽게 찾습니다.'
       description='문화산책은 한국관광공사 TourAPI 공개 정보를 바탕으로 전국의 축제, 공연, 전시, 체험 행사를 위치 중심으로 탐색할 수 있게 만든 서비스입니다.'
     >
+      <ul aria-label='문화행사 분류' className='flex flex-wrap gap-2'>
+        {['축제', '공연', '전시', '체험'].map(category => (
+          <li key={category}>
+            <CultureCategoryBadge classification={category} className='rounded-full px-3 py-2 text-xs' />
+          </li>
+        ))}
+      </ul>
       <div className='grid gap-4 md:grid-cols-3'>
         <article className='surface-card rounded-2xl p-5'>
           <h2 className='text-lg font-semibold'>지도 중심 탐색</h2>

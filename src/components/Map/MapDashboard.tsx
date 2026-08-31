@@ -197,7 +197,7 @@ const MapDashboard = () => {
           <button
             type='button'
             onClick={resetMapFilters}
-            className='mt-4 rounded-xl bg-[var(--app-primary)] px-4 py-2 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
+            className='mt-4 inline-flex min-h-11 items-center rounded-xl bg-[var(--app-primary)] px-4 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
           >
             필터 초기화
           </button>
@@ -216,7 +216,14 @@ const MapDashboard = () => {
   };
 
   return (
-    <div className='pointer-events-none absolute inset-0'>
+    <div
+      id='culture-list'
+      role='region'
+      aria-label='문화행사 목록'
+      tabIndex={-1}
+      className='pointer-events-none absolute inset-0 scroll-mt-24 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]'
+    >
+      {!isDetailRoute && <h1 className='sr-only'>전국 문화행사 지도</h1>}
       <aside
         data-keeps-detail-open
         className={clsx(
@@ -349,7 +356,7 @@ const MapDashboard = () => {
                 <button
                   type='button'
                   onClick={() => setIsMobileSheetVisible(false)}
-                  className='shrink-0 rounded-xl bg-[var(--app-primary)] px-3.5 py-2 text-xs font-semibold text-[var(--app-on-primary)] shadow-[0_10px_22px_-18px_rgba(31,118,95,0.64)]'
+                  className='inline-flex min-h-11 shrink-0 items-center rounded-xl bg-[var(--app-primary)] px-3.5 text-xs font-semibold text-[var(--app-on-primary)] shadow-[0_10px_22px_-18px_rgba(31,118,95,0.64)]'
                 >
                   지도만 보기
                 </button>
@@ -389,7 +396,7 @@ const MapDashboard = () => {
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel rounded-xl border-[var(--app-primary)]/20 px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-[0_14px_30px_-24px_rgba(16,33,29,0.38)]'
+              className='surface-panel inline-flex min-h-11 items-center rounded-xl border-[var(--app-primary)]/20 px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-[0_14px_30px_-24px_rgba(16,33,29,0.38)]'
             >
               목록 보기 {visibleCultures.length > 0 ? `· ${visibleCultures.length}개` : ''}
             </button>

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const ContactPage = () => {
   return (
     <InfoPageShell
-      eyebrow='Contact'
+      eyebrow='문의하기'
       title='서비스 문의'
       description='문화산책 이용 중 발견한 오류, 행사 정보 수정 요청, 개인정보 및 광고 관련 문의를 남길 수 있습니다.'
     >
@@ -38,7 +38,7 @@ const ContactPage = () => {
           </p>
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='mt-4 inline-flex rounded-full bg-[#1f765f] px-5 py-2.5 text-sm font-semibold text-[#fff8f1] transition hover:bg-[#175846]'
+            className='mt-4 inline-flex min-h-11 items-center rounded-full bg-[var(--app-primary)] px-5 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
           >
             {CONTACT_EMAIL}
           </a>

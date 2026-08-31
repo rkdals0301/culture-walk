@@ -24,15 +24,9 @@ const InfoPageShell = ({ children, eyebrow, title, description }: InfoPageShellP
           <div className='flex flex-wrap gap-3'>
             <Link
               href='/map'
-              className='inline-flex rounded-xl bg-[var(--app-primary)] px-5 py-2.5 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
+              className='inline-flex min-h-11 items-center rounded-xl bg-[var(--app-primary)] px-5 text-sm font-semibold text-[var(--app-on-primary)] transition hover:bg-[var(--app-primary-hover)]'
             >
               지도 보기
-            </Link>
-            <Link
-              href='/'
-              className='soft-chip inline-flex rounded-xl px-5 py-2.5 text-sm font-semibold text-[var(--app-text)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
-            >
-              홈으로
             </Link>
           </div>
         </section>

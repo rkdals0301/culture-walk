@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { AnimatePresence, LazyMotion, domAnimation, useReducedMotion } from 'framer-motion';
 import * as m from 'framer-motion/m';
@@ -23,6 +24,7 @@ const SearchView = dynamic(() => import('@/components/Header/SearchView'), {
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const { openSideMenu } = useSideMenu(); // 사이드 메뉴를 여는 함수 사용
+  const pathname = usePathname();
   const hasSearchHistoryEntryRef = useRef(false);
   const shouldReduceMotion = useReducedMotion();
   const searchTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
@@ -84,6 +86,14 @@ const Header = () => {
 
   return (
     <header className='pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-4 sm:px-6 lg:h-[72px] lg:px-0 lg:pt-0'>
+      {pathname === '/map' && (
+        <a
+          href='#culture-list'
+          className='pointer-events-auto fixed left-4 top-4 z-[70] rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-semibold text-[var(--app-on-primary)] opacity-0 shadow-[var(--app-shadow)] transition-opacity duration-200 focus-visible:opacity-100'
+        >
+          행사 목록으로 건너뛰기
+        </a>
+      )}
       <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
           <IconButton
@@ -104,7 +114,7 @@ const Header = () => {
               <p className='truncate text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
                 전국 문화행사 지도
               </p>
-              <h1 className='truncate text-base font-semibold sm:text-lg'>문화산책</h1>
+              <span className='truncate text-base font-semibold sm:text-lg'>문화산책</span>
             </div>
           </Link>
         </div>

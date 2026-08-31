@@ -101,7 +101,7 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
           </div>
         </div>
         <div className='min-h-0 flex-1 p-3 sm:p-5'>
-          <SearchResultsOverlay onCloseWithoutHistory={onCloseWithoutHistory} />
+          <SearchResultsOverlay onCloseWithoutHistory={onCloseWithoutHistory} onResetSearch={handleReset} />
         </div>
       </div>
     </div>
