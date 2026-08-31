@@ -29,7 +29,7 @@ const Header = () => {
   const shouldReduceMotion = useReducedMotion();
   const searchTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
   const restoreSearchTriggerFocus = useCallback(() => {
-    document.querySelector<HTMLButtonElement>('button[aria-label="검색바 열기"]')?.focus();
+    document.querySelector<HTMLButtonElement>('button[aria-label="행사 검색 열기"]')?.focus();
   }, []);
 
   useEffect(() => {
@@ -121,10 +121,12 @@ const Header = () => {
         <div className='flex shrink-0 items-center gap-2'>
           <IconButton
             icon={<SearchIcon />}
-            ariaLabel='검색바 열기'
+            ariaLabel='행사 검색 열기'
+            title='행사 검색'
+            label='검색'
             onClick={handleOpenOverlay}
             variant='secondary'
-            className='lg:hidden'
+            className='h-11 w-auto lg:hidden'
           />
           <ThemeToggleButton />
         </div>

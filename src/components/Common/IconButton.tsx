@@ -6,6 +6,8 @@ import { twMerge } from 'tailwind-merge';
 interface IconButtonProps {
   icon: React.ReactNode;
   ariaLabel: string;
+  label?: React.ReactNode;
+  title?: string;
   type?: 'button' | 'submit' | 'reset';
   variant?: 'primary' | 'secondary' | 'success' | 'danger';
   fullWidth?: boolean;
@@ -18,6 +20,8 @@ interface IconButtonProps {
 const IconButton = ({
   icon,
   ariaLabel,
+  label,
+  title,
   type = 'button',
   variant = 'primary',
   fullWidth = false,
@@ -47,7 +51,14 @@ const IconButton = ({
   const iconColorClass = 'text-current';
   const iconSizeClass = 'size-5 sm:size-6';
   const buttonClass = twMerge(
-    clsx(baseClass, colorClass, disabledClass, fullWidth ? 'w-full' : 'size-11', className)
+    clsx(
+      baseClass,
+      colorClass,
+      disabledClass,
+      fullWidth ? 'w-full' : label ? 'min-h-11' : 'size-11',
+      label && 'gap-1.5 px-3',
+      className
+    )
   );
 
   return (
@@ -55,11 +66,13 @@ const IconButton = ({
       type={type}
       onClick={disabled ? undefined : onClick}
       aria-label={ariaLabel}
+      title={title}
       className={buttonClass}
       disabled={disabled}
       {...props}
     >
       <span className={twMerge(clsx(iconSizeClass, iconColorClass), iconClassName)}>{icon}</span>
+      {label && <span className='text-sm font-semibold'>{label}</span>}
     </button>
   );
 };
