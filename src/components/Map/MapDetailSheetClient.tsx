@@ -284,7 +284,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         </div>
         <div>
           <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>선택한 행사</p>
-          <h2 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h2>
+          <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h1>
         </div>
 
         <div className='grid grid-cols-2 gap-2'>
