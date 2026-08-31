@@ -89,7 +89,7 @@ const Header = () => {
       {pathname === '/map' && (
         <a
           href='#culture-list'
-          className='pointer-events-auto fixed left-4 top-4 z-[70] rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-semibold text-[var(--app-on-primary)] opacity-0 shadow-[var(--app-shadow)] transition-opacity duration-200 focus-visible:opacity-100'
+          className='pointer-events-none fixed left-4 top-4 z-[70] rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-semibold text-[var(--app-on-primary)] opacity-0 shadow-[var(--app-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
         >
           행사 목록으로 건너뛰기
         </a>
