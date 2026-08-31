@@ -88,15 +88,13 @@ const getMarkerFocus = (groups: MarkerGroup[]) => {
 
 const MapUnavailableState = () => (
   <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-    <div className='surface-panel flex w-full max-w-2xl flex-col gap-4 rounded-[20px] p-6 text-[var(--app-text)] sm:p-8'>
-      <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>
-        지도 미리보기를 사용할 수 없습니다
-      </p>
+    <div className='surface-panel flex w-full max-w-2xl flex-col gap-4 rounded-xl p-6 text-[var(--app-text)] sm:p-8'>
+      <p className='route-kicker'>지도 미리보기</p>
       <h2 className='text-3xl font-semibold sm:text-4xl'>Kakao Maps 키가 설정되지 않았습니다.</h2>
       <p className='max-w-xl text-sm leading-6 text-[var(--app-muted)] sm:text-base'>
         `.env`에 `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`를 추가하면 지도가 활성화됩니다.
       </p>
-      <div className='surface-card rounded-2xl p-4'>
+      <div className='surface-card rounded-lg p-4'>
         <p className='text-sm font-semibold'>필수 환경 변수</p>
         <p className='mt-2 break-all text-sm text-[var(--app-muted)]'>NEXT_PUBLIC_KAKAO_MAPS_APP_KEY</p>
       </div>
@@ -231,12 +229,8 @@ const MapView = () => {
         content: (
           <div className='flex flex-col gap-4'>
             <div>
-              <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>
-                같은 장소의 행사
-              </p>
-              <h3 className='mt-2 text-xl font-semibold'>
-                같은 위치에서 여러 행사가 열리고 있습니다.
-              </h3>
+              <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>같은 장소의 행사</p>
+              <h3 className='mt-2 text-xl font-semibold'>같은 위치에서 여러 행사가 열리고 있습니다.</h3>
               <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>
                 아래 목록에서 원하는 행사를 선택하면 상세 화면으로 이동합니다.
               </p>
@@ -247,7 +241,7 @@ const MapView = () => {
                   <button
                     type='button'
                     onClick={() => goToMapDetail(culture.id)}
-                    className='surface-card w-full rounded-2xl p-4 text-left font-semibold transition duration-200 hover:border-[var(--app-primary)]/20 hover:shadow-[0_16px_32px_-26px_rgba(31,118,95,0.34)]'
+                    className='surface-card hover:border-[var(--app-primary)]/20 w-full rounded-2xl p-4 text-left font-semibold transition duration-200 hover:shadow-[0_16px_32px_-26px_rgba(31,118,95,0.34)]'
                   >
                     <p>{culture.title}</p>
                     <p className='mt-1 text-sm font-medium text-[var(--app-muted)]'>{culture.displayDate}</p>
@@ -532,8 +526,9 @@ const MapView = () => {
   if (sdkError) {
     return (
       <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-        <div className='surface-panel w-full max-w-xl rounded-[20px] p-6 text-[var(--app-text)] sm:p-8'>
-          <p className='text-lg font-semibold'>지도를 불러오지 못했습니다.</p>
+        <div className='surface-panel w-full max-w-xl rounded-xl p-6 text-[var(--app-text)] sm:p-8'>
+          <p className='route-kicker'>지도 연결</p>
+          <p className='mt-3 text-2xl font-semibold tracking-[-0.03em]'>지도를 불러오지 못했습니다.</p>
           <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>{sdkError}</p>
         </div>
       </div>
@@ -566,15 +561,18 @@ const MapView = () => {
 
       {isMapReady && isLoading && (
         <div className='pointer-events-none absolute left-3 right-3 top-20 z-20 md:left-auto md:right-6 md:max-w-xs'>
-          <div className='surface-panel rounded-[16px] px-3 py-2 text-xs font-medium text-[var(--app-muted)]'>
+          <div className='surface-panel rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-muted)]'>
             행사 데이터를 불러오는 중입니다.
           </div>
         </div>
       )}
 
       {error && (
-        <div className='absolute left-3 right-3 top-20 z-20 rounded-[20px] border border-rose-500/20 bg-rose-50/90 p-3 text-sm text-rose-800 backdrop-blur-md dark:bg-rose-900/30 dark:text-rose-100 md:left-6 md:right-auto md:max-w-sm'>
-          행사 데이터를 불러오지 못했습니다: {error.message}
+        <div
+          className='surface-card border-[var(--app-danger)]/30 absolute left-3 right-3 top-20 z-20 rounded-lg p-3 text-sm text-[var(--app-danger)] md:left-6 md:right-auto md:max-w-sm'
+          role='alert'
+        >
+          행사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
         </div>
       )}
     </div>

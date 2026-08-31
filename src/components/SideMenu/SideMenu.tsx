@@ -55,7 +55,7 @@ const SideMenu = () => {
       <aside
         ref={panelRef}
         className={clsx(
-          'fixed left-0 top-0 z-[80] flex h-dvh w-[calc(100vw-16px)] max-w-[320px] flex-col rounded-r-lg border-r border-[var(--app-border)] bg-[#fafcf9] p-5 shadow-[var(--app-shadow)] transition-transform duration-300 dark:bg-[#101916] sm:p-6',
+          'fixed left-0 top-0 z-[80] flex h-dvh w-[calc(100vw-16px)] max-w-[320px] flex-col rounded-r-lg border-r border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[var(--app-shadow)] transition-transform duration-300 sm:p-6',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         role='dialog'

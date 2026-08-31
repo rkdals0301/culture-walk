@@ -26,7 +26,7 @@ const ThemeToggle = () => {
       return;
     }
 
-    const themeColor = isDark ? '#111614' : '#f3f5f2';
+    const themeColor = isDark ? '#101613' : '#eef2ee';
     document.querySelectorAll<HTMLMetaElement>("meta[name='theme-color']").forEach(meta => {
       meta.content = themeColor;
     });
@@ -39,6 +39,7 @@ const ThemeToggle = () => {
   return (
     <IconButton
       ariaLabel={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
+      title={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
       onClick={handleClick}
       icon={isDark ? <LightModeIcon /> : <DarkModeIcon />}
     />

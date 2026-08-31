@@ -10,12 +10,20 @@ import { usePathname } from 'next/navigation';
 
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'framer-motion';
 
-import CloseIcon from '../../../public/assets/images/close-icon.svg';
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
+import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
 const BottomSheet = () => {
-  const { isOpen, content, footer, closeOnRouteExit, backLabel, backBottomSheet, closeBottomSheet, dismissBottomSheet } =
-    useBottomSheet();
+  const {
+    isOpen,
+    content,
+    footer,
+    closeOnRouteExit,
+    backLabel,
+    backBottomSheet,
+    closeBottomSheet,
+    dismissBottomSheet,
+  } = useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -129,7 +137,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[20px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
+            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[18px] text-[var(--app-text)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}
@@ -172,12 +180,12 @@ const BottomSheet = () => {
                 className='flex h-7 w-16 touch-none items-center justify-center rounded-full lg:hidden'
                 aria-label={mobileSheetMode === 'peek' ? '상세 정보 확장' : '상세 정보 축소'}
               >
-                <span className='h-1.5 w-14 rounded-full bg-[var(--app-primary)]/20' />
+                <span className='bg-[var(--app-primary)]/20 h-1.5 w-14 rounded-full' />
               </button>
               <button
                 type='button'
                 onClick={closeBottomSheet}
-                className='soft-chip flex size-11 items-center justify-center justify-self-end rounded-full text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
+                className='soft-chip flex size-11 items-center justify-center justify-self-end rounded-lg text-[var(--app-muted)] transition hover:bg-black/[0.06] dark:hover:bg-white/[0.08]'
                 aria-label='상세 패널 닫기'
               >
                 <CloseIcon className='size-4' />
