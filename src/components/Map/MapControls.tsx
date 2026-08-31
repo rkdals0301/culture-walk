@@ -40,7 +40,7 @@ export const MapFilterControls = ({
             aria-pressed={isActive}
             className={
               isActive
-                ? 'h-11 min-w-0 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-1 text-xs font-semibold text-[var(--color-brand-on-primary)]'
+                ? 'h-11 min-w-0 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-1 text-xs font-semibold text-[var(--color-brand-on-primary)] transition-colors duration-150'
                 : 'h-11 min-w-0 whitespace-nowrap rounded-lg border border-[var(--color-border-control)] px-1 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
             }
           >
@@ -112,7 +112,7 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       aria-pressed={mode === 'date'}
       className={
         mode === 'date'
-          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm'
+          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm transition-colors duration-150'
           : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
       }
     >
@@ -127,7 +127,7 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={
         mode === 'distance'
-          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-brand-primary)] shadow-sm'
+          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-brand-primary)] shadow-sm transition-colors duration-150'
           : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)] disabled:cursor-not-allowed disabled:bg-[var(--color-interactive-disabled)] disabled:text-[var(--color-text-disabled)]'
       }
     >
@@ -155,7 +155,8 @@ export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocati
       isActive
         ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)]'
         : 'border-[var(--color-border-control)] text-[var(--color-text-secondary)] hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]',
-      isLocating && 'cursor-wait border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)]'
+      isLocating &&
+        'cursor-wait border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)]'
     )}
   >
     <MapFindMyLocationIcon className={clsx('size-3.5', isLocating && 'animate-spin')} />

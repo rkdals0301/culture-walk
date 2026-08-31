@@ -27,7 +27,13 @@ declare namespace kakao.maps {
     getLevel(): number;
     setLevel(level: number): void;
     setCenter(position: LatLng): void;
-    setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
+    setBounds(
+      bounds: LatLngBounds,
+      paddingTop?: number,
+      paddingRight?: number,
+      paddingBottom?: number,
+      paddingLeft?: number
+    ): void;
     panTo(position: LatLng): void;
     setDraggable(draggable: boolean): void;
     setZoomable(zoomable: boolean): void;
@@ -49,6 +55,21 @@ declare namespace kakao.maps {
 
   class Marker {
     constructor(options: MarkerOptions);
+    setMap(map: Map | null): void;
+  }
+
+  interface CustomOverlayOptions {
+    map?: Map | null;
+    position: LatLng;
+    content: HTMLElement | string;
+    xAnchor?: number;
+    yAnchor?: number;
+    zIndex?: number;
+    clickable?: boolean;
+  }
+
+  class CustomOverlay {
+    constructor(options: CustomOverlayOptions);
     setMap(map: Map | null): void;
   }
 

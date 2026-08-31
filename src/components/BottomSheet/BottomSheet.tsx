@@ -34,11 +34,14 @@ const BottomSheet = () => {
   const dragControls = useDragControls();
   const shouldReduceMotion = useReducedMotion();
   const isInteractive = isOpen && !isSideMenuOpen;
-  const mobileSheetHeight = mobileSheetMode === 'expanded' ? 'calc(100dvh - 3rem)' : '52dvh';
+  const mobileSheetHeight =
+    mobileSheetMode === 'expanded' ? 'calc(100dvh - 3rem - env(safe-area-inset-bottom, 0px))' : '52dvh';
+  const sheetContentKey = `${pathname ?? 'sheet'}:${backLabel ?? 'root'}`;
   const panelTransition = shouldReduceMotion
     ? { duration: 0.01 }
     : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
   const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
+  const contentTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.18, ease: 'easeOut' as const };
 
   useDialogFocusTrap(isInteractive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
@@ -137,7 +140,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
+            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[52dvh] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}
@@ -180,7 +183,7 @@ const BottomSheet = () => {
                 className='flex h-7 w-16 touch-none items-center justify-center rounded-full lg:hidden'
                 aria-label={mobileSheetMode === 'peek' ? '상세 정보 확장' : '상세 정보 축소'}
               >
-                <span className='bg-[var(--color-brand-subtle)] h-1.5 w-14 rounded-full' />
+                <span className='h-1.5 w-14 rounded-full bg-[var(--color-brand-subtle)]' />
               </button>
               <button
                 type='button'
@@ -191,7 +194,20 @@ const BottomSheet = () => {
                 <CloseIcon className='size-4' />
               </button>
             </div>
-            <div className='min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-3 sm:px-5'>{content}</div>
+            <div className='min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-3 sm:px-5'>
+              <AnimatePresence initial={false} mode='wait'>
+                <motion.div
+                  key={sheetContentKey}
+                  className='min-h-full'
+                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -8 }}
+                  transition={contentTransition}
+                >
+                  {content}
+                </motion.div>
+              </AnimatePresence>
+            </div>
             {footer && (
               <div className='shrink-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] px-4 pb-4 pt-3 sm:px-5'>
                 {footer}

@@ -59,12 +59,12 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
   };
 
   return (
-    <div className='pointer-events-auto fixed inset-0 z-50 flex items-stretch justify-center px-3 py-3 sm:items-start sm:px-6 sm:py-6 lg:px-8 lg:py-8'>
+    <div className='safe-area-search-overlay pointer-events-auto fixed inset-0 z-50 flex items-stretch justify-center sm:items-start'>
       <div className='pointer-events-auto fixed inset-0 bg-[var(--color-overlay)] backdrop-blur-sm' onClick={onClose} />
 
       <div
         ref={panelRef}
-        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-overlay)] text-[var(--color-text-primary)] sm:h-full sm:rounded-[20px]'
+        className='safe-area-search-panel surface-panel pointer-events-auto relative z-50 flex w-full max-w-[1040px] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-overlay)] text-[var(--color-text-primary)]'
         role='dialog'
         aria-modal='true'
         aria-label='문화행사 검색'

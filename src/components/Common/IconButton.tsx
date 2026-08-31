@@ -57,7 +57,7 @@ const IconButton = ({
       baseClass,
       colorClass,
       disabledClass,
-      fullWidth ? 'w-full' : label ? 'min-h-11' : 'size-11',
+      fullWidth ? 'w-full' : label ? 'min-h-11 shrink-0' : 'size-11 shrink-0',
       label && 'gap-1.5 px-3',
       className
     )

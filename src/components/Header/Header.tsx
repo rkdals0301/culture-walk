@@ -91,16 +91,16 @@ const Header = () => {
   }, [isSearchBarVisible]);
 
   return (
-    <header className='pointer-events-none fixed inset-x-0 top-0 z-30 px-4 pt-4 sm:px-6 lg:h-[72px] lg:px-0 lg:pt-0'>
+    <header className='safe-area-header-offset pointer-events-none fixed inset-x-0 top-0 z-30 lg:h-[72px]'>
       {pathname === '/map' && (
         <a
           href='#culture-list'
-          className='pointer-events-none fixed left-4 top-4 z-[70] rounded-xl bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-on-primary)] opacity-0 shadow-[var(--color-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
+          className='safe-area-skip-link pointer-events-none fixed z-[70] rounded-xl bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-on-primary)] opacity-0 shadow-[var(--color-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
         >
           행사 목록으로 건너뛰기
         </a>
       )}
-      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--color-text-primary)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
+      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-[var(--color-text-primary)] sm:gap-3 sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
           <IconButton
             icon={<SideMenuIcon />}
@@ -150,10 +150,10 @@ const Header = () => {
             icon={<SearchIcon />}
             ariaLabel='행사 검색 열기'
             title='행사 검색'
-            label='검색'
+            label={<span className='header-search-label'>검색</span>}
             onClick={handleOpenOverlay}
             variant='secondary'
-            className='h-11 w-auto lg:hidden'
+            className='header-search-button h-11 w-auto lg:hidden'
           />
           <ThemeToggleButton />
         </div>

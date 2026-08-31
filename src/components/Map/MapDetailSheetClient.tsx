@@ -34,7 +34,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='surface-panel pointer-events-auto fixed inset-x-3 bottom-3 z-50 flex h-[52dvh] max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] md:bottom-6 md:left-auto md:right-6 md:w-[420px] lg:top-[88px] lg:h-auto lg:max-h-[calc(100dvh-7.5rem)] min-[1280px]:bottom-0 min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[72px] min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:max-h-none min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
+    <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[52dvh] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
@@ -331,7 +331,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
         {culture.overview && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>
-            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>행사 소개</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>
+              행사 소개
+            </p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--color-text-secondary)]'>
               {culture.overview}
             </p>
@@ -340,7 +342,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
         {culture.programIntroduction && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>
-            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>프로그램</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>
+              프로그램
+            </p>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--color-text-secondary)]'>
               {culture.programIntroduction}
             </p>
@@ -353,7 +357,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           culture.festivalGrade ||
           culture.discountInformation) && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>
-            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>이용 안내</p>
+            <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>
+              이용 안내
+            </p>
             <dl className='mt-2 grid gap-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
               {culture.bookingPlace && (
                 <div className='grid grid-cols-[3.8rem_1fr] gap-3'>

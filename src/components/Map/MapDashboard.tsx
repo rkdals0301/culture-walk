@@ -7,10 +7,11 @@ import { MapFilterControls, MapLocationControl, MapSortControl, MapSortMode } fr
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
+import type { CultureCategoryKey } from '@/utils/cultureCategory';
 import { calculateDistanceMeters, getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
 import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -50,6 +51,7 @@ const MapDashboard = () => {
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
   const [sortMode, setSortMode] = useState<MapSortMode>('date');
   const [isLocating, setIsLocating] = useState(false);
+  const [isFilterPending, startFilterTransition] = useTransition();
   const selectedCultureId = getMapDetailId(pathname);
   const isDetailRoute = selectedCultureId !== null;
 
@@ -73,6 +75,19 @@ const MapDashboard = () => {
     );
   }, [currentLocation, mapCultures, sortMode]);
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;
+  const filterMotionKey = `${mapCategory}:${mapRegion}:${mapFreeOnly ? 'free' : 'all'}`;
+
+  const handleCategoryChange = (nextCategory: CultureCategoryKey) => {
+    startFilterTransition(() => setMapCategory(nextCategory));
+  };
+
+  const handleFreeOnlyChange = (nextFreeOnly: boolean) => {
+    startFilterTransition(() => setMapFreeOnly(nextFreeOnly));
+  };
+
+  const handleRegionChange = (nextRegion: string) => {
+    startFilterTransition(() => setMapRegion(nextRegion));
+  };
 
   const requestLocation = async () => {
     if (currentLocation) {
@@ -244,7 +259,9 @@ const MapDashboard = () => {
         className={clsx(
           'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--color-text-primary)] transition-[width] duration-[280ms]',
           isDetailRoute ? 'min-[1280px]:flex' : 'lg:flex',
-          isDesktopPanelCollapsed ? 'border-r-0' : 'border-r border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]'
+          isDesktopPanelCollapsed
+            ? 'border-r-0'
+            : 'border-r border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]'
         )}
         style={{ width: 'var(--map-sidebar-width)' }}
         aria-label='문화행사 탐색 패널'
@@ -306,9 +323,9 @@ const MapDashboard = () => {
                   freeOnly={mapFreeOnly}
                   region={mapRegion}
                   regionOptions={regionOptions}
-                  onCategoryChange={setMapCategory}
-                  onFreeOnlyChange={setMapFreeOnly}
-                  onRegionChange={setMapRegion}
+                  onCategoryChange={handleCategoryChange}
+                  onFreeOnlyChange={handleFreeOnlyChange}
+                  onRegionChange={handleRegionChange}
                 />
               </div>
 
@@ -326,8 +343,13 @@ const MapDashboard = () => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <strong className='font-semibold text-[var(--color-text-primary)]' aria-live='polite' aria-atomic='true'>
-                  {visibleCultures.length}개<span className='font-medium text-[var(--color-text-secondary)]'> / {totalCount}</span>
+                <strong
+                  className='font-semibold text-[var(--color-text-primary)]'
+                  aria-live='polite'
+                  aria-atomic='true'
+                >
+                  {visibleCultures.length}개
+                  <span className='font-medium text-[var(--color-text-secondary)]'> / {totalCount}</span>
                 </strong>
               </div>
 
@@ -337,7 +359,16 @@ const MapDashboard = () => {
                 </div>
               )}
             </div>
-            <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>{renderListPanel()}</div>
+            <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
+              <div
+                key={filterMotionKey}
+                className='map-filter-results h-full min-h-0'
+                data-filter-pending={isFilterPending ? 'true' : undefined}
+                aria-busy={isFilterPending}
+              >
+                {renderListPanel()}
+              </div>
+            </div>
           </section>
         )}
       </aside>
@@ -357,12 +388,12 @@ const MapDashboard = () => {
         </button>
       )}
 
-      <div className='pointer-events-none flex h-full w-full flex-col px-4 pb-4 pt-[5.4rem] sm:px-6 sm:pb-6 sm:pt-[6rem] lg:hidden'>
+      <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] lg:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[72vh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'>
+          <section className='surface-panel pointer-events-auto mt-auto flex h-[72dvh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'>
             <div className='border-b border-[var(--color-border-primary)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
-                <div className='bg-[var(--color-brand-subtle)] h-1.5 w-12 rounded-full' />
+                <div className='h-1.5 w-12 rounded-full bg-[var(--color-brand-subtle)]' />
               </div>
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
@@ -386,9 +417,9 @@ const MapDashboard = () => {
                   freeOnly={mapFreeOnly}
                   region={mapRegion}
                   regionOptions={regionOptions}
-                  onCategoryChange={setMapCategory}
-                  onFreeOnlyChange={setMapFreeOnly}
-                  onRegionChange={setMapRegion}
+                  onCategoryChange={handleCategoryChange}
+                  onFreeOnlyChange={handleFreeOnlyChange}
+                  onRegionChange={handleRegionChange}
                 />
               </div>
               <div className='mt-2.5 flex items-center justify-between gap-3'>
@@ -405,19 +436,32 @@ const MapDashboard = () => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <strong className='text-xs font-semibold text-[var(--color-text-primary)]' aria-live='polite' aria-atomic='true'>
+                <strong
+                  className='text-xs font-semibold text-[var(--color-text-primary)]'
+                  aria-live='polite'
+                  aria-atomic='true'
+                >
                   {visibleCultures.length}개
                 </strong>
               </div>
             </div>
-            <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>{renderListPanel()}</div>
+            <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
+              <div
+                key={filterMotionKey}
+                className='map-filter-results h-full min-h-0'
+                data-filter-pending={isFilterPending ? 'true' : undefined}
+                aria-busy={isFilterPending}
+              >
+                {renderListPanel()}
+              </div>
+            </div>
           </section>
         ) : !isDetailRoute ? (
           <div className='pointer-events-auto mt-auto flex justify-center'>
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel border-[var(--color-border-brand)] inline-flex min-h-11 items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
+              className='surface-panel inline-flex min-h-11 items-center gap-2 rounded-lg border-[var(--color-border-brand)] px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
             >
               <List aria-hidden='true' className='size-4 text-[var(--color-brand-primary)]' strokeWidth={1.8} />
               행사 {visibleCultures.length > 0 ? `${visibleCultures.length}개` : ''} 보기

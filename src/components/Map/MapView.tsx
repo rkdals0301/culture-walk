@@ -281,7 +281,8 @@ const MapView = () => {
       setCenterPosition({ lat: selectedCulture.lat, lng: selectedCulture.lng });
 
       if (mapInstance && window.kakao?.maps) {
-        mapInstance.setCenter(new window.kakao.maps.LatLng(selectedCulture.lat, selectedCulture.lng));
+        const selectedPosition = new window.kakao.maps.LatLng(selectedCulture.lat, selectedCulture.lng);
+        mapInstance.panTo(selectedPosition);
         if (mapInstance.getLevel() > 4) {
           mapInstance.setLevel(4);
         }
@@ -381,7 +382,7 @@ const MapView = () => {
       return;
     }
 
-    mapInstance.setCenter(new window.kakao.maps.LatLng(centerPosition.lat, centerPosition.lng));
+    mapInstance.panTo(new window.kakao.maps.LatLng(centerPosition.lat, centerPosition.lng));
   }, [centerPosition, mapInstance]);
 
   useEffect(() => {
@@ -405,7 +406,7 @@ const MapView = () => {
     if (isCompactViewport) {
       const focus = getMarkerFocus(markerGroups);
       if (focus) {
-        mapInstance.setCenter(new window.kakao.maps.LatLng(focus.lat, focus.lng));
+        mapInstance.panTo(new window.kakao.maps.LatLng(focus.lat, focus.lng));
       }
     }
   }, [currentLocation, isCompactViewport, mapInstance, mapRegion, markerGroups]);
@@ -416,7 +417,7 @@ const MapView = () => {
     }
 
     setCenterPosition(currentLocation);
-    mapInstance.setCenter(new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng));
+    mapInstance.panTo(new window.kakao.maps.LatLng(currentLocation.lat, currentLocation.lng));
     if (mapInstance.getLevel() > 4) {
       mapInstance.setLevel(4);
     }
@@ -449,6 +450,7 @@ const MapView = () => {
     markerRefs.current = [];
 
     const kakaoMaps = window.kakao.maps;
+    const selectionOverlays: kakao.maps.CustomOverlay[] = [];
 
     markerGroups.forEach((group, index) => {
       const focusedId = pendingDetailId ?? activeMarkerId;
@@ -472,6 +474,20 @@ const MapView = () => {
         handleMarkerGroupClick(group);
       });
 
+      if (isSelected) {
+        selectionOverlays.push(
+          new kakaoMaps.CustomOverlay({
+            map: mapInstance,
+            position: new kakaoMaps.LatLng(group.lat, group.lng),
+            content: '<span class="map-marker-selection-pulse" aria-hidden="true"></span>',
+            xAnchor: 0.5,
+            yAnchor: 0.5,
+            zIndex: markerGroups.length + 1,
+            clickable: false,
+          })
+        );
+      }
+
       markerRefs.current.push(marker);
     });
 
@@ -481,6 +497,7 @@ const MapView = () => {
 
     return () => {
       markerClustererRef.current?.clear();
+      selectionOverlays.forEach(overlay => overlay.setMap(null));
       markerRefs.current.forEach(marker => marker.setMap(null));
       markerRefs.current = [];
     };
@@ -548,7 +565,7 @@ const MapView = () => {
         aria-describedby='culture-map-description'
         style={{ pointerEvents: 'auto', touchAction: 'auto' }}
       />
-      <div className='absolute right-3 top-[6.85rem] z-20 flex flex-col items-end gap-2 md:bottom-6 md:right-6 md:top-auto'>
+      <div className='map-controls-safe absolute z-20 flex flex-col items-end gap-2'>
         <MapZoomControls map={mapInstance} />
         <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
       </div>
