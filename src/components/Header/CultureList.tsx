@@ -60,7 +60,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
               className={clsx(
-                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--app-focus)]'
+                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]'
               )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
@@ -71,15 +71,15 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
             >
               <div
                 className={clsx(
-                  'relative border-b border-[var(--app-border)] px-3 py-3.5 transition-colors duration-150 hover:bg-[var(--app-chip)]',
+                  'relative border-b border-[var(--color-border-primary)] px-3 py-3.5 transition-colors duration-150 hover:bg-[var(--color-surface-chip)]',
                   {
-                    'bg-[var(--app-accent)]/10': isSelected,
+                    'bg-[var(--color-accent-subtle)]': isSelected,
                   }
                 )}
               >
                 {isSelected && (
                   <>
-                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[var(--app-accent)]' />
+                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[var(--color-accent-primary)]' />
                     <span className='sr-only'>선택됨</span>
                   </>
                 )}

@@ -33,7 +33,7 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
 
   return (
     <div
-      className={`flex size-full flex-col items-center justify-center bg-[#edf4f0] text-center text-[#397662] dark:bg-[#10251f] dark:text-[#8dc5b5] ${
+      className={`flex size-full flex-col items-center justify-center bg-[var(--color-image-fallback-surface)] text-center text-[var(--color-image-fallback-text)] ${
         compact ? 'gap-1.5 px-1' : 'gap-2'
       }`}
     >

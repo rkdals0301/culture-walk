@@ -26,11 +26,25 @@ const ThemeToggle = () => {
       return;
     }
 
-    const themeColor = isDark ? '#101613' : '#eef2ee';
-    document.querySelectorAll<HTMLMetaElement>("meta[name='theme-color']").forEach(meta => {
-      meta.content = themeColor;
-    });
-  }, [isDark, mounted]);
+    const updateThemeColor = () => {
+      const themeColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-bg-primary')
+        .trim();
+      if (!themeColor) {
+        return;
+      }
+
+      document.querySelectorAll<HTMLMetaElement>("meta[name='theme-color']").forEach(meta => {
+        meta.content = themeColor;
+      });
+    };
+
+    updateThemeColor();
+    const observer = new MutationObserver(updateThemeColor);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, [mounted]);
 
   const handleClick = () => {
     setTheme(isDark ? 'light' : 'dark');

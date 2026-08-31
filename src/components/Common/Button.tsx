@@ -29,25 +29,30 @@ const Button = ({
 }: ButtonProps) => {
   const baseClass = clsx(
     'inline-flex items-center justify-center rounded-lg border font-semibold transition duration-200',
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-focus)]',
-    disabled && 'cursor-not-allowed opacity-50'
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]',
+    disabled && 'cursor-not-allowed opacity-100'
   );
 
   const colorClasses = {
     primary:
-      'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)] shadow-[0_14px_30px_-24px_rgba(31,118,95,0.72)] hover:bg-[var(--app-primary-hover)]',
-    secondary: 'border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-text)] hover:bg-[var(--app-chip)]',
+      'border-transparent bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)] hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]',
+    secondary:
+      'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-chip)] active:bg-[var(--color-interactive-active)]',
     success:
-      'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)] shadow-[0_14px_30px_-24px_rgba(217,139,47,0.66)] hover:bg-[var(--app-accent-hover)]',
+      'border-transparent bg-[var(--color-accent-primary)] text-[var(--color-accent-on-primary)] shadow-[var(--color-shadow-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]',
     danger:
-      'border-transparent bg-[var(--app-danger)] text-[var(--app-on-danger)] shadow-[0_14px_30px_-24px_rgba(142,59,52,0.66)] hover:bg-[var(--app-danger-hover)]',
+      'border-transparent bg-[var(--color-error)] text-[var(--color-error-on-primary)] shadow-[var(--color-shadow-error)] hover:bg-[var(--color-error-hover)] active:bg-[var(--color-error-hover)]',
   };
 
   const disabledColorClasses = {
-    primary: 'border-transparent bg-[var(--app-primary)] text-[var(--app-on-primary)]',
-    secondary: 'border-[var(--app-border)] bg-[var(--app-card)] text-[var(--app-muted)]',
-    success: 'border-transparent bg-[var(--app-accent)] text-[var(--app-on-accent)]',
-    danger: 'border-transparent bg-[var(--app-danger)] text-[var(--app-on-danger)]',
+    primary:
+      'border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)] shadow-none',
+    secondary:
+      'border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)] shadow-none',
+    success:
+      'border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)] shadow-none',
+    danger:
+      'border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)] shadow-none',
   };
 
   const colorClass = disabled ? disabledColorClasses[variant] : colorClasses[variant];

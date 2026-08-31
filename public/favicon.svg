@@ -5,10 +5,10 @@
   <path
     d="M336 152C308 133 277 124 243 124C163 124 104 184 104 256C104 328 163 388 243 388C286 388 322 376 351 351"
     fill="none"
-    stroke="#FFF8F1"
+    stroke="#F8FBF8"
     stroke-width="52"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
-  <circle cx="360" cy="344" r="31" fill="#FFF8F1" />
+  <circle cx="360" cy="344" r="31" fill="#F8FBF8" />
 </svg>

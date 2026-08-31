@@ -4,16 +4,16 @@
       <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#123B72" flood-opacity="0.32" />
     </filter>
   </defs>
-  <circle cx="24" cy="24" r="21" fill="#2D72D9" opacity="0.14" />
-  <circle cx="24" cy="24" r="14" fill="#2D72D9" opacity="0.22" />
+  <circle cx="24" cy="24" r="21" fill="#205D8F" opacity="0.14" />
+  <circle cx="24" cy="24" r="14" fill="#205D8F" opacity="0.22" />
   <circle
     cx="24"
     cy="24"
     r="8.5"
-    fill="#2D72D9"
-    stroke="#FFFFFF"
+    fill="#205D8F"
+    stroke="#F8FBF8"
     stroke-width="3"
     filter="url(#location-shadow)"
   />
-  <circle cx="21.5" cy="21.5" r="2" fill="#FFFFFF" opacity="0.42" />
+  <circle cx="21.5" cy="21.5" r="2" fill="#F8FBF8" opacity="0.42" />
 </svg>

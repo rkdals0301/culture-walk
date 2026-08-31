@@ -95,12 +95,12 @@ const Header = () => {
       {pathname === '/map' && (
         <a
           href='#culture-list'
-          className='pointer-events-none fixed left-4 top-4 z-[70] rounded-xl bg-[var(--app-primary)] px-4 py-3 text-sm font-semibold text-[var(--app-on-primary)] opacity-0 shadow-[var(--app-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
+          className='pointer-events-none fixed left-4 top-4 z-[70] rounded-xl bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-on-primary)] opacity-0 shadow-[var(--color-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
         >
           행사 목록으로 건너뛰기
         </a>
       )}
-      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--app-text)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
+      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-[var(--color-text-primary)] sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
           <IconButton
             icon={<SideMenuIcon />}
@@ -115,10 +115,10 @@ const Header = () => {
               width={44}
               height={44}
               preload
-              className='rounded-xl shadow-[0_12px_26px_-22px_rgba(31,118,95,0.62)]'
+              className='rounded-xl shadow-[var(--color-shadow-brand)]'
             />
             <div className='min-w-0'>
-              <p className='truncate text-[0.66rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>
+              <p className='truncate text-[0.66rem] font-semibold text-[var(--color-brand-primary)]'>
                 전국 문화행사 지도
               </p>
               <span className='truncate text-base font-semibold sm:text-lg'>문화산책</span>
@@ -136,8 +136,8 @@ const Header = () => {
                 aria-current={isActive ? 'page' : undefined}
                 className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold transition-colors ${
                   isActive
-                    ? 'bg-[var(--app-chip)] text-[var(--app-primary)]'
-                    : 'text-[var(--app-muted)] hover:bg-[var(--app-chip)] hover:text-[var(--app-text)]'
+                    ? 'bg-[var(--color-surface-chip)] text-[var(--color-brand-primary)]'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)]'
                 }`}
               >
                 {link.label}

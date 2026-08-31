@@ -26,40 +26,40 @@ const CLUSTER_STYLES: Array<Record<string, string>> = [
     width: '40px',
     height: '40px',
     lineHeight: '40px',
-    background: 'rgba(31, 118, 95, 0.88)',
-    border: '2px solid rgba(247, 243, 234, 0.92)',
+    background: 'var(--color-map-cluster)',
+    border: '2px solid var(--color-map-cluster-border)',
     borderRadius: '999px',
-    color: '#f7f3ea',
+    color: 'var(--color-map-cluster-text)',
     textAlign: 'center',
     fontWeight: '700',
     fontSize: '12px',
-    boxShadow: '0 10px 24px -14px rgba(31, 118, 95, 0.9)',
+    boxShadow: 'var(--color-map-cluster-shadow)',
   },
   {
     width: '48px',
     height: '48px',
     lineHeight: '48px',
-    background: 'rgba(31, 118, 95, 0.94)',
-    border: '2px solid rgba(247, 243, 234, 0.92)',
+    background: 'var(--color-map-cluster)',
+    border: '2px solid var(--color-map-cluster-border)',
     borderRadius: '999px',
-    color: '#f7f3ea',
+    color: 'var(--color-map-cluster-text)',
     textAlign: 'center',
     fontWeight: '700',
     fontSize: '13px',
-    boxShadow: '0 14px 30px -16px rgba(31, 118, 95, 0.95)',
+    boxShadow: 'var(--color-map-cluster-shadow)',
   },
   {
     width: '56px',
     height: '56px',
     lineHeight: '56px',
-    background: 'rgba(31, 118, 95, 0.98)',
-    border: '2px solid rgba(247, 243, 234, 0.94)',
+    background: 'var(--color-map-cluster-strong)',
+    border: '2px solid var(--color-map-cluster-border)',
     borderRadius: '999px',
-    color: '#f7f3ea',
+    color: 'var(--color-map-cluster-text)',
     textAlign: 'center',
     fontWeight: '800',
     fontSize: '14px',
-    boxShadow: '0 18px 36px -18px rgba(31, 118, 95, 0.98)',
+    boxShadow: 'var(--color-map-cluster-shadow)',
   },
 ];
 
@@ -88,15 +88,15 @@ const getMarkerFocus = (groups: MarkerGroup[]) => {
 
 const MapUnavailableState = () => (
   <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-    <div className='surface-panel flex w-full max-w-2xl flex-col gap-4 rounded-xl p-6 text-[var(--app-text)] sm:p-8'>
+    <div className='surface-panel flex w-full max-w-2xl flex-col gap-4 rounded-xl p-6 text-[var(--color-text-primary)] sm:p-8'>
       <p className='route-kicker'>지도 미리보기</p>
       <h2 className='text-3xl font-semibold sm:text-4xl'>Kakao Maps 키가 설정되지 않았습니다.</h2>
-      <p className='max-w-xl text-sm leading-6 text-[var(--app-muted)] sm:text-base'>
+      <p className='max-w-xl text-sm leading-6 text-[var(--color-text-secondary)] sm:text-base'>
         `.env`에 `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`를 추가하면 지도가 활성화됩니다.
       </p>
       <div className='surface-card rounded-lg p-4'>
         <p className='text-sm font-semibold'>필수 환경 변수</p>
-        <p className='mt-2 break-all text-sm text-[var(--app-muted)]'>NEXT_PUBLIC_KAKAO_MAPS_APP_KEY</p>
+        <p className='mt-2 break-all text-sm text-[var(--color-text-secondary)]'>NEXT_PUBLIC_KAKAO_MAPS_APP_KEY</p>
       </div>
     </div>
   </div>
@@ -229,9 +229,9 @@ const MapView = () => {
         content: (
           <div className='flex flex-col gap-4'>
             <div>
-              <p className='text-[0.68rem] font-semibold text-[var(--app-primary)]'>같은 장소의 행사</p>
+              <p className='text-[0.68rem] font-semibold text-[var(--color-brand-primary)]'>같은 장소의 행사</p>
               <h3 className='mt-2 text-xl font-semibold'>같은 위치에서 여러 행사가 열리고 있습니다.</h3>
-              <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>
+              <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
                 아래 목록에서 원하는 행사를 선택하면 상세 화면으로 이동합니다.
               </p>
             </div>
@@ -241,10 +241,10 @@ const MapView = () => {
                   <button
                     type='button'
                     onClick={() => goToMapDetail(culture.id)}
-                    className='surface-card hover:border-[var(--app-primary)]/20 w-full rounded-2xl p-4 text-left font-semibold transition duration-200 hover:shadow-[0_16px_32px_-26px_rgba(31,118,95,0.34)]'
+                    className='surface-card w-full rounded-2xl p-4 text-left font-semibold transition duration-200 hover:border-[var(--color-border-brand)] hover:bg-[var(--color-interactive-hover)] hover:shadow-[var(--color-shadow-brand)] active:bg-[var(--color-interactive-active)]'
                   >
                     <p>{culture.title}</p>
-                    <p className='mt-1 text-sm font-medium text-[var(--app-muted)]'>{culture.displayDate}</p>
+                    <p className='mt-1 text-sm font-medium text-[var(--color-text-secondary)]'>{culture.displayDate}</p>
                   </button>
                 </li>
               ))}
@@ -526,10 +526,10 @@ const MapView = () => {
   if (sdkError) {
     return (
       <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-        <div className='surface-panel w-full max-w-xl rounded-xl p-6 text-[var(--app-text)] sm:p-8'>
+        <div className='surface-panel w-full max-w-xl rounded-xl p-6 text-[var(--color-text-primary)] sm:p-8'>
           <p className='route-kicker'>지도 연결</p>
           <p className='mt-3 text-2xl font-semibold tracking-[-0.03em]'>지도를 불러오지 못했습니다.</p>
-          <p className='mt-2 text-sm leading-6 text-[var(--app-muted)]'>{sdkError}</p>
+          <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>{sdkError}</p>
         </div>
       </div>
     );
@@ -554,14 +554,14 @@ const MapView = () => {
       </div>
 
       {!isMapReady && (
-        <div className='pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/10 backdrop-blur-[1px]'>
+        <div className='pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-map-loading-overlay)] backdrop-blur-[1px]'>
           <Loader />
         </div>
       )}
 
       {isMapReady && isLoading && (
         <div className='pointer-events-none absolute left-3 right-3 top-20 z-20 md:left-auto md:right-6 md:max-w-xs'>
-          <div className='surface-panel rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-muted)]'>
+          <div className='surface-panel rounded-lg px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)]'>
             행사 데이터를 불러오는 중입니다.
           </div>
         </div>
@@ -569,7 +569,8 @@ const MapView = () => {
 
       {error && (
         <div
-          className='surface-card border-[var(--app-danger)]/30 absolute left-3 right-3 top-20 z-20 rounded-lg p-3 text-sm text-[var(--app-danger)] md:left-6 md:right-auto md:max-w-sm'
+          className='status-callout absolute left-3 right-3 top-20 z-20 rounded-lg p-3 text-sm md:left-6 md:right-auto md:max-w-sm'
+          data-status='error'
           role='alert'
         >
           행사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.

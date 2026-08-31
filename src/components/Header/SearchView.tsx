@@ -60,24 +60,24 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
 
   return (
     <div className='pointer-events-auto fixed inset-0 z-50 flex items-stretch justify-center px-3 py-3 sm:items-start sm:px-6 sm:py-6 lg:px-8 lg:py-8'>
-      <div className='pointer-events-auto fixed inset-0 bg-[#081311]/55 backdrop-blur-sm' onClick={onClose} />
+      <div className='pointer-events-auto fixed inset-0 bg-[var(--color-overlay)] backdrop-blur-sm' onClick={onClose} />
 
       <div
         ref={panelRef}
-        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[18px] text-[var(--app-text)] sm:h-full sm:rounded-[20px]'
+        className='surface-panel pointer-events-auto relative z-50 flex h-[calc(100dvh-1.5rem)] w-full max-w-[1040px] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-overlay)] text-[var(--color-text-primary)] sm:h-full sm:rounded-[20px]'
         role='dialog'
         aria-modal='true'
         aria-label='문화행사 검색'
         tabIndex={-1}
       >
-        <div className='border-b border-[var(--app-border)] px-4 py-3.5 sm:px-6 sm:py-5'>
+        <div className='border-b border-[var(--color-border-primary)] px-4 py-3.5 sm:px-6 sm:py-5'>
           <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0 flex-1'>
-              <p className='text-[0.72rem] font-semibold text-[#1f765f] dark:text-[#8dc5b5]'>전국 문화행사 검색</p>
+              <p className='text-[0.72rem] font-semibold text-[var(--color-brand-primary)]'>전국 문화행사 검색</p>
               <h2 className='mt-1 text-[1.3rem] font-semibold leading-[1.24] sm:text-[1.9rem]'>
                 문화행사를 빠르게 검색하세요
               </h2>
-              <p className='mt-1 hidden max-w-2xl text-[0.86rem] text-[var(--app-muted)] sm:mt-1.5 sm:block sm:text-[0.96rem]'>
+              <p className='mt-1 hidden max-w-2xl text-[0.86rem] text-[var(--color-text-secondary)] sm:mt-1.5 sm:block sm:text-[0.96rem]'>
                 입력과 동시에 결과가 업데이트됩니다. 항목을 누르면 지도 상세로 이동합니다.
               </p>
             </div>

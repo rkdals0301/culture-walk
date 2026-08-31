@@ -40,8 +40,8 @@ export const MapFilterControls = ({
             aria-pressed={isActive}
             className={
               isActive
-                ? 'h-11 min-w-0 whitespace-nowrap rounded-lg bg-[var(--app-primary)] px-1 text-xs font-semibold text-[var(--app-on-primary)]'
-                : 'h-11 min-w-0 whitespace-nowrap rounded-lg border border-[var(--app-border)] px-1 text-xs font-semibold text-[var(--app-muted)] transition hover:bg-black/[0.04] dark:hover:bg-white/[0.06]'
+                ? 'h-11 min-w-0 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-1 text-xs font-semibold text-[var(--color-brand-on-primary)]'
+                : 'h-11 min-w-0 whitespace-nowrap rounded-lg border border-[var(--color-border-control)] px-1 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
             }
           >
             {option.label}
@@ -55,7 +55,7 @@ export const MapFilterControls = ({
           value={region}
           onChange={event => onRegionChange(event.target.value)}
           aria-label='지역 필터'
-          className='h-11 w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-card)] px-2 pr-8 text-xs font-semibold text-[var(--app-text)]'
+          className='h-11 w-full rounded-lg border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-2 pr-8 text-xs font-semibold text-[var(--color-text-primary)] hover:border-[var(--color-input-hover)] focus-visible:border-[var(--color-input-focus)]'
         >
           <option value='all'>전국</option>
           {regionOptions.map(option => (
@@ -66,16 +66,16 @@ export const MapFilterControls = ({
         </select>
         <ChevronDown
           aria-hidden='true'
-          className='pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--app-muted)]'
+          className='pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--color-text-secondary)]'
           strokeWidth={1.8}
         />
       </div>
       <label
         className={clsx(
-          'flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--app-focus)]',
+          'flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--color-focus-ring)]',
           freeOnly
-            ? 'border-[var(--app-primary)]/35 bg-[var(--app-primary)]/10 text-[var(--app-primary)]'
-            : 'border-[var(--app-border)] text-[var(--app-muted)]'
+            ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)]'
+            : 'border-[var(--color-border-control)] text-[var(--color-text-secondary)] hover:bg-[var(--color-interactive-hover)]'
         )}
       >
         <input
@@ -84,8 +84,8 @@ export const MapFilterControls = ({
           onChange={event => onFreeOnlyChange(event.target.checked)}
           className='peer sr-only'
         />
-        <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--app-border)] bg-[var(--app-card)] peer-checked:border-[var(--app-primary)] peer-checked:bg-[var(--app-primary)]'>
-          <span className={freeOnly ? 'size-1.5 rounded-[2px] bg-white' : 'hidden'} />
+        <span className='flex size-4 items-center justify-center rounded-[5px] border border-[var(--color-input-border)] bg-[var(--color-input-bg)] peer-checked:border-[var(--color-brand-primary)] peer-checked:bg-[var(--color-brand-primary)]'>
+          <span className={freeOnly ? 'size-1.5 rounded-[2px] bg-[var(--color-brand-on-primary)]' : 'hidden'} />
         </span>
         무료
       </label>
@@ -102,7 +102,7 @@ interface MapSortControlProps {
 
 export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapSortControlProps) => (
   <div
-    className='flex rounded-lg border border-[var(--app-border)] bg-[var(--app-chip)] p-0.5'
+    className='flex rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] p-0.5'
     role='group'
     aria-label='행사 정렬 방식'
   >
@@ -112,8 +112,8 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       aria-pressed={mode === 'date'}
       className={
         mode === 'date'
-          ? 'h-11 rounded-md bg-[var(--app-card)] px-3 text-xs font-semibold text-[var(--app-text)] shadow-sm'
-          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--app-muted)]'
+          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-text-primary)] shadow-sm'
+          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
       }
     >
       일정순
@@ -127,8 +127,8 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={
         mode === 'distance'
-          ? 'h-11 rounded-md bg-[var(--app-card)] px-3 text-xs font-semibold text-[var(--app-primary)] shadow-sm'
-          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--app-muted)] disabled:cursor-not-allowed disabled:opacity-45'
+          ? 'h-11 rounded-md bg-[var(--color-surface-elevated)] px-3 text-xs font-semibold text-[var(--color-brand-primary)] shadow-sm'
+          : 'h-11 rounded-md px-3 text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)] disabled:cursor-not-allowed disabled:bg-[var(--color-interactive-disabled)] disabled:text-[var(--color-text-disabled)]'
       }
     >
       거리순
@@ -153,9 +153,9 @@ export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocati
     className={clsx(
       'flex h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition',
       isActive
-        ? 'border-[var(--app-primary)]/35 bg-[var(--app-primary)]/10 text-[var(--app-primary)]'
-        : 'border-[var(--app-border)] text-[var(--app-muted)] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]',
-      isLocating && 'cursor-wait opacity-70'
+        ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)]'
+        : 'border-[var(--color-border-control)] text-[var(--color-text-secondary)] hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]',
+      isLocating && 'cursor-wait border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)]'
     )}
   >
     <MapFindMyLocationIcon className={clsx('size-3.5', isLocating && 'animate-spin')} />

@@ -10,15 +10,15 @@ interface CultureCategoryBadgeProps {
 const getToneClassName = (classification?: string | null) => {
   switch (getCultureTone(classification)) {
     case 'education':
-      return 'bg-[#e5edf7] text-[#315f8e] dark:bg-[#203b58] dark:text-[#b1d0ee]';
+      return 'bg-[var(--color-category-education-surface)] text-[var(--color-category-education-text)]';
     case 'exhibition':
-      return 'bg-[#dff0eb] text-[#176a58] dark:bg-[#17483b] dark:text-[#a8d8c8]';
+      return 'bg-[var(--color-category-exhibition-surface)] text-[var(--color-category-exhibition-text)]';
     case 'performance':
-      return 'bg-[#f6e3df] text-[#a44737] dark:bg-[#572c25] dark:text-[#f0b5aa]';
+      return 'bg-[var(--color-category-performance-surface)] text-[var(--color-category-performance-text)]';
     case 'festival':
-      return 'bg-[#f5eccf] text-[#81621b] dark:bg-[#51431d] dark:text-[#ead58a]';
+      return 'bg-[var(--color-category-festival-surface)] text-[var(--color-category-festival-text)]';
     default:
-      return 'bg-[#e9eceb] text-[#52605c] dark:bg-[#29322f] dark:text-[#b9c4c0]';
+      return 'bg-[var(--color-category-neutral-surface)] text-[var(--color-category-neutral-text)]';
   }
 };
 
