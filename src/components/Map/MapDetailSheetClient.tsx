@@ -235,6 +235,34 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
 
     return (
       <div className='flex flex-col gap-4'>
+        <div>
+          <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>선택한 행사</p>
+          <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h1>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
+          {culture.guName && (
+            <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+              {culture.guName}
+            </span>
+          )}
+          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
+            {culture.displayPrice}
+          </span>
+        </div>
+
+        <div className='grid grid-cols-2 gap-2'>
+          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
+            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>일정</p>
+            <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
+          </div>
+          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
+            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>장소</p>
+            <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
+          </div>
+        </div>
+
         <div className='relative aspect-[4/3] overflow-hidden rounded-[18px] bg-black/[0.04] dark:bg-white/[0.05]'>
           {hasCultureImage ? (
             <Image
@@ -271,32 +299,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             ))}
           </div>
         )}
-        <div className='flex flex-wrap items-center gap-2'>
-          <CultureCategoryBadge classification={culture.classification} className='px-3 py-1.5' />
-          {culture.guName && (
-            <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
-              {culture.guName}
-            </span>
-          )}
-          <span className='soft-chip rounded-full px-3 py-1.5 text-sm font-medium text-[var(--app-muted)]'>
-            {culture.displayPrice}
-          </span>
-        </div>
-        <div>
-          <p className='text-[0.72rem] font-semibold text-[var(--app-primary)]'>선택한 행사</p>
-          <h1 className='mt-2 text-[1.55rem] font-semibold leading-[1.2] sm:text-[1.75rem]'>{culture.title}</h1>
-        </div>
-
-        <div className='grid grid-cols-2 gap-2'>
-          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
-            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>일정</p>
-            <p className='mt-1 text-sm font-semibold leading-5'>{culture.displayDate}</p>
-          </div>
-          <div className='soft-chip rounded-[14px] px-3 py-2.5'>
-            <p className='text-[0.68rem] font-semibold text-[var(--app-muted)]'>장소</p>
-            <p className='mt-1 break-words text-sm font-semibold leading-5'>{culture.place || culture.guName}</p>
-          </div>
-        </div>
 
         <div className='border-t border-[var(--app-border)] pt-4'>
           <dl className='grid gap-2 text-sm leading-6 text-[var(--app-muted)]'>
