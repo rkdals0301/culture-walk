@@ -60,7 +60,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
               className={clsx(
-                'absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]'
+                'group absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]'
               )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
@@ -71,7 +71,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
             >
               <div
                 className={clsx(
-                  'relative border-b border-[var(--color-border-primary)] px-3 py-3.5 transition-colors duration-150 hover:bg-[var(--color-surface-chip)]',
+                  'relative overflow-hidden border-b border-[var(--color-border-primary)] px-3 py-3.5 transition-[background-color,transform] duration-200 group-hover:bg-[var(--color-surface-chip)]',
                   {
                     'bg-[var(--color-accent-subtle)]': isSelected,
                   }

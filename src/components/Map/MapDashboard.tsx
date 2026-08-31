@@ -7,7 +7,7 @@ import { MapFilterControls, MapLocationControl, MapSortControl, MapSortMode } fr
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
-import type { CultureCategoryKey } from '@/utils/cultureCategory';
+import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import { calculateDistanceMeters, getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
 import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
 
@@ -17,7 +17,7 @@ import { toast } from 'react-toastify';
 import { usePathname, useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
-import { List, MapPinned } from 'lucide-react';
+import { ChevronUp, List, MapPinned, RotateCcw } from 'lucide-react';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchCancelIcon from '../../../public/assets/images/search-cancel-icon.svg';
@@ -25,6 +25,76 @@ import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
 const DESKTOP_PANEL_WIDTH = 400;
+
+interface MapResultSummaryProps {
+  visibleCount: number;
+  totalCount: number;
+  activeFilterLabels: string[];
+  hasActiveFilters: boolean;
+  isLoading: boolean;
+  onReset: () => void;
+  compact?: boolean;
+}
+
+const MapResultSummary = ({
+  visibleCount,
+  totalCount,
+  activeFilterLabels,
+  hasActiveFilters,
+  isLoading,
+  onReset,
+  compact = false,
+}: MapResultSummaryProps) => {
+  const contextLabel = activeFilterLabels.length > 0 ? activeFilterLabels.join(' · ') : '전국 · 전체 행사';
+
+  return (
+    <div className={clsx('explore-summary', compact ? 'mt-2' : 'mt-4')}>
+      <div className='flex items-end justify-between gap-3'>
+        <div className='min-w-0'>
+          <p className='text-[0.66rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>
+            탐색 결과
+          </p>
+          <p className='mt-1 text-xl font-semibold leading-none tracking-[-0.03em] sm:text-2xl'>
+            {isLoading ? (
+              <span className='text-base tracking-normal text-[var(--color-text-secondary)]'>행사 불러오는 중</span>
+            ) : (
+              <>
+                <strong aria-live='polite' aria-atomic='true'>
+                  {visibleCount}
+                </strong>
+                <span className='ml-1 text-sm font-medium tracking-normal text-[var(--color-text-secondary)]'>개 행사</span>
+              </>
+            )}
+          </p>
+        </div>
+        <span className='shrink-0 text-xs font-medium text-[var(--color-text-secondary)]'>
+          {isLoading ? '데이터 확인 중' : `전체 ${totalCount}개`}
+        </span>
+      </div>
+
+      <div className='mt-2.5 flex min-h-11 items-center justify-between gap-2 border-t border-[var(--color-border-primary)] pt-2.5'>
+        <p
+          className='flex min-w-0 items-center gap-1.5 truncate text-xs font-medium text-[var(--color-text-secondary)]'
+          aria-live='polite'
+          aria-atomic='true'
+        >
+          <span className='size-1.5 shrink-0 rounded-full bg-[var(--color-accent-primary)]' aria-hidden='true' />
+          <span className='truncate'>{isLoading ? '행사 정보를 확인하고 있습니다.' : contextLabel}</span>
+        </p>
+        {hasActiveFilters && !isLoading && (
+          <button
+            type='button'
+            onClick={onReset}
+            className='inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-[var(--color-brand-primary)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
+          >
+            <RotateCcw aria-hidden='true' className='size-3.5' strokeWidth={1.8} />
+            조건 초기화
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const MapDashboard = () => {
   const router = useRouter();
@@ -75,6 +145,26 @@ const MapDashboard = () => {
     );
   }, [currentLocation, mapCultures, sortMode]);
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;
+  const activeFilterLabels = useMemo(() => {
+    const labels: string[] = [];
+    const normalizedSearchQuery = searchQuery.trim();
+    const categoryLabel = CULTURE_CATEGORY_OPTIONS.find(option => option.key === mapCategory)?.label;
+
+    if (normalizedSearchQuery) {
+      labels.push(`“${normalizedSearchQuery}”`);
+    }
+    if (categoryLabel && mapCategory !== 'all') {
+      labels.push(categoryLabel);
+    }
+    if (mapRegion !== 'all') {
+      labels.push(mapRegion);
+    }
+    if (mapFreeOnly) {
+      labels.push('무료');
+    }
+
+    return labels;
+  }, [mapCategory, mapFreeOnly, mapRegion, searchQuery]);
   const filterMotionKey = `${mapCategory}:${mapRegion}:${mapFreeOnly ? 'free' : 'all'}`;
 
   const handleCategoryChange = (nextCategory: CultureCategoryKey) => {
@@ -274,7 +364,7 @@ const MapDashboard = () => {
                   <p className='route-kicker'>전국 문화행사</p>
                   <h2 className='mt-2 text-2xl font-semibold leading-[1.15] tracking-[-0.04em]'>행사 찾기</h2>
                   <p className='mt-2 text-xs leading-5 text-[var(--color-text-secondary)]'>
-                    조건을 고르면 지도와 목록이 함께 좁혀집니다.
+                    지도에서 위치를 보고, 목록에서 일정과 장소를 비교하세요.
                   </p>
                 </div>
                 <button
@@ -288,9 +378,18 @@ const MapDashboard = () => {
                 </button>
               </div>
 
+              <MapResultSummary
+                visibleCount={visibleCultures.length}
+                totalCount={totalCount}
+                activeFilterLabels={activeFilterLabels}
+                hasActiveFilters={hasActiveFilters}
+                isLoading={isLoading}
+                onReset={resetMapFilters}
+              />
+
               <form
                 role='search'
-                className='mt-4 flex h-11 items-center gap-2 rounded-lg border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 transition-colors focus-within:border-[var(--color-input-focus)]'
+                className='mt-3 flex h-11 items-center gap-2 rounded-lg border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 shadow-[var(--color-shadow-soft)] transition-colors focus-within:border-[var(--color-input-focus)] focus-within:ring-2 focus-within:ring-[var(--color-focus-ring)]/20'
                 onSubmit={event => event.preventDefault()}
               >
                 <SearchIcon className='size-[18px] shrink-0 text-[var(--color-brand-primary)]' />
@@ -331,6 +430,7 @@ const MapDashboard = () => {
 
               <div className='mt-3 flex items-center justify-between gap-3 border-t border-[var(--color-border-primary)] pt-3 text-xs text-[var(--color-text-secondary)]'>
                 <div className='flex min-w-0 items-center gap-2'>
+                  <span className='hidden shrink-0 text-[0.68rem] font-semibold text-[var(--color-text-secondary)] sm:inline'>정렬</span>
                   <MapSortControl
                     mode={sortMode}
                     hasLocation={Boolean(currentLocation)}
@@ -343,14 +443,7 @@ const MapDashboard = () => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <strong
-                  className='font-semibold text-[var(--color-text-primary)]'
-                  aria-live='polite'
-                  aria-atomic='true'
-                >
-                  {visibleCultures.length}개
-                  <span className='font-medium text-[var(--color-text-secondary)]'> / {totalCount}</span>
-                </strong>
+                <span className='shrink-0 font-medium text-[var(--color-text-secondary)]'>지도와 동기화</span>
               </div>
 
               {ADSENSE_MAP_PANEL_SLOT && (
@@ -390,7 +483,10 @@ const MapDashboard = () => {
 
       <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] lg:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
-          <section className='surface-panel pointer-events-auto mt-auto flex h-[72dvh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'>
+          <section
+            className='surface-panel pointer-events-auto mt-auto flex h-[72dvh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'
+            aria-busy={isFilterPending || isLoading}
+          >
             <div className='border-b border-[var(--color-border-primary)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
                 <div className='h-1.5 w-12 rounded-full bg-[var(--color-brand-subtle)]' />
@@ -398,8 +494,8 @@ const MapDashboard = () => {
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
                   <p className='route-kicker'>행사 목록</p>
-                  <p className='mt-2 truncate text-sm font-medium text-[var(--color-text-secondary)]'>
-                    총 {visibleCultures.length}개 · 지도와 동기화됨
+                  <p className='mt-1 truncate text-sm font-medium text-[var(--color-text-secondary)]'>
+                    지도와 함께 결과를 확인하세요.
                   </p>
                 </div>
                 <button
@@ -411,6 +507,15 @@ const MapDashboard = () => {
                   지도만 보기
                 </button>
               </div>
+              <MapResultSummary
+                visibleCount={visibleCultures.length}
+                totalCount={totalCount}
+                activeFilterLabels={activeFilterLabels}
+                hasActiveFilters={hasActiveFilters}
+                isLoading={isLoading}
+                onReset={resetMapFilters}
+                compact
+              />
               <div className='mt-3'>
                 <MapFilterControls
                   category={mapCategory}
@@ -436,13 +541,7 @@ const MapDashboard = () => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <strong
-                  className='text-xs font-semibold text-[var(--color-text-primary)]'
-                  aria-live='polite'
-                  aria-atomic='true'
-                >
-                  {visibleCultures.length}개
-                </strong>
+                <span className='shrink-0 text-xs font-medium text-[var(--color-text-secondary)]'>정렬 기준</span>
               </div>
             </div>
             <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
@@ -461,10 +560,21 @@ const MapDashboard = () => {
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel inline-flex min-h-11 items-center gap-2 rounded-lg border-[var(--color-border-brand)] px-5 py-3 text-sm font-semibold text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
+              className='surface-panel group inline-flex min-h-14 items-center gap-2.5 rounded-xl border-[var(--color-border-brand)] px-3 py-2.5 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
+              aria-label={`행사 목록 열기, ${visibleCultures.length}개 행사`}
             >
-              <List aria-hidden='true' className='size-4 text-[var(--color-brand-primary)]' strokeWidth={1.8} />
-              행사 {visibleCultures.length > 0 ? `${visibleCultures.length}개` : ''} 보기
+              <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)]'>
+                <List aria-hidden='true' className='size-4' strokeWidth={1.8} />
+              </span>
+              <span className='flex min-w-0 flex-col'>
+                <span className='text-[0.68rem] font-semibold text-[var(--color-text-secondary)]'>
+                  {hasActiveFilters ? '조건을 적용한 행사' : '지도에서 찾은 행사'}
+                </span>
+                <span className='mt-0.5 whitespace-nowrap text-sm font-semibold'>행사 {visibleCultures.length}개 보기</span>
+              </span>
+              <span className='ml-1 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-chip)] text-[var(--color-brand-primary)] transition-transform duration-200 group-hover:-translate-y-0.5'>
+                <ChevronUp aria-hidden='true' className='size-4' strokeWidth={2} />
+              </span>
             </button>
           </div>
         ) : null}
