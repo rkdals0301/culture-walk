@@ -140,6 +140,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   const [mounted, setMounted] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | undefined>(culture?.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
+  const [failedAdditionalImages, setFailedAdditionalImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -153,18 +154,29 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
+  const getMapReturnPath = useCallback(() => {
+    const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+    params.set('list', 'open');
+    if (Number.isSafeInteger(cultureId) && cultureId > 0) {
+      params.set('focus', String(cultureId));
+      params.set('selected', String(cultureId));
+    }
+    return `/map?${params.toString()}`;
+  }, [cultureId]);
+
   const handleBottomSheetClose = useCallback(() => {
-    router.replace('/map', { scroll: false });
-  }, [router]);
+    router.replace(getMapReturnPath(), { scroll: false });
+  }, [getMapReturnPath, router]);
 
   const handleBottomSheetBack = useCallback(() => {
-    router.replace('/map?list=open', { scroll: false });
-  }, [router]);
+    router.replace(getMapReturnPath(), { scroll: false });
+  }, [getMapReturnPath, router]);
 
   useEffect(() => {
     setImgSrc(culture?.mainImage);
     setImageFailed(false);
-  }, [culture?.mainImage]);
+    setFailedAdditionalImages({});
+  }, [culture?.id, culture?.mainImage]);
 
   const renderFooter = useCallback(() => {
     if (!culture) {
@@ -229,7 +241,11 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       );
     }
 
-    const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc?.includes('/assets/images/logo');
+    const hasCultureImage =
+      typeof imgSrc === 'string' &&
+      Boolean(imgSrc.trim()) &&
+      !imageFailed &&
+      !imgSrc.includes('/assets/images/logo');
 
     return (
       <div className='flex flex-col gap-5'>
@@ -298,7 +314,25 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 aria-label={image.name || '추가 이미지 보기'}
                 aria-pressed={imgSrc === image.url}
               >
-                <Image src={image.thumbnailUrl} alt='' fill sizes='72px' className='object-cover' />
+                {typeof image.thumbnailUrl === 'string' &&
+                image.thumbnailUrl.trim() &&
+                !failedAdditionalImages[image.url] ? (
+                  <Image
+                    src={image.thumbnailUrl}
+                    alt=''
+                    fill
+                    sizes='72px'
+                    className='object-cover'
+                    onError={() =>
+                      setFailedAdditionalImages(current => ({
+                        ...current,
+                        [image.url]: true,
+                      }))
+                    }
+                  />
+                ) : (
+                  <CultureImageFallback compact classification={culture.classification} />
+                )}
               </button>
             ))}
           </div>
@@ -422,7 +456,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         )}
       </div>
     );
-  }, [isLoading, error, culture, imgSrc, imageFailed, handleImageError, router]);
+  }, [error, failedAdditionalImages, handleImageError, imageFailed, imgSrc, isLoading, culture, router]);
 
   useEffect(() => {
     const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${culture?.id ?? 'no-culture'}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;

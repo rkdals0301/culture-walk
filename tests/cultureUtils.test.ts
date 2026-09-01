@@ -1,4 +1,5 @@
 import { formatCultureData } from '@/utils/cultureUtils';
+import type { CultureListItem } from '@/types/culture';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -22,4 +23,26 @@ test('unknown list prices use a clear verification label', () => {
   ]);
 
   assert.equal(culture?.displayPrice, '요금 정보 확인');
+});
+
+test('missing display fields do not create separator-only place text', () => {
+  const [culture] = formatCultureData([
+    {
+      id: 2,
+      classification: '',
+      endDate: new Date('2026-08-02T00:00:00.000Z'),
+      guName: '',
+      isFree: '',
+      lat: 37.5665,
+      lng: 126.978,
+      mainImage: '',
+      place: '',
+      startDate: new Date('2026-08-01T00:00:00.000Z'),
+      title: '정보가 일부 없는 행사',
+      useFee: '',
+    } as CultureListItem,
+  ]);
+
+  assert.equal(culture?.displayPlace, '');
+  assert.equal(culture?.displayPrice, '정보 없음');
 });

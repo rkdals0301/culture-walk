@@ -4,7 +4,8 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 
 interface ErrorResponse {
-  message: string;
+  message?: unknown;
+  error?: unknown;
 }
 
 type StatusHandler = (msg?: string) => void;
@@ -13,6 +14,24 @@ type StatusHandler = (msg?: string) => void;
 const DEFAULT_ERROR_MESSAGE = '서버에서 알 수 없는 오류가 발생했습니다.';
 const SERVER_CONNECTION_ERROR = '서버 연결이 원활하지 않습니다.';
 const NETWORK_ERROR_MESSAGE = '네트워크 연결 오류 또는 기타 오류가 발생했습니다.';
+
+const getResponseMessage = (data: unknown) => {
+  if (typeof data === 'string' && data.trim()) {
+    return data;
+  }
+
+  if (typeof data === 'object' && data !== null) {
+    const response = data as ErrorResponse;
+    if (typeof response.message === 'string' && response.message.trim()) {
+      return response.message;
+    }
+    if (typeof response.error === 'string' && response.error.trim()) {
+      return response.error;
+    }
+  }
+
+  return undefined;
+};
 
 const useApiError = () => {
   // 상태 핸들러 정의
@@ -38,8 +57,7 @@ const useApiError = () => {
       if (axios.isAxiosError(error)) {
         if (error.response) {
           const httpStatus = error.response.status;
-          const errorResponse = error.response.data as ErrorResponse;
-          const httpMessage = errorResponse.message;
+          const httpMessage = getResponseMessage(error.response.data);
 
           // httpStatus에 따라 적절한 핸들러 호출
           const handler = statusHandlers[httpStatus] || statusHandlers.default;

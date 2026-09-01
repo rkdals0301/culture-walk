@@ -9,8 +9,12 @@ const MapViewNoSsr = dynamic(() => import('@/components/Map/MapView'), {
   loading: () => <Loader />,
 });
 
-const MapViewClientOnly = () => {
-  return <MapViewNoSsr />;
+interface MapViewClientOnlyProps {
+  onContinueWithList?: () => void;
+}
+
+const MapViewClientOnly = ({ onContinueWithList }: MapViewClientOnlyProps) => {
+  return <MapViewNoSsr onContinueWithList={onContinueWithList} />;
 };
 
 export default MapViewClientOnly;

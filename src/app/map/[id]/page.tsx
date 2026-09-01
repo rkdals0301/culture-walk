@@ -1,4 +1,5 @@
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
+import MapShell from '@/components/Map/MapShell';
 import { getDb } from '@/db/client';
 import { cultures, cultureTourApiDetails } from '@/db/schema';
 import { mapCultureRowToCulture } from '@/services/cultureService';
@@ -10,6 +11,7 @@ import { cache } from 'react';
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Script from 'next/script';
 
 import { and, eq } from 'drizzle-orm';
 
@@ -183,8 +185,12 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
 
   return (
     <>
-      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: eventStructuredData }} />
-      <MapDetailSheetClient initialCulture={formatted} />
+      <Script id='event-structured-data' type='application/ld+json'>
+        {eventStructuredData}
+      </Script>
+      <MapShell>
+        <MapDetailSheetClient initialCulture={formatted} />
+      </MapShell>
     </>
   );
 };

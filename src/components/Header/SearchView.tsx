@@ -20,8 +20,8 @@ interface SearchViewProps {
 }
 
 const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
-  const { setSearchQuery } = useCultureContext();
-  const [searchInput, setSearchInput] = useState<string>('');
+  const { searchQuery, setSearchQuery } = useCultureContext();
+  const [searchInput, setSearchInput] = useState<string>(searchQuery);
   const deferredSearchInput = useDeferredValue(searchInput);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -40,10 +40,6 @@ const SearchView = ({ onClose, onCloseWithoutHistory }: SearchViewProps) => {
     setSearchInput('');
     applySearchQuery('');
   }, [applySearchQuery]);
-
-  useEffect(() => {
-    handleReset();
-  }, [handleReset]);
 
   useEffect(() => {
     applySearchQuery(deferredSearchInput);

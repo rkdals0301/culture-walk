@@ -3,6 +3,25 @@ export interface GeoPoint {
   lng: number;
 }
 
+export type LocationRequestStatus = 'permission-denied' | 'timeout' | 'unavailable' | 'cancelled';
+
+const LOCATION_ERROR_MESSAGES: Record<LocationRequestStatus, string> = {
+  'permission-denied': '위치 권한이 거부되었습니다.',
+  timeout: '위치 확인 시간이 초과되었습니다.',
+  unavailable: '현재 위치 정보를 사용할 수 없습니다.',
+  cancelled: '위치 확인을 취소했습니다.',
+};
+
+export class LocationRequestError extends Error {
+  readonly status: LocationRequestStatus;
+
+  constructor(status: LocationRequestStatus, cause?: unknown) {
+    super(LOCATION_ERROR_MESSAGES[status], { cause });
+    this.name = 'LocationRequestError';
+    this.status = status;
+  }
+}
+
 const EARTH_RADIUS_METERS = 6_371_000;
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
@@ -28,35 +47,112 @@ export const formatDistance = (distanceMeters: number) => {
   return distanceKilometers < 10 ? `${distanceKilometers.toFixed(1)}km` : `${Math.round(distanceKilometers)}km`;
 };
 
-const getCurrentPosition = (options: PositionOptions) =>
-  new Promise<GeolocationPosition>((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, options);
-  });
+const DEFAULT_LOCATION_TIMEOUT_MS = 7000;
 
-export const requestCurrentLocation = async (): Promise<GeoPoint> => {
-  if (!navigator.geolocation) {
-    throw new Error('UNSUPPORTED_GEOLOCATION');
+const getLocationTimeoutMs = (timeoutMs?: number) =>
+  typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0
+    ? timeoutMs
+    : DEFAULT_LOCATION_TIMEOUT_MS;
+
+const getStatusFromPositionError = (error: unknown): LocationRequestStatus => {
+  if (error instanceof LocationRequestError) {
+    return error.status;
   }
 
+  const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined;
+  if (code === 1) return 'permission-denied';
+  if (code === 3) return 'timeout';
+  return 'unavailable';
+};
+
+const getCurrentPosition = (options: PositionOptions, timeoutMs: number, signal?: AbortSignal) =>
+  new Promise<GeolocationPosition>((resolve, reject) => {
+    let settled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const cleanup = () => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      signal?.removeEventListener('abort', handleAbort);
+    };
+
+    const settle = <T>(callback: (value: T) => void, value: T) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      cleanup();
+      callback(value);
+    };
+
+    const handleAbort = () => {
+      settle(reject, new LocationRequestError('cancelled'));
+    };
+
+    if (signal?.aborted) {
+      handleAbort();
+      return;
+    }
+
+    signal?.addEventListener('abort', handleAbort, { once: true });
+    timeoutId = setTimeout(() => {
+      settle(reject, new LocationRequestError('timeout'));
+    }, timeoutMs);
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        position => settle(resolve, position),
+        error => settle(reject, new LocationRequestError(getStatusFromPositionError(error), error)),
+        options
+      );
+    } catch (error) {
+      settle(reject, new LocationRequestError(getStatusFromPositionError(error), error));
+    }
+  });
+
+interface RequestCurrentLocationOptions {
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}
+
+export const requestCurrentLocation = async ({ timeoutMs, signal }: RequestCurrentLocationOptions = {}): Promise<GeoPoint> => {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    throw new LocationRequestError('unavailable', new Error('UNSUPPORTED_GEOLOCATION'));
+  }
+
+  const requestTimeoutMs = getLocationTimeoutMs(timeoutMs);
+  const deadline = Date.now() + requestTimeoutMs;
+  const getAttemptTimeout = () => Math.max(1, deadline - Date.now());
   let position: GeolocationPosition;
 
   try {
-    position = await getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 7000,
-      maximumAge: 0,
-    });
+    position = await getCurrentPosition(
+      {
+        enableHighAccuracy: true,
+        timeout: getAttemptTimeout(),
+        maximumAge: 0,
+      },
+      getAttemptTimeout(),
+      signal
+    );
   } catch (error) {
-    const geolocationError = error as GeolocationPositionError;
-    if (geolocationError.code === 1) {
-      throw error;
+    const status = getStatusFromPositionError(error);
+    if (status === 'permission-denied' || status === 'cancelled') {
+      throw error instanceof LocationRequestError ? error : new LocationRequestError(status, error);
     }
 
-    position = await getCurrentPosition({
-      enableHighAccuracy: false,
-      timeout: 7000,
-      maximumAge: 120000,
-    });
+    position = await getCurrentPosition(
+      {
+        enableHighAccuracy: false,
+        timeout: getAttemptTimeout(),
+        maximumAge: 120000,
+      },
+      getAttemptTimeout(),
+      signal
+    );
   }
 
   return {
@@ -65,7 +161,25 @@ export const requestCurrentLocation = async (): Promise<GeoPoint> => {
   };
 };
 
+export const getGeolocationStatus = (error: unknown): LocationRequestStatus => getStatusFromPositionError(error);
+
 export const getGeolocationErrorMessage = (error: unknown) => {
+  if (error instanceof LocationRequestError) {
+    if (error.status === 'cancelled') {
+      return '위치 확인을 취소했습니다.';
+    }
+
+    if (error.status === 'permission-denied') {
+      return '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.';
+    }
+
+    if (error.status === 'timeout') {
+      return '위치 확인 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+    }
+
+    return '현재 위치 정보를 사용할 수 없습니다.';
+  }
+
   if (error instanceof Error && error.message === 'UNSUPPORTED_GEOLOCATION') {
     return '브라우저가 위치 정보 기능을 지원하지 않습니다.';
   }

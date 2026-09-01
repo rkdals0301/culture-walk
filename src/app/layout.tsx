@@ -2,6 +2,7 @@ import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
+import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { CultureProvider } from '@/context/CultureContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
@@ -13,9 +14,6 @@ import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 import Script from 'next/script';
 
-const SideMenu = dynamic(() => import('@/components/SideMenu/SideMenu'), {
-  loading: () => null,
-});
 const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_VERSION = '20260715';
@@ -194,17 +192,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         </noscript>
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
-        <script
-          type='application/ld+json'
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(WEBSITE_STRUCTURED_DATA) }}
-        />
-        {/* next-themes 0.4.6 can reference esbuild's __name helper after production transforms. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "globalThis.__name = globalThis.__name || function (target, value) { try { Object.defineProperty(target, 'name', { value: value, configurable: true }); } catch (_) {} return target; };",
-          }}
-        />
+        <Script id='website-structured-data' type='application/ld+json'>
+          {serializeJsonLd(WEBSITE_STRUCTURED_DATA)}
+        </Script>
         {ADSENSE_CLIENT_ID && (
           <Script
             id='google-adsense-script'

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import MapShell from '@/components/Map/MapShell';
+
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260715`;
 const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=20260715`;
@@ -46,6 +48,6 @@ export const metadata: Metadata = {
   },
 };
 
-const MapPage = () => null;
+const MapPage = () => <MapShell />;
 
 export default MapPage;

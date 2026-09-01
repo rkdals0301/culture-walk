@@ -3,6 +3,7 @@ import CultureListLoading from '@/components/Header/CultureListLoading';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
+import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
 
 import React from 'react';
 
@@ -18,19 +19,35 @@ interface SearchResultsOverlayProps {
 
 const SearchResultsOverlay = ({ onCloseWithoutHistory, onResetSearch }: SearchResultsOverlayProps) => {
   const router = useRouter();
-  const { filteredCultures, searchQuery, setMapCategory, setMapFreeOnly } = useCultureContext();
+  const {
+    filteredCultures,
+    searchQuery,
+    mapCategory,
+    mapRegion,
+    mapFreeOnly,
+    mapSortMode,
+    mapListScrollTop,
+    currentLocation,
+  } = useCultureContext();
   const { isLoading, isError } = useCultures();
   const normalizedQuery = searchQuery.trim();
 
   const handleOnClick = (culture: FormattedCulture) => {
-    setMapCategory('all');
-    setMapFreeOnly(false);
+    const serializedSearch = serializeMapExploreStateToSearch({
+      searchQuery,
+      mapCategory,
+      mapRegion,
+      mapFreeOnly,
+      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+      mapListScrollTop,
+      listOpen: false,
+    });
     onCloseWithoutHistory();
-    router.push(`/map/${culture.id}`);
+    router.push(`/map/${culture.id}${serializedSearch ? `?${serializedSearch}` : ''}`);
   };
 
   const renderError = () => (
-    <div className='status-callout flex size-full items-center justify-center rounded-2xl p-8' data-status='error' role='alert'>
+    <div className='status-callout flex size-full items-center justify-center rounded-2xl p-8' data-status='api-error' role='alert'>
       <div className='flex max-w-sm items-start gap-3'>
         <AlertCircle aria-hidden='true' className='mt-0.5 size-5 shrink-0' strokeWidth={1.8} />
         <p className='text-sm font-medium'>검색 결과를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>

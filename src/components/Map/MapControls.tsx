@@ -146,20 +146,19 @@ export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocati
   <button
     type='button'
     onClick={onToggle}
-    disabled={isLocating}
     aria-pressed={isActive}
-    aria-label={isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
-    title={isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
+    aria-label={isLocating ? '위치 확인 취소' : isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
+    title={isLocating ? '위치 확인 취소' : isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
     className={clsx(
       'flex h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition',
       isActive
         ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)]'
         : 'border-[var(--color-border-control)] text-[var(--color-text-secondary)] hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]',
       isLocating &&
-        'cursor-wait border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)]'
+        'cursor-pointer border-[var(--color-disabled-border)] bg-[var(--color-interactive-disabled)] text-[var(--color-text-disabled)]'
     )}
   >
     <MapFindMyLocationIcon className={clsx('size-3.5', isLocating && 'animate-spin')} />
-    {isLocating ? '위치 확인 중' : isActive ? '위치 사용 중' : '내 위치'}
+     {isLocating ? '취소' : isActive ? '위치 사용 중' : '내 위치'}
   </button>
 );

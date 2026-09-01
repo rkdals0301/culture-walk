@@ -5,7 +5,8 @@ import { FormattedCulture } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
 import { CultureCategoryKey, isFreeCulture, matchesCultureCategory } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
-import { GeoPoint } from '@/utils/geo';
+import type { LocationStatus, MapSortMode } from '@/utils/exploreState';
+import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/geo';
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
@@ -19,6 +20,10 @@ interface CultureContextValue {
   mapRegion: string;
   mapFreeOnly: boolean;
   currentLocation: GeoPoint | null;
+  mapSortMode: MapSortMode;
+  locationStatus: LocationStatus;
+  locationError: LocationRequestError | null;
+  mapListScrollTop: number;
   isCulturesLoading: boolean;
   culturesError: Error | null;
   isCultureLoading: boolean;
@@ -28,6 +33,10 @@ interface CultureContextValue {
   setMapRegion: (region: string) => void;
   setMapFreeOnly: (freeOnly: boolean) => void;
   setCurrentLocation: (location: GeoPoint | null) => void;
+  setMapSortMode: (mode: MapSortMode) => void;
+  requestLocation: () => Promise<GeoPoint | null>;
+  cancelLocation: () => void;
+  setMapListScrollTop: (scrollTop: number) => void;
   resetMapFilters: () => void;
   loadCultures: (options?: { force?: boolean }) => Promise<void>;
   loadCultureById: (id: number) => Promise<void>;
@@ -45,6 +54,10 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [mapRegion, setMapRegion] = useState('all');
   const [mapFreeOnly, setMapFreeOnly] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<GeoPoint | null>(null);
+  const [mapSortMode, setMapSortMode] = useState<MapSortMode>('date');
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+  const [locationError, setLocationError] = useState<LocationRequestError | null>(null);
+  const [mapListScrollTop, setMapListScrollTopState] = useState(0);
   const [isCulturesLoading, setIsCulturesLoading] = useState(false);
   const [culturesError, setCulturesError] = useState<Error | null>(null);
   const [isCultureLoading, setIsCultureLoading] = useState(false);
@@ -52,9 +65,76 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
 
   const culturesInFlightRef = useRef<Promise<void> | null>(null);
   const cultureRequestVersionRef = useRef(0);
+  const locationRequestRef = useRef<{
+    controller: AbortController;
+    promise: Promise<GeoPoint | null>;
+  } | null>(null);
 
   const setSearchQuery = useCallback((query: string) => {
     setSearchQueryState(query);
+  }, []);
+
+  const updateCurrentLocation = useCallback((location: GeoPoint | null) => {
+    setCurrentLocation(location);
+    if (location) {
+      setLocationStatus('success');
+      setLocationError(null);
+    } else {
+      setLocationStatus('idle');
+      setLocationError(null);
+    }
+  }, []);
+
+  const requestLocation = useCallback(async (): Promise<GeoPoint | null> => {
+    if (currentLocation) {
+      setLocationStatus('success');
+      setLocationError(null);
+      return currentLocation;
+    }
+
+    if (locationRequestRef.current) {
+      return locationRequestRef.current.promise;
+    }
+
+    const controller = new AbortController();
+    setLocationStatus('requesting');
+    setLocationError(null);
+
+    const promise = (async () => {
+      try {
+        const location = await requestCurrentLocation({ signal: controller.signal });
+        updateCurrentLocation(location);
+        return location;
+      } catch (error) {
+        const normalizedError =
+          error instanceof LocationRequestError ? error : new LocationRequestError('unavailable', error);
+        setLocationError(normalizedError);
+        setLocationStatus(normalizedError.status);
+        throw normalizedError;
+      } finally {
+        if (locationRequestRef.current?.controller === controller) {
+          locationRequestRef.current = null;
+        }
+      }
+    })();
+
+    locationRequestRef.current = { controller, promise };
+    return promise;
+  }, [currentLocation, updateCurrentLocation]);
+
+  const cancelLocation = useCallback(() => {
+    const request = locationRequestRef.current;
+    if (!request) {
+      return;
+    }
+
+    setLocationStatus('cancelled');
+    setLocationError(new LocationRequestError('cancelled'));
+    request.controller.abort();
+  }, []);
+
+  const setMapListScrollTop = useCallback((scrollTop: number) => {
+    setMapListScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
   }, []);
 
   const loadCultures = useCallback(
@@ -142,7 +222,9 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     return cultures.filter(cultureItem =>
-      [cultureItem.title, cultureItem.guName, cultureItem.place].some(value => value.toLowerCase().includes(query))
+      [cultureItem.title, cultureItem.guName, cultureItem.place].some(
+        value => typeof value === 'string' && value.toLowerCase().includes(query)
+      )
     );
   }, [cultures, searchQuery]);
 
@@ -151,7 +233,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       filteredCultures.filter(
         cultureItem =>
           matchesCultureCategory(cultureItem.classification, mapCategory) &&
-          (mapRegion === 'all' || cultureItem.guName.split(/\s+/)[0] === mapRegion) &&
+          (mapRegion === 'all' || (cultureItem.guName ?? '').split(/\s+/)[0] === mapRegion) &&
           (!mapFreeOnly || isFreeCulture(cultureItem))
       ),
     [filteredCultures, mapCategory, mapFreeOnly, mapRegion]
@@ -162,6 +244,8 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapCategory('all');
     setMapRegion('all');
     setMapFreeOnly(false);
+    setMapSortMode('date');
+    setMapListScrollTopState(0);
   }, []);
 
   const value = useMemo(
@@ -173,17 +257,25 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       searchQuery,
       mapCategory,
       mapRegion,
-      mapFreeOnly,
-      currentLocation,
+       mapFreeOnly,
+       currentLocation,
+       mapSortMode,
+       locationStatus,
+       locationError,
+       mapListScrollTop,
       isCulturesLoading,
       culturesError,
       isCultureLoading,
       cultureError,
       setSearchQuery,
       setMapCategory,
-      setMapRegion,
-      setMapFreeOnly,
-      setCurrentLocation,
+       setMapRegion,
+       setMapFreeOnly,
+       setCurrentLocation: updateCurrentLocation,
+       setMapSortMode,
+       requestLocation,
+       cancelLocation,
+       setMapListScrollTop,
       resetMapFilters,
       loadCultures,
       loadCultureById,
@@ -196,14 +288,23 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       searchQuery,
       mapCategory,
       mapRegion,
-      mapFreeOnly,
-      currentLocation,
+       mapFreeOnly,
+       currentLocation,
+       mapSortMode,
+       locationStatus,
+       locationError,
+       mapListScrollTop,
       isCulturesLoading,
       culturesError,
       isCultureLoading,
-      cultureError,
-      setSearchQuery,
-      resetMapFilters,
+       cultureError,
+       setSearchQuery,
+       updateCurrentLocation,
+       setMapSortMode,
+       requestLocation,
+       cancelLocation,
+       setMapListScrollTop,
+       resetMapFilters,
       loadCultures,
       loadCultureById,
     ]

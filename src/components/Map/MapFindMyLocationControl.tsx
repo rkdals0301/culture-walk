@@ -1,48 +1,56 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
-import { getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
+import { useCultureContext } from '@/context/CultureContext';
+import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import MapFindMyLocationIcon from '../../../public/assets/images/map-find-my-location-icon.svg';
 
-interface MapFindMyLocationControlProps {
-  onLocationUpdate: (lat: number, lng: number) => void; // 위치 업데이트 콜백
-}
-
-const MapFindMyLocationControl = ({ onLocationUpdate }: MapFindMyLocationControlProps) => {
-  const [loading, setLoading] = useState(false);
+const MapFindMyLocationControl = () => {
+  const { locationStatus, requestLocation, cancelLocation } = useCultureContext();
+  const loading = locationStatus === 'requesting';
 
   const handleFindMyLocation = useCallback(async () => {
     if (loading) {
+      cancelLocation();
       return;
     }
 
-    setLoading(true);
-
     try {
-      const location = await requestCurrentLocation();
-      onLocationUpdate(location.lat, location.lng);
+      await requestLocation();
     } catch (error) {
-      toast.error(getGeolocationErrorMessage(error));
-    } finally {
-      setLoading(false);
+      if (error instanceof LocationRequestError && error.status === 'cancelled') {
+        toast.info(getGeolocationErrorMessage(error));
+      } else {
+        toast.error(getGeolocationErrorMessage(error));
+      }
     }
-  }, [loading, onLocationUpdate]);
+  }, [cancelLocation, loading, requestLocation]);
 
   return (
     <div className='surface-panel rounded-xl p-1'>
-      <IconButton
-        ariaLabel='내 위치 찾기'
-        fullWidth={false}
-        disabled={loading}
-        onClick={handleFindMyLocation}
-        className='rounded-lg'
-        icon={<MapFindMyLocationIcon className={loading ? 'animate-spin' : undefined} />}
-        variant='secondary'
-      />
+      {loading ? (
+        <button
+          type='button'
+          onClick={handleFindMyLocation}
+          className='flex size-11 items-center justify-center rounded-lg text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+          aria-label='위치 확인 취소'
+        >
+          취소
+        </button>
+      ) : (
+        <IconButton
+          ariaLabel='내 위치 찾기'
+          fullWidth={false}
+          onClick={handleFindMyLocation}
+          className='rounded-lg'
+          icon={<MapFindMyLocationIcon />}
+          variant='secondary'
+        />
+      )}
     </div>
   );
 };

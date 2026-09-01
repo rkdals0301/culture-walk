@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 const formatString = (object: Partial<CultureListItem>, keys: (keyof CultureListItem)[], separator = ', '): string => {
   return keys
     .map(key => object[key])
-    .filter(val => val != null) // `null`과 `undefined`를 함께 처리
+    .filter(val => typeof val === 'string' && val.trim().length > 0)
     .join(separator);
 };
 

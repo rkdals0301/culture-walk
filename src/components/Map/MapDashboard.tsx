@@ -3,15 +3,21 @@
 import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import CultureList from '@/components/Header/CultureList';
 import CultureListLoading from '@/components/Header/CultureListLoading';
-import { MapFilterControls, MapLocationControl, MapSortControl, MapSortMode } from '@/components/Map/MapControls';
+import { MapFilterControls, MapLocationControl, MapSortControl } from '@/components/Map/MapControls';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
-import { calculateDistanceMeters, getGeolocationErrorMessage, requestCurrentLocation } from '@/utils/geo';
+import {
+  getMapFilterSignature,
+  parseMapExploreStateFromSearch,
+  serializeMapExploreStateToSearch,
+  type MapSortMode,
+} from '@/utils/exploreState';
+import { calculateDistanceMeters, getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -25,6 +31,10 @@ import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
 const DESKTOP_PANEL_WIDTH = 400;
+
+interface MapDashboardProps {
+  listRequest?: number;
+}
 
 interface MapResultSummaryProps {
   visibleCount: number;
@@ -96,7 +106,7 @@ const MapResultSummary = ({
   );
 };
 
-const MapDashboard = () => {
+const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -106,6 +116,9 @@ const MapDashboard = () => {
     mapCategory,
     mapRegion,
     mapFreeOnly,
+    mapSortMode,
+    locationStatus,
+    mapListScrollTop,
     setSearchQuery,
     setMapCategory,
     setMapRegion,
@@ -113,28 +126,36 @@ const MapDashboard = () => {
     resetMapFilters,
     currentLocation,
     setCurrentLocation,
+    setMapSortMode,
+    requestLocation: requestLocationFromProvider,
+    cancelLocation,
+    setMapListScrollTop,
     loadCultures,
   } = useCultureContext();
   const { isLoading, error } = useCultures();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
   const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
-  const [sortMode, setSortMode] = useState<MapSortMode>('date');
-  const [isLocating, setIsLocating] = useState(false);
+  const [focusCultureId, setFocusCultureId] = useState<number | null>(null);
+  const [restoredSelectedCultureId, setRestoredSelectedCultureId] = useState<number | null>(null);
   const [isFilterPending, startFilterTransition] = useTransition();
-  const selectedCultureId = getMapDetailId(pathname);
-  const isDetailRoute = selectedCultureId !== null;
+  const routeCultureId = getMapDetailId(pathname);
+  const isDetailRoute = routeCultureId !== null;
+  const selectedCultureId = routeCultureId ?? restoredSelectedCultureId;
+  const isLocating = locationStatus === 'requesting';
+  const previousFilterSignatureRef = useRef('');
+  const routeRestorePendingRef = useRef(false);
 
   const totalCount = cultures.length;
   const regionOptions = useMemo(
     () =>
-      Array.from(new Set(cultures.map(culture => culture.guName.split(/\s+/)[0]).filter(Boolean))).sort((a, b) =>
-        a.localeCompare(b, 'ko')
+      Array.from(new Set(cultures.map(culture => (culture.guName ?? '').split(/\s+/)[0]).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b, 'ko')
       ),
     [cultures]
   );
   const visibleCultures = useMemo(() => {
-    if (sortMode !== 'distance' || !currentLocation) {
+    if (mapSortMode !== 'distance' || !currentLocation) {
       return mapCultures;
     }
 
@@ -143,7 +164,7 @@ const MapDashboard = () => {
         calculateDistanceMeters(currentLocation, { lat: left.lat, lng: left.lng }) -
         calculateDistanceMeters(currentLocation, { lat: right.lat, lng: right.lng })
     );
-  }, [currentLocation, mapCultures, sortMode]);
+  }, [currentLocation, mapCultures, mapSortMode]);
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;
   const activeFilterLabels = useMemo(() => {
     const labels: string[] = [];
@@ -165,7 +186,87 @@ const MapDashboard = () => {
 
     return labels;
   }, [mapCategory, mapFreeOnly, mapRegion, searchQuery]);
-  const filterMotionKey = `${mapCategory}:${mapRegion}:${mapFreeOnly ? 'free' : 'all'}`;
+  const mapFilterSignature = getMapFilterSignature({
+    searchQuery,
+    mapCategory,
+    mapRegion,
+    mapFreeOnly,
+    sortMode: mapSortMode,
+  });
+  const filterMotionKey = mapFilterSignature;
+
+  useEffect(() => {
+    if (pathname !== '/map' || typeof window === 'undefined') {
+      return;
+    }
+
+    const restoredState = parseMapExploreStateFromSearch(window.location.search);
+    routeRestorePendingRef.current = true;
+    if (restoredState) {
+      setSearchQuery(restoredState.searchQuery);
+      setMapCategory(restoredState.mapCategory);
+      setMapRegion(restoredState.mapRegion);
+      setMapFreeOnly(restoredState.mapFreeOnly);
+      setMapSortMode(restoredState.sortMode);
+      setMapListScrollTop(restoredState.mapListScrollTop);
+      setIsMobileSheetVisible(restoredState.listOpen);
+      setFocusCultureId(restoredState.focusCultureId ?? null);
+      setRestoredSelectedCultureId(restoredState.selectedCultureId ?? null);
+    } else {
+      setSearchQuery('');
+      setMapCategory('all');
+      setMapRegion('all');
+      setMapFreeOnly(false);
+      setMapSortMode('date');
+      setMapListScrollTop(0);
+      setIsMobileSheetVisible(false);
+      setFocusCultureId(null);
+      setRestoredSelectedCultureId(null);
+    }
+  }, [pathname, setMapCategory, setMapFreeOnly, setMapListScrollTop, setMapRegion, setMapSortMode, setSearchQuery]);
+
+  useEffect(() => {
+    if (pathname !== '/map' || typeof window === 'undefined') {
+      return;
+    }
+
+    if (routeRestorePendingRef.current) {
+      routeRestorePendingRef.current = false;
+      return;
+    }
+
+    const serializedSearch = serializeMapExploreStateToSearch({
+      searchQuery,
+      mapCategory,
+      mapRegion,
+      mapFreeOnly,
+      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+      mapListScrollTop,
+      listOpen: isMobileSheetVisible,
+      focusCultureId,
+      selectedCultureId: restoredSelectedCultureId,
+    });
+    const nextSearch = serializedSearch ? `?${serializedSearch}` : '';
+    const currentSearch = window.location.search;
+    if (currentSearch === nextSearch) {
+      return;
+    }
+
+    router.replace(`/map${nextSearch}`, { scroll: false });
+  }, [
+    currentLocation,
+    isMobileSheetVisible,
+    mapCategory,
+    mapFreeOnly,
+    mapListScrollTop,
+    mapRegion,
+    mapSortMode,
+    pathname,
+    router,
+    searchQuery,
+    focusCultureId,
+    restoredSelectedCultureId,
+  ]);
 
   const handleCategoryChange = (nextCategory: CultureCategoryKey) => {
     startFilterTransition(() => setMapCategory(nextCategory));
@@ -180,44 +281,40 @@ const MapDashboard = () => {
   };
 
   const requestLocation = async () => {
-    if (currentLocation) {
-      return currentLocation;
-    }
-
-    if (isLocating) {
-      return null;
-    }
-
-    setIsLocating(true);
     try {
-      const location = await requestCurrentLocation();
-      setCurrentLocation(location);
-      return location;
+      return await requestLocationFromProvider();
     } catch (locationError) {
-      toast.error(getGeolocationErrorMessage(locationError));
+      if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
+        toast.info(getGeolocationErrorMessage(locationError));
+      } else {
+        toast.error(getGeolocationErrorMessage(locationError));
+      }
       return null;
-    } finally {
-      setIsLocating(false);
     }
   };
 
   const handleSortChange = async (nextMode: MapSortMode) => {
     if (nextMode === 'date') {
-      setSortMode('date');
+      setMapSortMode('date');
       return;
     }
 
     const location = await requestLocation();
     if (location) {
-      setSortMode('distance');
+      setMapSortMode('distance');
     }
   };
 
   const handleLocationToggle = async () => {
+    if (locationStatus === 'requesting') {
+      cancelLocation();
+      return;
+    }
+
     if (currentLocation) {
       setCurrentLocation(null);
-      if (sortMode === 'distance') {
-        setSortMode('date');
+      if (mapSortMode === 'distance') {
+        setMapSortMode('date');
       }
       return;
     }
@@ -227,13 +324,53 @@ const MapDashboard = () => {
 
   const handleOpenCulture = (culture: FormattedCulture) => {
     const detailPath = `/map/${culture.id}`;
+    const serializedSearch = serializeMapExploreStateToSearch({
+      searchQuery,
+      mapCategory,
+      mapRegion,
+      mapFreeOnly,
+      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+      mapListScrollTop,
+      listOpen: false,
+    });
+    const detailUrl = serializedSearch ? `${detailPath}?${serializedSearch}` : detailPath;
+
     if (isDetailRoute) {
-      router.replace(detailPath);
+      router.replace(detailUrl);
       return;
     }
 
-    router.push(detailPath);
+    router.push(detailUrl);
   };
+
+  useEffect(() => {
+    if (isDetailRoute || pathname !== '/map' || focusCultureId === null || typeof window === 'undefined') {
+      return;
+    }
+
+      setIsMobileSheetVisible(true);
+    let attempts = 0;
+    let focusFrame = 0;
+    const focusSelectedRow = () => {
+      const selectedRow = document.querySelector<HTMLElement>(`[data-culture-id="${focusCultureId}"]`);
+      if (selectedRow) {
+        selectedRow.focus();
+        setFocusCultureId(null);
+        return;
+      }
+
+      if (attempts >= 120) {
+        setFocusCultureId(null);
+        return;
+      }
+
+      attempts += 1;
+      focusFrame = window.requestAnimationFrame(focusSelectedRow);
+    };
+
+    focusFrame = window.requestAnimationFrame(focusSelectedRow);
+    return () => window.cancelAnimationFrame(focusFrame);
+  }, [focusCultureId, isDetailRoute, pathname, visibleCultures.length]);
 
   useEffect(() => {
     if (!isDetailRoute) {
@@ -253,8 +390,28 @@ const MapDashboard = () => {
     }
 
     setIsMobileSheetVisible(true);
-    router.replace('/map', { scroll: false });
-  }, [isDetailRoute, router]);
+  }, [isDetailRoute, pathname]);
+
+  useEffect(() => {
+    if (previousFilterSignatureRef.current === '') {
+      previousFilterSignatureRef.current = mapFilterSignature;
+      return;
+    }
+
+    if (previousFilterSignatureRef.current !== mapFilterSignature) {
+      setMapListScrollTop(0);
+      previousFilterSignatureRef.current = mapFilterSignature;
+    }
+  }, [mapFilterSignature, setMapListScrollTop]);
+
+  useEffect(() => {
+    if (listRequest === 0) {
+      return;
+    }
+
+    setIsMobileSheetVisible(true);
+    document.getElementById('culture-list')?.focus();
+  }, [listRequest]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1280px)');
@@ -266,8 +423,7 @@ const MapDashboard = () => {
   }, []);
 
   useEffect(() => {
-    const isDetailOverlay = isDetailRoute && !isWideDesktop;
-    const listPanelWidth = isDesktopPanelCollapsed || isDetailOverlay ? 0 : DESKTOP_PANEL_WIDTH;
+    const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
     const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_PANEL_WIDTH : 0;
     document.documentElement.style.setProperty('--map-sidebar-width', `${listPanelWidth}px`);
     document.documentElement.style.setProperty('--map-detail-width', `${detailPanelWidth}px`);
@@ -289,7 +445,7 @@ const MapDashboard = () => {
 
     if (error) {
       return (
-        <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
+        <div className='flex h-full flex-col items-center justify-center px-6 text-center' data-status='api-error' role='alert'>
           <p className='text-base font-semibold'>행사 데이터를 불러오지 못했습니다.</p>
           <p className='mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]'>
             잠시 후 다시 시도하거나 페이지를 새로고침해 주세요.
@@ -331,6 +487,8 @@ const MapDashboard = () => {
         onItemClick={handleOpenCulture}
         selectedCultureId={selectedCultureId}
         currentLocation={currentLocation}
+        initialScrollTop={mapListScrollTop}
+        onScrollPositionChange={setMapListScrollTop}
       />
     );
   };
@@ -348,7 +506,7 @@ const MapDashboard = () => {
         data-keeps-detail-open
         className={clsx(
           'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--color-text-primary)] transition-[width] duration-[280ms]',
-          isDetailRoute ? 'min-[1280px]:flex' : 'lg:flex',
+          'md:flex',
           isDesktopPanelCollapsed
             ? 'border-r-0'
             : 'border-r border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]'
@@ -432,7 +590,7 @@ const MapDashboard = () => {
                 <div className='flex min-w-0 items-center gap-2'>
                   <span className='hidden shrink-0 text-[0.68rem] font-semibold text-[var(--color-text-secondary)] sm:inline'>정렬</span>
                   <MapSortControl
-                    mode={sortMode}
+                    mode={mapSortMode}
                     hasLocation={Boolean(currentLocation)}
                     isLocating={isLocating}
                     onChange={handleSortChange}
@@ -470,7 +628,7 @@ const MapDashboard = () => {
         <button
           type='button'
           onClick={() => setIsDesktopPanelCollapsed(false)}
-          className='pointer-events-auto absolute left-0 top-1/2 z-20 hidden h-14 w-8 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:w-9 hover:bg-[var(--color-surface-secondary)] active:bg-[var(--color-interactive-active)] lg:flex'
+           className='pointer-events-auto absolute left-0 top-1/2 z-20 hidden h-14 w-8 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:w-9 hover:bg-[var(--color-surface-secondary)] active:bg-[var(--color-interactive-active)] md:flex'
           aria-label='행사 목록 패널 펼치기'
           title='행사 목록 펼치기'
         >
@@ -481,7 +639,7 @@ const MapDashboard = () => {
         </button>
       )}
 
-      <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] lg:hidden'>
+      <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section
             className='surface-panel pointer-events-auto mt-auto flex h-[72dvh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'
@@ -530,7 +688,7 @@ const MapDashboard = () => {
               <div className='mt-2.5 flex items-center justify-between gap-3'>
                 <div className='flex min-w-0 items-center gap-2'>
                   <MapSortControl
-                    mode={sortMode}
+                    mode={mapSortMode}
                     hasLocation={Boolean(currentLocation)}
                     isLocating={isLocating}
                     onChange={handleSortChange}

@@ -4,8 +4,8 @@ export const getMapDetailId = (pathname?: string | null) => {
     return null;
   }
 
-  const id = Number.parseInt(match[1], 10);
-  return Number.isNaN(id) ? null : id;
+  const id = Number(match[1]);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 };
 
 export const shouldRestoreMapList = (search: string) => new URLSearchParams(search).get('list') === 'open';

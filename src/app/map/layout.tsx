@@ -1,5 +1,3 @@
-import MapShell from '@/components/Map/MapShell';
-
 import React from 'react';
 
 interface MapLayoutProps {
@@ -7,7 +5,7 @@ interface MapLayoutProps {
 }
 
 const MapLayout = ({ children }: MapLayoutProps) => {
-  return <MapShell>{children}</MapShell>;
+  return <>{children}</>;
 };
 
 export default MapLayout;

@@ -28,7 +28,11 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
     setImageFailed(true);
   };
 
-  const hasCultureImage = Boolean(imgSrc) && !imageFailed && !imgSrc.includes('/assets/images/logo');
+  const hasCultureImage =
+    typeof imgSrc === 'string' &&
+    Boolean(imgSrc.trim()) &&
+    !imageFailed &&
+    !imgSrc.includes('/assets/images/logo');
   const distance = currentLocation
     ? formatDistance(calculateDistanceMeters(currentLocation, { lat: culture.lat, lng: culture.lng }))
     : null;

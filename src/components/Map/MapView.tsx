@@ -2,18 +2,21 @@
 
 import Loader from '@/components/Loader/Loader';
 import MapFindMyLocationControl from '@/components/Map/MapFindMyLocationControl';
+import MapStatus from '@/components/Map/MapStatus';
 import MapZoomControls from '@/components/Map/MapZoomControls';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
+import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { KakaoMapsSdkError, loadKakaoMapsSdk, resetKakaoMapsSdk } from '@/utils/kakaoMapsSdk';
+import { getMapDetailId } from '@/utils/mapRoute';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
 const KAKAO_MAPS_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY;
-const KAKAO_MAPS_SCRIPT_ID = 'kakao-maps-sdk';
 const DEFAULT_MAP_CENTER = { lat: 36.35, lng: 127.8 };
 const DEFAULT_MAP_LEVEL = 13;
 const COMPACT_MAP_BREAKPOINT = '(max-width: 639px)';
@@ -86,70 +89,26 @@ const getMarkerFocus = (groups: MarkerGroup[]) => {
   };
 };
 
-const MapUnavailableState = () => (
-  <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-    <div className='surface-panel flex w-full max-w-2xl flex-col gap-4 rounded-xl p-6 text-[var(--color-text-primary)] sm:p-8'>
-      <p className='route-kicker'>지도 미리보기</p>
-      <h2 className='text-3xl font-semibold sm:text-4xl'>Kakao Maps 키가 설정되지 않았습니다.</h2>
-      <p className='max-w-xl text-sm leading-6 text-[var(--color-text-secondary)] sm:text-base'>
-        `.env`에 `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY`를 추가하면 지도가 활성화됩니다.
-      </p>
-      <div className='surface-card rounded-lg p-4'>
-        <p className='text-sm font-semibold'>필수 환경 변수</p>
-        <p className='mt-2 break-all text-sm text-[var(--color-text-secondary)]'>NEXT_PUBLIC_KAKAO_MAPS_APP_KEY</p>
-      </div>
-    </div>
-  </div>
-);
+interface MapViewProps {
+  onContinueWithList?: () => void;
+}
 
-const loadKakaoMapsSdk = async (appKey: string): Promise<void> => {
-  if (typeof window === 'undefined') {
-    throw new Error('window is not available.');
-  }
-
-  if (window.kakao?.maps) {
-    return new Promise(resolve => {
-      window.kakao?.maps.load(() => resolve());
-    });
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    const existingScript = document.getElementById(KAKAO_MAPS_SCRIPT_ID) as HTMLScriptElement | null;
-
-    const onLoad = () => resolve();
-    const onError = () => reject(new Error('Kakao Maps script failed to load.'));
-
-    if (existingScript) {
-      existingScript.addEventListener('load', onLoad, { once: true });
-      existingScript.addEventListener('error', onError, { once: true });
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = KAKAO_MAPS_SCRIPT_ID;
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false&libraries=clusterer`;
-    script.async = true;
-    script.defer = true;
-    script.addEventListener('load', onLoad, { once: true });
-    script.addEventListener('error', onError, { once: true });
-    document.head.appendChild(script);
-  });
-
-  if (!window.kakao?.maps) {
-    throw new Error('Kakao Maps SDK is unavailable.');
-  }
-
-  await new Promise<void>(resolve => {
-    window.kakao?.maps.load(() => resolve());
-  });
-};
-
-const MapView = () => {
+const MapView = ({ onContinueWithList }: MapViewProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { openBottomSheet } = useBottomSheet();
 
-  const { cultures, mapCultures, mapRegion, currentLocation, setCurrentLocation } = useCultureContext();
+  const {
+    cultures,
+    mapCultures,
+    mapRegion,
+    currentLocation,
+    searchQuery,
+    mapCategory,
+    mapFreeOnly,
+    mapSortMode,
+    mapListScrollTop,
+  } = useCultureContext();
   const { isLoading, error } = useCultures();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -163,18 +122,13 @@ const MapView = () => {
   const [centerPosition, setCenterPosition] = useState(DEFAULT_MAP_CENTER);
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
-  const [sdkError, setSdkError] = useState<string | null>(null);
+  const [sdkError, setSdkError] = useState<KakaoMapsSdkError | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const selectedCultureId = useMemo(() => {
-    const match = pathname.match(/^\/map\/(\d+)/);
-    if (!match) {
-      return null;
-    }
-
-    const parsed = Number.parseInt(match[1], 10);
-    return Number.isNaN(parsed) ? null : parsed;
+    return getMapDetailId(pathname);
   }, [pathname]);
 
   const markerGroups = useMemo(() => {
@@ -204,7 +158,16 @@ const MapView = () => {
     (id: number) => {
       setPendingDetailId(id);
       setActiveMarkerId(id);
-      const detailPath = `/map/${id}`;
+      const serializedSearch = serializeMapExploreStateToSearch({
+        searchQuery,
+        mapCategory,
+        mapRegion,
+        mapFreeOnly,
+        sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+        mapListScrollTop,
+        listOpen: false,
+      });
+      const detailPath = `/map/${id}${serializedSearch ? `?${serializedSearch}` : ''}`;
       if (selectedCultureId !== null) {
         router.replace(detailPath);
         return;
@@ -212,7 +175,17 @@ const MapView = () => {
 
       router.push(detailPath);
     },
-    [router, selectedCultureId]
+    [
+      currentLocation,
+      mapCategory,
+      mapFreeOnly,
+      mapListScrollTop,
+      mapRegion,
+      mapSortMode,
+      router,
+      searchQuery,
+      selectedCultureId,
+    ]
   );
 
   const handleMarkerGroupClick = useCallback(
@@ -260,13 +233,6 @@ const MapView = () => {
       });
     },
     [goToMapDetail, openBottomSheet, selectedCultureId]
-  );
-
-  const handleLocationUpdate = useCallback(
-    (lat: number, lng: number) => {
-      setCurrentLocation({ lat, lng });
-    },
-    [setCurrentLocation]
   );
 
   useEffect(() => {
@@ -318,7 +284,7 @@ const MapView = () => {
     let canceled = false;
 
     if (!KAKAO_MAPS_APP_KEY) {
-      setSdkError('NEXT_PUBLIC_KAKAO_MAPS_APP_KEY가 설정되지 않았습니다.');
+      setSdkError(new KakaoMapsSdkError('missing-key'));
       return;
     }
 
@@ -355,9 +321,11 @@ const MapView = () => {
         setMapInstance(map);
         setIsMapReady(true);
         setSdkError(null);
-      } catch {
+      } catch (error) {
         if (!canceled) {
-          setSdkError('Kakao Maps 스크립트를 불러오지 못했습니다.');
+          setSdkError(
+            error instanceof KakaoMapsSdkError ? error : new KakaoMapsSdkError('sdk-error', error)
+          );
         }
       }
     };
@@ -375,7 +343,7 @@ const MapView = () => {
       setMapInstance(null);
       setIsMapReady(false);
     };
-  }, []);
+  }, [retryNonce]);
 
   useEffect(() => {
     if (!mapInstance || !window.kakao?.maps) {
@@ -536,19 +504,21 @@ const MapView = () => {
     };
   }, [currentLocation, mapInstance, markerGroups.length]);
 
-  if (!KAKAO_MAPS_APP_KEY) {
-    return <MapUnavailableState />;
-  }
+  const handleRetry = useCallback(() => {
+    resetKakaoMapsSdk();
+    setSdkError(null);
+    setIsMapReady(false);
+    setRetryNonce(value => value + 1);
+  }, []);
 
   if (sdkError) {
     return (
-      <div className='flex size-full items-center justify-center p-4 sm:p-6'>
-        <div className='surface-panel w-full max-w-xl rounded-xl p-6 text-[var(--color-text-primary)] sm:p-8'>
-          <p className='route-kicker'>지도 연결</p>
-          <p className='mt-3 text-2xl font-semibold tracking-[-0.03em]'>지도를 불러오지 못했습니다.</p>
-          <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>{sdkError}</p>
-        </div>
-      </div>
+      <MapStatus
+        kind='map-error'
+        code={sdkError.code}
+        onRetry={handleRetry}
+        onContinueWithList={onContinueWithList}
+      />
     );
   }
 
@@ -567,7 +537,7 @@ const MapView = () => {
       />
       <div className='map-controls-safe absolute z-20 flex flex-col items-end gap-2'>
         <MapZoomControls map={mapInstance} />
-        <MapFindMyLocationControl onLocationUpdate={handleLocationUpdate} />
+        <MapFindMyLocationControl />
       </div>
 
       {!isMapReady && (
@@ -587,7 +557,7 @@ const MapView = () => {
       {error && (
         <div
           className='status-callout absolute left-3 right-3 top-20 z-20 rounded-lg p-3 text-sm md:left-6 md:right-auto md:max-w-sm'
-          data-status='error'
+          data-status='api-error'
           role='alert'
         >
           행사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.

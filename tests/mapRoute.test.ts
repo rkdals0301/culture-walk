@@ -6,7 +6,9 @@ import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
 test('지도 상세 경로에서만 행사 ID를 읽는다', () => {
   assert.equal(getMapDetailId('/map/746392'), 746392);
   assert.equal(getMapDetailId('/map'), null);
+  assert.equal(getMapDetailId('/map/0'), null);
   assert.equal(getMapDetailId('/map/746392/extra'), null);
+  assert.equal(getMapDetailId('/map/746392-extra'), null);
   assert.equal(getMapDetailId('/map/not-a-number'), null);
 });
 

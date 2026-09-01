@@ -12,9 +12,18 @@ interface CultureListProps {
   onItemClick: (culture: FormattedCulture) => void;
   selectedCultureId?: number | null;
   currentLocation?: GeoPoint | null;
+  initialScrollTop?: number;
+  onScrollPositionChange?: (scrollTop: number) => void;
 }
 
-const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentLocation = null }: CultureListProps) => {
+const CultureList = ({
+  cultures,
+  onItemClick,
+  selectedCultureId = null,
+  currentLocation = null,
+  initialScrollTop = 0,
+  onScrollPositionChange,
+}: CultureListProps) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const itemCount = cultures.length;
   const selectedIndex = useMemo(() => {
@@ -42,8 +51,26 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
     rowVirtualizer.scrollToIndex(selectedIndex, { align: 'center' });
   }, [rowVirtualizer, selectedIndex]);
 
+  useEffect(() => {
+    if (initialScrollTop <= 0) {
+      return;
+    }
+
+    const restoreFrame = window.requestAnimationFrame(() => {
+      if (parentRef.current) {
+        parentRef.current.scrollTop = initialScrollTop;
+      }
+    });
+
+    return () => window.cancelAnimationFrame(restoreFrame);
+  }, [initialScrollTop]);
+
   return (
-    <div ref={parentRef} className='h-full overflow-y-auto'>
+    <div
+      ref={parentRef}
+      className='h-full overflow-y-auto'
+      onScroll={event => onScrollPositionChange?.(event.currentTarget.scrollTop)}
+    >
       <div
         className='relative'
         style={{
@@ -59,6 +86,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               key={virtualItem.key}
               ref={rowVirtualizer.measureElement}
               data-index={virtualItem.index}
+              data-culture-id={culture.id}
               className={clsx(
                 'group absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]'
               )}
@@ -67,6 +95,7 @@ const CultureList = ({ cultures, onItemClick, selectedCultureId = null, currentL
               }}
               onClick={() => onItemClick(culture)}
               aria-current={isSelected ? 'true' : undefined}
+              aria-pressed={isSelected}
               aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}${isSelected ? ', 선택됨' : ''}`}
             >
               <div
