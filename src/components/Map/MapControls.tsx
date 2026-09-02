@@ -7,7 +7,8 @@ import { ChevronDown } from 'lucide-react';
 
 import MapFindMyLocationIcon from '../../../public/assets/images/map-find-my-location-icon.svg';
 
-export type MapSortMode = 'date' | 'distance';
+import type { MapSortMode } from '@/utils/exploreState';
+export type { MapSortMode };
 
 interface MapFilterControlsProps {
   category: CultureCategoryKey;

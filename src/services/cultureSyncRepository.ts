@@ -16,6 +16,7 @@ import {
   STAGING_STATEMENTS_PER_BATCH,
   STAGING_TABLE,
   SnapshotStats,
+  toCount,
   toStagingValues,
 } from './cultureSyncTypes';
 
@@ -70,11 +71,6 @@ const LIVE_MUTABLE_COLUMNS = STAGING_COLUMNS.filter(
 
 export const createCultureContentDifferenceSql = (liveAlias = 'live', stagingAlias = 'staging') =>
   LIVE_MUTABLE_COLUMNS.map(column => `${liveAlias}.${column} IS NOT ${stagingAlias}.${column}`).join(' OR ');
-
-const toCount = (value: unknown) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
 
 export const ensureCultureSyncStagingTable = async (d1: D1Binding) => {
   await d1.prepare(createStagingTableSql).run();

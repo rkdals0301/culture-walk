@@ -24,11 +24,15 @@ export const KOREA_LNG_MIN = 124;
 export const KOREA_LNG_MAX = 132;
 export const TOUR_API_BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
 
+export const toCount = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export type TourApiConfig = {
   baseUrl: string;
   serviceKey: string;
 };
-
 export type WorkerEnv = Awaited<ReturnType<typeof getWorkerEnv>>;
 export type InsertStats = { inserted: number; skipped: number };
 export type SnapshotStats = {

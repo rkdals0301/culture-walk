@@ -553,3 +553,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,visualstudiocode,webstorm+all,node,react,reactnative,nextjs,dotenv,vercel,git
+
+# Culture Walk Project
+.tmp-*
+.playwright-cli/
+.playwright-mcp/
+output/
+

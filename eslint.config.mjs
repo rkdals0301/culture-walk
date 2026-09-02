@@ -2,10 +2,19 @@ import nextVitals from 'eslint-config-next/core-web-vitals';
 
 const config = [
   {
-    ignores: ['.next/**', '.open-next/**', '.wrangler/**', 'node_modules/**', 'coverage/**', 'dist/**'],
-  },
-  {
-    ignores: ['worker-configuration.d.ts'],
+    ignores: [
+      '.next/**',
+      '.open-next/**',
+      '.wrangler/**',
+      '.playwright-cli/**',
+      '.playwright-mcp/**',
+      '.agents/**',
+      'output/**',
+      'node_modules/**',
+      'coverage/**',
+      'dist/**',
+      'worker-configuration.d.ts',
+    ],
   },
   ...nextVitals,
   {

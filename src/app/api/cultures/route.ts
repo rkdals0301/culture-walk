@@ -13,13 +13,16 @@ import { and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
+import {
+  KOREA_LAT_MAX,
+  KOREA_LAT_MIN,
+  KOREA_LNG_MAX,
+  KOREA_LNG_MIN,
+} from '@/services/cultureSyncTypes';
+
 const CACHE_TTL_SECONDS = 60 * 10;
 const HTTP_CACHE_SECONDS = 60;
 const HTTP_STALE_SECONDS = 60 * 30;
-const KOREA_LAT_MIN = 33;
-const KOREA_LAT_MAX = 39.8;
-const KOREA_LNG_MIN = 124;
-const KOREA_LNG_MAX = 132;
 
 const toDateOrNow = (value?: string | null) => {
   if (!value) return new Date();

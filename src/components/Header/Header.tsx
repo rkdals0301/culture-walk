@@ -17,15 +17,11 @@ import * as m from 'framer-motion/m';
 import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
 import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
+import { NAVIGATION_LINKS } from '@/constants/navigation';
+
 const SearchView = dynamic(() => import('@/components/Header/SearchView'), {
   loading: () => null,
 });
-
-const NAVIGATION_LINKS = [
-  { href: '/map', label: '문화지도' },
-  { href: '/about', label: '서비스 소개' },
-  { href: '/contact', label: '문의하기' },
-];
 
 const Header = () => {
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);

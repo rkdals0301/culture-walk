@@ -12,14 +12,10 @@ import { usePathname } from 'next/navigation';
 
 import clsx from 'clsx';
 
+import { NAVIGATION_LINKS } from '@/constants/navigation';
+
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
-
-const NAVIGATION_LINKS = [
-  { href: '/map', label: '문화지도' },
-  { href: '/about', label: '서비스 소개' },
-  { href: '/contact', label: '문의하기' },
-];
 
 const SideMenu = () => {
   const { isOpen, closeSideMenu } = useSideMenu();

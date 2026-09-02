@@ -9,16 +9,15 @@ import { desc, sql } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const KOREA_LAT_MIN = 33;
-const KOREA_LAT_MAX = 39.8;
-const KOREA_LNG_MIN = 124;
-const KOREA_LNG_MAX = 132;
-const MAX_SYNC_AGE_HOURS = 36;
+import {
+  KOREA_LAT_MAX,
+  KOREA_LAT_MIN,
+  KOREA_LNG_MAX,
+  KOREA_LNG_MIN,
+  toCount,
+} from '@/services/cultureSyncTypes';
 
-const toCount = (value: unknown) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+const MAX_SYNC_AGE_HOURS = 36;
 
 export async function GET() {
   try {
