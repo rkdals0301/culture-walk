@@ -54,7 +54,7 @@
     --color-text-primary: var(--palette-forest-950);
     --color-text-secondary: var(--palette-ink-700);
     --color-text-tertiary: var(--palette-ink-800);
-    --color-text-disabled: #8e9d96;
+    --color-text-disabled: #586b62;
     --color-text-inverse: var(--palette-ink-050);
 
     /* Semantic: borders and dividers. Subtle is for grouping; strong is for controls. */
@@ -171,7 +171,7 @@
     --color-text-primary: #f2eee5;
     --color-text-secondary: #b9c9c1;
     --color-text-tertiary: #93a79d;
-    --color-text-disabled: #66776f;
+    --color-text-disabled: #82988c;
     --color-text-inverse: #0d1d16;
 
     --color-border-primary: #31443b;
@@ -593,6 +593,10 @@
 .map-viewport,
 .map-top-scrim {
   inset: 0;
+}
+
+.dark .map-canvas {
+  filter: brightness(0.82) saturate(0.88);
 }
 
 .map-top-scrim {

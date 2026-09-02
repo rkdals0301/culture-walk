@@ -95,12 +95,12 @@ const Header = () => {
       {pathname === '/map' && (
         <a
           href='#culture-list'
-          className='safe-area-skip-link pointer-events-none fixed z-[70] rounded-xl bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-on-primary)] opacity-0 shadow-[var(--color-shadow)] transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
+          className='safe-area-skip-link pointer-events-none fixed z-[70] rounded-lg bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-on-primary)] opacity-0 transition-opacity duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100'
         >
           행사 목록으로 건너뛰기
         </a>
       )}
-      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-[var(--color-text-primary)] sm:gap-3 sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
+      <div className='surface-panel pointer-events-auto mx-auto flex max-w-[1500px] items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-[var(--color-text-primary)] shadow-none sm:gap-3 sm:px-4 lg:h-full lg:max-w-none lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-5 lg:py-0 lg:shadow-none'>
         <div className='flex min-w-0 items-center gap-2 sm:gap-3'>
           <IconButton
             icon={<SideMenuIcon />}
@@ -115,7 +115,7 @@ const Header = () => {
               width={44}
               height={44}
               preload
-              className='rounded-xl shadow-[var(--color-shadow-brand)]'
+              className='rounded-lg shadow-none'
             />
             <div className='min-w-0'>
               <p className='truncate text-[0.66rem] font-semibold text-[var(--color-brand-primary)]'>

@@ -17,13 +17,13 @@ const SearchBar = ({ searchQuery, onSearchChange, onReset, onSubmit, autoFocus =
   return (
     <form
       onSubmit={onSubmit}
-      className='surface-card relative flex min-h-[3.25rem] w-full items-center gap-2 rounded-xl border-[var(--color-input-border)] px-2.5 py-2 text-[var(--color-text-primary)] sm:min-h-[3.65rem] sm:px-3'
+      className='surface-card relative flex min-h-[3.25rem] w-full items-center gap-2 rounded-lg border-[var(--color-input-border)] px-2.5 py-2 text-[var(--color-text-primary)] shadow-none sm:min-h-[3.65rem] sm:px-3'
     >
       <label htmlFor='culture-search-input' className='sr-only'>
         문화행사 검색
       </label>
       <div className='flex min-w-0 flex-1 items-center gap-3'>
-        <span className='flex size-10 flex-none items-center justify-center rounded-lg bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)] sm:size-11'>
+        <span className='flex size-10 flex-none items-center justify-center rounded-md bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] sm:size-11'>
           <SearchIcon className='size-[18px] sm:size-5' />
         </span>
         <input

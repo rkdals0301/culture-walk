@@ -529,7 +529,7 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
       </p>
       <div
         ref={mapContainerRef}
-        className='size-full'
+        className='map-canvas size-full'
         role='region'
         aria-label='전국 문화행사 지도'
         aria-describedby='culture-map-description'

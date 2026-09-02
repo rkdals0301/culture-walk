@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 const PrivacyPage = () => {
   return (
     <InfoPageShell
-      eyebrow='개인정보 보호'
       title='개인정보처리방침'
       description='문화산책은 서비스 제공에 필요한 범위에서만 정보를 사용하며, 별도의 회원가입 기능을 제공하지 않습니다.'
     >

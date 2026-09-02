@@ -39,13 +39,13 @@ const IconButton = ({
 
   const colorClasses = {
     primary:
-      'border-transparent bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)] hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]',
+      'border-transparent bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]',
     secondary:
       'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-chip)] active:bg-[var(--color-interactive-active)]',
     success:
-      'border-transparent bg-[var(--color-accent-primary)] text-[var(--color-accent-on-primary)] shadow-[var(--color-shadow-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]',
+      'border-transparent bg-[var(--color-accent-primary)] text-[var(--color-accent-on-primary)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]',
     danger:
-      'border-transparent bg-[var(--color-error)] text-[var(--color-error-on-primary)] shadow-[var(--color-shadow-error)] hover:bg-[var(--color-error-hover)] active:bg-[var(--color-error-hover)]',
+      'border-transparent bg-[var(--color-error)] text-[var(--color-error-on-primary)] hover:bg-[var(--color-error-hover)] active:bg-[var(--color-error-hover)]',
   };
 
   const colorClass = disabled ? '' : colorClasses[variant];
