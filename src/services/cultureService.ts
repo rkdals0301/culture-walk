@@ -4,6 +4,36 @@ import { Culture, TourApiFestival, TourApiFestivalDetails } from '@/types/cultur
 import { createTourApiSourceKey } from './cultureIdentity';
 import { classifyTourApiFee, normalizeTourApiDetails, normalizeTourApiImageUrl } from './tourApiDetails';
 
+export type CultureContentRow = Pick<
+  CultureRow,
+  | 'id'
+  | 'sourceKey'
+  | 'classification'
+  | 'date'
+  | 'endDate'
+  | 'etcDescription'
+  | 'guName'
+  | 'homepageDetailAddress'
+  | 'isFree'
+  | 'lat'
+  | 'lng'
+  | 'mainImage'
+  | 'homepageAddress'
+  | 'organizationName'
+  | 'place'
+  | 'performerInformation'
+  | 'programIntroduction'
+  | 'registrationDate'
+  | 'startDate'
+  | 'themeClassification'
+  | 'register'
+  | 'title'
+  | 'useFee'
+  | 'useTarget'
+  | 'createdAt'
+  | 'updatedAt'
+>;
+
 const parseTourApiDateToIso = (value?: string) => {
   const match = value?.match(/^(\d{4})(\d{2})(\d{2})$/);
   if (!match) return null;
@@ -136,7 +166,7 @@ export function mapTourApiFestivalToCulture(festival: TourApiFestival): NewCultu
   };
 }
 
-export function mapCultureRowToCulture(row: CultureRow, tourApiDetails?: TourApiFestivalDetails): Culture {
+export function mapCultureRowToCulture(row: CultureContentRow, tourApiDetails?: TourApiFestivalDetails): Culture {
   const startDate = toDateOrNow(row.startDate);
   const endDate = toDateOrNow(row.endDate ?? row.startDate);
   const coordinates = normalizeCultureCoordinates(row.lat, row.lng);

@@ -33,9 +33,38 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
-    const row = await db.query.cultures.findFirst({
-      where: and(eq(cultures.id, parsedId), eq(cultures.isActive, true)),
-    });
+    const [row] = await db
+      .select({
+        id: cultures.id,
+        sourceKey: cultures.sourceKey,
+        classification: cultures.classification,
+        date: cultures.date,
+        endDate: cultures.endDate,
+        etcDescription: cultures.etcDescription,
+        guName: cultures.guName,
+        homepageDetailAddress: cultures.homepageDetailAddress,
+        isFree: cultures.isFree,
+        lat: cultures.lat,
+        lng: cultures.lng,
+        mainImage: cultures.mainImage,
+        homepageAddress: cultures.homepageAddress,
+        organizationName: cultures.organizationName,
+        place: cultures.place,
+        performerInformation: cultures.performerInformation,
+        programIntroduction: cultures.programIntroduction,
+        registrationDate: cultures.registrationDate,
+        startDate: cultures.startDate,
+        themeClassification: cultures.themeClassification,
+        register: cultures.register,
+        title: cultures.title,
+        useFee: cultures.useFee,
+        useTarget: cultures.useTarget,
+        createdAt: cultures.createdAt,
+        updatedAt: cultures.updatedAt,
+      })
+      .from(cultures)
+      .where(and(eq(cultures.id, parsedId), eq(cultures.isActive, true)))
+      .limit(1);
 
     if (!row) {
       return NextResponse.json({ error: '해당 문화를 찾을 수 없습니다.' }, { status: 404 });
@@ -68,7 +97,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!hasCurrentCompleteDetails && row.sourceKey) {
       const env = await getWorkerEnv();
       const d1 = getD1Binding(env);
-      if (d1) await requestCultureDetailRefresh(d1, row.sourceKey);
+      if (d1) {
+        try {
+          await requestCultureDetailRefresh(d1, row.sourceKey);
+        } catch (refreshError) {
+          console.warn(`상세정보 보강 요청을 건너뜁니다. sourceKey=${row.sourceKey}`, refreshError);
+        }
+      }
     }
 
     const culture = mapCultureRowToCulture(row, details);

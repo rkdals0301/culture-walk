@@ -25,9 +25,38 @@ const getCultureById = cache(async (id: number) => {
     return null;
   }
 
-  const row = await db.query.cultures.findFirst({
-    where: and(eq(cultures.id, id), eq(cultures.isActive, true)),
-  });
+  const [row] = await db
+    .select({
+      id: cultures.id,
+      sourceKey: cultures.sourceKey,
+      classification: cultures.classification,
+      date: cultures.date,
+      endDate: cultures.endDate,
+      etcDescription: cultures.etcDescription,
+      guName: cultures.guName,
+      homepageDetailAddress: cultures.homepageDetailAddress,
+      isFree: cultures.isFree,
+      lat: cultures.lat,
+      lng: cultures.lng,
+      mainImage: cultures.mainImage,
+      homepageAddress: cultures.homepageAddress,
+      organizationName: cultures.organizationName,
+      place: cultures.place,
+      performerInformation: cultures.performerInformation,
+      programIntroduction: cultures.programIntroduction,
+      registrationDate: cultures.registrationDate,
+      startDate: cultures.startDate,
+      themeClassification: cultures.themeClassification,
+      register: cultures.register,
+      title: cultures.title,
+      useFee: cultures.useFee,
+      useTarget: cultures.useTarget,
+      createdAt: cultures.createdAt,
+      updatedAt: cultures.updatedAt,
+    })
+    .from(cultures)
+    .where(and(eq(cultures.id, id), eq(cultures.isActive, true)))
+    .limit(1);
 
   if (!row) {
     return null;
