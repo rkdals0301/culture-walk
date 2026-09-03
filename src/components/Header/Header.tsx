@@ -4,39 +4,21 @@ import IconButton from '@/components/Common/IconButton';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import { useSideMenu } from '@/context/SideMenuContext';
 
-import { useCallback } from 'react';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import SideMenuIcon from '../../../public/assets/images/menu-icon.svg';
-import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 import { NAVIGATION_LINKS } from '@/constants/navigation';
 
 const Header = () => {
-  const router = useRouter();
   const { openSideMenu } = useSideMenu();
   const pathname = usePathname();
 
   const handleOpenSideMenu = () => {
     openSideMenu();
   };
-
-  const handleSearchClick = useCallback(() => {
-    if (pathname === '/') {
-      window.dispatchEvent(new CustomEvent('cw:focus-feed-search'));
-      return;
-    }
-
-    if (pathname?.startsWith('/map')) {
-      window.dispatchEvent(new CustomEvent('cw:open-map-search'));
-      return;
-    }
-
-    router.push('/?focus=search');
-  }, [pathname, router]);
 
   return (
     <header className='safe-area-header-offset pointer-events-auto fixed inset-x-0 top-0 z-30 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]/95 backdrop-blur-md transition-colors'>
@@ -104,15 +86,6 @@ const Header = () => {
           })}
         </nav>
         <div className='flex shrink-0 items-center gap-1.5'>
-          <IconButton
-            icon={<SearchIcon />}
-            ariaLabel='행사 검색'
-            title='행사 검색'
-            label={<span className='header-search-label font-medium'>검색</span>}
-            onClick={handleSearchClick}
-            variant='secondary'
-            className='header-search-button h-9 rounded-lg px-3 text-xs font-medium transition-colors hover:bg-[var(--color-surface-chip)] lg:hidden'
-          />
           <ThemeToggleButton />
         </div>
       </div>

@@ -31,7 +31,8 @@
       "binding": "DB",
       "database_name": "culture-walk-db",
       "database_id": "eeb25c40-46ce-46ff-8b13-46ea719ea6a6",
-      "preview_database_id": "fcf302f5-c475-459d-a01b-c327e07f6270",
+      // Local development intentionally reads the production D1 database.
+      "remote": true,
       "migrations_dir": "db/migrations"
     }
   ]
