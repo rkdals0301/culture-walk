@@ -70,11 +70,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: '해당 문화를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    let storedDetails = row.sourceKey
-      ? await db.query.cultureTourApiDetails.findFirst({
+    let storedDetails = null;
+    if (row.sourceKey) {
+      try {
+        storedDetails = await db.query.cultureTourApiDetails.findFirst({
           where: eq(cultureTourApiDetails.sourceKey, row.sourceKey),
-        })
-      : null;
+        });
+      } catch (detailError) {
+        console.warn(`상세 캐시 조회를 건너뜁니다. sourceKey=${row.sourceKey}`, detailError);
+      }
+    }
     const details = storedDetails ? parseStoredTourApiDetails(storedDetails) : undefined;
     const hasCurrentCompleteDetails = Boolean(
       storedDetails?.isComplete && storedDetails.sourceModifiedAt === row.registrationDate

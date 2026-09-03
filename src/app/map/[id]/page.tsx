@@ -62,11 +62,16 @@ const getCultureById = cache(async (id: number) => {
     return null;
   }
 
-  const details = row.sourceKey
-    ? await db.query.cultureTourApiDetails.findFirst({
+  let details = null;
+  if (row.sourceKey) {
+    try {
+      details = await db.query.cultureTourApiDetails.findFirst({
         where: eq(cultureTourApiDetails.sourceKey, row.sourceKey),
-      })
-    : null;
+      });
+    } catch (detailError) {
+      console.warn(`상세 캐시 조회를 건너뜁니다. sourceKey=${row.sourceKey}`, detailError);
+    }
+  }
 
   return mapCultureRowToCulture(row, details ? parseStoredTourApiDetails(details) : undefined);
 });
