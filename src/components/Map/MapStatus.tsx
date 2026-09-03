@@ -60,8 +60,7 @@ const MapStatus = ({ kind, code, message, onRetry, onContinueWithList }: MapStat
         <div className='flex items-start gap-3'>
           <AlertCircle aria-hidden='true' className='mt-0.5 size-5 shrink-0' strokeWidth={1.8} />
           <div className='min-w-0'>
-            <p className='route-kicker'>{kind === 'map-error' ? '지도 연결' : '행사 데이터'}</p>
-            <h2 className='mt-3 text-2xl font-semibold tracking-[-0.03em]'>{copy.title}</h2>
+            <h2 className='text-2xl font-bold tracking-tight'>{copy.title}</h2>
             <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>{message ?? copy.detail}</p>
             {(onRetry || onContinueWithList) && (
               <div className='mt-5 flex flex-wrap gap-2'>

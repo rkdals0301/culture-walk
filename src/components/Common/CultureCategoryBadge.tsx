@@ -25,11 +25,12 @@ const getToneClassName = (classification?: string | null) => {
 const CultureCategoryBadge = ({ classification, className }: CultureCategoryBadgeProps) => (
   <span
     className={clsx(
-      'inline-flex items-center rounded-md px-2 py-1 text-[0.68rem] font-semibold leading-none',
+      'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold leading-tight tracking-tight shadow-2xs',
       getToneClassName(classification),
       className
     )}
   >
+    <span className='size-1.5 rounded-full bg-current opacity-70' aria-hidden='true' />
     {classification || '문화행사'}
   </span>
 );

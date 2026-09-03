@@ -31,12 +31,12 @@ const MapFindMyLocationControl = () => {
   }, [cancelLocation, loading, requestLocation]);
 
   return (
-    <div className='surface-panel rounded-xl p-1'>
+    <div className='surface-panel rounded-2xl p-1 shadow-lg backdrop-blur-md'>
       {loading ? (
         <button
           type='button'
           onClick={handleFindMyLocation}
-          className='flex size-11 items-center justify-center rounded-lg text-xs font-semibold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+          className='flex size-9 items-center justify-center rounded-xl text-xs font-bold text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
           aria-label='위치 확인 취소'
         >
           취소
@@ -46,8 +46,8 @@ const MapFindMyLocationControl = () => {
           ariaLabel='내 위치 찾기'
           fullWidth={false}
           onClick={handleFindMyLocation}
-          className='rounded-lg'
-          icon={<MapFindMyLocationIcon />}
+          className='size-9 rounded-xl'
+          icon={<MapFindMyLocationIcon className='size-4' />}
           variant='secondary'
         />
       )}

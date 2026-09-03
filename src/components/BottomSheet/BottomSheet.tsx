@@ -70,9 +70,9 @@ const BottomSheet = () => {
   };
   const panelTransition = shouldReduceMotion
     ? { duration: 0.01 }
-    : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
-  const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: 'easeOut' as const };
-  const contentTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.18, ease: 'easeOut' as const };
+    : { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const };
+  const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.22, ease: 'easeOut' as const };
+  const contentTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const };
 
   useDialogFocusTrap(isInteractive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
@@ -141,109 +141,95 @@ const BottomSheet = () => {
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown, true);
     };
-  }, [isInteractive, closeBottomSheet]);
+  }, [closeBottomSheet, isInteractive]);
 
   if (!mounted) {
     return null;
   }
 
-  const stopSheetHeightAnimation = () => {
+  const animateSheetToDelta = (targetDelta: number, targetMode: MobileSheetMode) => {
     snapAnimationIdRef.current += 1;
+    const animationId = snapAnimationIdRef.current;
     sheetHeightAnimationRef.current?.stop();
-    sheetHeightAnimationRef.current = null;
-  };
-
-  const getSheetSnapDistance = () => {
-    if (typeof window === 'undefined') {
-      return 320;
-    }
-
-    const peekHeight = window.innerHeight * 0.52;
-    const maxHeight = panelRef.current ? Number.parseFloat(window.getComputedStyle(panelRef.current).maxHeight) : NaN;
-    const expandedHeight = Number.isFinite(maxHeight) ? maxHeight : window.innerHeight - 48;
-
-    return Math.max(160, expandedHeight - peekHeight);
-  };
-
-  const animateSheetToMode = (targetMode: MobileSheetMode, baseMode: MobileSheetMode) => {
-    const snapDistance = getSheetSnapDistance();
-    const targetDelta = targetMode === baseMode ? 0 : targetMode === 'expanded' ? snapDistance : -snapDistance;
-
-    stopSheetHeightAnimation();
 
     if (shouldReduceMotion) {
-      sheetDragDelta.set(targetDelta);
-      if (targetMode !== baseMode) {
-        setMobileSheetMode(targetMode);
-        sheetDragDelta.set(0);
-      }
+      sheetDragDelta.set(0);
+      setMobileSheetMode(targetMode);
       return;
     }
 
-    const animationId = snapAnimationIdRef.current;
     sheetHeightAnimationRef.current = animate(sheetDragDelta, targetDelta, {
-      duration: 0.34,
-      ease: [0.22, 1, 0.36, 1],
+      duration: 0.24,
+      ease: [0.16, 1, 0.3, 1],
       onComplete: () => {
         if (snapAnimationIdRef.current !== animationId) {
           return;
         }
 
-        if (targetMode !== baseMode) {
-          setMobileSheetMode(targetMode);
-          sheetDragDelta.set(0);
-        }
-
-        sheetHeightAnimationRef.current = null;
+        sheetDragDelta.set(0);
+        setMobileSheetMode(targetMode);
       },
     });
   };
 
+  const animateSheetToMode = (nextMode: MobileSheetMode, baseMode: MobileSheetMode) => {
+    if (nextMode === baseMode) {
+      animateSheetToDelta(0, baseMode);
+      return;
+    }
+
+    const currentHeight = panelRef.current?.getBoundingClientRect().height ?? 0;
+    const isExpanding = nextMode === 'expanded';
+    const targetDelta = isExpanding
+      ? Math.max(0, window.innerHeight - 48 - currentHeight)
+      : -Math.max(0, currentHeight - window.innerHeight * 0.52);
+
+    animateSheetToDelta(targetDelta, nextMode);
+  };
+
   const toggleMobileSheetMode = () => {
-    const nextMode: MobileSheetMode = mobileSheetMode === 'peek' ? 'expanded' : 'peek';
+    const nextMode = mobileSheetMode === 'peek' ? 'expanded' : 'peek';
     animateSheetToMode(nextMode, mobileSheetMode);
   };
 
   const handleMobileDragStart = () => {
-    stopSheetHeightAnimation();
-    hasDraggedRef.current = false;
+    snapAnimationIdRef.current += 1;
+    sheetHeightAnimationRef.current?.stop();
+    sheetHeightAnimationRef.current = null;
     dragBaseModeRef.current = mobileSheetMode;
     dragStartDeltaRef.current = sheetDragDelta.get();
+    hasDraggedRef.current = false;
   };
 
-  const handleMobileDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const snapDistance = getSheetSnapDistance();
-    const overshoot = shouldReduceMotion ? 0 : 20;
-    const nextDelta = dragStartDeltaRef.current - info.offset.y;
-    const clampedDelta = Math.min(snapDistance + overshoot, Math.max(-snapDistance - overshoot, nextDelta));
-
+  const handleMobileDrag = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (Math.abs(info.offset.y) > 4) {
       hasDraggedRef.current = true;
     }
 
-    sheetDragDelta.set(clampedDelta);
+    sheetDragDelta.set(dragStartDeltaRef.current - info.offset.y);
   };
 
-  const handleMobileDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleMobileDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const baseMode = dragBaseModeRef.current;
-    const snapDistance = getSheetSnapDistance();
-    const projectedDelta = dragStartDeltaRef.current - (info.offset.y + info.velocity.y * 0.12);
-    const expandThreshold = Math.max(56, snapDistance * 0.16);
-    const closeThreshold = Math.max(88, snapDistance * 0.24);
-    const fastUpwardSwipe = info.velocity.y < -520;
-    const fastDownwardSwipe = info.velocity.y > 520;
+    const totalDelta = sheetDragDelta.get();
+    const velocityY = info.velocity.y;
 
-    if (baseMode === 'peek' && (projectedDelta > expandThreshold || fastUpwardSwipe)) {
-      animateSheetToMode('expanded', baseMode);
+    if (baseMode === 'peek') {
+      if (velocityY < -420 || totalDelta > 64) {
+        animateSheetToMode('expanded', baseMode);
+        return;
+      }
+
+      if (velocityY > 520 || totalDelta < -96) {
+        closeBottomSheet();
+        return;
+      }
+
+      animateSheetToMode('peek', baseMode);
       return;
     }
 
-    if (baseMode === 'peek' && (projectedDelta < -closeThreshold || fastDownwardSwipe)) {
-      closeBottomSheet();
-      return;
-    }
-
-    if (baseMode === 'expanded' && (projectedDelta < -expandThreshold || fastDownwardSwipe)) {
+    if (velocityY > 420 || totalDelta < -72) {
       animateSheetToMode('peek', baseMode);
       return;
     }
@@ -264,7 +250,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[52dvh] flex-col overflow-hidden rounded-[18px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
+            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[52dvh] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}
@@ -291,10 +277,10 @@ const BottomSheet = () => {
                 <button
                   type='button'
                   onClick={backBottomSheet}
-                  className='flex h-11 min-w-11 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-[var(--color-text-secondary)] lg:hidden'
+                  className='flex h-10 min-w-10 items-center gap-1 rounded-xl px-2.5 text-xs font-bold text-[var(--color-brand-primary)] transition hover:opacity-80 lg:hidden'
                   aria-label={`${backLabel}으로 돌아가기`}
                 >
-                  <ArrowBackIcon className='size-4' />
+                  <ArrowBackIcon className='size-3.5' />
                   {backLabel}
                 </button>
               ) : (
@@ -315,12 +301,12 @@ const BottomSheet = () => {
                 aria-label={mobileSheetMode === 'peek' ? '상세 정보 확장' : '상세 정보 축소'}
                 aria-expanded={mobileSheetMode === 'expanded'}
               >
-                <span className='h-1.5 w-14 rounded-full bg-[var(--color-brand-subtle)]' />
+                <span className='h-1.5 w-14 rounded-full bg-[var(--color-border-control)] opacity-50' />
               </button>
               <button
                 type='button'
                 onClick={closeBottomSheet}
-                className='soft-chip flex size-11 items-center justify-center justify-self-end rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+                className='soft-chip flex size-10 items-center justify-center justify-self-end rounded-xl text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
                 aria-label='상세 패널 닫기'
               >
                 <CloseIcon className='size-4' />

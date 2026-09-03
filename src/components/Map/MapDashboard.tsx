@@ -158,6 +158,25 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
   }, [pathname, setMapCategory, setMapFreeOnly, setMapListScrollTop, setMapRegion, setMapSortMode, setSearchQuery]);
 
   useEffect(() => {
+    const handleOpenMapSearch = () => {
+      setIsMobileSheetVisible(true);
+      setTimeout(() => {
+        const input = (document.getElementById('map-search-input-mobile') ||
+          document.getElementById('map-search-input')) as HTMLInputElement | null;
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 150);
+    };
+
+    window.addEventListener('cw:open-map-search', handleOpenMapSearch);
+    return () => {
+      window.removeEventListener('cw:open-map-search', handleOpenMapSearch);
+    };
+  }, []);
+
+  useEffect(() => {
     if (pathname !== '/map' || typeof window === 'undefined') {
       return;
     }
@@ -451,16 +470,15 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
             <div className='shrink-0 border-b border-[var(--color-border-primary)] px-5 pb-4 pt-5'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='min-w-0'>
-                  <p className='route-kicker'>전국 문화행사</p>
-                  <h2 className='mt-2 text-2xl font-semibold leading-[1.15] tracking-[-0.04em]'>행사 찾기</h2>
-                  <p className='mt-2 text-xs leading-5 text-[var(--color-text-secondary)]'>
-                    지도에서 위치를 보고, 목록에서 일정과 장소를 비교하세요.
+                  <h2 className='text-xl font-bold tracking-tight text-[var(--color-text-primary)]'>행사 찾기</h2>
+                  <p className='mt-1 text-xs font-medium text-[var(--color-text-secondary)]'>
+                    지도와 목록에서 원하는 행사를 찾아보세요
                   </p>
                 </div>
                 <button
                   type='button'
                   onClick={() => setIsDesktopPanelCollapsed(true)}
-                  className='soft-chip flex size-11 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+                  className='soft-chip flex size-10 shrink-0 items-center justify-center rounded-xl text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
                   aria-label='행사 목록 패널 접기'
                   title='행사 목록 접기'
                 >
@@ -479,15 +497,16 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
               <form
                 role='search'
-                className='mt-3 flex h-11 items-center gap-2 rounded-lg border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 shadow-[var(--color-shadow-soft)] transition-colors focus-within:border-[var(--color-input-focus)] focus-within:ring-2 focus-within:ring-[var(--color-focus-ring)]/20'
+                className='mt-3 flex h-11 items-center gap-2.5 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3.5 shadow-2xs transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[var(--color-brand-primary)]/20'
                 onSubmit={event => event.preventDefault()}
               >
                 <SearchIcon className='size-[18px] shrink-0 text-[var(--color-brand-primary)]' />
                 <input
+                  id='map-search-input'
                   type='text'
                   value={searchQuery}
                   onChange={event => setSearchQuery(event.target.value)}
-                  placeholder='행사명으로 검색'
+                  placeholder='행사명 또는 장소 검색'
                   aria-label='문화행사 검색'
                   autoComplete='off'
                   spellCheck={false}
@@ -498,7 +517,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                   <button
                     type='button'
                     onClick={() => setSearchQuery('')}
-                    className='flex size-11 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+                    className='flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]'
                     aria-label='검색어 초기화'
                   >
                     <SearchCancelIcon className='size-4' />
@@ -574,26 +593,23 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
       <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section
-            className='surface-panel pointer-events-auto mt-auto flex h-[72dvh] max-h-[82dvh] min-h-[390px] w-full flex-col overflow-hidden rounded-[18px] text-[var(--color-text-primary)]'
+            className='surface-panel pointer-events-auto mt-auto flex h-[74dvh] max-h-[84dvh] min-h-[400px] w-full flex-col overflow-hidden rounded-t-[28px] rounded-b-none border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
             aria-busy={isFilterPending || isLoading}
           >
             <div className='border-b border-[var(--color-border-primary)] px-4 py-3'>
               <div className='mb-2 flex items-center justify-center'>
-                <div className='h-1.5 w-12 rounded-full bg-[var(--color-brand-subtle)]' />
+                <div className='h-1.5 w-12 rounded-full bg-[var(--color-border-control)] opacity-50' />
               </div>
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
-                  <p className='route-kicker'>행사 목록</p>
-                  <p className='mt-1 truncate text-sm font-medium text-[var(--color-text-secondary)]'>
-                    지도와 함께 결과를 확인하세요.
-                  </p>
+                  <h3 className='text-base font-bold text-[var(--color-text-primary)]'>행사 목록</h3>
                 </div>
                 <button
                   type='button'
                   onClick={() => setIsMobileSheetVisible(false)}
-                  className='inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-brand-primary)] px-3.5 text-xs font-semibold text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)] transition hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]'
+                  className='inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[var(--color-surface-chip)] px-3 text-xs font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-interactive-hover)]'
                 >
-                  <MapPinned aria-hidden='true' className='size-3.5' strokeWidth={1.8} />
+                  <MapPinned aria-hidden='true' className='size-3.5 text-[var(--color-brand-primary)]' strokeWidth={2} />
                   지도만 보기
                 </button>
               </div>
@@ -606,7 +622,36 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                 onReset={resetMapFilters}
                 compact
               />
-              <div className='mt-3'>
+              <form
+                role='search'
+                className='mt-2.5 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 shadow-2xs transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[var(--color-brand-primary)]/20'
+                onSubmit={event => event.preventDefault()}
+              >
+                <SearchIcon className='size-4 shrink-0 text-[var(--color-brand-primary)]' />
+                <input
+                  id='map-search-input-mobile'
+                  type='text'
+                  value={searchQuery}
+                  onChange={event => setSearchQuery(event.target.value)}
+                  placeholder='행사명 또는 장소 검색'
+                  aria-label='문화행사 검색'
+                  autoComplete='off'
+                  spellCheck={false}
+                  enterKeyHint='search'
+                  className='min-w-0 flex-1 bg-transparent text-xs sm:text-sm font-medium placeholder:text-[var(--color-text-secondary)]'
+                />
+                {searchQuery && (
+                  <button
+                    type='button'
+                    onClick={() => setSearchQuery('')}
+                    className='flex size-7 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]'
+                    aria-label='검색어 초기화'
+                  >
+                    <SearchCancelIcon className='size-3.5' />
+                  </button>
+                )}
+              </form>
+              <div className='mt-2.5'>
                 <MapFilterControls
                   category={mapCategory}
                   freeOnly={mapFreeOnly}
@@ -631,7 +676,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <span className='shrink-0 text-xs font-medium text-[var(--color-text-secondary)]'>정렬 기준</span>
+                <span className='shrink-0 text-xs font-semibold text-[var(--color-text-secondary)]'>정렬 기준</span>
               </div>
             </div>
             <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
@@ -646,24 +691,26 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
             </div>
           </section>
         ) : !isDetailRoute ? (
-          <div className='pointer-events-auto mt-auto flex justify-center'>
+          <div className='pointer-events-auto mt-auto flex justify-center pb-2'>
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
-              className='surface-panel group inline-flex min-h-14 items-center gap-2.5 rounded-xl border-[var(--color-border-brand)] px-3 py-2.5 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:bg-[var(--color-interactive-hover)] active:bg-[var(--color-interactive-active)]'
+              className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
               aria-label={`행사 목록 열기, ${visibleCultures.length}개 행사`}
             >
-              <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-[var(--color-shadow-brand)]'>
-                <List aria-hidden='true' className='size-4' strokeWidth={1.8} />
+              <span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white shadow-xs'>
+                <List aria-hidden='true' className='size-4' strokeWidth={2} />
               </span>
               <span className='flex min-w-0 flex-col'>
-                <span className='text-[0.68rem] font-semibold text-[var(--color-text-secondary)]'>
-                  {hasActiveFilters ? '조건을 적용한 행사' : '지도에서 찾은 행사'}
+                <span className='text-[0.68rem] font-bold text-[var(--color-brand-primary)]'>
+                  {hasActiveFilters ? '필터 적용됨' : '지도 행사'}
                 </span>
-                <span className='mt-0.5 whitespace-nowrap text-sm font-semibold'>행사 {visibleCultures.length}개 보기</span>
+                <span className='whitespace-nowrap text-xs font-bold sm:text-sm text-[var(--color-text-primary)]'>
+                  행사 {visibleCultures.length.toLocaleString()}개 보기
+                </span>
               </span>
-              <span className='ml-1 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-chip)] text-[var(--color-brand-primary)] transition-transform duration-200 group-hover:-translate-y-0.5'>
-                <ChevronUp aria-hidden='true' className='size-4' strokeWidth={2} />
+              <span className='ml-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-chip)] text-[var(--color-text-primary)]'>
+                <ChevronUp aria-hidden='true' className='size-4' strokeWidth={2.2} />
               </span>
             </button>
           </div>

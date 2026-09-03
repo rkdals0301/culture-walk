@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 
 import Image from 'next/image';
 
-import { CalendarDays, MapPin } from 'lucide-react';
+import { Navigation } from 'lucide-react';
 
 interface CultureItemProps {
   culture: FormattedCulture;
@@ -38,8 +38,8 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
     : null;
 
   return (
-    <div className='flex size-full min-h-[104px] items-center gap-3'>
-      <div className='relative h-24 w-20 flex-none overflow-hidden rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
+    <div className='flex size-full min-h-[108px] items-center gap-3.5'>
+      <div className='relative h-24 w-20 shrink-0 overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs transition-transform duration-200 group-hover:scale-[1.02]'>
         {hasCultureImage ? (
           <Image
             src={imgSrc}
@@ -54,18 +54,18 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
           <CultureImageFallback compact classification={culture.classification} />
         )}
       </div>
-      <div className='min-w-0 grow overflow-hidden'>
+      <div className='min-w-0 flex-1 overflow-hidden py-0.5'>
         <div className='mb-1.5 flex items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='shrink-0' />
-          <span className='truncate text-[0.72rem] font-medium text-[var(--color-text-secondary)]'>
+          <span className='truncate text-[0.74rem] font-medium text-[var(--color-text-secondary)]'>
             {culture.guName || '전국'}
           </span>
           {isSelected && (
-            <span className='ml-auto size-2 shrink-0 rounded-full bg-[var(--color-accent-primary)]' aria-hidden='true' />
+            <span className='ml-auto size-2 shrink-0 rounded-full bg-[var(--color-brand-primary)]' aria-hidden='true' />
           )}
         </div>
         <p
-          className='text-[0.96rem] font-semibold leading-[1.35]'
+          className='text-[0.97rem] font-bold leading-snug tracking-tight text-[var(--color-text-primary)]'
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -75,16 +75,23 @@ const CultureItem = ({ culture, isSelected = false, currentLocation = null }: Cu
         >
           {culture.title}
         </p>
-        <div className='mt-2 space-y-1 text-[0.76rem] font-medium leading-[1.35] text-[var(--color-text-secondary)]'>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <CalendarDays aria-hidden='true' className='size-3.5 shrink-0 text-[var(--color-brand-primary)]' strokeWidth={1.8} />
-            <span className='min-w-0 truncate'>{culture.displayDate}</span>
-          </div>
-          <div className='flex min-w-0 items-center gap-1.5'>
-            <MapPin aria-hidden='true' className='size-3.5 shrink-0 text-[var(--color-brand-primary)]' strokeWidth={1.8} />
-            <span className='min-w-0 flex-1 truncate'>{culture.displayPlace}</span>
-            {distance && <span className='shrink-0 font-semibold text-[var(--color-accent-text)]'>{distance}</span>}
-            <span className='max-w-[5.5rem] shrink-0 truncate text-[0.72rem]'>{culture.displayPrice}</span>
+        <div className='mt-1.5 flex flex-col gap-0.5 text-xs text-[var(--color-text-tertiary)]'>
+          <span className='truncate'>{culture.displayDate}</span>
+          <div className='flex items-center justify-between gap-1'>
+            <span className='truncate text-[var(--color-text-secondary)]'>{culture.displayPlace}</span>
+            <div className='flex items-center gap-1 shrink-0'>
+              {distance && (
+                <span className='inline-flex items-center gap-0.5 rounded-sm bg-[var(--color-brand-subtle)] px-1.5 py-0.5 text-[0.7rem] font-semibold text-[var(--color-brand-primary)]'>
+                  <Navigation className='size-2.5 fill-current' />
+                  {distance}
+                </span>
+              )}
+              {culture.displayPrice && (
+                <span className='text-[0.72rem] font-medium text-[var(--color-text-secondary)]'>
+                  {culture.displayPrice}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

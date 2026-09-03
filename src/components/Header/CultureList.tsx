@@ -88,7 +88,7 @@ const CultureList = ({
               data-index={virtualItem.index}
               data-culture-id={culture.id}
               className={clsx(
-                'group absolute left-0 right-0 px-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]'
+                'group absolute left-0 right-0 px-2 py-1 text-left focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-focus-ring)]'
               )}
               style={{
                 transform: `translateY(${virtualItem.start}px)`,
@@ -100,17 +100,14 @@ const CultureList = ({
             >
               <div
                 className={clsx(
-                  'relative overflow-hidden border-b border-[var(--color-border-primary)] px-3 py-3.5 transition-[background-color,transform] duration-200 group-hover:bg-[var(--color-surface-chip)]',
-                  {
-                    'bg-[var(--color-accent-subtle)]': isSelected,
-                  }
+                  'relative rounded-xl p-2.5 transition-colors duration-150',
+                  isSelected
+                    ? 'bg-[var(--color-brand-subtle)] ring-1 ring-[var(--color-brand-primary)]/40'
+                    : 'hover:bg-[var(--color-surface-chip)]/70 active:bg-[var(--color-surface-chip)]'
                 )}
               >
                 {isSelected && (
-                  <>
-                    <span className='absolute bottom-3 left-0 top-3 w-1 rounded-r-full bg-[var(--color-accent-primary)]' />
-                    <span className='sr-only'>선택됨</span>
-                  </>
+                  <span className='sr-only'>선택됨</span>
                 )}
                 <CultureItem culture={culture} isSelected={isSelected} currentLocation={currentLocation} />
               </div>
