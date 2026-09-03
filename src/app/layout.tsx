@@ -22,6 +22,20 @@ const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION || '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF-ZoOEKo';
 const NAVER_SITE_VERIFICATION = process.env.NAVER_SITE_VERIFICATION || 'a33276bf6f5a8e13bf6f4009af7828cbaa3cdbb1';
+const THEME_INITIALIZER_SCRIPT = `(() => {
+  try {
+    const storedTheme = localStorage.getItem('theme') || 'system';
+    const theme = storedTheme === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      : storedTheme;
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    root.style.colorScheme = theme;
+  } catch {
+    // Theme initialization is best effort when storage is unavailable.
+  }
+})();`;
 const WEBSITE_STRUCTURED_DATA = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -157,6 +171,9 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko' suppressHydrationWarning>
       <head>
+        <Script id='theme-initializer' strategy='beforeInteractive'>
+          {THEME_INITIALIZER_SCRIPT}
+        </Script>
         {/* TourAPI images */}
         <link rel='dns-prefetch' href='https://tong.visitkorea.or.kr' />
         <link rel='preconnect' href='https://tong.visitkorea.or.kr' crossOrigin='anonymous' />
