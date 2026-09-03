@@ -1,11 +1,17 @@
-import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } from '@/cache/kv';
+import {
+  createCacheKey,
+  getCulturesCacheVersion,
+  readCultureListItemCache,
+  readKvCache,
+  writeKvCache,
+} from '@/cache/kv';
 import { getDb } from '@/db/client';
 import { cultures, cultureTourApiDetails } from '@/db/schema';
 import { getWorkerEnv } from '@/server/cloudflare';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
 import { getD1Binding } from '@/services/cultureSyncLock';
 import { requestCultureDetailRefresh } from '@/services/cultureSyncDetails';
-import { mapCultureRowToCulture } from '@/services/cultureService';
+import { mapCultureListItemToCulture, mapCultureRowToCulture } from '@/services/cultureService';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { Culture } from '@/types/culture';
 
@@ -33,38 +39,51 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
-    const [row] = await db
-      .select({
-        id: cultures.id,
-        sourceKey: cultures.sourceKey,
-        classification: cultures.classification,
-        date: cultures.date,
-        endDate: cultures.endDate,
-        etcDescription: cultures.etcDescription,
-        guName: cultures.guName,
-        homepageDetailAddress: cultures.homepageDetailAddress,
-        isFree: cultures.isFree,
-        lat: cultures.lat,
-        lng: cultures.lng,
-        mainImage: cultures.mainImage,
-        homepageAddress: cultures.homepageAddress,
-        organizationName: cultures.organizationName,
-        place: cultures.place,
-        performerInformation: cultures.performerInformation,
-        programIntroduction: cultures.programIntroduction,
-        registrationDate: cultures.registrationDate,
-        startDate: cultures.startDate,
-        themeClassification: cultures.themeClassification,
-        register: cultures.register,
-        title: cultures.title,
-        useFee: cultures.useFee,
-        useTarget: cultures.useTarget,
-        createdAt: cultures.createdAt,
-        updatedAt: cultures.updatedAt,
-      })
-      .from(cultures)
-      .where(and(eq(cultures.id, parsedId), eq(cultures.isActive, true)))
-      .limit(1);
+    let row;
+    try {
+      [row] = await db
+        .select({
+          id: cultures.id,
+          sourceKey: cultures.sourceKey,
+          classification: cultures.classification,
+          date: cultures.date,
+          endDate: cultures.endDate,
+          etcDescription: cultures.etcDescription,
+          guName: cultures.guName,
+          homepageDetailAddress: cultures.homepageDetailAddress,
+          isFree: cultures.isFree,
+          lat: cultures.lat,
+          lng: cultures.lng,
+          mainImage: cultures.mainImage,
+          homepageAddress: cultures.homepageAddress,
+          organizationName: cultures.organizationName,
+          place: cultures.place,
+          performerInformation: cultures.performerInformation,
+          programIntroduction: cultures.programIntroduction,
+          registrationDate: cultures.registrationDate,
+          startDate: cultures.startDate,
+          themeClassification: cultures.themeClassification,
+          register: cultures.register,
+          title: cultures.title,
+          useFee: cultures.useFee,
+          useTarget: cultures.useTarget,
+          createdAt: cultures.createdAt,
+          updatedAt: cultures.updatedAt,
+        })
+        .from(cultures)
+        .where(and(eq(cultures.id, parsedId), eq(cultures.isActive, true)))
+        .limit(1);
+    } catch (queryError) {
+      const cachedCulture = await readCultureListItemCache(parsedId);
+      if (!cachedCulture) {
+        throw queryError;
+      }
+
+      console.warn(`D1 상세 행 조회를 건너뛰고 목록 캐시를 사용합니다. id=${parsedId}`, queryError);
+      return NextResponse.json(mapCultureListItemToCulture(cachedCulture), {
+        headers: { 'X-Culture-Data-Source': 'kv-list-fallback' },
+      });
+    }
 
     if (!row) {
       return NextResponse.json({ error: '해당 문화를 찾을 수 없습니다.' }, { status: 404 });

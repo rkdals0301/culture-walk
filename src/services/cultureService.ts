@@ -1,5 +1,5 @@
 import { CultureRow, NewCultureRow } from '@/db/schema';
-import { Culture, TourApiFestival, TourApiFestivalDetails } from '@/types/culture';
+import { Culture, CultureListItem, TourApiFestival, TourApiFestivalDetails } from '@/types/culture';
 
 import { createTourApiSourceKey } from './cultureIdentity';
 import { classifyTourApiFee, normalizeTourApiDetails, normalizeTourApiImageUrl } from './tourApiDetails';
@@ -216,3 +216,39 @@ export function mapCultureRowToCulture(row: CultureContentRow, tourApiDetails?: 
     updatedAt: row.updatedAt ? new Date(row.updatedAt) : undefined,
   };
 }
+
+export const mapCultureListItemToCulture = (item: CultureListItem): Culture => ({
+  id: item.id,
+  classification: item.classification,
+  date: '',
+  endDate: item.endDate,
+  etcDescription: '',
+  guName: item.guName,
+  homepageDetailAddress: '',
+  isFree: item.isFree,
+  lat: item.lat,
+  lng: item.lng,
+  mainImage: item.mainImage,
+  homepageAddress: '',
+  organizationName: '',
+  place: item.place,
+  performerInformation: '',
+  programIntroduction: '',
+  registrationDate: '',
+  startDate: item.startDate,
+  themeClassification: '',
+  register: '',
+  title: item.title,
+  useFee: item.useFee,
+  useTarget: '',
+  overview: '',
+  eventTime: '',
+  duration: '',
+  bookingPlace: '',
+  placeInformation: '',
+  contact: '',
+  festivalGrade: '',
+  discountInformation: '',
+  additionalInformation: [],
+  additionalImages: [],
+});

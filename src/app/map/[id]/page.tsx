@@ -1,8 +1,9 @@
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
 import MapShell from '@/components/Map/MapShell';
+import { readCultureListItemCache } from '@/cache/kv';
 import { getDb } from '@/db/client';
 import { cultures, cultureTourApiDetails } from '@/db/schema';
-import { mapCultureRowToCulture } from '@/services/cultureService';
+import { mapCultureListItemToCulture, mapCultureRowToCulture } from '@/services/cultureService';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { serializeJsonLd } from '@/utils/jsonLd';
@@ -22,41 +23,53 @@ const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(val
 const getCultureById = cache(async (id: number) => {
   const db = await getDb();
   if (!db) {
-    return null;
+    const cachedCulture = await readCultureListItemCache(id);
+    return cachedCulture ? mapCultureListItemToCulture(cachedCulture) : null;
   }
 
-  const [row] = await db
-    .select({
-      id: cultures.id,
-      sourceKey: cultures.sourceKey,
-      classification: cultures.classification,
-      date: cultures.date,
-      endDate: cultures.endDate,
-      etcDescription: cultures.etcDescription,
-      guName: cultures.guName,
-      homepageDetailAddress: cultures.homepageDetailAddress,
-      isFree: cultures.isFree,
-      lat: cultures.lat,
-      lng: cultures.lng,
-      mainImage: cultures.mainImage,
-      homepageAddress: cultures.homepageAddress,
-      organizationName: cultures.organizationName,
-      place: cultures.place,
-      performerInformation: cultures.performerInformation,
-      programIntroduction: cultures.programIntroduction,
-      registrationDate: cultures.registrationDate,
-      startDate: cultures.startDate,
-      themeClassification: cultures.themeClassification,
-      register: cultures.register,
-      title: cultures.title,
-      useFee: cultures.useFee,
-      useTarget: cultures.useTarget,
-      createdAt: cultures.createdAt,
-      updatedAt: cultures.updatedAt,
-    })
-    .from(cultures)
-    .where(and(eq(cultures.id, id), eq(cultures.isActive, true)))
-    .limit(1);
+  let row;
+  try {
+    [row] = await db
+      .select({
+        id: cultures.id,
+        sourceKey: cultures.sourceKey,
+        classification: cultures.classification,
+        date: cultures.date,
+        endDate: cultures.endDate,
+        etcDescription: cultures.etcDescription,
+        guName: cultures.guName,
+        homepageDetailAddress: cultures.homepageDetailAddress,
+        isFree: cultures.isFree,
+        lat: cultures.lat,
+        lng: cultures.lng,
+        mainImage: cultures.mainImage,
+        homepageAddress: cultures.homepageAddress,
+        organizationName: cultures.organizationName,
+        place: cultures.place,
+        performerInformation: cultures.performerInformation,
+        programIntroduction: cultures.programIntroduction,
+        registrationDate: cultures.registrationDate,
+        startDate: cultures.startDate,
+        themeClassification: cultures.themeClassification,
+        register: cultures.register,
+        title: cultures.title,
+        useFee: cultures.useFee,
+        useTarget: cultures.useTarget,
+        createdAt: cultures.createdAt,
+        updatedAt: cultures.updatedAt,
+      })
+      .from(cultures)
+      .where(and(eq(cultures.id, id), eq(cultures.isActive, true)))
+      .limit(1);
+  } catch (queryError) {
+    const cachedCulture = await readCultureListItemCache(id);
+    if (!cachedCulture) {
+      throw queryError;
+    }
+
+    console.warn(`D1 상세 행 조회를 건너뛰고 목록 캐시를 사용합니다. id=${id}`, queryError);
+    return mapCultureListItemToCulture(cachedCulture);
+  }
 
   if (!row) {
     return null;

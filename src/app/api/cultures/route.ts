@@ -1,4 +1,4 @@
-import { createCacheKey, getCulturesCacheVersion, readKvCache, writeKvCache } from '@/cache/kv';
+import { getCulturesListCacheKey, readCulturesListCache, writeKvCache } from '@/cache/kv';
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
 import { hasMissingSqliteTableError } from '@/server/sqliteError';
@@ -49,13 +49,7 @@ export async function GET() {
 
     const koreaToday = getKoreaDateStartIso();
 
-    const cacheVersion = await getCulturesCacheVersion();
-    const cacheKey = createCacheKey('cultures:list:v6', {
-      version: cacheVersion,
-      koreaDate: koreaToday.slice(0, 10),
-    });
-
-    const cached = await readKvCache<CultureListItem[]>(cacheKey);
+    const cached = await readCulturesListCache();
     if (cached) {
       return listResponse(cached);
     }
@@ -116,7 +110,7 @@ export async function GET() {
       };
     });
     const sortedResult = sortCulturesByRelevantDate(result, koreaToday);
-    await writeKvCache(cacheKey, sortedResult, CACHE_TTL_SECONDS);
+    await writeKvCache(await getCulturesListCacheKey(), sortedResult, CACHE_TTL_SECONDS);
 
     return listResponse(sortedResult);
   } catch (error) {

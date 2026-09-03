@@ -15,17 +15,17 @@ test('information page shell uses an open, purpose-specific intro', async () => 
   assert.doesNotMatch(source, /rounded-full border/);
   assert.doesNotMatch(source, /MapPinned/);
   assert.doesNotMatch(source, /border-t border-\[var\(--color-border-primary\)\]/);
-  assert.match(source, /text-\[2rem\] font-semibold/);
-  assert.match(source, /xl:grid-cols-\[minmax\(0,1fr\)_minmax\(16rem,0\.6fr\)\]/);
-  assert.doesNotMatch(source, /lg:grid-cols-\[minmax\(0,1fr\)_minmax\(16rem,0\.6fr\)\]/);
-  assert.match(source, /lg:text-\[3\.5rem\][\s\S]*xl:text-\[4rem\]/);
+  assert.match(source, /info-page-title/);
+  assert.match(source, /info-page-description/);
+  assert.match(source, /info-page-intro-grid-single/);
   assert.doesNotMatch(source, /<main/);
 });
 
 test('contact page avoids the generic surface-card treatment', async () => {
   const source = await readSource('src/app/contact/page.tsx');
 
-  assert.match(source, /contact-method/);
+  assert.match(source, /info-contact-card/);
+  assert.match(source, /info-mail-action/);
   assert.doesNotMatch(source, /surface-card/);
   assert.doesNotMatch(source, /TriangleAlert/);
 });
@@ -37,14 +37,15 @@ test('about page presents categories and principles as content, not tiles', asyn
   assert.doesNotMatch(source, /rounded-lg bg-\[var\(--color-surface-chip\)\]/);
   assert.match(source, /info-route-list/);
   assert.doesNotMatch(source, /divide-y/);
-  assert.match(source, />01<|>01<\/p>/);
+  assert.match(source, /info-category-grid/);
+  assert.match(source, /ABOUT_STEPS/);
 });
 
 test('contact topics stay as an open list instead of a stacked card treatment', async () => {
   const source = await readSource('src/app/contact/page.tsx');
 
-  assert.match(source, /contact-topics-list/);
+  assert.match(source, /info-topic-list/);
   assert.doesNotMatch(source, /divide-y/);
   assert.doesNotMatch(source, /border-y/);
-  assert.match(source, /contact-method[^']*self-start/);
+  assert.match(source, /info-contact-card/);
 });

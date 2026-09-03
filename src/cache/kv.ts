@@ -1,6 +1,9 @@
 import { getWorkerEnv } from '@/server/cloudflare';
+import { CultureListItem } from '@/types/culture';
+import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 const CULTURE_CACHE_VERSION_KEY = 'cultures:cache-version';
+const CULTURE_LIST_CACHE_NAMESPACE = 'cultures:list:v6';
 type CultureCacheBinding = {
   get: (key: string, type?: 'json') => Promise<unknown>;
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
@@ -80,4 +83,21 @@ export const bumpCulturesCacheVersion = async () => {
   }
 
   return version;
+};
+
+export const getCulturesListCacheKey = async () => {
+  const cacheVersion = await getCulturesCacheVersion();
+  return createCacheKey(CULTURE_LIST_CACHE_NAMESPACE, {
+    version: cacheVersion,
+    koreaDate: getKoreaDateStartIso().slice(0, 10),
+  });
+};
+
+export const readCulturesListCache = async () => {
+  return readKvCache<CultureListItem[]>(await getCulturesListCacheKey());
+};
+
+export const readCultureListItemCache = async (id: number) => {
+  const cachedCultures = await readCulturesListCache();
+  return cachedCultures?.find(culture => culture.id === id) ?? null;
 };
