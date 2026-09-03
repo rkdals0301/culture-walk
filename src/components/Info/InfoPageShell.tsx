@@ -9,7 +9,7 @@ interface InfoPageShellProps {
 
 const InfoPageShell = ({ children, title, description, action }: InfoPageShellProps) => {
   return (
-    <div className='h-full overflow-y-auto bg-[var(--color-bg-primary)] px-4 pb-20 pt-24 text-[var(--color-text-primary)] sm:px-6 sm:pt-28 lg:px-10'>
+    <div className='info-page-scroll-shell h-full overflow-x-hidden overflow-y-auto bg-[var(--color-bg-primary)] px-4 pb-20 pt-24 text-[var(--color-text-primary)] sm:px-6 sm:pt-28 lg:px-10'>
       <div className='mx-auto grid w-full max-w-5xl gap-10 sm:gap-12 lg:gap-16'>
         <header className='info-page-intro border-b border-[var(--color-border-primary)] pb-8 sm:pb-10'>
           <div
