@@ -47,10 +47,17 @@ const SearchResultsOverlay = ({ onCloseWithoutHistory, onResetSearch }: SearchRe
   };
 
   const renderError = () => (
-    <div className='status-callout flex size-full items-center justify-center rounded-2xl p-8' data-status='api-error' role='alert'>
-      <div className='flex max-w-sm items-start gap-3'>
-        <AlertCircle aria-hidden='true' className='mt-0.5 size-5 shrink-0' strokeWidth={1.8} />
-        <p className='text-sm font-medium'>검색 결과를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+    <div
+      className='status-callout status-callout-shell flex size-full items-center justify-center rounded-2xl p-4 sm:p-8'
+      data-status='api-error'
+      role='alert'
+    >
+      <div className='status-callout-card w-full max-w-sm rounded-[1.25rem] p-5'>
+        <div className='status-callout-icon' aria-hidden='true'>
+          <AlertCircle className='size-5' strokeWidth={2} />
+        </div>
+        <p className='mt-4 text-sm font-semibold'>검색 결과를 불러오지 못했습니다.</p>
+        <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>잠시 후 다시 시도해 주세요.</p>
       </div>
     </div>
   );
@@ -95,7 +102,9 @@ const SearchResultsOverlay = ({ onCloseWithoutHistory, onResetSearch }: SearchRe
 
   return (
     <div
-      className={clsx('pointer-events-auto flex size-full min-h-0 flex-col gap-2.5 text-[var(--color-text-primary)] sm:gap-3')}
+      className={clsx(
+        'pointer-events-auto flex size-full min-h-0 flex-col gap-2.5 text-[var(--color-text-primary)] sm:gap-3'
+      )}
     >
       <div className='border-b border-[var(--color-border-primary)] pb-3.5 sm:pb-4'>
         <div className='min-w-0'>

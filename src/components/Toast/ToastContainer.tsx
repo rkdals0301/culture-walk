@@ -1,9 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Slide, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { useEffect, useState } from 'react';
 
 import { useTheme } from 'next-themes';
 
@@ -21,10 +20,18 @@ const CustomToastContainer = () => {
     <ToastContainer
       position='top-right'
       transition={Slide}
-      autoClose={3000}
+      autoClose={3600}
       closeOnClick
       draggable
+      newestOnTop
+      limit={3}
+      pauseOnFocusLoss
+      pauseOnHover
       theme={mounted && resolvedTheme === 'dark' ? 'dark' : 'light'}
+      className='culture-toast-container'
+      toastClassName='culture-toast'
+      bodyClassName='culture-toast-body'
+      progressClassName='culture-toast-progress'
     />
   );
 };

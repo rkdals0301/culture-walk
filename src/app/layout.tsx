@@ -3,6 +3,7 @@ import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
+import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { CultureProvider } from '@/context/CultureContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
@@ -11,10 +12,8 @@ import '@/styles/globals.scss';
 import { serializeJsonLd } from '@/utils/jsonLd';
 
 import type { Metadata, Viewport } from 'next';
-import dynamic from 'next/dynamic';
 import Script from 'next/script';
 
-const CustomToastContainer = dynamic(() => import('@/components/Toast/ToastContainer'));
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_VERSION = '20260715';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=${OG_IMAGE_VERSION}`;
@@ -206,6 +205,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         )}
         <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
         <ThemeProvider>
+          <CustomToastContainer />
           <CultureProvider>
             <BottomSheetProvider>
               <SideMenuProvider>
@@ -213,7 +213,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
                 <SideMenu />
                 <Main>{children}</Main>
                 <BottomSheet />
-                <CustomToastContainer />
               </SideMenuProvider>
             </BottomSheetProvider>
           </CultureProvider>

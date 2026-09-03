@@ -4,17 +4,18 @@ import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import CultureList from '@/components/Header/CultureList';
 import CultureListLoading from '@/components/Header/CultureListLoading';
 import { MapFilterControls, MapLocationControl, MapSortControl } from '@/components/Map/MapControls';
+import MapResultSummary from '@/components/Map/MapResultSummary';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import {
+  type MapSortMode,
   getMapFilterSignature,
   parseMapExploreStateFromSearch,
   serializeMapExploreStateToSearch,
-  type MapSortMode,
 } from '@/utils/exploreState';
-import { calculateDistanceMeters, getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
+import { LocationRequestError, calculateDistanceMeters, getGeolocationErrorMessage } from '@/utils/geo';
 import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -23,9 +24,7 @@ import { toast } from 'react-toastify';
 import { usePathname, useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
-import { ChevronUp, List, MapPinned } from 'lucide-react';
-
-import MapResultSummary from '@/components/Map/MapResultSummary';
+import { AlertCircle, ChevronUp, List, MapPinned } from 'lucide-react';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchCancelIcon from '../../../public/assets/images/search-cancel-icon.svg';
@@ -396,18 +395,27 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
     if (error) {
       return (
-        <div className='flex h-full flex-col items-center justify-center px-6 text-center' data-status='api-error' role='alert'>
-          <p className='text-base font-semibold'>행사 데이터를 불러오지 못했습니다.</p>
-          <p className='mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]'>
-            잠시 후 다시 시도하거나 페이지를 새로고침해 주세요.
-          </p>
-          <button
-            type='button'
-            onClick={() => void loadCultures({ force: true })}
-            className='mt-4 inline-flex min-h-11 items-center rounded-lg bg-[var(--color-brand-primary)] px-4 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)]'
-          >
-            다시 불러오기
-          </button>
+        <div
+          className='status-callout status-callout-shell flex h-full items-center justify-center px-4 sm:px-6'
+          data-status='api-error'
+          role='alert'
+        >
+          <div className='status-callout-card w-full rounded-[1.25rem] p-5 text-left'>
+            <div className='status-callout-icon' aria-hidden='true'>
+              <AlertCircle className='size-5' strokeWidth={2} />
+            </div>
+            <p className='mt-4 text-base font-semibold'>행사 데이터를 불러오지 못했습니다.</p>
+            <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
+              잠시 후 다시 시도하거나 페이지를 새로고침해 주세요.
+            </p>
+            <button
+              type='button'
+              onClick={() => void loadCultures({ force: true })}
+              className='mt-5 inline-flex min-h-11 items-center rounded-xl bg-[var(--color-brand-primary)] px-4 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]'
+            >
+              다시 불러오기
+            </button>
+          </div>
         </div>
       );
     }
@@ -497,7 +505,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
               <form
                 role='search'
-                className='mt-3 flex h-11 items-center gap-2.5 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3.5 shadow-2xs transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[var(--color-brand-primary)]/20'
+                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-3 flex h-11 items-center gap-2.5 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3.5 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
                 onSubmit={event => event.preventDefault()}
               >
                 <SearchIcon className='size-[18px] shrink-0 text-[var(--color-brand-primary)]' />
@@ -539,7 +547,9 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
               <div className='mt-3 flex items-center justify-between gap-3 border-t border-[var(--color-border-primary)] pt-3 text-xs text-[var(--color-text-secondary)]'>
                 <div className='flex min-w-0 items-center gap-2'>
-                  <span className='hidden shrink-0 text-[0.68rem] font-semibold text-[var(--color-text-secondary)] sm:inline'>정렬</span>
+                  <span className='hidden shrink-0 text-[0.68rem] font-semibold text-[var(--color-text-secondary)] sm:inline'>
+                    정렬
+                  </span>
                   <MapSortControl
                     mode={mapSortMode}
                     hasLocation={Boolean(currentLocation)}
@@ -593,7 +603,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
       <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section
-            className='surface-panel pointer-events-auto mt-auto flex h-[74dvh] max-h-[84dvh] min-h-[400px] w-full flex-col overflow-hidden rounded-t-[28px] rounded-b-none border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
+            className='surface-panel pointer-events-auto mt-auto flex h-[74dvh] max-h-[84dvh] min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
             aria-busy={isFilterPending || isLoading}
           >
             <div className='border-b border-[var(--color-border-primary)] px-4 py-3'>
@@ -609,7 +619,11 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                   onClick={() => setIsMobileSheetVisible(false)}
                   className='inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[var(--color-surface-chip)] px-3 text-xs font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-interactive-hover)]'
                 >
-                  <MapPinned aria-hidden='true' className='size-3.5 text-[var(--color-brand-primary)]' strokeWidth={2} />
+                  <MapPinned
+                    aria-hidden='true'
+                    className='size-3.5 text-[var(--color-brand-primary)]'
+                    strokeWidth={2}
+                  />
                   지도만 보기
                 </button>
               </div>
@@ -624,7 +638,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
               />
               <form
                 role='search'
-                className='mt-2.5 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 shadow-2xs transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[var(--color-brand-primary)]/20'
+                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-2.5 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
                 onSubmit={event => event.preventDefault()}
               >
                 <SearchIcon className='size-4 shrink-0 text-[var(--color-brand-primary)]' />
@@ -638,7 +652,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                   autoComplete='off'
                   spellCheck={false}
                   enterKeyHint='search'
-                  className='min-w-0 flex-1 bg-transparent text-xs sm:text-sm font-medium placeholder:text-[var(--color-text-secondary)]'
+                  className='min-w-0 flex-1 bg-transparent text-xs font-medium placeholder:text-[var(--color-text-secondary)] sm:text-sm'
                 />
                 {searchQuery && (
                   <button
@@ -698,14 +712,14 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
               className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
               aria-label={`행사 목록 열기, ${visibleCultures.length}개 행사`}
             >
-              <span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white shadow-xs'>
+              <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white'>
                 <List aria-hidden='true' className='size-4' strokeWidth={2} />
               </span>
               <span className='flex min-w-0 flex-col'>
                 <span className='text-[0.68rem] font-bold text-[var(--color-brand-primary)]'>
                   {hasActiveFilters ? '필터 적용됨' : '지도 행사'}
                 </span>
-                <span className='whitespace-nowrap text-xs font-bold sm:text-sm text-[var(--color-text-primary)]'>
+                <span className='whitespace-nowrap text-xs font-bold text-[var(--color-text-primary)] sm:text-sm'>
                   행사 {visibleCultures.length.toLocaleString()}개 보기
                 </span>
               </span>

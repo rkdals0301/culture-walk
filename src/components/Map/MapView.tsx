@@ -16,6 +16,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { usePathname, useRouter } from 'next/navigation';
 
+import { AlertCircle } from 'lucide-react';
+
 const KAKAO_MAPS_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY;
 const DEFAULT_MAP_CENTER = { lat: 36.35, lng: 127.8 };
 const DEFAULT_MAP_LEVEL = 13;
@@ -323,9 +325,7 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
         setSdkError(null);
       } catch (error) {
         if (!canceled) {
-          setSdkError(
-            error instanceof KakaoMapsSdkError ? error : new KakaoMapsSdkError('sdk-error', error)
-          );
+          setSdkError(error instanceof KakaoMapsSdkError ? error : new KakaoMapsSdkError('sdk-error', error));
         }
       }
     };
@@ -513,12 +513,7 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
 
   if (sdkError) {
     return (
-      <MapStatus
-        kind='map-error'
-        code={sdkError.code}
-        onRetry={handleRetry}
-        onContinueWithList={onContinueWithList}
-      />
+      <MapStatus kind='map-error' code={sdkError.code} onRetry={handleRetry} onContinueWithList={onContinueWithList} />
     );
   }
 
@@ -556,11 +551,17 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
 
       {error && (
         <div
-          className='status-callout absolute left-3 right-3 top-20 z-20 rounded-lg p-3 text-sm md:left-6 md:right-auto md:max-w-sm'
+          className='status-callout status-callout-compact map-inline-status absolute z-20 text-sm'
           data-status='api-error'
           role='alert'
         >
-          행사 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+          <span className='status-callout-icon' aria-hidden='true'>
+            <AlertCircle className='size-4' strokeWidth={2} />
+          </span>
+          <div className='min-w-0'>
+            <p className='font-semibold'>행사 데이터를 불러오지 못했습니다.</p>
+            <p className='mt-1 text-xs leading-5 text-[var(--color-text-secondary)]'>잠시 후 다시 시도해 주세요.</p>
+          </div>
         </div>
       )}
     </div>
