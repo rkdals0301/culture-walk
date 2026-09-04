@@ -34,7 +34,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
-    <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[54dvh] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
+    <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[calc(100dvh-3rem-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-4'>
         <Link
           href='/map'
@@ -56,7 +56,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
         </h1>
       </header>
 
-      <div className='min-h-0 flex-1 overflow-y-auto px-5 py-5'>
+      <div className='bottom-sheet-scroll-region min-h-0 flex-1 overflow-y-auto px-5 py-5'>
         <dl className='divide-y divide-[var(--color-border-primary)] border-y border-[var(--color-border-primary)] text-sm'>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
@@ -459,6 +459,8 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       return;
     }
 
+    const isNewDetailRoute =
+      lastSheetSignatureRef.current === '' || !lastSheetSignatureRef.current.startsWith(`${cultureId}:`);
     lastSheetSignatureRef.current = signature;
 
     openBottomSheet({
@@ -468,6 +470,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       onBack: handleBottomSheetBack,
       backLabel: '목록',
       closeOnRouteExit: true,
+      mobileSheetMode: isNewDetailRoute ? 'expanded' : undefined,
     });
   }, [
     culture?.id,

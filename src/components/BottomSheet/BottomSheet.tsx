@@ -1,6 +1,6 @@
 'use client';
 
-import { useBottomSheet } from '@/context/BottomSheetContext';
+import { useBottomSheet, type BottomSheetMode } from '@/context/BottomSheetContext';
 import { useSideMenu } from '@/context/SideMenuContext';
 import { useDialogFocusTrap } from '@/hooks/useDialogFocusTrap';
 
@@ -24,13 +24,14 @@ import {
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
 
-type MobileSheetMode = 'peek' | 'expanded';
 type BottomSheetMotionStyle = MotionStyle & {
   '--bottom-sheet-base-height'?: string;
 };
 
-const MOBILE_SHEET_BASE_HEIGHTS: Record<MobileSheetMode, string> = {
-  peek: '52dvh',
+const MOBILE_SHEET_PEEK_HEIGHT_RATIO = 0.74;
+const SHEET_EASE = [0.16, 1, 0.3, 1] as const;
+const MOBILE_SHEET_BASE_HEIGHTS: Record<BottomSheetMode, string> = {
+  peek: '74dvh',
   expanded: '100dvh - 3rem - env(safe-area-inset-bottom, 0px)',
 };
 
@@ -44,6 +45,8 @@ const BottomSheet = () => {
     backBottomSheet,
     closeBottomSheet,
     dismissBottomSheet,
+    mobileSheetMode,
+    setMobileSheetMode,
   } = useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
   const pathname = usePathname();
@@ -51,14 +54,13 @@ const BottomSheet = () => {
   const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isWideDesktop, setIsWideDesktop] = useState(false);
-  const [mobileSheetMode, setMobileSheetMode] = useState<MobileSheetMode>('peek');
   const dragControls = useDragControls();
   const shouldReduceMotion = useReducedMotion();
   const sheetDragDelta = useMotionValue(0);
   const sheetHeight = useMotionTemplate`calc(var(--bottom-sheet-base-height) + ${sheetDragDelta}px)`;
   const sheetHeightAnimationRef = useRef<AnimationPlaybackControls | null>(null);
   const snapAnimationIdRef = useRef(0);
-  const dragBaseModeRef = useRef<MobileSheetMode>('peek');
+  const dragBaseModeRef = useRef<BottomSheetMode>('peek');
   const dragStartDeltaRef = useRef(0);
   const hasDraggedRef = useRef(false);
   const isInteractive = isOpen && !isSideMenuOpen;
@@ -66,13 +68,16 @@ const BottomSheet = () => {
   const mobileSheetStyle: BottomSheetMotionStyle = {
     '--bottom-sheet-base-height': MOBILE_SHEET_BASE_HEIGHTS[mobileSheetMode],
     height: sheetHeight,
-    willChange: 'height',
   };
   const panelTransition = shouldReduceMotion
     ? { duration: 0.01 }
-    : { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const };
-  const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.22, ease: 'easeOut' as const };
-  const contentTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const };
+    : { duration: 0.28, ease: SHEET_EASE };
+  const backdropTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.2, ease: SHEET_EASE };
+  const contentTransition = shouldReduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.18, ease: SHEET_EASE };
 
   useDialogFocusTrap(isInteractive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
@@ -102,7 +107,6 @@ const BottomSheet = () => {
       sheetHeightAnimationRef.current?.stop();
       sheetHeightAnimationRef.current = null;
       sheetDragDelta.set(0);
-      setMobileSheetMode('peek');
     }
   }, [isOpen, sheetDragDelta]);
 
@@ -147,10 +151,15 @@ const BottomSheet = () => {
     return null;
   }
 
-  const animateSheetToDelta = (targetDelta: number, targetMode: MobileSheetMode) => {
+  const animateSheetToDelta = (targetDelta: number, targetMode: BottomSheetMode, startDelta?: number) => {
     snapAnimationIdRef.current += 1;
     const animationId = snapAnimationIdRef.current;
     sheetHeightAnimationRef.current?.stop();
+    sheetHeightAnimationRef.current = null;
+
+    if (startDelta !== undefined) {
+      sheetDragDelta.set(startDelta);
+    }
 
     if (shouldReduceMotion) {
       sheetDragDelta.set(0);
@@ -159,8 +168,9 @@ const BottomSheet = () => {
     }
 
     sheetHeightAnimationRef.current = animate(sheetDragDelta, targetDelta, {
-      duration: 0.24,
-      ease: [0.16, 1, 0.3, 1],
+      type: 'spring',
+      duration: 0.5,
+      bounce: 0.2,
       onComplete: () => {
         if (snapAnimationIdRef.current !== animationId) {
           return;
@@ -172,24 +182,20 @@ const BottomSheet = () => {
     });
   };
 
-  const animateSheetToMode = (nextMode: MobileSheetMode, baseMode: MobileSheetMode) => {
-    if (nextMode === baseMode) {
-      animateSheetToDelta(0, baseMode);
-      return;
-    }
-
+  const animateSheetToMode = (nextMode: BottomSheetMode) => {
     const currentHeight = panelRef.current?.getBoundingClientRect().height ?? 0;
-    const isExpanding = nextMode === 'expanded';
-    const targetDelta = isExpanding
-      ? Math.max(0, window.innerHeight - 48 - currentHeight)
-      : -Math.max(0, currentHeight - window.innerHeight * 0.52);
+    const targetBaseHeight =
+      nextMode === 'expanded'
+        ? window.innerHeight - 48
+        : window.innerHeight * MOBILE_SHEET_PEEK_HEIGHT_RATIO;
 
-    animateSheetToDelta(targetDelta, nextMode);
+    setMobileSheetMode(nextMode);
+    animateSheetToDelta(0, nextMode, currentHeight - targetBaseHeight);
   };
 
   const toggleMobileSheetMode = () => {
     const nextMode = mobileSheetMode === 'peek' ? 'expanded' : 'peek';
-    animateSheetToMode(nextMode, mobileSheetMode);
+    animateSheetToMode(nextMode);
   };
 
   const handleMobileDragStart = () => {
@@ -216,7 +222,7 @@ const BottomSheet = () => {
 
     if (baseMode === 'peek') {
       if (velocityY < -420 || totalDelta > 64) {
-        animateSheetToMode('expanded', baseMode);
+        animateSheetToMode('expanded');
         return;
       }
 
@@ -225,16 +231,16 @@ const BottomSheet = () => {
         return;
       }
 
-      animateSheetToMode('peek', baseMode);
+      animateSheetToMode('peek');
       return;
     }
 
     if (velocityY > 420 || totalDelta < -72) {
-      animateSheetToMode('peek', baseMode);
+      animateSheetToMode('peek');
       return;
     }
 
-    animateSheetToMode(baseMode, baseMode);
+    animateSheetToMode(baseMode);
   };
 
   return (
@@ -250,7 +256,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[52dvh] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[400px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
+            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[74dvh] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}
@@ -268,7 +274,7 @@ const BottomSheet = () => {
             onDrag={handleMobileDrag}
             onDragEnd={handleMobileDragEnd}
             animate={isDesktop ? { opacity: 1, x: 0 } : { opacity: 1, y: 0 }}
-            initial={isDesktop ? { opacity: 0, x: isWideDesktop ? -32 : 32 } : { opacity: 0 }}
+            initial={isDesktop ? { opacity: 0, x: isWideDesktop ? -32 : 32 } : { opacity: 0, y: 24 }}
             exit={isDesktop ? { opacity: 0, x: isWideDesktop ? -24 : 24 } : { opacity: 0, y: 48 }}
             transition={panelTransition}
           >
@@ -312,14 +318,14 @@ const BottomSheet = () => {
                 <CloseIcon className='size-4' />
               </button>
             </div>
-            <div className='min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-3 sm:px-5'>
+            <div className='bottom-sheet-scroll-region min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-3 sm:px-5'>
               <AnimatePresence initial={false} mode='wait'>
                 <motion.div
                   key={sheetContentKey}
                   className='min-h-full'
-                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -8 }}
+                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
                   transition={contentTransition}
                 >
                   {content}

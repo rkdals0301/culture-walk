@@ -32,6 +32,7 @@ import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
 const DESKTOP_PANEL_WIDTH = 400;
+const DESKTOP_DETAIL_PANEL_WIDTH = 480;
 
 interface MapDashboardProps {
   listRequest?: number;
@@ -374,7 +375,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
   useEffect(() => {
     const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
-    const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_PANEL_WIDTH : 0;
+    const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_DETAIL_PANEL_WIDTH : 0;
     document.documentElement.style.setProperty('--map-sidebar-width', `${listPanelWidth}px`);
     document.documentElement.style.setProperty('--map-detail-width', `${detailPanelWidth}px`);
 

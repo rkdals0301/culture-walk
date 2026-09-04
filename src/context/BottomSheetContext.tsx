@@ -2,6 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 
+export type BottomSheetMode = 'peek' | 'expanded';
+
 interface OpenBottomSheetParams {
   content: React.ReactNode;
   footer?: React.ReactNode;
@@ -9,6 +11,7 @@ interface OpenBottomSheetParams {
   onBack?: () => void;
   backLabel?: string;
   closeOnRouteExit?: boolean;
+  mobileSheetMode?: BottomSheetMode;
 }
 
 interface BottomSheetContextProps {
@@ -17,6 +20,8 @@ interface BottomSheetContextProps {
   footer: React.ReactNode | null;
   closeOnRouteExit: boolean;
   backLabel: string | null;
+  mobileSheetMode: BottomSheetMode;
+  setMobileSheetMode: (mode: BottomSheetMode) => void;
   openBottomSheet: (params: OpenBottomSheetParams) => void;
   backBottomSheet: () => void;
   closeBottomSheet: () => void;
@@ -31,11 +36,14 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [footer, setFooter] = useState<React.ReactNode | null>(null);
   const [closeOnRouteExit, setCloseOnRouteExit] = useState(false);
   const [backLabel, setBackLabel] = useState<string | null>(null);
+  const [mobileSheetMode, setMobileSheetMode] = useState<BottomSheetMode>('peek');
+  const isOpenRef = useRef(false);
 
   const onCloseCallbackRef = useRef<(() => void) | null>(null);
   const onBackCallbackRef = useRef<(() => void) | null>(null);
 
   const dismissBottomSheet = useCallback(() => {
+    isOpenRef.current = false;
     setIsOpen(false);
     setContent(null);
     setFooter(null);
@@ -45,15 +53,23 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
     onBackCallbackRef.current = null;
   }, []);
 
-  const openBottomSheet = useCallback(({ content, footer, onClose, onBack, backLabel, closeOnRouteExit }: OpenBottomSheetParams) => {
-    setIsOpen(true);
-    setContent(content);
-    setFooter(footer ?? null);
-    setCloseOnRouteExit(Boolean(closeOnRouteExit));
-    setBackLabel(onBack ? backLabel ?? '뒤로' : null);
-    onCloseCallbackRef.current = onClose ?? null;
-    onBackCallbackRef.current = onBack ?? null;
-  }, []);
+  const openBottomSheet = useCallback(
+    ({ content, footer, onClose, onBack, backLabel, closeOnRouteExit, mobileSheetMode: nextMobileSheetMode }: OpenBottomSheetParams) => {
+      const wasOpen = isOpenRef.current;
+      isOpenRef.current = true;
+      setIsOpen(true);
+      setContent(content);
+      setFooter(footer ?? null);
+      setCloseOnRouteExit(Boolean(closeOnRouteExit));
+      setBackLabel(onBack ? backLabel ?? '뒤로' : null);
+      if (!wasOpen || nextMobileSheetMode) {
+        setMobileSheetMode(nextMobileSheetMode ?? 'peek');
+      }
+      onCloseCallbackRef.current = onClose ?? null;
+      onBackCallbackRef.current = onBack ?? null;
+    },
+    []
+  );
 
   const backBottomSheet = useCallback(() => {
     const onBack = onBackCallbackRef.current;
@@ -75,6 +91,8 @@ export const BottomSheetProvider: React.FC<{ children: React.ReactNode }> = ({ c
         footer,
         closeOnRouteExit,
         backLabel,
+        mobileSheetMode,
+        setMobileSheetMode,
         openBottomSheet,
         backBottomSheet,
         closeBottomSheet,
