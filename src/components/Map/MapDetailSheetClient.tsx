@@ -9,7 +9,7 @@ import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureById } from '@/hooks/cultureHooks';
 import type { FormattedCulture } from '@/types/culture';
-import { getCulturePriceTone } from '@/utils/cultureUtils';
+import { createCultureDetailSignature, getCulturePriceTone } from '@/utils/cultureUtils';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -54,12 +54,10 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
         <div className='flex items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-2.5 py-0.5 text-xs' />
           {culture.guName && (
-            <span className='text-xs font-semibold text-[var(--color-text-secondary)]'>
-              {culture.guName}
-            </span>
+            <span className='text-xs font-semibold text-[var(--color-text-secondary)]'>{culture.guName}</span>
           )}
         </div>
-        <h1 className='mt-2.5 text-xl font-bold leading-tight tracking-tight sm:text-2xl text-[var(--color-text-primary)]'>
+        <h1 className='mt-2.5 text-xl font-bold leading-tight tracking-tight text-[var(--color-text-primary)] sm:text-2xl'>
           {culture.title}
         </h1>
       </header>
@@ -72,11 +70,15 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
           </div>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>장소</dt>
-            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>{culture.place || culture.guName}</dd>
+            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>
+              {culture.place || culture.guName}
+            </dd>
           </div>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>관람료</dt>
-            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>{culture.useFee || culture.displayPrice}</dd>
+            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
+              {culture.useFee || culture.displayPrice}
+            </dd>
           </div>
         </dl>
 
@@ -110,7 +112,7 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
                 href={culture.homepageDetailAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-white shadow-xs transition hover:bg-[var(--color-brand-hover)]'
+                className='shadow-xs flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-white transition hover:bg-[var(--color-brand-hover)]'
               >
                 <span>예약 / 상세</span>
                 <ExternalLink aria-hidden='true' className='size-3.5' strokeWidth={2} />
@@ -136,6 +138,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   const { culture: loadedCulture } = useCultureContext();
   const culture =
     loadedCulture?.id === cultureId ? loadedCulture : initialCulture.id === cultureId ? initialCulture : null;
+  const cultureDetailSignature = createCultureDetailSignature(culture);
   const { openBottomSheet } = useBottomSheet();
   const lastSheetSignatureRef = useRef('');
 
@@ -240,10 +243,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     }
 
     const hasCultureImage =
-      typeof imgSrc === 'string' &&
-      Boolean(imgSrc.trim()) &&
-      !imageFailed &&
-      !imgSrc.includes('/assets/images/logo');
+      typeof imgSrc === 'string' && Boolean(imgSrc.trim()) && !imageFailed && !imgSrc.includes('/assets/images/logo');
     const priceTone = getCulturePriceTone(culture);
 
     return (
@@ -257,12 +257,12 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         <div className='flex flex-wrap items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-3 py-1 text-xs' />
           {culture.guName && (
-            <span className='rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] shadow-2xs'>
+            <span className='shadow-2xs rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
               {culture.guName}
             </span>
           )}
           <span
-            className={`rounded-full border px-3 py-1 text-xs font-bold shadow-2xs ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}
+            className={`shadow-2xs rounded-full border px-3 py-1 text-xs font-bold ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}
           >
             {culture.displayPrice}
           </span>
@@ -275,11 +275,15 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </div>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>장소</dt>
-            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>{culture.place || culture.guName}</dd>
+            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>
+              {culture.place || culture.guName}
+            </dd>
           </div>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>관람료</dt>
-            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>{culture.useFee || culture.displayPrice}</dd>
+            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
+              {culture.useFee || culture.displayPrice}
+            </dd>
           </div>
           {culture.useTarget && (
             <div className='flex items-baseline justify-between gap-4 py-3'>
@@ -296,18 +300,22 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           {culture.eventTime && (
             <div className='flex items-baseline justify-between gap-4 py-3'>
               <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>시간</dt>
-              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>{culture.eventTime}</dd>
+              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
+                {culture.eventTime}
+              </dd>
             </div>
           )}
           {culture.duration && (
             <div className='flex items-baseline justify-between gap-4 py-3'>
               <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>소요</dt>
-              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>{culture.duration}</dd>
+              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
+                {culture.duration}
+              </dd>
             </div>
           )}
         </dl>
 
-        <div className='relative aspect-[4/3] overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
+        <div className='shadow-xs relative aspect-[4/3] overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
           {hasCultureImage ? (
             <Image
               src={imgSrc as string}
@@ -334,7 +342,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
                 }}
                 className={`relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl border bg-[var(--color-surface-chip)] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] ${
                   imgSrc === image.url
-                    ? 'border-[var(--color-brand-primary)] ring-2 ring-[var(--color-brand-primary)]/40 shadow-xs'
+                    ? 'ring-[var(--color-brand-primary)]/40 shadow-xs border-[var(--color-brand-primary)] ring-2'
                     : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-control)]'
                 }`}
                 aria-label={image.name || '추가 이미지 보기'}
@@ -363,7 +371,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             ))}
           </div>
         )}
-
 
         {culture.overview && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>
@@ -461,7 +468,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   }, [error, failedAdditionalImages, handleImageError, imageFailed, imgSrc, isLoading, culture, router]);
 
   useEffect(() => {
-    const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${culture?.id ?? 'no-culture'}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;
+    const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${cultureDetailSignature}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;
     if (lastSheetSignatureRef.current === signature) {
       return;
     }
@@ -476,6 +483,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     });
   }, [
     culture?.id,
+    cultureDetailSignature,
     cultureId,
     error?.message,
     handleBottomSheetClose,

@@ -1657,8 +1657,14 @@
     max-height: calc(100dvh - 3rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 
+  .bottom-sheet-scrim {
+    touch-action: none;
+    user-select: none;
+  }
+
   .bottom-sheet-scroll-region {
     overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
   }

@@ -41,6 +41,36 @@ export const getCulturePriceTone = (
   return 'unknown';
 };
 
+const CULTURE_DETAIL_SIGNATURE_FIELDS = [
+  'id',
+  'title',
+  'classification',
+  'guName',
+  'displayDate',
+  'displayPrice',
+  'place',
+  'useFee',
+  'useTarget',
+  'organizationName',
+  'eventTime',
+  'duration',
+  'mainImage',
+  'homepageAddress',
+  'homepageDetailAddress',
+  'overview',
+  'programIntroduction',
+  'bookingPlace',
+  'placeInformation',
+  'contact',
+  'festivalGrade',
+  'discountInformation',
+  'additionalInformation',
+  'additionalImages',
+] as const satisfies readonly (keyof FormattedCulture)[];
+
+export const createCultureDetailSignature = (culture?: Partial<FormattedCulture> | null) =>
+  JSON.stringify(CULTURE_DETAIL_SIGNATURE_FIELDS.map(field => culture?.[field] ?? null));
+
 export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture[] => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');

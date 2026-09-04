@@ -8,24 +8,14 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-} from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import CloseIcon from '../../../public/assets/images/close-icon.svg';
+
 const SHEET_EASE = [0.16, 1, 0.3, 1] as const;
 
 const BottomSheet = () => {
-  const {
-    isOpen,
-    content,
-    footer,
-    closeOnRouteExit,
-    closeBottomSheet,
-    dismissBottomSheet,
-  } = useBottomSheet();
+  const { isOpen, content, footer, closeOnRouteExit, closeBottomSheet, dismissBottomSheet } = useBottomSheet();
   const { isOpen: isSideMenuOpen } = useSideMenu();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -35,15 +25,9 @@ const BottomSheet = () => {
   const shouldReduceMotion = useReducedMotion();
   const isInteractive = isOpen && !isSideMenuOpen;
   const sheetContentKey = pathname ?? 'sheet';
-  const panelTransition = shouldReduceMotion
-    ? { duration: 0.01 }
-    : { duration: 0.28, ease: SHEET_EASE };
-  const backdropTransition = shouldReduceMotion
-    ? { duration: 0.01 }
-    : { duration: 0.2, ease: SHEET_EASE };
-  const contentTransition = shouldReduceMotion
-    ? { duration: 0.01 }
-    : { duration: 0.18, ease: SHEET_EASE };
+  const panelTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.28, ease: SHEET_EASE };
+  const backdropTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: SHEET_EASE };
+  const contentTransition = shouldReduceMotion ? { duration: 0.01 } : { duration: 0.18, ease: SHEET_EASE };
 
   useDialogFocusTrap(isInteractive, panelRef, closeBottomSheet, '[aria-label="상세 패널 닫기"]');
 
@@ -78,7 +62,7 @@ const BottomSheet = () => {
       return;
     }
 
-    const handlePointerDown = (event: PointerEvent) => {
+    const handlePointerUp = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) {
         return;
@@ -94,9 +78,9 @@ const BottomSheet = () => {
       closeBottomSheet();
     };
 
-    document.addEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener('pointerup', handlePointerUp, true);
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, true);
+      document.removeEventListener('pointerup', handlePointerUp, true);
     };
   }, [closeBottomSheet, isInteractive]);
 
@@ -109,7 +93,7 @@ const BottomSheet = () => {
       {isOpen && (
         <React.Fragment>
           <motion.div
-            className='pointer-events-none fixed inset-0 z-40 size-full bg-[var(--color-sheet-scrim)] lg:hidden'
+            className='bottom-sheet-scrim pointer-events-auto fixed inset-0 z-40 size-full bg-[var(--color-sheet-scrim)] lg:hidden'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

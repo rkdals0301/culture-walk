@@ -1,12 +1,12 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
 import { bumpCulturesCacheVersion } from './src/cache/kv';
+import { refreshStaleCachedTourApiDetails } from './src/services/cultureSyncDetails';
 import {
   acquireInitializeLock,
   getD1Binding,
   releaseInitializeLock,
   startInitializeLockHeartbeat,
 } from './src/services/cultureSyncLock';
-import { refreshStaleCachedTourApiDetails } from './src/services/cultureSyncDetails';
 import { RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from './src/services/cultureSyncSchedule';
 import { syncCultures } from './src/services/cultureSyncService';
 import { TOUR_API_BASE_URL } from './src/services/cultureSyncTypes';
@@ -39,15 +39,11 @@ async function runScheduledSync(env, ctx, trigger) {
   const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
   try {
     await heartbeat.ensureHeld();
-    await syncCultures(
-      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
-      env.DB,
-      {
-        trigger,
-        beforeEach: () => heartbeat.renew(),
-        beforeApply: heartbeat.ensureHeld,
-      }
-    );
+    await syncCultures({ baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY }, env.DB, {
+      trigger,
+      beforeEach: () => heartbeat.renew(),
+      beforeApply: heartbeat.ensureHeld,
+    });
   } finally {
     await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);
@@ -64,12 +60,13 @@ async function runScheduledDetailRefresh(env) {
     await heartbeat.ensureHeld();
     const d1 = getD1Binding(env);
     if (!d1) return;
-    const refreshed = await refreshStaleCachedTourApiDetails(
+    await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       d1,
       { beforeEach: () => heartbeat.renew() }
     );
-    if (refreshed > 0) await bumpCulturesCacheVersion();
+    // Detail enrichment updates the detail cache and summary columns, but does not change
+    // the event list shape enough to invalidate the full list cache on every 5-minute run.
   } finally {
     await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);

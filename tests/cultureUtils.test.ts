@@ -1,5 +1,5 @@
-import { formatCultureData } from '@/utils/cultureUtils';
 import type { CultureListItem } from '@/types/culture';
+import { createCultureDetailSignature, formatCultureData } from '@/utils/cultureUtils';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -45,4 +45,21 @@ test('missing display fields do not create separator-only place text', () => {
 
   assert.equal(culture?.displayPlace, '');
   assert.equal(culture?.displayPrice, '정보 없음');
+});
+
+test('detail signature changes when asynchronous enrichment arrives', () => {
+  const baseCulture = {
+    id: 3,
+    title: '상세 정보가 늦게 도착하는 행사',
+    mainImage: 'https://example.com/event.jpg',
+  };
+
+  assert.notEqual(
+    createCultureDetailSignature(baseCulture),
+    createCultureDetailSignature({
+      ...baseCulture,
+      programIntroduction: '메인 프로그램 안내',
+      organizationName: '문화재단',
+    })
+  );
 });

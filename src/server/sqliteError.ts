@@ -1,4 +1,5 @@
 const SQLITE_MISSING_TABLE_PREFIX = 'no such table:';
+const D1_DAILY_ROW_READ_LIMIT_MESSAGE = "exceeded D1's free tier daily row read limit";
 
 export const hasMissingSqliteTableError = (error: unknown, tableName: string) => {
   const target = `${SQLITE_MISSING_TABLE_PREFIX} ${tableName}`;
@@ -31,6 +32,30 @@ export const hasMissingSqliteTableError = (error: unknown, tableName: string) =>
     }
 
     return false;
+  }
+
+  return false;
+};
+
+export const hasD1DailyRowReadLimitError = (error: unknown) => {
+  const visited = new Set<object>();
+  let current: unknown = error;
+
+  while (current) {
+    const message = current instanceof Error ? current.message : String(current);
+    if (message.includes(D1_DAILY_ROW_READ_LIMIT_MESSAGE)) {
+      return true;
+    }
+
+    if (typeof current !== 'object') {
+      return false;
+    }
+
+    if (visited.has(current)) {
+      return false;
+    }
+    visited.add(current);
+    current = (current as { cause?: unknown }).cause;
   }
 
   return false;

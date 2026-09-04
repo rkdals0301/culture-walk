@@ -1,8 +1,9 @@
-import { getCulturesListCacheKey, readCulturesListCache, writeKvCache } from '@/cache/kv';
+import { readCulturesListCache, readCulturesListFallbackCache, writeCulturesListCaches } from '@/cache/kv';
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
-import { hasMissingSqliteTableError } from '@/server/sqliteError';
+import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
+import { KOREA_LAT_MAX, KOREA_LAT_MIN, KOREA_LNG_MAX, KOREA_LNG_MIN } from '@/services/cultureSyncTypes';
 import { CultureListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -12,13 +13,6 @@ import { NextResponse } from 'next/server';
 import { and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
-
-import {
-  KOREA_LAT_MAX,
-  KOREA_LAT_MIN,
-  KOREA_LNG_MAX,
-  KOREA_LNG_MIN,
-} from '@/services/cultureSyncTypes';
 
 const CACHE_TTL_SECONDS = 60 * 10;
 const HTTP_CACHE_SECONDS = 60;
@@ -32,10 +26,11 @@ const toDateOrNow = (value?: string | null) => {
   return parsed;
 };
 
-const listResponse = (data: CultureListItem[]) =>
+const listResponse = (data: CultureListItem[], source?: string) =>
   NextResponse.json(data, {
     headers: {
       'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
+      ...(source ? { 'X-Culture-Data-Source': source } : {}),
     },
   });
 
@@ -110,13 +105,25 @@ export async function GET() {
       };
     });
     const sortedResult = sortCulturesByRelevantDate(result, koreaToday);
-    await writeKvCache(await getCulturesListCacheKey(), sortedResult, CACHE_TTL_SECONDS);
+    await writeCulturesListCaches(sortedResult, CACHE_TTL_SECONDS);
 
     return listResponse(sortedResult);
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {
       console.error('cultures 테이블이 없어 문화 목록을 제공할 수 없습니다.');
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
+    }
+
+    if (hasD1DailyRowReadLimitError(error)) {
+      const fallback = await readCulturesListFallbackCache();
+      if (fallback) {
+        return listResponse(fallback, 'kv-list-fallback');
+      }
+
+      return NextResponse.json(
+        { error: '문화 목록을 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
+        { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }
+      );
     }
 
     console.error('문화 목록 데이터를 가져오는데 실패했습니다.', error);

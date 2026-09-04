@@ -1,8 +1,15 @@
+import {
+  getCulturesCacheVersion,
+  readCultureDetailCache,
+  readCultureListItemCache,
+  readLegacyCultureDetailCache,
+  writeCultureDetailCache,
+} from '@/cache/kv';
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
 import MapShell from '@/components/Map/MapShell';
-import { readCultureListItemCache } from '@/cache/kv';
 import { getDb } from '@/db/client';
-import { cultures, cultureTourApiDetails } from '@/db/schema';
+import { cultureTourApiDetails, cultures } from '@/db/schema';
+import { hasD1DailyRowReadLimitError } from '@/server/sqliteError';
 import { mapCultureListItemToCulture, mapCultureRowToCulture } from '@/services/cultureService';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { formatCultureData } from '@/utils/cultureUtils';
@@ -17,13 +24,35 @@ import { and, eq } from 'drizzle-orm';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260715`;
+const DETAIL_CACHE_TTL_SECONDS = 60 * 60 * 24;
 const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 
 const getCultureById = cache(async (id: number) => {
-  const db = await getDb();
-  if (!db) {
+  const [cacheVersion, cachedDetailRecord] = await Promise.all([getCulturesCacheVersion(), readCultureDetailCache(id)]);
+  const cachedDetail = cachedDetailRecord?.culture;
+  const hasDetailCache = cachedDetail?.id === id;
+  if (hasDetailCache) {
+    return cachedDetail;
+  }
+
+  const readCachedCulture = async () => {
+    if (cachedDetail?.id === id) {
+      return cachedDetail;
+    }
+
+    const legacyDetail = await readLegacyCultureDetailCache(id);
+    if (legacyDetail?.id === id) {
+      await writeCultureDetailCache(id, cacheVersion, legacyDetail, DETAIL_CACHE_TTL_SECONDS);
+      return legacyDetail;
+    }
+
     const cachedCulture = await readCultureListItemCache(id);
     return cachedCulture ? mapCultureListItemToCulture(cachedCulture) : null;
+  };
+
+  const db = await getDb();
+  if (!db) {
+    return readCachedCulture();
   }
 
   let row;
@@ -61,13 +90,18 @@ const getCultureById = cache(async (id: number) => {
       .where(and(eq(cultures.id, id), eq(cultures.isActive, true)))
       .limit(1);
   } catch (queryError) {
-    const cachedCulture = await readCultureListItemCache(id);
-    if (!cachedCulture) {
-      throw queryError;
+    const fallback = await readCachedCulture();
+    if (fallback) {
+      console.warn(`D1 상세 행 조회를 건너뛰고 캐시를 사용합니다. id=${id}`, queryError);
+      return fallback;
     }
 
-    console.warn(`D1 상세 행 조회를 건너뛰고 목록 캐시를 사용합니다. id=${id}`, queryError);
-    return mapCultureListItemToCulture(cachedCulture);
+    if (hasD1DailyRowReadLimitError(queryError)) {
+      console.warn(`D1 일일 row read 한도로 상세 페이지 조회를 중단합니다. id=${id}`, queryError);
+      return null;
+    }
+
+    throw queryError;
   }
 
   if (!row) {
@@ -75,17 +109,32 @@ const getCultureById = cache(async (id: number) => {
   }
 
   let details = null;
+  let detailQueryFailed = false;
   if (row.sourceKey) {
     try {
       details = await db.query.cultureTourApiDetails.findFirst({
         where: eq(cultureTourApiDetails.sourceKey, row.sourceKey),
       });
     } catch (detailError) {
+      detailQueryFailed = true;
       console.warn(`상세 캐시 조회를 건너뜁니다. sourceKey=${row.sourceKey}`, detailError);
     }
   }
 
-  return mapCultureRowToCulture(row, details ? parseStoredTourApiDetails(details) : undefined);
+  if (detailQueryFailed) {
+    const fallback = await readCachedCulture();
+    if (fallback) {
+      return fallback;
+    }
+  }
+
+  const hasCurrentCompleteDetails = Boolean(details?.isComplete && details.sourceModifiedAt === row.registrationDate);
+  const culture = mapCultureRowToCulture(row, details ? parseStoredTourApiDetails(details) : undefined);
+  if (hasCurrentCompleteDetails) {
+    await writeCultureDetailCache(id, cacheVersion, culture, DETAIL_CACHE_TTL_SECONDS);
+  }
+
+  return culture;
 });
 
 const parseOfferPrice = (value?: string) => {
@@ -129,16 +178,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const mainImage = formatted?.mainImage?.trim();
   const eventImageUrl = mainImage && mainImage !== '/assets/images/logo.svg' ? mainImage : null;
   const shareImageUrl = eventImageUrl ?? OG_IMAGE_URL;
-  const openGraphImage =
-    eventImageUrl
-      ? { url: eventImageUrl, alt: title }
-      : {
-          url: shareImageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-          type: 'image/png' as const,
-        };
+  const openGraphImage = eventImageUrl
+    ? { url: eventImageUrl, alt: title }
+    : {
+        url: shareImageUrl,
+        width: 1200,
+        height: 630,
+        alt: title,
+        type: 'image/png' as const,
+      };
 
   return {
     title,

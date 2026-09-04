@@ -50,13 +50,11 @@ export const syncCultures = async (
     await bumpCulturesCacheVersion();
 
     // Detail enrichment is best-effort: the core snapshot remains authoritative and must not fail because of it.
+    // It does not bump the list cache version; the list cache can expire naturally after summary updates.
     try {
-      const refreshedDetails = await refreshStaleCachedTourApiDetails(config, d1, {
+      await refreshStaleCachedTourApiDetails(config, d1, {
         beforeEach: options.beforeEach,
       });
-      if (refreshedDetails > 0) {
-        await bumpCulturesCacheVersion();
-      }
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
         throw error;
