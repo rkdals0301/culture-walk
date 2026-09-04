@@ -32,16 +32,17 @@ const ContactPage = () => {
   return (
     <InfoPageShell
       title='행사 정보가 다르면 알려주세요.'
-      description='문화산책 이용 중 발견한 오류, 행사 정보 수정 요청, 개인정보 및 광고 관련 문의를 남길 수 있습니다.'
+      description='문화산책 이용 중 발견한 오류, 행사 정보 수정 요청, 개인정보 및 광고 관련 문의를 메일로 보내주세요.'
     >
       <div className='info-contact-layout'>
         <section className='info-contact-topics' aria-labelledby='contact-topics-title'>
           <div className='info-section-header'>
             <h2 id='contact-topics-title' className='info-section-heading'>
-              문의할 수 있는 내용
+              이런 내용을 확인합니다.
             </h2>
             <p className='info-section-lede'>
-              작은 오류 제보부터 서비스에 대한 의견까지, 아래 내용이라면 편하게 보내주세요.
+              아래 항목에 해당하는 내용을 확인합니다. 행사 정보는 공식 안내와 함께 보내주시면 더 정확하게 살펴볼 수
+              있습니다.
             </p>
           </div>
           <dl className='info-topic-list'>
@@ -59,7 +60,7 @@ const ContactPage = () => {
             <span className='info-contact-card-icon'>
               <Mail aria-hidden='true' className='size-[1.15rem]' strokeWidth={1.8} />
             </span>
-            <h2 id='contact-checklist-title'>메일에 함께 적어 주세요.</h2>
+            <h2 id='contact-checklist-title'>메일로 알려주세요.</h2>
           </div>
           <p className='info-contact-card-lede'>아래 정보가 있으면 문제를 더 정확하게 확인할 수 있습니다.</p>
           <ul className='info-checklist'>

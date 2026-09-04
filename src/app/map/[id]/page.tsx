@@ -12,7 +12,6 @@ import { cache } from 'react';
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Script from 'next/script';
 
 import { and, eq } from 'drizzle-orm';
 
@@ -232,9 +231,11 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
 
   return (
     <>
-      <Script id='event-structured-data' type='application/ld+json'>
-        {eventStructuredData}
-      </Script>
+      <script
+        id='event-structured-data'
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: eventStructuredData }}
+      />
       <MapShell>
         <MapDetailSheetClient initialCulture={formatted} />
       </MapShell>

@@ -76,7 +76,7 @@ export const MapFilterControls = ({
         className={clsx(
           'flex h-10 shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all duration-150 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--color-focus-ring)]',
           freeOnly
-            ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)] shadow-2xs'
+            ? 'border-[var(--color-success)] bg-[var(--color-success-subtle)] text-[var(--color-success-text)] shadow-2xs'
             : 'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-chip)]'
         )}
       >
@@ -90,7 +90,7 @@ export const MapFilterControls = ({
           className={clsx(
             'flex size-4 items-center justify-center rounded-md border transition-colors',
             freeOnly
-              ? 'border-[var(--color-accent-primary)] bg-[var(--color-accent-primary)]'
+              ? 'border-[var(--color-success)] bg-[var(--color-success)]'
               : 'border-[var(--color-input-border)] bg-[var(--color-input-bg)]'
           )}
         >
@@ -120,10 +120,10 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       onClick={() => onChange('date')}
       aria-pressed={mode === 'date'}
       className={clsx(
-        'flex h-9 items-center justify-center gap-1 rounded-lg px-2.5 text-xs font-bold transition-all duration-150',
+        'flex h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
         mode === 'date'
-          ? 'bg-[var(--color-surface-elevated)] text-[var(--color-brand-primary)] shadow-xs'
-          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-xs'
+          : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'
       )}
     >
       <Calendar className='size-3.5' strokeWidth={2} />
@@ -137,10 +137,10 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       aria-label={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={clsx(
-        'flex h-9 items-center justify-center gap-1 rounded-lg px-2.5 text-xs font-bold transition-all duration-150',
+        'flex h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
         mode === 'distance'
-          ? 'bg-[var(--color-surface-elevated)] text-[var(--color-brand-primary)] shadow-xs'
-          : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:bg-[var(--color-interactive-disabled)] disabled:text-[var(--color-text-disabled)]'
+          ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-xs'
+          : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:bg-[var(--color-interactive-disabled)] disabled:text-[var(--color-text-disabled)]'
       )}
     >
       <Navigation className='size-3.5' strokeWidth={2} />

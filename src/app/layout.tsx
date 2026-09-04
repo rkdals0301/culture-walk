@@ -24,10 +24,10 @@ const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION || '66miDI
 const NAVER_SITE_VERIFICATION = process.env.NAVER_SITE_VERIFICATION || 'a33276bf6f5a8e13bf6f4009af7828cbaa3cdbb1';
 const THEME_INITIALIZER_SCRIPT = `(() => {
   try {
-    const storedTheme = localStorage.getItem('theme') || 'system';
-    const theme = storedTheme === 'system'
-      ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      : storedTheme;
+    const storedTheme = localStorage.getItem('theme');
+    const theme = storedTheme === 'light' || storedTheme === 'dark'
+      ? storedTheme
+      : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
@@ -157,8 +157,8 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
   interactiveWidget: 'resizes-content',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#eef2ee' },
-    { media: '(prefers-color-scheme: dark)', color: '#101613' },
+    { media: '(prefers-color-scheme: light)', color: '#f9fafb' },
+    { media: '(prefers-color-scheme: dark)', color: '#101012' },
   ],
   colorScheme: 'light dark',
 };
@@ -171,9 +171,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko' suppressHydrationWarning>
       <head>
-        <Script id='theme-initializer' strategy='beforeInteractive'>
-          {THEME_INITIALIZER_SCRIPT}
-        </Script>
+        <script id='theme-initializer' dangerouslySetInnerHTML={{ __html: THEME_INITIALIZER_SCRIPT }} />
         {/* TourAPI images */}
         <link rel='dns-prefetch' href='https://tong.visitkorea.or.kr' />
         <link rel='preconnect' href='https://tong.visitkorea.or.kr' crossOrigin='anonymous' />
@@ -208,9 +206,11 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         </noscript>
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
-        <Script id='website-structured-data' type='application/ld+json'>
-          {serializeJsonLd(WEBSITE_STRUCTURED_DATA)}
-        </Script>
+        <script
+          id='website-structured-data'
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(WEBSITE_STRUCTURED_DATA) }}
+        />
         {ADSENSE_CLIENT_ID && (
           <Script
             id='google-adsense-script'

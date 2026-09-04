@@ -1,10 +1,9 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
+import { useTheme } from '@/providers/ThemeProvider';
 
 import React, { useEffect, useState } from 'react';
-
-import { useTheme } from 'next-themes';
 
 import DarkModeIcon from '../../../public/assets/images/dark-mode-icon.svg';
 import LightModeIcon from '../../../public/assets/images/light-mode-icon.svg';

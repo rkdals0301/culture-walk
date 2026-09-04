@@ -228,12 +228,13 @@ const FeedView = () => {
         {/* Culture Cards Grid (Mobile First 2-column) */}
         {!isLoading && !error && mapCultures.length > 0 && (
           <div className='feed-results-enter grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
-            {mapCultures.map(culture => (
+            {mapCultures.map((culture, index) => (
               <FeedCultureCard
                 key={culture.id}
                 culture={culture}
                 currentLocation={currentLocation}
                 onOpenCulture={handleOpenCulture}
+                isAboveFold={index < 5}
               />
             ))}
           </div>

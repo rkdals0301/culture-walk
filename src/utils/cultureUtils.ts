@@ -28,6 +28,19 @@ const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => 
   return formattedStartDate === formattedEndDate ? formattedStartDate : `${formattedStartDate} ~ ${formattedEndDate}`;
 };
 
+export type CulturePriceTone = 'free' | 'partial' | 'paid' | 'unknown';
+
+export const getCulturePriceTone = (
+  culture: Pick<FormattedCulture, 'isFree' | 'displayPrice'> & Partial<Pick<FormattedCulture, 'useFee'>>
+): CulturePriceTone => {
+  const value = `${culture.isFree ?? ''} ${culture.displayPrice ?? ''} ${culture.useFee ?? ''}`.toLowerCase();
+
+  if (value.includes('부분 무료')) return 'partial';
+  if (value.includes('무료') || value.includes('free')) return 'free';
+  if (value.includes('유료') || value.includes('paid')) return 'paid';
+  return 'unknown';
+};
+
 export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture[] => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');

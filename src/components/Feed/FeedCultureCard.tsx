@@ -14,6 +14,7 @@ interface FeedCultureCardProps {
   culture: FormattedCulture;
   currentLocation?: GeoPoint | null;
   onOpenCulture: (culture: FormattedCulture) => void;
+  isAboveFold?: boolean;
 }
 
 const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
@@ -50,7 +51,7 @@ const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
   return { text: '진행중', variant: 'ongoing' as const };
 };
 
-const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture }: FeedCultureCardProps) => {
+const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAboveFold = false }: FeedCultureCardProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -84,14 +85,15 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture }: Fee
       className='group flex flex-col cursor-pointer transition-transform duration-150 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] rounded-xl'
     >
       {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
-      <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-[var(--color-surface-chip)]'>
+      <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
         {hasCultureImage ? (
           <Image
             src={imgSrc}
             alt={culture.title}
             fill
             sizes='(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 50vw'
-            loading='lazy'
+            loading={isAboveFold ? 'eager' : 'lazy'}
+            fetchPriority={isAboveFold ? 'high' : 'auto'}
             onError={() => setImageFailed(true)}
             className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
           />
@@ -106,17 +108,17 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture }: Fee
               <span
                 className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
                   dDay.variant === 'urgent'
-                    ? 'bg-[#f04452] text-white'
+                    ? 'bg-[var(--color-error)] text-[var(--color-error-on-primary)]'
                     : dDay.variant === 'ongoing' || dDay.variant === 'upcoming'
-                      ? 'bg-[#3182f6] text-white'
-                      : 'bg-[#4e5968] text-white'
+                      ? 'bg-[var(--color-info)] text-[var(--color-info-on-primary)]'
+                      : 'bg-[var(--color-status-neutral)] text-[var(--color-status-neutral-on)]'
                 }`}
               >
                 {dDay.text}
               </span>
             )}
             {isFree && (
-              <span className='rounded-md bg-[#04b05c] px-2 py-0.5 text-[0.68rem] font-bold text-white shadow-xs'>
+              <span className='rounded-md bg-[var(--color-success)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
                 무료
               </span>
             )}

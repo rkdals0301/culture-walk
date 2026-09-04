@@ -9,6 +9,7 @@ import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureById } from '@/hooks/cultureHooks';
 import type { FormattedCulture } from '@/types/culture';
+import { getCulturePriceTone } from '@/utils/cultureUtils';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -21,6 +22,13 @@ import { ExternalLink } from 'lucide-react';
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 
 const ADSENSE_DETAIL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_DETAIL_PANEL;
+
+const PRICE_BADGE_CLASS_NAMES = {
+  free: 'border-[var(--color-success-subtle)] bg-[var(--color-success-subtle)] text-[var(--color-success-text)]',
+  partial: 'border-[var(--color-warning-subtle)] bg-[var(--color-warning-subtle)] text-[var(--color-warning-text)]',
+  paid: 'border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] text-[var(--color-accent-text)]',
+  unknown: 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)]',
+} as const;
 
 interface MapDetailSheetClientProps {
   initialCulture: FormattedCulture;
@@ -162,10 +170,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     router.replace(getMapReturnPath(), { scroll: false });
   }, [getMapReturnPath, router]);
 
-  const handleBottomSheetBack = useCallback(() => {
-    router.replace(getMapReturnPath(), { scroll: false });
-  }, [getMapReturnPath, router]);
-
   useEffect(() => {
     setImgSrc(culture?.mainImage);
     setImageFailed(false);
@@ -240,6 +244,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       Boolean(imgSrc.trim()) &&
       !imageFailed &&
       !imgSrc.includes('/assets/images/logo');
+    const priceTone = getCulturePriceTone(culture);
 
     return (
       <div className='flex flex-col gap-4'>
@@ -256,7 +261,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
               {culture.guName}
             </span>
           )}
-          <span className='rounded-full border border-[var(--color-accent-subtle)] bg-[var(--color-accent-subtle)] px-3 py-1 text-xs font-bold text-[var(--color-accent-text)] shadow-2xs'>
+          <span
+            className={`rounded-full border px-3 py-1 text-xs font-bold shadow-2xs ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}
+          >
             {culture.displayPrice}
           </span>
         </div>
@@ -459,25 +466,19 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       return;
     }
 
-    const isNewDetailRoute =
-      lastSheetSignatureRef.current === '' || !lastSheetSignatureRef.current.startsWith(`${cultureId}:`);
     lastSheetSignatureRef.current = signature;
 
     openBottomSheet({
       content: renderContent(),
       footer: renderFooter(),
       onClose: handleBottomSheetClose,
-      onBack: handleBottomSheetBack,
-      backLabel: '목록',
       closeOnRouteExit: true,
-      mobileSheetMode: isNewDetailRoute ? 'expanded' : undefined,
     });
   }, [
     culture?.id,
     cultureId,
     error?.message,
     handleBottomSheetClose,
-    handleBottomSheetBack,
     imageFailed,
     imgSrc,
     isLoading,

@@ -3,7 +3,7 @@ import InfoPageShell from '@/components/Info/InfoPageShell';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { ArrowUpRight, ExternalLink, MapPinned, RefreshCw } from 'lucide-react';
+import { ArrowRight, ExternalLink, MapPinned, RefreshCw } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: '서비스 소개',
@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   },
 };
 
-const CATEGORIES = ['축제', '공연', '전시', '체험'];
+const CATEGORIES = [
+  { title: '축제', detail: '계절과 지역의 분위기를 만나는 행사' },
+  { title: '공연', detail: '무대와 음악이 있는 시간' },
+  { title: '전시', detail: '작품과 공간을 천천히 살펴보는 자리' },
+  { title: '체험', detail: '직접 참여하며 기억을 남기는 프로그램' },
+];
 
 const ABOUT_STEPS = [
   {
@@ -57,7 +62,7 @@ const AboutPage = () => {
             <span className='info-map-action-label'>문화지도</span>
             지도에서 행사 찾기
           </span>
-          <ArrowUpRight
+          <ArrowRight
             aria-hidden='true'
             className='info-map-action-arrow transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5'
             strokeWidth={1.8}
@@ -65,24 +70,24 @@ const AboutPage = () => {
         </Link>
       }
     >
-      <section className='info-section' aria-labelledby='about-categories-title'>
+      <section className='info-section info-section-split' aria-labelledby='about-categories-title'>
         <div className='info-section-header'>
           <h2 id='about-categories-title' className='info-section-heading'>
-            한 지도에서 네 가지 장르를 봅니다.
+            네 가지 행사, 한 화면에서
           </h2>
           <p className='info-section-lede'>축제, 공연, 전시, 체험을 지역과 장소의 관계까지 함께 살펴볼 수 있습니다.</p>
         </div>
         <ul aria-label='문화행사 분류' className='info-category-grid'>
           {CATEGORIES.map(category => (
-            <li key={category} className='info-category-item'>
-              <span className='info-category-name'>{category}</span>
-              <span className='info-category-rule' aria-hidden='true' />
+            <li key={category.title} className='info-category-item'>
+              <span className='info-category-name'>{category.title}</span>
+              <span className='info-category-detail'>{category.detail}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className='info-section' aria-labelledby='about-principles-title'>
+      <section className='info-section info-section-split' aria-labelledby='about-principles-title'>
         <div className='info-section-header'>
           <h2 id='about-principles-title' className='info-section-heading'>
             찾는 흐름은 단순합니다.
@@ -90,26 +95,31 @@ const AboutPage = () => {
           <p className='info-section-lede'>지금 갈 만한 곳을 고르고, 필요한 정보를 확인한 뒤 공식 안내로 이어집니다.</p>
         </div>
         <ol className='info-route-list'>
-          {ABOUT_STEPS.map(({ icon: Icon, title: stepTitle, detail }) => (
+          {ABOUT_STEPS.map(({ icon: Icon, title: stepTitle, detail }, index) => (
             <li key={stepTitle} className='info-route-item'>
-              <div className='info-route-heading'>
-                <span className='info-route-icon'>
-                  <Icon aria-hidden='true' className='size-[1.1rem]' strokeWidth={1.8} />
-                </span>
-                <h3>{stepTitle}</h3>
+              <span className='info-route-index' aria-hidden='true'>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <div className='info-route-body'>
+                <div className='info-route-heading'>
+                  <span className='info-route-icon'>
+                    <Icon aria-hidden='true' className='size-[1.05rem]' strokeWidth={1.8} />
+                  </span>
+                  <h3>{stepTitle}</h3>
+                </div>
+                <p>{detail}</p>
               </div>
-              <p>{detail}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className='info-section' aria-labelledby='about-details-title'>
+      <section className='info-section info-section-split' aria-labelledby='about-details-title'>
         <div className='info-section-header'>
           <h2 id='about-details-title' className='info-section-heading'>
-            상세에서 확인할 수 있습니다.
+            결정하기 전에 필요한 정보를 모았습니다.
           </h2>
-          <p className='info-section-lede'>방문을 결정하는 데 필요한 기본 정보를 한곳에 모았습니다.</p>
+          <p className='info-section-lede'>행사마다 제공되는 기본 정보와 공식 안내를 함께 확인할 수 있습니다.</p>
         </div>
         <dl className='info-fact-grid'>
           {ABOUT_DETAILS.map(({ title: detailTitle, detail }) => (

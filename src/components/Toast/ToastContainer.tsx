@@ -4,9 +4,9 @@ import { type CSSProperties, type MouseEvent, useEffect, useState } from 'react'
 import { type IconProps, Slide, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { useTheme } from 'next-themes';
 import { usePathname } from 'next/navigation';
 
+import { useTheme } from '@/providers/ThemeProvider';
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
 
 const CultureToastIcon = ({ type }: IconProps) => {

@@ -24,7 +24,7 @@ import { toast } from 'react-toastify';
 import { usePathname, useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
-import { AlertCircle, ChevronUp, List, MapPinned } from 'lucide-react';
+import { AlertCircle, ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 import SearchCancelIcon from '../../../public/assets/images/search-cancel-icon.svg';
@@ -68,6 +68,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
   const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [focusCultureId, setFocusCultureId] = useState<number | null>(null);
   const [restoredSelectedCultureId, setRestoredSelectedCultureId] = useState<number | null>(null);
   const [isFilterPending, startFilterTransition] = useTransition();
@@ -330,6 +331,12 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
 
     setIsMobileSheetVisible(false);
   }, [isDetailRoute]);
+
+  useEffect(() => {
+    if (!isMobileSheetVisible || isDetailRoute) {
+      setIsMobileFiltersOpen(false);
+    }
+  }, [isDetailRoute, isMobileSheetVisible]);
 
   useEffect(() => {
     if (isDetailRoute || typeof window === 'undefined') {
@@ -604,13 +611,10 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
       <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section
-            className='surface-panel pointer-events-auto mt-auto flex h-[74dvh] max-h-[84dvh] min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
+            className='surface-panel pointer-events-auto mt-auto flex h-[calc(100dvh-6.4rem)] max-h-none min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
             aria-busy={isFilterPending || isLoading}
           >
-            <div className='border-b border-[var(--color-border-primary)] px-4 py-3'>
-              <div className='mb-2 flex items-center justify-center'>
-                <div className='h-1.5 w-12 rounded-full bg-[var(--color-border-control)] opacity-50' />
-              </div>
+            <div className='border-b border-[var(--color-border-primary)] px-4 pb-3 pt-4'>
               <div className='flex items-center justify-between gap-3'>
                 <div className='min-w-0'>
                   <h3 className='text-base font-bold text-[var(--color-text-primary)]'>행사 목록</h3>
@@ -666,19 +670,33 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                   </button>
                 )}
               </form>
-              <div className='mt-2.5'>
-                <MapFilterControls
-                  category={mapCategory}
-                  freeOnly={mapFreeOnly}
-                  region={mapRegion}
-                  regionOptions={regionOptions}
-                  onCategoryChange={handleCategoryChange}
-                  onFreeOnlyChange={handleFreeOnlyChange}
-                  onRegionChange={handleRegionChange}
-                />
-              </div>
-              <div className='mt-2.5 flex items-center justify-between gap-3'>
-                <div className='flex min-w-0 items-center gap-2'>
+              <div className='mt-2.5 flex items-center justify-between gap-2'>
+                <button
+                  type='button'
+                  onClick={() => setIsMobileFiltersOpen(current => !current)}
+                  aria-expanded={isMobileFiltersOpen}
+                  aria-controls='map-mobile-filters'
+                  className={clsx(
+                    'flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all duration-150',
+                    isMobileFiltersOpen || hasActiveFilters
+                      ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)]'
+                      : 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'
+                  )}
+                >
+                  <ListFilter aria-hidden='true' className='size-3.5' strokeWidth={2} />
+                  <span>필터</span>
+                  {activeFilterLabels.length > 0 && (
+                    <span className='flex size-5 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-[0.68rem] font-bold text-[var(--color-brand-on-primary)]'>
+                      {activeFilterLabels.length}
+                    </span>
+                  )}
+                  <ChevronUp
+                    aria-hidden='true'
+                    className={clsx('size-3.5 transition-transform duration-150', !isMobileFiltersOpen && 'rotate-180')}
+                    strokeWidth={2.2}
+                  />
+                </button>
+                <div className='flex min-w-0 items-center justify-end gap-2'>
                   <MapSortControl
                     mode={mapSortMode}
                     hasLocation={Boolean(currentLocation)}
@@ -691,8 +709,23 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                     onToggle={handleLocationToggle}
                   />
                 </div>
-                <span className='shrink-0 text-xs font-semibold text-[var(--color-text-secondary)]'>정렬 기준</span>
               </div>
+              {isMobileFiltersOpen && (
+                <div
+                  id='map-mobile-filters'
+                  className='mt-2.5 rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] p-2.5'
+                >
+                  <MapFilterControls
+                    category={mapCategory}
+                    freeOnly={mapFreeOnly}
+                    region={mapRegion}
+                    regionOptions={regionOptions}
+                    onCategoryChange={handleCategoryChange}
+                    onFreeOnlyChange={handleFreeOnlyChange}
+                    onRegionChange={handleRegionChange}
+                  />
+                </div>
+              )}
             </div>
             <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
               <div

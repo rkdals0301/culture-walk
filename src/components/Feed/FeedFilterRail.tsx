@@ -150,10 +150,11 @@ const FeedFilterRail = ({
             <button
               type='button'
               onClick={() => onSelectSortMode('date')}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-bold transition-all ${
+              aria-pressed={sortMode === 'date'}
+              className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2 py-1 font-bold transition-all ${
                 sortMode === 'date'
-                  ? 'bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xs'
-                  : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                  ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-primary)] hover:text-[var(--color-text-primary)]'
               }`}
             >
               <Calendar className='size-3 stroke-[2.2]' />
@@ -167,10 +168,11 @@ const FeedFilterRail = ({
                 }
                 onSelectSortMode('distance');
               }}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 font-bold transition-all ${
+              aria-pressed={sortMode === 'distance'}
+              className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2 py-1 font-bold transition-all ${
                 sortMode === 'distance'
-                  ? 'bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xs'
-                  : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                  ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-primary)] hover:text-[var(--color-text-primary)]'
               }`}
             >
               <Navigation className='size-3 stroke-[2.2]' />
