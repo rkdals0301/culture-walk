@@ -2,9 +2,9 @@
 
 import MapDashboard from '@/components/Map/MapDashboard';
 import MapViewClientOnly from '@/components/Map/MapViewClientOnly';
-import { useCultureMapData } from '@/hooks/useCultureMapData';
 import { useCultureContext } from '@/context/CultureContext';
-import type { CultureMapBounds } from '@/types/culture';
+import { useCultureMapData } from '@/hooks/useCultureMapData';
+import type { CultureMapBounds, CultureMapViewport } from '@/types/culture';
 
 import { useCallback, useState } from 'react';
 
@@ -19,31 +19,34 @@ interface MapShellProps {
 const MapShell = ({ children }: MapShellProps) => {
   const { searchQuery, mapCategory, mapRegion, mapFreeOnly } = useCultureContext();
   const [listRequest, setListRequest] = useState(0);
-  // Wait for Kakao Maps' first idle event so the initial request is the actual
-  // viewport instead of a second, broad country-wide query.
-  const [mapBounds, setMapBounds] = useState<CultureMapBounds | null>(null);
+  // Wait for Kakao Maps' first idle event so the initial request includes the
+  // actual viewport and its zoom level.
+  const [mapViewport, setMapViewport] = useState<CultureMapViewport | null>(null);
   const mapData = useCultureMapData({
-    bounds: mapBounds,
+    viewport: mapViewport,
     searchQuery,
     category: mapCategory,
     region: mapRegion,
     freeOnly: mapFreeOnly,
   });
-  const handleBoundsChange = useCallback((nextBounds: CultureMapBounds) => {
+  const handleViewportChange = useCallback((nextViewport: CultureMapViewport) => {
     const normalizeCoordinate = (value: number) => Math.round(value * 10_000) / 10_000;
     const normalizedBounds: CultureMapBounds = {
-      swLat: normalizeCoordinate(nextBounds.swLat),
-      swLng: normalizeCoordinate(nextBounds.swLng),
-      neLat: normalizeCoordinate(nextBounds.neLat),
-      neLng: normalizeCoordinate(nextBounds.neLng),
+      swLat: normalizeCoordinate(nextViewport.bounds.swLat),
+      swLng: normalizeCoordinate(nextViewport.bounds.swLng),
+      neLat: normalizeCoordinate(nextViewport.bounds.neLat),
+      neLng: normalizeCoordinate(nextViewport.bounds.neLng),
     };
 
-    setMapBounds(currentBounds => {
-      const isSameBounds = currentBounds !== null && Object.keys(normalizedBounds).every(
-        key =>
-          normalizedBounds[key as keyof CultureMapBounds] === currentBounds[key as keyof CultureMapBounds]
-      );
-      return isSameBounds ? currentBounds : normalizedBounds;
+    setMapViewport(currentViewport => {
+      const isSameBounds =
+        currentViewport !== null &&
+        Object.keys(normalizedBounds).every(
+          key =>
+            normalizedBounds[key as keyof CultureMapBounds] === currentViewport.bounds[key as keyof CultureMapBounds]
+        );
+      const isSameLevel = currentViewport?.level === nextViewport.level;
+      return isSameBounds && isSameLevel ? currentViewport : { bounds: normalizedBounds, level: nextViewport.level };
     });
   }, []);
 
@@ -51,10 +54,12 @@ const MapShell = ({ children }: MapShellProps) => {
     <div className='relative h-full overflow-hidden'>
       <div className='map-viewport absolute z-0' data-keeps-detail-open>
         <MapViewClientOnly
+          visibleClusters={mapData.clusters}
+          isClustered={mapData.isClustered}
           visibleCultures={mapData.cultures}
           isLoading={mapData.isLoading}
           error={mapData.error}
-          onBoundsChange={handleBoundsChange}
+          onViewportChange={handleViewportChange}
           onContinueWithList={() => setListRequest(request => request + 1)}
         />
       </div>
@@ -73,6 +78,7 @@ const MapShell = ({ children }: MapShellProps) => {
         <MapDashboard
           listRequest={listRequest}
           visibleCultures={mapData.cultures}
+          isClustered={mapData.isClustered}
           totalCount={mapData.totalCount}
           viewportCount={mapData.viewportCount}
           regionOptions={mapData.regionOptions}

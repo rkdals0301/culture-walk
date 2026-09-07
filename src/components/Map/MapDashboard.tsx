@@ -36,6 +36,7 @@ const DESKTOP_DETAIL_PANEL_WIDTH = 480;
 interface MapDashboardProps {
   listRequest?: number;
   visibleCultures: FormattedCulture[];
+  isClustered: boolean;
   totalCount: number;
   viewportCount: number;
   regionOptions: string[];
@@ -47,6 +48,7 @@ interface MapDashboardProps {
 const MapDashboard = ({
   listRequest = 0,
   visibleCultures: viewportCultures,
+  isClustered,
   totalCount,
   viewportCount,
   regionOptions,
@@ -431,6 +433,17 @@ const MapDashboard = ({
       );
     }
 
+    if (isClustered) {
+      return (
+        <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
+          <p className='text-base font-semibold'>행사 밀집 지역을 표시하고 있습니다.</p>
+          <p className='mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]'>
+            지도에서 원하는 지역을 눌러 확대하면 해당 지역의 행사 목록을 확인할 수 있습니다.
+          </p>
+        </div>
+      );
+    }
+
     if (visibleCultures.length === 0) {
       return (
         <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
@@ -508,6 +521,7 @@ const MapDashboard = ({
               <MapResultSummary
                 visibleCount={viewportCount}
                 totalCount={totalCount}
+                isClustered={isClustered}
                 activeFilterLabels={activeFilterLabels}
                 hasActiveFilters={hasActiveFilters}
                 isLoading={isLoading}
@@ -638,6 +652,7 @@ const MapDashboard = ({
               <MapResultSummary
                 visibleCount={viewportCount}
                 totalCount={totalCount}
+                isClustered={isClustered}
                 activeFilterLabels={activeFilterLabels}
                 hasActiveFilters={hasActiveFilters}
                 isLoading={isLoading}
@@ -747,7 +762,11 @@ const MapDashboard = ({
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
               className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
-              aria-label={`행사 목록 열기, 현재 영역 ${viewportCount}개 행사`}
+              aria-label={
+                isClustered
+                  ? '행사 밀집 지역을 확대해서 행사 목록 보기'
+                  : `행사 목록 열기, 현재 영역 ${viewportCount}개 행사`
+              }
             >
               <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white'>
                 <List aria-hidden='true' className='size-4' strokeWidth={2} />
@@ -757,7 +776,7 @@ const MapDashboard = ({
                   {hasActiveFilters ? '필터 적용됨' : '지도 행사'}
                 </span>
                 <span className='whitespace-nowrap text-xs font-bold text-[var(--color-text-primary)] sm:text-sm'>
-                  현재 영역 {viewportCount.toLocaleString()}개 보기
+                  {isClustered ? '지도를 확대하면 목록 보기' : `현재 영역 ${viewportCount.toLocaleString()}개 보기`}
                 </span>
               </span>
               <span className='ml-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-chip)] text-[var(--color-text-primary)]'>

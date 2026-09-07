@@ -1,10 +1,11 @@
 import { cultures } from '@/db/schema';
-import type { CultureListItem, CultureMapBounds } from '@/types/culture';
 import type { CultureFeedFilters } from '@/services/cultureFeed';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
 import { KOREA_LAT_MAX, KOREA_LAT_MIN, KOREA_LNG_MAX, KOREA_LNG_MIN } from '@/services/cultureSyncTypes';
+import type { CultureListItem, CultureMapBounds } from '@/types/culture';
+import { MAP_CLUSTER_GRID_SIZE } from '@/utils/mapViewport';
 
-import { and, eq, gte, isNotNull, or, sql, type SQL } from 'drizzle-orm';
+import { type SQL, and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 import type { AnyColumn } from 'drizzle-orm/column';
 
 export const CULTURE_REGION_OPTIONS = [
@@ -100,7 +101,9 @@ const escapeLikeValue = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 export const getCultureCategoryCondition = (category: CultureFeedFilters['category']): SQL | undefined => {
   if (category === 'all') return undefined;
 
-  return or(...CATEGORY_KEYWORDS[category].map(keyword => containsText(cultures.classification, keyword))) ?? sql`FALSE`;
+  return (
+    or(...CATEGORY_KEYWORDS[category].map(keyword => containsText(cultures.classification, keyword))) ?? sql`FALSE`
+  );
 };
 
 export const getCultureFreeCondition = (): SQL =>
@@ -125,10 +128,7 @@ export const getCultureFilterConditions = (
   if (filters.region !== 'all') {
     const region = escapeLikeValue(filters.region);
     conditions.push(
-      or(
-        eq(cultures.guName, filters.region),
-        sql`${cultures.guName} LIKE ${`${region} %`} ESCAPE '\\'`
-      ) ?? sql`FALSE`
+      or(eq(cultures.guName, filters.region), sql`${cultures.guName} LIKE ${`${region} %`} ESCAPE '\\'`) ?? sql`FALSE`
     );
   }
 
@@ -183,6 +183,34 @@ export const getViewportCoordinateCondition = (bounds: CultureMapBounds): SQL =>
       sql`${cultures.lat} BETWEEN ${bounds.swLng} AND ${bounds.neLng}`
     )
   ) ?? sql`FALSE`;
+
+export const getNormalizedLatitudeExpression = () =>
+  sql`CASE
+    WHEN ${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}
+      AND ${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}
+    THEN ${cultures.lat}
+    ELSE ${cultures.lng}
+  END`;
+
+export const getNormalizedLongitudeExpression = () =>
+  sql`CASE
+    WHEN ${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}
+      AND ${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}
+    THEN ${cultures.lng}
+    ELSE ${cultures.lat}
+  END`;
+
+export const getMapClusterBucketExpressions = () => {
+  const latitude = getNormalizedLatitudeExpression();
+  const longitude = getNormalizedLongitudeExpression();
+
+  return {
+    latitude,
+    longitude,
+    latitudeBucket: sql<number>`CAST(${latitude} / ${MAP_CLUSTER_GRID_SIZE} AS INTEGER)`,
+    longitudeBucket: sql<number>`CAST(${longitude} / ${MAP_CLUSTER_GRID_SIZE} AS INTEGER)`,
+  };
+};
 
 export const getCultureRelevantDateExpression = (koreaToday: string) =>
   sql`CASE WHEN ${cultures.startDate} <= ${koreaToday} THEN ${cultures.endDate} ELSE ${cultures.startDate} END`;

@@ -6,6 +6,7 @@ import { RotateCcw } from 'lucide-react';
 export interface MapResultSummaryProps {
   visibleCount: number;
   totalCount: number;
+  isClustered?: boolean;
   activeFilterLabels: string[];
   hasActiveFilters: boolean;
   isLoading: boolean;
@@ -16,6 +17,7 @@ export interface MapResultSummaryProps {
 const MapResultSummary = ({
   visibleCount,
   totalCount,
+  isClustered = false,
   activeFilterLabels,
   hasActiveFilters,
   isLoading,
@@ -28,8 +30,16 @@ const MapResultSummary = ({
     <div className={clsx('explore-summary', compact ? 'mt-2' : 'mt-3.5')}>
       <div className='flex items-center justify-between gap-3'>
         <div className='min-w-0'>
-          <strong aria-live='polite' aria-atomic='true' className='text-lg font-bold tracking-tight text-[var(--color-text-primary)]'>
-            {isLoading ? '지도 영역 확인 중...' : `현재 영역 ${visibleCount.toLocaleString()}개`}
+          <strong
+            aria-live='polite'
+            aria-atomic='true'
+            className='text-lg font-bold tracking-tight text-[var(--color-text-primary)]'
+          >
+            {isLoading
+              ? '지도 영역 확인 중...'
+              : isClustered
+                ? `현재 영역 약 ${visibleCount.toLocaleString()}개`
+                : `현재 영역 ${visibleCount.toLocaleString()}개`}
           </strong>
         </div>
         <span className='shrink-0 rounded-full bg-[var(--color-surface-chip)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
@@ -44,7 +54,13 @@ const MapResultSummary = ({
           aria-atomic='true'
         >
           <span className='size-1.5 shrink-0 rounded-full bg-[var(--color-brand-primary)]' aria-hidden='true' />
-          <span className='truncate'>{isLoading ? '행사 정보를 확인하고 있습니다.' : contextLabel}</span>
+          <span className='truncate'>
+            {isLoading
+              ? '행사 정보를 확인하고 있습니다.'
+              : isClustered
+                ? '지도를 확대하면 행사 목록을 표시합니다.'
+                : contextLabel}
+          </span>
         </p>
         {hasActiveFilters && !isLoading && (
           <button

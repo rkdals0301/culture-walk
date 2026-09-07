@@ -1,20 +1,22 @@
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
-import { CultureMapBounds, CultureMapResponse } from '@/types/culture';
-import { createCultureFeedFilterKey, CultureFeedFilters, normalizeCultureFeedFilters } from '@/services/cultureFeed';
+import { CultureFeedFilters, createCultureFeedFilterKey, normalizeCultureFeedFilters } from '@/services/cultureFeed';
 import { getCultureFeedMetadata } from '@/services/cultureFeedData';
 import {
   CULTURE_LIST_SELECTION,
   CULTURE_REGION_OPTIONS,
+  type CultureListSelectionRow,
   getCultureBaseConditions,
+  getMapClusterBucketExpressions,
   getViewportCoordinateCondition,
   mapCultureListRowToItem,
-  type CultureListSelectionRow,
 } from '@/services/cultureQuery';
+import type { CultureMapBounds, CultureMapCluster, CultureMapResponse } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { type MapDataMode, getMapDataMode } from '@/utils/mapViewport';
 
-import { and } from 'drizzle-orm';
+import { and, asc, sql } from 'drizzle-orm';
 
 const TOTAL_COUNT_CACHE_TTL_MS = 15_000;
 const TOTAL_COUNT_CACHE_MAX_ENTRIES = 32;
@@ -24,6 +26,16 @@ interface TotalCountCacheEntry {
   expiresAt: number;
   promise?: Promise<number>;
 }
+
+interface CultureMapClusterRow {
+  count: number | string | null;
+  latitude: number | string | null;
+  latitudeBucket: number | string | null;
+  longitude: number | string | null;
+  longitudeBucket: number | string | null;
+}
+
+type CultureDatabase = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 
 // A short-lived isolate-local cache avoids running the same full-filter COUNT
 // for every small map pan. The viewport query remains fresh on each request.
@@ -64,9 +76,48 @@ const getCachedTotalCount = async (key: string, query: () => Promise<number>) =>
   }
 };
 
-export const getCultureMapData = async (
-  input: { filters: CultureFeedFilters; bounds: CultureMapBounds }
-): Promise<CultureMapResponse | null> => {
+const toFiniteNumber = (value: number | string | null | undefined, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const getCultureMapClusters = async (db: CultureDatabase, where: ReturnType<typeof and>) => {
+  const { latitude, longitude, latitudeBucket, longitudeBucket } = getMapClusterBucketExpressions();
+  const rows = await db
+    .select({
+      count: sql<number>`COUNT(*)`,
+      latitude: sql<number>`AVG(${latitude})`,
+      longitude: sql<number>`AVG(${longitude})`,
+      latitudeBucket,
+      longitudeBucket,
+    })
+    .from(cultures)
+    .where(where)
+    .groupBy(latitudeBucket, longitudeBucket)
+    .orderBy(asc(latitudeBucket), asc(longitudeBucket));
+
+  return (rows as CultureMapClusterRow[]).map(
+    ({
+      count,
+      latitude: clusterLatitude,
+      longitude: clusterLongitude,
+      latitudeBucket: latBucket,
+      longitudeBucket: lngBucket,
+    }) =>
+      ({
+        id: `map-cluster-${latBucket ?? 'unknown'}-${lngBucket ?? 'unknown'}`,
+        lat: toFiniteNumber(clusterLatitude),
+        lng: toFiniteNumber(clusterLongitude),
+        count: Math.max(0, Math.round(toFiniteNumber(count))),
+      }) satisfies CultureMapCluster
+  );
+};
+
+export const getCultureMapData = async (input: {
+  filters: CultureFeedFilters;
+  bounds: CultureMapBounds;
+  level?: number;
+}): Promise<CultureMapResponse | null> => {
   const db = await getDb();
   if (!db) return null;
 
@@ -76,22 +127,40 @@ export const getCultureMapData = async (
   const baseWhere = and(...baseConditions);
   const viewportWhere = and(baseWhere, getViewportCoordinateCondition(input.bounds));
   const totalCountKey = `${koreaToday}:${createCultureFeedFilterKey(filters)}`;
+  const mode: MapDataMode = getMapDataMode(input.level ?? 0);
 
-  const [totalCount, viewportRows] = await Promise.all([
+  const viewportDataPromise =
+    mode === 'clusters'
+      ? getCultureMapClusters(db, viewportWhere)
+      : db.select(CULTURE_LIST_SELECTION).from(cultures).where(viewportWhere);
+
+  const [totalCount, viewportData] = await Promise.all([
     getCachedTotalCount(totalCountKey, async () => (await getCultureFeedMetadata(db, filters)).totalCount),
-    db
-      .select(CULTURE_LIST_SELECTION)
-      .from(cultures)
-      .where(viewportWhere),
+    viewportDataPromise,
   ]);
 
+  if (mode === 'clusters') {
+    const clusters = viewportData as CultureMapCluster[];
+
+    return {
+      items: [],
+      clusters,
+      isClustered: true,
+      totalCount,
+      viewportCount: clusters.reduce((sum, cluster) => sum + cluster.count, 0),
+      regionOptions: [...CULTURE_REGION_OPTIONS],
+    };
+  }
+
   const items = sortCulturesByRelevantDate(
-    (viewportRows as CultureListSelectionRow[]).map(mapCultureListRowToItem),
+    (viewportData as CultureListSelectionRow[]).map(mapCultureListRowToItem),
     koreaToday
   );
 
   return {
     items,
+    clusters: [],
+    isClustered: false,
     totalCount,
     viewportCount: items.length,
     regionOptions: [...CULTURE_REGION_OPTIONS],

@@ -171,8 +171,22 @@ export interface CultureMapBounds {
   neLng: number;
 }
 
+export interface CultureMapViewport {
+  bounds: CultureMapBounds;
+  level: number;
+}
+
+export interface CultureMapCluster {
+  id: string;
+  lat: number;
+  lng: number;
+  count: number;
+}
+
 export interface CultureMapResponse {
   items: CultureListItem[];
+  clusters: CultureMapCluster[];
+  isClustered: boolean;
   totalCount: number;
   viewportCount: number;
   regionOptions: string[];
@@ -180,7 +194,7 @@ export interface CultureMapResponse {
 
 export type FormattedCulture = CultureListItem &
   Partial<Culture> & {
-  displayDate: string;
-  displayPlace: string;
-  displayPrice: string;
-};
+    displayDate: string;
+    displayPlace: string;
+    displayPrice: string;
+  };

@@ -1,6 +1,6 @@
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
-import { getCultureMapData } from '@/services/cultureMap';
 import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
+import { getCultureMapData } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -8,8 +8,8 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const HTTP_CACHE_SECONDS = 15;
-const HTTP_STALE_SECONDS = 60;
+const HTTP_CACHE_SECONDS = 60;
+const HTTP_STALE_SECONDS = 300;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 const parseFiniteNumber = (value: string | null) => {
@@ -32,6 +32,12 @@ const parseBounds = (searchParams: URLSearchParams): CultureMapBounds | null => 
 };
 
 const parseBoolean = (value: string | null) => value === '1' || value === 'true';
+
+const parseMapLevel = (value: string | null) => {
+  const parsed = parseFiniteNumber(value);
+  if (parsed === null) return undefined;
+  return Math.min(14, Math.max(1, Math.round(parsed)));
+};
 
 const responseHeaders = () => ({
   'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
@@ -56,9 +62,10 @@ export async function GET(request: Request) {
     region: url.searchParams.get('region') ?? 'all',
     freeOnly: parseBoolean(url.searchParams.get('free')),
   });
+  const level = parseMapLevel(url.searchParams.get('level'));
 
   try {
-    const result = await getCultureMapData({ filters, bounds });
+    const result = await getCultureMapData({ filters, bounds, level });
     if (!result) {
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }

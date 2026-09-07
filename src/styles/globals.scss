@@ -1983,6 +1983,41 @@
   }
 }
 
+.map-server-cluster {
+  display: inline-flex;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.65rem;
+  border: 2px solid var(--color-map-cluster-border);
+  border-radius: 999px;
+  background: var(--color-map-cluster);
+  color: var(--color-map-cluster-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: var(--color-map-cluster-shadow);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease;
+}
+
+.map-server-cluster:hover {
+  background: var(--color-map-cluster-strong);
+  transform: scale(1.06);
+}
+
+.map-server-cluster:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.map-server-cluster:active {
+  transform: scale(0.98);
+}
+
 @media (min-width: 640px) {
   .safe-area-header-offset {
     padding-right: max(1.5rem, env(safe-area-inset-right, 0px));

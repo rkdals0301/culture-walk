@@ -6,7 +6,7 @@ import MapStatus from '@/components/Map/MapStatus';
 import MapZoomControls from '@/components/Map/MapZoomControls';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
-import type { CultureMapBounds, FormattedCulture } from '@/types/culture';
+import type { CultureMapCluster, CultureMapViewport, FormattedCulture } from '@/types/culture';
 import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
 import { KakaoMapsSdkError, loadKakaoMapsSdk, resetKakaoMapsSdk } from '@/utils/kakaoMapsSdk';
 import { getMapDetailId } from '@/utils/mapRoute';
@@ -72,18 +72,22 @@ interface MarkerGroup {
 }
 
 interface MapViewProps {
+  visibleClusters: CultureMapCluster[];
+  isClustered: boolean;
   visibleCultures: FormattedCulture[];
   isLoading: boolean;
   error: Error | null;
-  onBoundsChange: (bounds: CultureMapBounds) => void;
+  onViewportChange: (viewport: CultureMapViewport) => void;
   onContinueWithList?: () => void;
 }
 
 const MapView = ({
+  visibleClusters,
+  isClustered,
   visibleCultures,
   isLoading,
   error,
-  onBoundsChange,
+  onViewportChange,
   onContinueWithList,
 }: MapViewProps) => {
   const router = useRouter();
@@ -175,6 +179,19 @@ const MapView = ({
       searchQuery,
       selectedCultureId,
     ]
+  );
+
+  const handleServerClusterClick = useCallback(
+    (cluster: CultureMapCluster) => {
+      if (!mapInstance || !window.kakao?.maps) {
+        return;
+      }
+
+      const position = new window.kakao.maps.LatLng(cluster.lat, cluster.lng);
+      mapInstance.setLevel(Math.max(5, mapInstance.getLevel() - 4));
+      mapInstance.panTo(position);
+    },
+    [mapInstance]
   );
 
   const handleMarkerGroupClick = useCallback(
@@ -370,15 +387,18 @@ const MapView = ({
       const bounds = mapInstance.getBounds();
       const southWest = bounds.getSouthWest();
       const northEast = bounds.getNorthEast();
-      const nextBounds: CultureMapBounds = {
-        swLat: southWest.getLat(),
-        swLng: southWest.getLng(),
-        neLat: northEast.getLat(),
-        neLng: northEast.getLng(),
+      const nextViewport: CultureMapViewport = {
+        bounds: {
+          swLat: southWest.getLat(),
+          swLng: southWest.getLng(),
+          neLat: northEast.getLat(),
+          neLng: northEast.getLng(),
+        },
+        level: mapInstance.getLevel(),
       };
 
-      if (Object.values(nextBounds).every(value => Number.isFinite(value))) {
-        onBoundsChange(nextBounds);
+      if (Object.values(nextViewport.bounds).every(value => Number.isFinite(value))) {
+        onViewportChange(nextViewport);
       }
     };
     const handleIdle = () => {
@@ -396,14 +416,14 @@ const MapView = ({
       }
       window.kakao?.maps.event.removeListener(mapInstance, 'idle', handleIdle);
     };
-  }, [mapInstance, onBoundsChange]);
+  }, [mapInstance, onViewportChange]);
 
   useEffect(() => {
     if (!mapInstance || !window.kakao?.maps || !markerClustererRef.current) {
       return;
     }
 
-    const useCluster = selectedCultureId === null;
+    const useCluster = !isClustered && selectedCultureId === null;
 
     markerClustererRef.current.clear();
     markerRefs.current.forEach(marker => marker.setMap(null));
@@ -411,6 +431,44 @@ const MapView = ({
 
     const kakaoMaps = window.kakao.maps;
     const selectionOverlays: kakao.maps.CustomOverlay[] = [];
+    const serverClusterOverlays: Array<{
+      element: HTMLButtonElement;
+      handleClick: () => void;
+      overlay: kakao.maps.CustomOverlay;
+    }> = [];
+
+    if (isClustered) {
+      visibleClusters.forEach((cluster, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'map-server-cluster';
+        button.textContent = cluster.count.toLocaleString();
+        button.setAttribute('aria-label', `이 영역의 행사 ${cluster.count.toLocaleString()}개, 확대해서 보기`);
+        button.title = '확대해서 행사 보기';
+
+        const handleClick = () => handleServerClusterClick(cluster);
+        button.addEventListener('click', handleClick);
+
+        const overlay = new kakaoMaps.CustomOverlay({
+          map: mapInstance,
+          position: new kakaoMaps.LatLng(cluster.lat, cluster.lng),
+          content: button,
+          xAnchor: 0.5,
+          yAnchor: 0.5,
+          zIndex: visibleClusters.length - index,
+          clickable: true,
+        });
+
+        serverClusterOverlays.push({ element: button, handleClick, overlay });
+      });
+
+      return () => {
+        serverClusterOverlays.forEach(({ element, handleClick, overlay }) => {
+          element.removeEventListener('click', handleClick);
+          overlay.setMap(null);
+        });
+      };
+    }
 
     markerGroups.forEach((group, index) => {
       const focusedId = pendingDetailId ?? activeMarkerId;
@@ -461,7 +519,17 @@ const MapView = ({
       markerRefs.current.forEach(marker => marker.setMap(null));
       markerRefs.current = [];
     };
-  }, [activeMarkerId, handleMarkerGroupClick, mapInstance, markerGroups, pendingDetailId, selectedCultureId]);
+  }, [
+    activeMarkerId,
+    handleMarkerGroupClick,
+    handleServerClusterClick,
+    isClustered,
+    mapInstance,
+    markerGroups,
+    pendingDetailId,
+    selectedCultureId,
+    visibleClusters,
+  ]);
 
   useEffect(() => {
     if (!mapInstance || !window.kakao?.maps) {

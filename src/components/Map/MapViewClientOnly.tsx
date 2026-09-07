@@ -1,7 +1,7 @@
 'use client';
 
 import Loader from '@/components/Loader/Loader';
-import type { CultureMapBounds, FormattedCulture } from '@/types/culture';
+import type { CultureMapCluster, CultureMapViewport, FormattedCulture } from '@/types/culture';
 
 import dynamic from 'next/dynamic';
 
@@ -11,26 +11,32 @@ const MapViewNoSsr = dynamic(() => import('@/components/Map/MapView'), {
 });
 
 interface MapViewClientOnlyProps {
+  visibleClusters: CultureMapCluster[];
+  isClustered: boolean;
   visibleCultures: FormattedCulture[];
   isLoading: boolean;
   error: Error | null;
-  onBoundsChange: (bounds: CultureMapBounds) => void;
+  onViewportChange: (viewport: CultureMapViewport) => void;
   onContinueWithList?: () => void;
 }
 
 const MapViewClientOnly = ({
+  visibleClusters,
+  isClustered,
   visibleCultures,
   isLoading,
   error,
-  onBoundsChange,
+  onViewportChange,
   onContinueWithList,
 }: MapViewClientOnlyProps) => {
   return (
     <MapViewNoSsr
+      visibleClusters={visibleClusters}
+      isClustered={isClustered}
       visibleCultures={visibleCultures}
       isLoading={isLoading}
       error={error}
-      onBoundsChange={onBoundsChange}
+      onViewportChange={onViewportChange}
       onContinueWithList={onContinueWithList}
     />
   );
