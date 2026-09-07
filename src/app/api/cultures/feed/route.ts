@@ -1,11 +1,10 @@
 import { readCultureFeedPageCache, writeCultureFeedPageCache } from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import {
-  buildCultureFeedResult,
   createCultureFeedFilterKey,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
-import { getCultureListSnapshot } from '@/services/cultureList';
+import { getCultureFeedPage } from '@/services/cultureFeedData';
 import { CultureFeedPage } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -88,33 +87,38 @@ export async function GET(request: Request) {
   }
 
   try {
-    const snapshot = await getCultureListSnapshot();
-    if (!snapshot) {
+    const feedResult = await getCultureFeedPage({
+      filters,
+      limit,
+      offset: cursor?.offset ?? 0,
+    });
+    if (!feedResult) {
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
-    const feedResult = buildCultureFeedResult(snapshot.items, filters);
     const offset = cursor?.offset ?? 0;
-    const items = feedResult.items.slice(offset, offset + limit);
+    const items = feedResult.items;
     const nextOffset = offset + items.length;
-    const hasMore = nextOffset < feedResult.items.length;
+    const hasMore = nextOffset < feedResult.metadata.totalCount;
     const page: CultureFeedPage = {
       items,
       nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
       hasMore,
-      totalCount: feedResult.items.length,
-      freeCount: feedResult.freeCount,
-      regionOptions: feedResult.regionOptions,
+      totalCount: feedResult.metadata.totalCount,
+      freeCount: feedResult.metadata.freeCount,
+      regionOptions: feedResult.metadata.regionOptions,
     };
 
     await writeCultureFeedPageCache(
       { filters: filterKey, cursor: cursorValue, limit },
       page,
-      snapshot.source === 'kv-list-fallback' ? 60 : PAGE_CACHE_TTL_SECONDS
+      PAGE_CACHE_TTL_SECONDS
     );
 
     return NextResponse.json(page, {
-      headers: responseHeaders(snapshot.source === 'kv-list-fallback' ? 'kv-list-fallback' : 'kv-feed-snapshot'),
+      headers: responseHeaders(
+        feedResult.metadata.source === 'kv-feed-metadata' ? 'd1-feed-page+kv-metadata' : 'd1-feed-page+kv-metadata-refresh'
+      ),
     });
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {

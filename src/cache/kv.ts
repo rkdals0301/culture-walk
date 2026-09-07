@@ -1,11 +1,12 @@
 import { getWorkerEnv } from '@/server/cloudflare';
-import { Culture, CultureFeedPage, CultureListItem } from '@/types/culture';
+import { Culture, CultureFeedMetadata, CultureFeedPage, CultureListItem } from '@/types/culture';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 const CULTURE_CACHE_VERSION_KEY = 'cultures:cache-version';
 const CULTURE_LIST_CACHE_NAMESPACE = 'cultures:list:v6';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
 const CULTURE_FEED_PAGE_CACHE_NAMESPACE = 'cultures:feed-page:v1';
+const CULTURE_FEED_METADATA_CACHE_NAMESPACE = 'cultures:feed-metadata:v1';
 const CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:last:v1';
 const LEGACY_CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:v2:';
 type StoredCultureDetail = {
@@ -178,6 +179,22 @@ export const writeCultureFeedPageCache = async (
   page: CultureFeedPage,
   ttlSeconds: number
 ) => writeKvCache(await getCultureFeedPageCacheKey(payload), page, ttlSeconds);
+
+export const getCultureFeedMetadataCacheKey = async (filters: string) =>
+  createCacheKey(CULTURE_FEED_METADATA_CACHE_NAMESPACE, {
+    version: await getCulturesCacheVersion(),
+    koreaDate: getKoreaDateStartIso().slice(0, 10),
+    filters,
+  });
+
+export const readCultureFeedMetadataCache = async (filters: string) =>
+  readKvCache<CultureFeedMetadata>(await getCultureFeedMetadataCacheKey(filters));
+
+export const writeCultureFeedMetadataCache = async (
+  filters: string,
+  metadata: CultureFeedMetadata,
+  ttlSeconds: number
+) => writeKvCache(await getCultureFeedMetadataCacheKey(filters), metadata, ttlSeconds);
 
 export const writeCulturesListCaches = async (cultures: CultureListItem[], ttlSeconds: number) => {
   await Promise.all([

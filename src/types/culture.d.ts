@@ -158,6 +158,12 @@ export interface CultureFeedPage {
   regionOptions: string[];
 }
 
+export interface CultureFeedMetadata {
+  totalCount: number;
+  freeCount: number;
+  regionOptions: string[];
+}
+
 export interface CultureMapBounds {
   swLat: number;
   swLng: number;
