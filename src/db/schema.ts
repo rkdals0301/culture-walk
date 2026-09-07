@@ -45,6 +45,7 @@ export const cultures = sqliteTable(
     startDateIdx: index('cultures_start_date_idx').on(table.startDate),
     endDateIdx: index('cultures_end_date_idx').on(table.endDate),
     activeEndDateIdx: index('cultures_active_end_date_idx').on(table.isActive, table.endDate),
+    mapViewportIdx: index('cultures_map_viewport_idx').on(table.isActive, table.endDate, table.lat, table.lng),
     detailRefreshIdx: index('cultures_detail_refresh_idx').on(table.isActive, table.detailRefreshPriority, table.detailRefreshRequestedAt),
   })
 );

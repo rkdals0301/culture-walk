@@ -1,30 +1,15 @@
-import { readCulturesListCache, readCulturesListFallbackCache, writeCulturesListCaches } from '@/cache/kv';
 import { getDb } from '@/db/client';
-import { cultures } from '@/db/schema';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
-import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
-import { KOREA_LAT_MAX, KOREA_LAT_MIN, KOREA_LNG_MAX, KOREA_LNG_MIN } from '@/services/cultureSyncTypes';
+import { getCultureListSnapshot } from '@/services/cultureList';
 import { CultureListItem } from '@/types/culture';
-import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
-import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 import { NextResponse } from 'next/server';
-
-import { and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 const CACHE_TTL_SECONDS = 60 * 10;
 const HTTP_CACHE_SECONDS = 60;
 const HTTP_STALE_SECONDS = 60 * 30;
-
-const toDateOrNow = (value?: string | null) => {
-  if (!value) return new Date();
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return new Date();
-  return parsed;
-};
 
 const listResponse = (data: CultureListItem[], source?: string) =>
   NextResponse.json(data, {
@@ -36,78 +21,19 @@ const listResponse = (data: CultureListItem[], source?: string) =>
 
 export async function GET() {
   try {
-    const db = await getDb();
-    if (!db) {
-      console.error('D1 데이터베이스 바인딩을 찾지 못해 문화 목록을 제공할 수 없습니다.');
-      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
+    const snapshot = await getCultureListSnapshot();
+    if (!snapshot) {
+      const db = await getDb();
+      if (!db) {
+        console.error('D1 데이터베이스 바인딩을 찾지 못해 문화 목록을 제공할 수 없습니다.');
+        return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
+      }
     }
 
-    const koreaToday = getKoreaDateStartIso();
-
-    const cached = await readCulturesListCache();
-    if (cached) {
-      return listResponse(cached);
-    }
-
-    const rows = await db
-      .select({
-        id: cultures.id,
-        classification: cultures.classification,
-        endDate: cultures.endDate,
-        guName: cultures.guName,
-        isFree: cultures.isFree,
-        lat: cultures.lat,
-        lng: cultures.lng,
-        mainImage: cultures.mainImage,
-        place: cultures.place,
-        startDate: cultures.startDate,
-        title: cultures.title,
-        useFee: cultures.useFee,
-      })
-      .from(cultures)
-      .where(
-        and(
-          eq(cultures.isActive, true),
-          isNotNull(cultures.lat),
-          isNotNull(cultures.lng),
-          isNotNull(cultures.startDate),
-          isNotNull(cultures.endDate),
-          or(
-            and(
-              sql`${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
-              sql`${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
-            ),
-            and(
-              sql`${cultures.lng} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
-              sql`${cultures.lat} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
-            )
-          ),
-          gte(cultures.endDate, koreaToday)
-        )
-      );
-
-    const result: CultureListItem[] = rows.map(row => {
-      const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
-
-      return {
-        id: row.id,
-        classification: normalizeCultureClassification(row.classification),
-        endDate: toDateOrNow(row.endDate ?? row.startDate),
-        guName: row.guName ?? '',
-        isFree: row.isFree ?? '',
-        lat: coordinates.lat,
-        lng: coordinates.lng,
-        mainImage: row.mainImage ?? '/assets/images/logo.svg',
-        place: row.place ?? '',
-        startDate: toDateOrNow(row.startDate),
-        title: row.title ?? '',
-        useFee: row.useFee ?? '',
-      };
-    });
-    const sortedResult = sortCulturesByRelevantDate(result, koreaToday);
-    await writeCulturesListCaches(sortedResult, CACHE_TTL_SECONDS);
-
-    return listResponse(sortedResult);
+    return listResponse(
+      snapshot?.items ?? [],
+      snapshot?.source === 'kv-list-fallback' ? 'kv-list-fallback' : undefined
+    );
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {
       console.error('cultures 테이블이 없어 문화 목록을 제공할 수 없습니다.');
@@ -115,11 +41,6 @@ export async function GET() {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
-      const fallback = await readCulturesListFallbackCache();
-      if (fallback) {
-        return listResponse(fallback, 'kv-list-fallback');
-      }
-
       return NextResponse.json(
         { error: '문화 목록을 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
         { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }

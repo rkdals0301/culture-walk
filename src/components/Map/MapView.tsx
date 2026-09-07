@@ -6,8 +6,7 @@ import MapStatus from '@/components/Map/MapStatus';
 import MapZoomControls from '@/components/Map/MapZoomControls';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
-import { useCultures } from '@/hooks/cultureHooks';
-import { FormattedCulture } from '@/types/culture';
+import type { CultureMapBounds, FormattedCulture } from '@/types/culture';
 import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
 import { KakaoMapsSdkError, loadKakaoMapsSdk, resetKakaoMapsSdk } from '@/utils/kakaoMapsSdk';
 import { getMapDetailId } from '@/utils/mapRoute';
@@ -21,9 +20,6 @@ import { AlertCircle } from 'lucide-react';
 const KAKAO_MAPS_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY;
 const DEFAULT_MAP_CENTER = { lat: 36.35, lng: 127.8 };
 const DEFAULT_MAP_LEVEL = 13;
-const COMPACT_MAP_BREAKPOINT = '(max-width: 639px)';
-const DEFAULT_MAP_PADDING = { top: 80, right: 80, bottom: 80, left: 80 };
-const COMPACT_MAP_PADDING = { top: 96, right: 24, bottom: 96, left: 24 };
 const DEFAULT_MARKER_PIXEL_SIZE = 32;
 const EMPHASIZED_MARKER_PIXEL_SIZE = 40;
 const CLUSTER_STYLES: Array<Record<string, string>> = [
@@ -75,34 +71,27 @@ interface MarkerGroup {
   primaryCulture: FormattedCulture;
 }
 
-const getMedian = (values: number[]) => {
-  const sortedValues = [...values].sort((left, right) => left - right);
-  return sortedValues[Math.floor(sortedValues.length / 2)];
-};
-
-const getMarkerFocus = (groups: MarkerGroup[]) => {
-  if (groups.length === 0) {
-    return null;
-  }
-
-  return {
-    lat: getMedian(groups.map(group => group.lat)),
-    lng: getMedian(groups.map(group => group.lng)),
-  };
-};
-
 interface MapViewProps {
+  visibleCultures: FormattedCulture[];
+  isLoading: boolean;
+  error: Error | null;
+  onBoundsChange: (bounds: CultureMapBounds) => void;
   onContinueWithList?: () => void;
 }
 
-const MapView = ({ onContinueWithList }: MapViewProps) => {
+const MapView = ({
+  visibleCultures,
+  isLoading,
+  error,
+  onBoundsChange,
+  onContinueWithList,
+}: MapViewProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const { openBottomSheet } = useBottomSheet();
 
   const {
-    cultures,
-    mapCultures,
+    culture: loadedCulture,
     mapRegion,
     currentLocation,
     searchQuery,
@@ -111,7 +100,6 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
     mapSortMode,
     mapListScrollTop,
   } = useCultureContext();
-  const { isLoading, error } = useCultures();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerRefs = useRef<kakao.maps.Marker[]>([]);
@@ -126,7 +114,6 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
   const [sdkError, setSdkError] = useState<KakaoMapsSdkError | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [isCompactViewport, setIsCompactViewport] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const selectedCultureId = useMemo(() => {
@@ -136,7 +123,7 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
   const markerGroups = useMemo(() => {
     const groupMap = new Map<string, MarkerGroup>();
 
-    mapCultures.forEach(culture => {
+    visibleCultures.forEach(culture => {
       const key = `${culture.lat.toFixed(6)}:${culture.lng.toFixed(6)}`;
       const existing = groupMap.get(key);
 
@@ -154,7 +141,7 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
     });
 
     return Array.from(groupMap.values());
-  }, [mapCultures]);
+  }, [visibleCultures]);
 
   const goToMapDetail = useCallback(
     (id: number) => {
@@ -244,7 +231,9 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
     }
 
     setActiveMarkerId(selectedCultureId);
-    const selectedCulture = cultures.find(culture => culture.id === selectedCultureId);
+    const selectedCulture =
+      visibleCultures.find(culture => culture.id === selectedCultureId) ??
+      (loadedCulture?.id === selectedCultureId ? loadedCulture : null);
     if (selectedCulture) {
       setCenterPosition({ lat: selectedCulture.lat, lng: selectedCulture.lng });
 
@@ -256,20 +245,11 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
         }
       }
     }
-  }, [selectedCultureId, cultures, mapInstance]);
+  }, [loadedCulture, mapInstance, selectedCultureId, visibleCultures]);
 
   useEffect(() => {
     selectedCultureIdRef.current = selectedCultureId;
   }, [selectedCultureId]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(COMPACT_MAP_BREAKPOINT);
-    const updateViewport = () => setIsCompactViewport(mediaQuery.matches);
-
-    updateViewport();
-    mediaQuery.addEventListener('change', updateViewport);
-    return () => mediaQuery.removeEventListener('change', updateViewport);
-  }, []);
 
   useEffect(() => {
     if (pathname === '/map') {
@@ -354,32 +334,6 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
   }, [centerPosition, mapInstance]);
 
   useEffect(() => {
-    if (
-      !mapInstance ||
-      !window.kakao?.maps ||
-      selectedCultureIdRef.current ||
-      currentLocation ||
-      markerGroups.length === 0
-    ) {
-      return;
-    }
-
-    const bounds = new window.kakao.maps.LatLngBounds();
-    markerGroups.forEach(group => bounds.extend(new window.kakao!.maps.LatLng(group.lat, group.lng)));
-    const padding = isCompactViewport ? COMPACT_MAP_PADDING : DEFAULT_MAP_PADDING;
-    mapInstance.setBounds(bounds, padding.top, padding.right, padding.bottom, padding.left);
-
-    // Keep the full bounds for zoom, then center compact screens on the median marker
-    // position so a small number of remote events does not pull the useful area off-center.
-    if (isCompactViewport) {
-      const focus = getMarkerFocus(markerGroups);
-      if (focus) {
-        mapInstance.panTo(new window.kakao.maps.LatLng(focus.lat, focus.lng));
-      }
-    }
-  }, [currentLocation, isCompactViewport, mapInstance, mapRegion, markerGroups]);
-
-  useEffect(() => {
     if (!currentLocation || selectedCultureIdRef.current || !mapInstance || !window.kakao?.maps) {
       return;
     }
@@ -405,6 +359,44 @@ const MapView = ({ onContinueWithList }: MapViewProps) => {
       window.removeEventListener('resize', handleResize);
     };
   }, [mapInstance]);
+
+  useEffect(() => {
+    if (!mapInstance || !window.kakao?.maps) {
+      return;
+    }
+
+    let publishTimer: number | null = null;
+    const publishBounds = () => {
+      const bounds = mapInstance.getBounds();
+      const southWest = bounds.getSouthWest();
+      const northEast = bounds.getNorthEast();
+      const nextBounds: CultureMapBounds = {
+        swLat: southWest.getLat(),
+        swLng: southWest.getLng(),
+        neLat: northEast.getLat(),
+        neLng: northEast.getLng(),
+      };
+
+      if (Object.values(nextBounds).every(value => Number.isFinite(value))) {
+        onBoundsChange(nextBounds);
+      }
+    };
+    const handleIdle = () => {
+      if (publishTimer !== null) {
+        window.clearTimeout(publishTimer);
+      }
+      publishTimer = window.setTimeout(publishBounds, 250);
+    };
+
+    window.kakao.maps.event.addListener(mapInstance, 'idle', handleIdle);
+
+    return () => {
+      if (publishTimer !== null) {
+        window.clearTimeout(publishTimer);
+      }
+      window.kakao?.maps.event.removeListener(mapInstance, 'idle', handleIdle);
+    };
+  }, [mapInstance, onBoundsChange]);
 
   useEffect(() => {
     if (!mapInstance || !window.kakao?.maps || !markerClustererRef.current) {

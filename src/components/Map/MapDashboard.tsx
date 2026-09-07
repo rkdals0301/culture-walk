@@ -6,7 +6,6 @@ import CultureListLoading from '@/components/Header/CultureListLoading';
 import { MapFilterControls, MapLocationControl, MapSortControl } from '@/components/Map/MapControls';
 import MapResultSummary from '@/components/Map/MapResultSummary';
 import { useCultureContext } from '@/context/CultureContext';
-import { useCultures } from '@/hooks/cultureHooks';
 import { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import {
@@ -36,14 +35,28 @@ const DESKTOP_DETAIL_PANEL_WIDTH = 480;
 
 interface MapDashboardProps {
   listRequest?: number;
+  visibleCultures: FormattedCulture[];
+  totalCount: number;
+  viewportCount: number;
+  regionOptions: string[];
+  isLoading: boolean;
+  error: Error | null;
+  onRetry: () => void;
 }
 
-const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
+const MapDashboard = ({
+  listRequest = 0,
+  visibleCultures: viewportCultures,
+  totalCount,
+  viewportCount,
+  regionOptions,
+  isLoading,
+  error,
+  onRetry,
+}: MapDashboardProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const {
-    cultures,
-    mapCultures,
     searchQuery,
     mapCategory,
     mapRegion,
@@ -62,9 +75,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
     requestLocation: requestLocationFromProvider,
     cancelLocation,
     setMapListScrollTop,
-    loadCultures,
   } = useCultureContext();
-  const { isLoading, error } = useCultures();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
   const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
@@ -79,25 +90,17 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
   const previousFilterSignatureRef = useRef('');
   const routeRestorePendingRef = useRef(false);
 
-  const totalCount = cultures.length;
-  const regionOptions = useMemo(
-    () =>
-      Array.from(new Set(cultures.map(culture => (culture.guName ?? '').split(/\s+/)[0]).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b, 'ko')
-      ),
-    [cultures]
-  );
   const visibleCultures = useMemo(() => {
     if (mapSortMode !== 'distance' || !currentLocation) {
-      return mapCultures;
+      return viewportCultures;
     }
 
-    return [...mapCultures].sort(
+    return [...viewportCultures].sort(
       (left, right) =>
         calculateDistanceMeters(currentLocation, { lat: left.lat, lng: left.lng }) -
         calculateDistanceMeters(currentLocation, { lat: right.lat, lng: right.lng })
     );
-  }, [currentLocation, mapCultures, mapSortMode]);
+  }, [currentLocation, mapSortMode, viewportCultures]);
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;
   const activeFilterLabels = useMemo(() => {
     const labels: string[] = [];
@@ -418,7 +421,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
             </p>
             <button
               type='button'
-              onClick={() => void loadCultures({ force: true })}
+              onClick={onRetry}
               className='mt-5 inline-flex min-h-11 items-center rounded-xl bg-[var(--color-brand-primary)] px-4 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]'
             >
               다시 불러오기
@@ -503,7 +506,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
               </div>
 
               <MapResultSummary
-                visibleCount={visibleCultures.length}
+                visibleCount={viewportCount}
                 totalCount={totalCount}
                 activeFilterLabels={activeFilterLabels}
                 hasActiveFilters={hasActiveFilters}
@@ -633,7 +636,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                 </button>
               </div>
               <MapResultSummary
-                visibleCount={visibleCultures.length}
+                visibleCount={viewportCount}
                 totalCount={totalCount}
                 activeFilterLabels={activeFilterLabels}
                 hasActiveFilters={hasActiveFilters}
@@ -744,7 +747,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}
               className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
-              aria-label={`행사 목록 열기, ${visibleCultures.length}개 행사`}
+              aria-label={`행사 목록 열기, 현재 영역 ${viewportCount}개 행사`}
             >
               <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white'>
                 <List aria-hidden='true' className='size-4' strokeWidth={2} />
@@ -754,7 +757,7 @@ const MapDashboard = ({ listRequest = 0 }: MapDashboardProps) => {
                   {hasActiveFilters ? '필터 적용됨' : '지도 행사'}
                 </span>
                 <span className='whitespace-nowrap text-xs font-bold text-[var(--color-text-primary)] sm:text-sm'>
-                  행사 {visibleCultures.length.toLocaleString()}개 보기
+                  현재 영역 {viewportCount.toLocaleString()}개 보기
                 </span>
               </span>
               <span className='ml-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface-chip)] text-[var(--color-text-primary)]'>

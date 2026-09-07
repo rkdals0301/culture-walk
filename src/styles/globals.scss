@@ -2078,6 +2078,11 @@
   animation: feed-results-enter 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.feed-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 28rem;
+}
+
 @keyframes map-marker-selection-pulse {
   0% {
     opacity: 0.84;

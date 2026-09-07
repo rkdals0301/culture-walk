@@ -29,11 +29,11 @@ const MapResultSummary = ({
       <div className='flex items-center justify-between gap-3'>
         <div className='min-w-0'>
           <strong aria-live='polite' aria-atomic='true' className='text-lg font-bold tracking-tight text-[var(--color-text-primary)]'>
-            {isLoading ? '행사 불러오는 중...' : `행사 ${visibleCount.toLocaleString()}개`}
+            {isLoading ? '지도 영역 확인 중...' : `현재 영역 ${visibleCount.toLocaleString()}개`}
           </strong>
         </div>
         <span className='shrink-0 rounded-full bg-[var(--color-surface-chip)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
-          {isLoading ? '확인 중' : `전체 ${totalCount.toLocaleString()}개`}
+          {isLoading ? '확인 중' : `전체 조건 ${totalCount.toLocaleString()}개`}
         </span>
       </div>
 

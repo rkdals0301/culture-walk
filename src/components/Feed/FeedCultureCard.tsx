@@ -82,7 +82,7 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
         }
       }}
       aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}`}
-      className='group flex flex-col cursor-pointer transition-transform duration-150 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] rounded-xl'
+      className='feed-card group flex flex-col cursor-pointer rounded-xl transition-transform duration-150 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
     >
       {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
       <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>

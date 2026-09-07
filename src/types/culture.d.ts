@@ -149,6 +149,29 @@ export type CultureListItem = Pick<
   | 'useFee'
 >;
 
+export interface CultureFeedPage {
+  items: CultureListItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  totalCount: number;
+  freeCount: number;
+  regionOptions: string[];
+}
+
+export interface CultureMapBounds {
+  swLat: number;
+  swLng: number;
+  neLat: number;
+  neLng: number;
+}
+
+export interface CultureMapResponse {
+  items: CultureListItem[];
+  totalCount: number;
+  viewportCount: number;
+  regionOptions: string[];
+}
+
 export type FormattedCulture = CultureListItem &
   Partial<Culture> & {
   displayDate: string;
