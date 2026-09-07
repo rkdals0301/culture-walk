@@ -24,8 +24,9 @@
       "binding": "CULTURE_CACHE",
       "id": "5a421575aa4b4466bc15c461152e2b04",
       "preview_id": "f6a1c4e81a104f8aaeb83e4097d6b1bb",
-      // Local development intentionally reads the production KV cache.
-      "remote": true
+      // Local development uses the local KV emulator. Production deployments
+      // still use the namespace identified by `id`.
+      "remote": false
     }
   ],
   "d1_databases": [
@@ -33,8 +34,9 @@
       "binding": "DB",
       "database_name": "culture-walk-db",
       "database_id": "eeb25c40-46ce-46ff-8b13-46ea719ea6a6",
-      // Local development intentionally reads the production D1 database.
-      "remote": true,
+      // Local development uses the local D1 emulator. Production deployments
+      // still use the database identified by `database_id`.
+      "remote": false,
       "migrations_dir": "db/migrations"
     }
   ]

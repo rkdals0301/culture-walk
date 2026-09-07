@@ -556,7 +556,7 @@ $RECYCLE.BIN/
 
 # Culture Walk Project
 .tmp-*
+.local/
 .playwright-cli/
 .playwright-mcp/
 output/
-

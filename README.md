@@ -144,6 +144,28 @@ Cloudflare D1 로컬 SQLite 인스턴스에 테이블 스키마를 적용합니�
 npm run db:migrate:local
 ```
 
+`wrangler.jsonc`의 D1/KV 바인딩은 로컬 개발에서 로컬 에뮬레이터를 사용하도록 설정되어 있습니다. 목록·지도·상세 UI 개발에 필요한 샘플 데이터를 운영 D1에서 명시적으로 한 번 추출하고, 이후에는 저장된 로컬 스냅샷만 사용합니다:
+
+```bash
+npm run db:migrate:local
+npm run db:seed:local:from-production
+npm run dev
+```
+
+`db:seed:local:from-production`은 기본 200건의 행사와 연결된 `culture_tour_api_details`를 운영 D1에서 읽어 `.local/culture-walk-sample.sql`로 저장한 뒤 로컬 D1에 적용합니다. 운영 샘플을 다시 갱신할 때만 이 명령을 실행합니다. 샘플 크기는 다음처럼 바꿀 수 있습니다:
+
+```bash
+npm run db:seed:local:from-production -- --limit 100 --per-category 25
+```
+
+이후에는 다음 명령만 사용하며 운영 네트워크에 접근하지 않습니다:
+
+```bash
+npm run db:seed:local
+```
+
+로컬 seed는 저장된 스냅샷으로 로컬 `cultures`와 `culture_tour_api_details`를 갱신하고, 로컬 동기화 보조 테이블과 KV 캐시를 정리합니다. `from-production` 실행 시에도 운영 D1에는 읽기만 수행하며 운영 KV, 운영 동기화 이력·락은 변경하지 않습니다. `.local/`은 로컬 전용 샘플 파일이므로 Git에 커밋하지 않습니다.
+
 ### 5. 개발 서버 실행
 ```bash
 npm run dev
@@ -163,6 +185,8 @@ npm run dev
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
 | `npm run db:migrate:local` | 로컬 Cloudflare D1 인스턴스에 마이그레이션 적용 |
+| `npm run db:seed:local` | 저장된 로컬 샘플 스냅샷을 운영 접근 없이 로컬 D1에 적용 |
+| `npm run db:seed:local:from-production` | 운영 D1에서 샘플과 상세 데이터를 추출해 로컬 스냅샷 갱신 |
 | `npm run db:migrate:remote` | 원격 Cloudflare D1 프로덕션 DB에 마이그레이션 적용 |
 | `npm run cf:build` | OpenNext를 이용한 Cloudflare Workers 빌드 |
 | `npm run preview` | OpenNext 빌드 후 Wrangler 로컬 에뮬레이터 실행 |
