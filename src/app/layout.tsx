@@ -15,7 +15,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_VERSION = '20260715';
+const OG_IMAGE_VERSION = '20260907';
 const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=${OG_IMAGE_VERSION}`;
 const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=${OG_IMAGE_VERSION}`;
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
@@ -77,12 +77,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.svg?v=20260715-3', type: 'image/svg+xml' },
-      { url: '/favicon-48x48.png?v=20260715-3', type: 'image/png', sizes: '48x48' },
-      { url: '/favicon.ico?v=20260715-3', sizes: 'any' },
+      { url: '/favicon.svg?v=20260907-1', type: 'image/svg+xml' },
+      { url: '/favicon-48x48.png?v=20260907-1', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.ico?v=20260907-1', sizes: 'any' },
     ],
-    shortcut: '/favicon.ico?v=20260715-3',
-    apple: [{ url: '/apple-touch-icon-180x180.png?v=20260715-3', type: 'image/png', sizes: '180x180' }],
+    shortcut: '/favicon.ico?v=20260907-1',
+    apple: [{ url: '/apple-touch-icon-180x180.png?v=20260907-1', type: 'image/png', sizes: '180x180' }],
   },
   description:
     '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="32" y1="16" x2="1150" y2="620" gradientUnits="userSpaceOnUse"><stop stop-color="#F8FBFF"/><stop offset="0.58" stop-color="#EEF6FF"/><stop offset="1" stop-color="#DCEEFF"/></linearGradient>
+    <linearGradient id="brand" x1="88" y1="78" x2="215" y2="225" gradientUnits="userSpaceOnUse"><stop stop-color="#45B8FF"/><stop offset="0.38" stop-color="#3182F6"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
+    <linearGradient id="panel" x1="729" y1="71" x2="1103" y2="558" gradientUnits="userSpaceOnUse"><stop stop-color="#F7FBFF"/><stop offset="1" stop-color="#D8EAFF"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#1B4C97" flood-opacity="0.14"/></filter>
+  </defs>
+  <rect width="1200" height="630" rx="34" fill="url(#bg)"/>
+  <circle cx="1113" cy="-16" r="252" fill="#51C2FF" fill-opacity="0.12"/>
+  <circle cx="-20" cy="650" r="250" fill="#3182F6" fill-opacity="0.09"/>
+  <g transform="translate(76 72)">
+    <rect width="150" height="150" rx="42" fill="url(#brand)"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M75 24c-24 0-43.5 19.5-43.5 43.5 0 27.6 25.6 51.1 43.5 67 17.9-15.9 43.5-39.4 43.5-67C118.5 43.5 99 24 75 24Zm0 18c-14.2 0-25.8 11.6-25.8 25.8S60.8 93.6 75 93.6s25.8-11.6 25.8-25.8S89.2 42 75 42Z" fill="#fff"/>
+    <path d="m75 50 4.3 9.6 9.6 4.3-9.6 4.3L75 77.8l-4.3-9.6-9.6-4.3 9.6-4.3L75 50Z" fill="#fff"/>
+    <path d="M27 128c21-16 52-20 88-10-22 .6-42 5-58 13-7 4-12 7-16 11" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <text x="264" y="130" fill="#111827" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="54" font-weight="800" letter-spacing="-2">문화산책</text>
+  <text x="76" y="300" fill="#111827" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="58" font-weight="800" letter-spacing="-2.2">전국 문화행사를 한눈에</text>
+  <text x="78" y="354" fill="#5A6B82" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="25" font-weight="600">지도에서 찾는 축제 · 공연 · 전시 · 체험</text>
+  <g transform="translate(78 410)">
+    <rect width="104" height="42" rx="21" fill="#E6F1FF"/><text x="52" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">축제</text>
+    <rect x="114" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="166" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">공연</text>
+    <rect x="228" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="280" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">전시</text>
+    <rect x="342" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="394" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">체험</text>
+  </g>
+  <g transform="translate(680 50)" filter="url(#shadow)">
+    <rect width="456" height="530" rx="38" fill="url(#panel)" stroke="#fff" stroke-width="2"/>
+    <path d="M65 106c70-32 142-25 202 14 56 36 109 38 154 9M30 221c96-57 192-45 271 2 53 31 96 35 132 23M52 356c73-48 156-51 229-10 69 39 113 37 157 17" stroke="#A6CCF8" stroke-width="2.5" stroke-dasharray="8 10" opacity="0.8"/>
+    <path d="M102 77c52 30 86 77 81 129-6 61-58 93-43 157 12 51 54 75 99 86" stroke="#7EBAF7" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
+    <g transform="translate(98 110)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
+    <g transform="translate(292 82)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
+    <g transform="translate(216 222)"><path d="M23 0C10 0 0 10 0 23c0 14 14 27 23 35 9-8 23-21 23-35C46 10 36 0 23 0Z" fill="#1F6FF0"/><circle cx="23" cy="23" r="9.5" fill="#fff"/><path d="m23 18 2 4.4 4.4 2-4.4 2-2 4.4-2-4.4-4.4-2 4.4-2 2-4.4Z" fill="#3182F6"/></g>
+    <g transform="translate(356 300)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
+    <g transform="translate(72 398)"><rect width="108" height="96" rx="20" fill="#183E98"/><path d="M19 78c22-39 43-53 71-61" stroke="#B9E3FF" stroke-width="8" stroke-linecap="round"/><circle cx="80" cy="26" r="16" fill="#72C7FF"/></g>
+    <g transform="translate(174 382)"><rect width="112" height="112" rx="20" fill="#F8FBFF"/><rect x="18" y="18" width="76" height="74" rx="7" fill="#D8EAFE"/><circle cx="56" cy="52" r="25" fill="#3A82EC"/><path d="M18 72c28-27 54-30 76-19v39H18V72Z" fill="#1647AD"/></g>
+    <g transform="translate(282 394)"><rect width="112" height="100" rx="20" fill="#265ED8"/><path d="M14 77c27-48 59-54 85-47" stroke="#BDEAFF" stroke-width="11" stroke-linecap="round"/><g fill="#fff"><circle cx="25" cy="25" r="5"/><circle cx="46" cy="18" r="4"/><circle cx="69" cy="27" r="5"/><circle cx="88" cy="18" r="4"/></g></g>
+  </g>
+</svg>

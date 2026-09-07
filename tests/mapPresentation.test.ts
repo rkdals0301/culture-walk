@@ -9,6 +9,7 @@ const layoutPath = fileURLToPath(new URL('../src/app/layout.tsx', import.meta.ur
 const contextPath = fileURLToPath(new URL('../src/context/CultureContext.tsx', import.meta.url));
 const apiErrorPath = fileURLToPath(new URL('../src/hooks/useApiError.ts', import.meta.url));
 const toastPath = fileURLToPath(new URL('../src/components/Toast/ToastContainer.tsx', import.meta.url));
+const headerPath = fileURLToPath(new URL('../src/components/Header/Header.tsx', import.meta.url));
 const stylesPath = fileURLToPath(new URL('../src/styles/globals.scss', import.meta.url));
 
 test('모바일 지도는 피드 링크와 지도 컨트롤 사이에 안전한 세로 간격을 확보한다', async () => {
@@ -89,6 +90,12 @@ test('초기 API 오류보다 토스트 호스트가 먼저 마운트된다', as
   assert.ok(toastHostPosition >= 0);
   assert.ok(cultureProviderPosition >= 0);
   assert.ok(toastHostPosition < cultureProviderPosition);
+});
+
+test('상세창이 열린 상태에서 테마 토글은 외부 클릭으로 처리되지 않는다', async () => {
+  const source = await readFile(headerPath, 'utf8');
+
+  assert.match(source, /data-keeps-detail-open[\s\S]*?<ThemeToggleButton \/>/);
 });
 
 test('API 오류 토스트는 오류 상태 반영 이후에 한 번 표시된다', async () => {

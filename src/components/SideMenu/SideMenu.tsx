@@ -101,7 +101,7 @@ const SideMenu = () => {
                   onClick={closeSideMenu}
                   aria-current={isActive ? 'page' : undefined}
                   className={clsx(
-                    'flex min-h-12 items-center justify-between gap-3 rounded-xl px-3.5 text-[0.95rem] font-semibold transition-all duration-150',
+                    'group flex min-h-12 items-center justify-between gap-3 rounded-xl px-3.5 text-[0.95rem] font-semibold transition-all duration-150',
                     isActive
                       ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] shadow-xs'
                       : 'text-[var(--color-text-primary)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-brand-primary)]'
@@ -110,10 +110,10 @@ const SideMenu = () => {
                   <span className='flex items-center gap-3'>
                     <span
                       className={clsx(
-                        'flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                        'flex size-8 shrink-0 items-center justify-center rounded-lg transition-all duration-150',
                         isActive
                           ? 'bg-[var(--color-brand-primary)] text-white shadow-2xs'
-                          : 'bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)]'
+                          : 'bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] group-hover:bg-[var(--color-brand-subtle)] group-hover:text-[var(--color-brand-primary)] group-hover:shadow-xs group-hover:scale-105'
                       )}
                     >
                       {link.href === '/' && <Compass className='size-4' strokeWidth={2} />}
@@ -123,7 +123,15 @@ const SideMenu = () => {
                     </span>
                     <span>{link.label}</span>
                   </span>
-                  <ChevronRight className='size-4 opacity-40' strokeWidth={2.2} />
+                  <ChevronRight
+                    className={clsx(
+                      'size-4 transition-all duration-150',
+                      isActive
+                        ? 'text-[var(--color-brand-primary)] opacity-80'
+                        : 'text-[var(--color-text-tertiary)] opacity-40 group-hover:translate-x-0.5 group-hover:text-[var(--color-brand-primary)] group-hover:opacity-100'
+                    )}
+                    strokeWidth={2.2}
+                  />
                 </Link>
               );
             })}

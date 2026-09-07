@@ -83,7 +83,7 @@ const ContactPage = () => {
             </span>
             <ArrowUpRight
               aria-hidden='true'
-              className='info-mail-action-arrow transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5'
+              className='info-mail-action-arrow transition-transform duration-200 group-hover:-translate-y-1 group-hover:translate-x-1'
               strokeWidth={1.8}
             />
           </a>

@@ -21,7 +21,7 @@ const Header = () => {
   };
 
   return (
-    <header className='safe-area-header-offset pointer-events-auto fixed inset-x-0 top-0 z-30 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]/95 backdrop-blur-md transition-colors'>
+    <header className='safe-area-header-offset pointer-events-auto fixed inset-x-0 top-0 z-30 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] backdrop-blur-md transition-colors'>
       {pathname === '/' ? (
         <a
           href='#feed-content'
@@ -74,10 +74,10 @@ const Header = () => {
                 key={link.href}
                 href={link.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`inline-flex h-9 items-center rounded-lg px-3 text-xs font-semibold transition-colors ${
+                className={`inline-flex h-9 items-center rounded-lg px-3 text-xs font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)]'
-                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)]'
+                    ? 'bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] shadow-2xs'
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-brand-primary)] active:scale-95'
                 }`}
               >
                 {link.label}
@@ -85,7 +85,7 @@ const Header = () => {
             );
           })}
         </nav>
-        <div className='flex shrink-0 items-center gap-1.5'>
+        <div className='flex shrink-0 items-center gap-1.5' data-keeps-detail-open>
           <ThemeToggleButton />
         </div>
       </div>

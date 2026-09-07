@@ -55,16 +55,18 @@ const AboutPage = () => {
       description='문화산책은 한국관광공사 TourAPI 공개 정보를 바탕으로 전국의 축제, 공연, 전시, 체험 행사를 위치 중심으로 탐색할 수 있게 만든 서비스입니다.'
       action={
         <Link href='/map' className='info-map-action group'>
-          <span className='info-map-action-icon'>
-            <MapPinned aria-hidden='true' className='size-5' strokeWidth={1.8} />
-          </span>
-          <span className='info-map-action-copy'>
-            <span className='info-map-action-label'>문화지도</span>
-            지도에서 행사 찾기
+          <span className='info-map-action-main'>
+            <span className='info-map-action-icon'>
+              <MapPinned aria-hidden='true' className='size-5' strokeWidth={1.8} />
+            </span>
+            <span className='info-map-action-copy'>
+              <span className='info-map-action-label'>문화지도</span>
+              지도에서 행사 찾기
+            </span>
           </span>
           <ArrowRight
             aria-hidden='true'
-            className='info-map-action-arrow transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5'
+            className='info-map-action-arrow transition-transform duration-200 group-hover:translate-x-1'
             strokeWidth={1.8}
           />
         </Link>

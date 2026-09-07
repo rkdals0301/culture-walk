@@ -23,7 +23,7 @@ import { notFound } from 'next/navigation';
 import { and, eq } from 'drizzle-orm';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260715`;
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260907`;
 const DETAIL_CACHE_TTL_SECONDS = 60 * 60 * 24;
 const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 

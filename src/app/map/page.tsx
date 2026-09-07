@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import MapShell from '@/components/Map/MapShell';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260715`;
-const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=20260715`;
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260907`;
+const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=20260907`;
 const TITLE = '문화산책 | 전국 문화행사 지도';
 const DESCRIPTION = '전국 문화행사를 지도에서 탐색하고 지역별 행사 정보를 빠르게 확인하세요.';
 

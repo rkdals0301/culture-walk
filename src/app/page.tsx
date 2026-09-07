@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import FeedView from '@/components/Feed/FeedView';
 
 const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260715`;
-const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=20260715`;
+const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260907`;
+const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=20260907`;
 const TITLE = '문화산책 | 전국 문화행사 둘러보기';
 const DESCRIPTION = '전국의 축제·공연·전시·체험 정보를 한눈에 둘러보고, 지도와 함께 원하는 행사를 발견하세요.';
 

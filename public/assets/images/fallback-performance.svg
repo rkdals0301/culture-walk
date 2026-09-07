@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 828" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="30" x2="535" y2="810" gradientUnits="userSpaceOnUse"><stop stop-color="#173E9D"/><stop offset="0.58" stop-color="#2563EB"/><stop offset="1" stop-color="#0F2D78"/></linearGradient>
+    <linearGradient id="beam" x1="300" y1="88" x2="300" y2="668" gradientUnits="userSpaceOnUse"><stop stop-color="#DDF5FF" stop-opacity="0.9"/><stop offset="1" stop-color="#79C8FF" stop-opacity="0.04"/></linearGradient>
+  </defs>
+  <rect width="600" height="828" rx="38" fill="url(#bg)"/>
+  <path d="M0 0h142c-6 119-23 226-74 319-18 33-41 62-68 87V0Z" fill="#0B1F57" fill-opacity="0.72"/>
+  <path d="M600 0H458c6 119 23 226 74 319 18 33 41 62 68 87V0Z" fill="#0B1F57" fill-opacity="0.72"/>
+  <path d="M253 64h94l118 558H135L253 64Z" fill="url(#beam)"/>
+  <path d="M110 126h58l176 490H168L110 126Z" fill="#C6E9FF" fill-opacity="0.18"/>
+  <path d="M490 126h-58L256 616h176l58-490Z" fill="#C6E9FF" fill-opacity="0.18"/>
+  <ellipse cx="300" cy="665" rx="182" ry="54" fill="#69BBFF" fill-opacity="0.18"/>
+  <ellipse cx="300" cy="652" rx="134" ry="34" fill="#E5F6FF" fill-opacity="0.88"/>
+  <path d="M70 723c108-74 242-93 458-34" stroke="#8DD2FF" stroke-width="12" stroke-linecap="round" opacity="0.55"/>
+  <path d="M84 750c126-61 274-66 430-17" stroke="#F5FBFF" stroke-width="3" stroke-linecap="round" opacity="0.82"/>
+  <path d="M171 283l10 22 22 10-22 10-10 22-10-22-22-10 22-10 10-22Z" fill="#D9F3FF"/>
+  <path d="M442 353l7 16 16 7-16 7-7 16-7-16-16-7 16-7 7-16Z" fill="#8FD6FF"/>
+</svg>
