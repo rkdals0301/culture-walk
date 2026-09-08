@@ -4,7 +4,7 @@ const configuredSiteUrl = process.env.SITE_URL || process.env.APP_BASE_URL || 'h
 
 export const SITE_URL = configuredSiteUrl.replace(/\/+$/, '');
 export const SITE_NAME = '문화산책';
-export const OG_IMAGE_VERSION = '20260908-4';
+export const OG_IMAGE_VERSION = '20260908-7';
 export const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=${OG_IMAGE_VERSION}`;
 export const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=${OG_IMAGE_VERSION}`;
 
