@@ -10,7 +10,11 @@ import LightModeIcon from '../../../public/assets/images/light-mode-icon.svg';
 
 // 다크모드 아이콘
 
-const ThemeToggle = () => {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+const ThemeToggle = ({ className }: ThemeToggleProps) => {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -54,6 +58,8 @@ const ThemeToggle = () => {
       ariaLabel={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
       title={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
       onClick={handleClick}
+      variant='secondary'
+      className={className ?? 'size-9 sm:size-10 rounded-lg transition-colors hover:bg-[var(--color-surface-chip)]'}
       icon={isDark ? <LightModeIcon /> : <DarkModeIcon />}
     />
   );

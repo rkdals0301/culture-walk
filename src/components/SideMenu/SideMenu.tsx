@@ -65,11 +65,11 @@ const SideMenu = () => {
         <div className='flex items-center justify-between gap-4 border-b border-[var(--color-border-primary)] pb-5'>
           <Link href='/' className='flex min-w-0 items-center gap-3' onClick={closeSideMenu}>
             <Image
-              src='/assets/images/logo-128.png'
+              src='/assets/images/brand-logo.svg'
               alt='문화산책'
-              width={42}
-              height={42}
-              className='size-10 rounded-xl shadow-xs'
+              width={40}
+              height={40}
+              className='size-10 rounded-xl shadow-xs transition-transform duration-150 hover:scale-105'
             />
             <div className='min-w-0'>
               <h2 id='side-menu-title' className='truncate text-lg font-bold tracking-tight'>
