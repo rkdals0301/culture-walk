@@ -1,16 +1,26 @@
 import InfoPageShell from '@/components/Info/InfoPageShell';
+import { createPageSocialMetadata } from '@/utils/siteMetadata';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ArrowRight, ExternalLink, MapPinned, RefreshCw } from 'lucide-react';
 
+const TITLE = '서비스 소개 | 문화산책';
+const DESCRIPTION = '문화산책이 전국 문화행사 정보를 수집하고 지도 기반으로 제공하는 방식과 이용 가치를 안내합니다.';
+
 export const metadata: Metadata = {
   title: '서비스 소개',
-  description: '문화산책이 전국 문화행사 정보를 수집하고 지도 기반으로 제공하는 방식과 이용 가치를 안내합니다.',
+  description: DESCRIPTION,
   alternates: {
     canonical: '/about',
   },
+  ...createPageSocialMetadata({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: '/about',
+    imageAlt: '문화산책 서비스 소개',
+  }),
 };
 
 const CATEGORIES = [

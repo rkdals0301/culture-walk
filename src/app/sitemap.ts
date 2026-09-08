@@ -1,20 +1,25 @@
 import { getDb } from '@/db/client';
 import { cultures } from '@/db/schema';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { SITE_URL } from '@/utils/siteMetadata';
 
 import type { MetadataRoute } from 'next';
 
 import { and, asc, eq, gte } from 'drizzle-orm';
 
+// D1 is available only at request time in the Cloudflare worker, not during the Next build.
 export const dynamic = 'force-dynamic';
-
-const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
 
 const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   {
-    url: `${SITE_URL}/map`,
+    url: SITE_URL,
     changeFrequency: 'daily',
     priority: 1,
+  },
+  {
+    url: `${SITE_URL}/map`,
+    changeFrequency: 'daily',
+    priority: 0.9,
   },
   {
     url: `${SITE_URL}/about`,
@@ -39,6 +44,20 @@ const parseLastModified = (value: string) => {
   return Number.isNaN(date.getTime()) ? undefined : date;
 };
 
+const toSitemapImage = (value: string | null) => {
+  const imageUrl = value?.trim();
+  if (!imageUrl) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(imageUrl);
+    return parsedUrl.protocol === 'https:' ? parsedUrl.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const db = await getDb();
   if (!db) {
@@ -52,18 +71,24 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const rows = await db
     .select({
       id: cultures.id,
+      mainImage: cultures.mainImage,
       updatedAt: cultures.updatedAt,
     })
     .from(cultures)
     .where(and(eq(cultures.isActive, true), gte(cultures.endDate, getKoreaDateStartIso())))
     .orderBy(asc(cultures.id));
 
-  const cultureEntries: MetadataRoute.Sitemap = rows.map(row => ({
-    url: `${SITE_URL}/map/${row.id}`,
-    lastModified: parseLastModified(row.updatedAt),
-    changeFrequency: 'daily',
-    priority: 0.8,
-  }));
+  const cultureEntries: MetadataRoute.Sitemap = rows.map(row => {
+    const image = toSitemapImage(row.mainImage);
+
+    return {
+      url: `${SITE_URL}/map/${row.id}`,
+      lastModified: parseLastModified(row.updatedAt),
+      changeFrequency: 'daily',
+      priority: 0.8,
+      ...(image ? { images: [image] } : {}),
+    };
+  });
 
   return [...STATIC_ENTRIES, ...cultureEntries];
 };

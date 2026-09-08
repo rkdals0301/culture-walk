@@ -1,38 +1,109 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
   <defs>
-    <linearGradient id="bg" x1="32" y1="16" x2="1150" y2="620" gradientUnits="userSpaceOnUse"><stop stop-color="#F8FBFF"/><stop offset="0.58" stop-color="#EEF6FF"/><stop offset="1" stop-color="#DCEEFF"/></linearGradient>
-    <linearGradient id="brand" x1="88" y1="78" x2="215" y2="225" gradientUnits="userSpaceOnUse"><stop stop-color="#45B8FF"/><stop offset="0.38" stop-color="#3182F6"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
-    <linearGradient id="panel" x1="729" y1="71" x2="1103" y2="558" gradientUnits="userSpaceOnUse"><stop stop-color="#F7FBFF"/><stop offset="1" stop-color="#D8EAFF"/></linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#1B4C97" flood-opacity="0.14"/></filter>
+    <filter id="marker-shadow" x="-30%" y="-20%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#123A72" flood-opacity="0.25"/>
+    </filter>
+    <clipPath id="map-bounds">
+      <rect x="0" y="72" width="1200" height="558"/>
+    </clipPath>
+    <!-- Same geometry as the live map's default marker. -->
+    <g id="event-marker">
+      <path d="M24 2C14.61 2 7 9.47 7 18.68c0 8.36 4.57 14.07 7.98 18.27l7.47 9.23a2 2 0 0 0 3.1 0l7.47-9.23C36.43 32.75 41 27.04 41 18.68 41 9.47 33.39 2 24 2Z" fill="#3182F6" stroke="#fff" stroke-width="2" filter="url(#marker-shadow)"/>
+      <circle cx="24" cy="18.8" r="8" fill="#fff"/>
+      <circle cx="24" cy="18.8" r="3.6" fill="#3182F6"/>
+    </g>
   </defs>
-  <rect width="1200" height="630" rx="34" fill="url(#bg)"/>
-  <circle cx="1113" cy="-16" r="252" fill="#51C2FF" fill-opacity="0.12"/>
-  <circle cx="-20" cy="650" r="250" fill="#3182F6" fill-opacity="0.09"/>
-  <g transform="translate(76 72)">
-    <rect width="150" height="150" rx="42" fill="url(#brand)"/>
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M75 24c-24 0-43.5 19.5-43.5 43.5 0 27.6 25.6 51.1 43.5 67 17.9-15.9 43.5-39.4 43.5-67C118.5 43.5 99 24 75 24Zm0 18c-14.2 0-25.8 11.6-25.8 25.8S60.8 93.6 75 93.6s25.8-11.6 25.8-25.8S89.2 42 75 42Z" fill="#fff"/>
-    <path d="m75 50 4.3 9.6 9.6 4.3-9.6 4.3L75 77.8l-4.3-9.6-9.6-4.3 9.6-4.3L75 50Z" fill="#fff"/>
-    <path d="M27 128c21-16 52-20 88-10-22 .6-42 5-58 13-7 4-12 7-16 11" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+
+  <rect width="1200" height="630" fill="#F5F6F8"/>
+
+  <!-- Map: deliberately restrained, closer to the product surface than an illustrated route. -->
+  <g clip-path="url(#map-bounds)">
+    <rect x="0" y="72" width="1200" height="558" fill="#F6F4EA"/>
+    <path d="M463 85c116 24 177 17 253-26 82-47 153-43 233-7 79 36 156 37 251-9v164c-104 43-190 41-275 2-73-33-135-31-208 8-75 41-161 49-254 22V85Z" fill="#E4EBDD"/>
+    <path d="M1200 423c-83-42-159-46-230-11-84 42-148 48-228 11-93-43-171-38-279 17v190h737V423Z" fill="#E5F0F9"/>
+    <path d="M462 468c105-42 187-45 274-7 86 38 164 36 264-9 74-33 140-38 200-18" stroke="#D4E7F6" stroke-width="56" stroke-linecap="round"/>
+
+    <g stroke="#D8DCE1" stroke-linecap="round" fill="none">
+      <path d="M462 169H1200" stroke-width="15"/>
+      <path d="M462 324H1200" stroke-width="18"/>
+      <path d="M463 523H1200" stroke-width="14"/>
+      <path d="M601 72v558" stroke-width="14"/>
+      <path d="M793 72v558" stroke-width="18"/>
+      <path d="M1027 72v558" stroke-width="14"/>
+      <path d="M488 106c107 83 186 110 290 101 126-11 226 23 384 108" stroke-width="11"/>
+      <path d="M501 575c80-88 156-128 248-127 116 2 186-43 330-153" stroke-width="11"/>
+    </g>
+    <g stroke="#FFFFFF" stroke-linecap="round" fill="none">
+      <path d="M462 169H1200" stroke-width="9"/>
+      <path d="M462 324H1200" stroke-width="11"/>
+      <path d="M463 523H1200" stroke-width="8"/>
+      <path d="M601 72v558" stroke-width="8"/>
+      <path d="M793 72v558" stroke-width="11"/>
+      <path d="M1027 72v558" stroke-width="8"/>
+      <path d="M488 106c107 83 186 110 290 101 126-11 226 23 384 108" stroke-width="5"/>
+      <path d="M501 575c80-88 156-128 248-127 116 2 186-43 330-153" stroke-width="5"/>
+    </g>
+
+    <g fill="#768494" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" font-weight="700" letter-spacing="-0.7">
+      <text x="523" y="144">광화문</text>
+      <text x="706" y="283">세종대로</text>
+      <text x="859" y="142">종로구</text>
+      <text x="1066" y="420">을지로</text>
+      <text x="883" y="584">청계천</text>
+    </g>
+
+    <use href="#event-marker" x="635" y="207"/>
+    <use href="#event-marker" x="846" y="156"/>
+    <use href="#event-marker" x="980" y="306"/>
+    <use href="#event-marker" x="731" y="421"/>
+
+    <g transform="translate(1034 542)">
+      <rect width="126" height="46" rx="14" fill="#FFFFFF"/>
+      <circle cx="27" cy="23" r="9" stroke="#475569" stroke-width="2"/>
+      <circle cx="27" cy="23" r="3" fill="#3182F6"/>
+      <text x="49" y="28" fill="#475569" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="15" font-weight="700" letter-spacing="-0.4">내 위치</text>
+    </g>
   </g>
-  <text x="264" y="130" fill="#111827" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="54" font-weight="800" letter-spacing="-2">문화산책</text>
-  <text x="76" y="300" fill="#111827" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="58" font-weight="800" letter-spacing="-2.2">전국 문화행사를 한눈에</text>
-  <text x="78" y="354" fill="#5A6B82" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="25" font-weight="600">지도에서 찾는 축제 · 공연 · 전시 · 체험</text>
-  <g transform="translate(78 410)">
-    <rect width="104" height="42" rx="21" fill="#E6F1FF"/><text x="52" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">축제</text>
-    <rect x="114" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="166" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">공연</text>
-    <rect x="228" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="280" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">전시</text>
-    <rect x="342" width="104" height="42" rx="21" fill="#E6F1FF"/><text x="394" y="28" text-anchor="middle" fill="#2475E9" font-family="Pretendard, Malgun Gothic, sans-serif" font-size="17" font-weight="700">체험</text>
+
+  <!-- Product header -->
+  <rect width="1200" height="72" fill="#101012"/>
+  <rect y="71" width="1200" height="1" fill="#2B2D33"/>
+  <g transform="translate(38 16)">
+    <rect width="40" height="40" rx="12" fill="#25262E"/>
+    <path d="M13 15h14M13 20h14M13 25h14" stroke="#F6F7F9" stroke-width="2" stroke-linecap="round"/>
   </g>
-  <g transform="translate(680 50)" filter="url(#shadow)">
-    <rect width="456" height="530" rx="38" fill="url(#panel)" stroke="#fff" stroke-width="2"/>
-    <path d="M65 106c70-32 142-25 202 14 56 36 109 38 154 9M30 221c96-57 192-45 271 2 53 31 96 35 132 23M52 356c73-48 156-51 229-10 69 39 113 37 157 17" stroke="#A6CCF8" stroke-width="2.5" stroke-dasharray="8 10" opacity="0.8"/>
-    <path d="M102 77c52 30 86 77 81 129-6 61-58 93-43 157 12 51 54 75 99 86" stroke="#7EBAF7" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
-    <g transform="translate(98 110)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
-    <g transform="translate(292 82)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
-    <g transform="translate(216 222)"><path d="M23 0C10 0 0 10 0 23c0 14 14 27 23 35 9-8 23-21 23-35C46 10 36 0 23 0Z" fill="#1F6FF0"/><circle cx="23" cy="23" r="9.5" fill="#fff"/><path d="m23 18 2 4.4 4.4 2-4.4 2-2 4.4-2-4.4-4.4-2 4.4-2 2-4.4Z" fill="#3182F6"/></g>
-    <g transform="translate(356 300)"><path d="M20 0C9 0 0 9 0 20c0 12 12 24 20 31 8-7 20-19 20-31C40 9 31 0 20 0Z" fill="#3182F6"/><circle cx="20" cy="20" r="8" fill="#fff"/><circle cx="20" cy="20" r="3.2" fill="#3182F6"/></g>
-    <g transform="translate(72 398)"><rect width="108" height="96" rx="20" fill="#183E98"/><path d="M19 78c22-39 43-53 71-61" stroke="#B9E3FF" stroke-width="8" stroke-linecap="round"/><circle cx="80" cy="26" r="16" fill="#72C7FF"/></g>
-    <g transform="translate(174 382)"><rect width="112" height="112" rx="20" fill="#F8FBFF"/><rect x="18" y="18" width="76" height="74" rx="7" fill="#D8EAFE"/><circle cx="56" cy="52" r="25" fill="#3A82EC"/><path d="M18 72c28-27 54-30 76-19v39H18V72Z" fill="#1647AD"/></g>
-    <g transform="translate(282 394)"><rect width="112" height="100" rx="20" fill="#265ED8"/><path d="M14 77c27-48 59-54 85-47" stroke="#BDEAFF" stroke-width="11" stroke-linecap="round"/><g fill="#fff"><circle cx="25" cy="25" r="5"/><circle cx="46" cy="18" r="4"/><circle cx="69" cy="27" r="5"/><circle cx="88" cy="18" r="4"/></g></g>
+  <image href="/assets/images/logo-128.png" x="102" y="16" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>
+  <text x="153" y="43" fill="#F9FAFB" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="22" font-weight="800" letter-spacing="-0.9">문화산책</text>
+  <g transform="translate(996 17)">
+    <rect width="166" height="38" rx="12" fill="#25262E"/>
+    <circle cx="25" cy="18" r="5" stroke="#F9FAFB" stroke-width="2"/>
+    <path d="m29 22 4 4" stroke="#F9FAFB" stroke-width="2" stroke-linecap="round"/>
+    <text x="47" y="24" fill="#F9FAFB" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="15" font-weight="700" letter-spacing="-0.4">행사 검색</text>
+  </g>
+
+  <!-- One functional drawer: the map remains visible while the user chooses a cultural event. -->
+  <path d="M0 72h424c22.1 0 40 17.9 40 40v518H0V72Z" fill="#16171B"/>
+  <text x="56" y="190" fill="#F9FAFB" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="43" font-weight="800" letter-spacing="-2.1">전국 문화행사를</text>
+  <text x="56" y="246" fill="#F9FAFB" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="43" font-weight="800" letter-spacing="-2.1">지도에서 찾으세요</text>
+  <text x="56" y="289" fill="#AEB6C2" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="19" font-weight="600" letter-spacing="-0.7">축제 · 공연 · 전시 · 체험</text>
+
+  <g transform="translate(56 329)" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="15" font-weight="700" text-anchor="middle">
+    <rect width="58" height="38" rx="12" fill="#3182F6"/>
+    <text x="29" y="25" fill="#FFFFFF" letter-spacing="-0.4">전체</text>
+    <rect x="68" width="64" height="38" rx="12" fill="#282A33"/>
+    <text x="100" y="25" fill="#C8CED8" letter-spacing="-0.4">공연</text>
+    <rect x="142" width="64" height="38" rx="12" fill="#282A33"/>
+    <text x="174" y="25" fill="#C8CED8" letter-spacing="-0.4">전시</text>
+    <rect x="216" width="64" height="38" rx="12" fill="#282A33"/>
+    <text x="248" y="25" fill="#C8CED8" letter-spacing="-0.4">축제</text>
+  </g>
+  <path d="M56 408h352" stroke="#2A2C34"/>
+  <circle cx="62" cy="450" r="5" fill="#3182F6"/>
+  <text x="79" y="456" fill="#E8EBF0" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" font-weight="750" letter-spacing="-0.7">지도를 움직여 행사를 찾아보세요</text>
+  <text x="56" y="490" fill="#949EAB" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="16" font-weight="550" letter-spacing="-0.5">가까운 문화의 순간을 놓치지 마세요.</text>
+  <g transform="translate(56 536)">
+    <rect width="352" height="56" rx="16" fill="#3182F6"/>
+    <path d="M28 20h13v13H28zM31 23h7v7h-7zM46 20h7M46 26h7M46 32h7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="70" y="36" fill="#FFFFFF" font-family="Pretendard, 'Malgun Gothic', sans-serif" font-size="18" font-weight="800" letter-spacing="-0.7">지도에서 행사 둘러보기</text>
   </g>
 </svg>

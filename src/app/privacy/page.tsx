@@ -1,14 +1,24 @@
 import InfoPageShell from '@/components/Info/InfoPageShell';
+import { createPageSocialMetadata } from '@/utils/siteMetadata';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+const TITLE = '개인정보처리방침 | 문화산책';
+const DESCRIPTION = '문화산책의 개인정보 수집 여부, 위치 정보 사용 방식, 분석 및 광고 도구 사용에 관한 안내입니다.';
+
 export const metadata: Metadata = {
   title: '개인정보처리방침',
-  description: '문화산책의 개인정보 수집 여부, 위치 정보 사용 방식, 분석 및 광고 도구 사용에 관한 안내입니다.',
+  description: DESCRIPTION,
   alternates: {
     canonical: '/privacy',
   },
+  ...createPageSocialMetadata({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: '/privacy',
+    imageAlt: '문화산책 개인정보처리방침',
+  }),
 };
 
 const PrivacyPage = () => {

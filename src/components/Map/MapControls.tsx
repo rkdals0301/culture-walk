@@ -111,7 +111,7 @@ interface MapSortControlProps {
 
 export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapSortControlProps) => (
   <div
-    className='flex rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] p-1'
+    className='flex rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] p-0.5'
     role='group'
     aria-label='행사 정렬 방식'
   >
@@ -120,7 +120,7 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       onClick={() => onChange('date')}
       aria-pressed={mode === 'date'}
       className={clsx(
-        'flex h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
+        'flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
         mode === 'date'
           ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-xs'
           : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'
@@ -137,7 +137,7 @@ export const MapSortControl = ({ mode, hasLocation, isLocating, onChange }: MapS
       aria-label={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={clsx(
-        'flex h-9 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
+        'flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg border px-2 text-xs font-bold transition-all duration-150',
         mode === 'distance'
           ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-xs'
           : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:bg-[var(--color-interactive-disabled)] disabled:text-[var(--color-text-disabled)]'
@@ -153,9 +153,15 @@ interface MapLocationControlProps {
   isActive: boolean;
   isLocating: boolean;
   onToggle: () => void;
+  compact?: boolean;
 }
 
-export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocationControlProps) => (
+export const MapLocationControl = ({
+  isActive,
+  isLocating,
+  onToggle,
+  compact = false,
+}: MapLocationControlProps) => (
   <button
     type='button'
     onClick={onToggle}
@@ -163,7 +169,8 @@ export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocati
     aria-label={isLocating ? '위치 확인 취소' : isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
     title={isLocating ? '위치 확인 취소' : isActive ? '현재 위치 사용 해제' : '현재 위치 사용'}
     className={clsx(
-      'flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all duration-150',
+      'flex shrink-0 items-center justify-center rounded-xl border font-bold transition-all duration-150',
+      compact ? 'size-9' : 'h-9 gap-1.5 px-3 text-xs',
       isActive
         ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] shadow-xs'
         : 'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)]',
@@ -172,6 +179,6 @@ export const MapLocationControl = ({ isActive, isLocating, onToggle }: MapLocati
     )}
   >
     <MapFindMyLocationIcon className={clsx('size-3.5', isLocating && 'animate-spin')} />
-    {isLocating ? '취소' : isActive ? '위치 사용 중' : '내 위치'}
+    {!compact && <span>{isLocating ? '취소' : isActive ? '위치 사용 중' : '내 위치'}</span>}
   </button>
 );

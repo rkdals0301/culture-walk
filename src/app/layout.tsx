@@ -2,6 +2,7 @@ import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
+import ServiceWorkerRegistration from '@/components/PWA/ServiceWorkerRegistration';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
 import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
@@ -10,14 +11,11 @@ import { SideMenuProvider } from '@/context/SideMenuContext';
 import ThemeProvider from '@/providers/ThemeProvider';
 import '@/styles/globals.scss';
 import { serializeJsonLd } from '@/utils/jsonLd';
+import { OG_IMAGE_URL, SEARCH_THUMBNAIL_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
 
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
-const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_VERSION = '20260907';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=${OG_IMAGE_VERSION}`;
-const SEARCH_THUMBNAIL_URL = `${SITE_URL}/assets/images/search-thumbnail.png?v=${OG_IMAGE_VERSION}`;
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION || '66miDIhrDH8lCNzTkOQ4cJCs6iyOiVAdPxrF-ZoOEKo';
@@ -42,18 +40,24 @@ const WEBSITE_STRUCTURED_DATA = {
     {
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
-      name: '문화산책',
+      name: SITE_NAME,
       url: SITE_URL,
       inLanguage: 'ko-KR',
       description: '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인할 수 있는 서비스',
       image: { '@id': `${SITE_URL}/#primaryimage` },
+      publisher: { '@id': `${SITE_URL}/#organization` },
     },
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
-      name: '문화산책',
+      name: SITE_NAME,
       url: SITE_URL,
       logo: `${SITE_URL}/assets/images/logo-128.png`,
+      description: '전국의 축제, 공연, 전시, 체험 행사를 지도에서 찾는 문화행사 탐색 서비스',
+      areaServed: {
+        '@type': 'Country',
+        name: '대한민국',
+      },
     },
     {
       '@type': 'ImageObject',
@@ -64,33 +68,41 @@ const WEBSITE_STRUCTURED_DATA = {
       width: 1200,
       height: 630,
       caption: '문화산책 전국 문화행사 지도',
+      inLanguage: 'ko-KR',
     },
   ],
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: '문화산책',
+  applicationName: SITE_NAME,
+  referrer: 'strict-origin-when-cross-origin',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   title: {
-    default: '문화산책',
-    template: '%s | 문화산책',
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
   icons: {
     icon: [
-      { url: '/favicon.svg?v=20260907-2', type: 'image/svg+xml' },
-      { url: '/favicon-48x48.png?v=20260907-2', type: 'image/png', sizes: '48x48' },
-      { url: '/favicon.ico?v=20260907-2', sizes: 'any' },
+      { url: '/favicon-16x16.png?v=20260908-5', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-32x32.png?v=20260908-5', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-48x48.png?v=20260908-5', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.ico?v=20260908-5', sizes: 'any' },
     ],
-    shortcut: '/favicon.ico?v=20260907-2',
-    apple: [{ url: '/apple-touch-icon-180x180.png?v=20260907-2', type: 'image/png', sizes: '180x180' }],
+    shortcut: '/favicon.ico?v=20260908-5',
+    apple: [{ url: '/apple-touch-icon-180x180.png?v=20260908-5', type: 'image/png', sizes: '180x180' }],
   },
   description:
     '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',
   keywords: '전국 문화행사, 전국 축제, 지역 축제, 국내 행사, 문화 행사, 공연, 전시, 체험, 문화 지도, 여행 행사',
   category: 'travel',
   verification: {
+    google: GOOGLE_SITE_VERIFICATION,
     other: {
-      'google-site-verification': GOOGLE_SITE_VERIFICATION,
       'naver-site-verification': NAVER_SITE_VERIFICATION,
     },
   },
@@ -103,9 +115,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: SITE_URL,
-    title: '문화산책',
+    title: SITE_NAME,
     description: '전국의 축제·공연·전시·체험 정보를 지도에서 탐색하고 상세 정보를 확인하세요.',
-    siteName: '문화산책',
+    siteName: SITE_NAME,
     images: [
       {
         url: OG_IMAGE_URL,
@@ -114,18 +126,11 @@ export const metadata: Metadata = {
         alt: '문화산책 - 전국 문화행사 지도',
         type: 'image/png',
       },
-      {
-        url: SEARCH_THUMBNAIL_URL,
-        width: 1200,
-        height: 1200,
-        alt: '문화산책 전국 문화행사 지도 검색 대표 이미지',
-        type: 'image/png',
-      },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '문화산책',
+    title: SITE_NAME,
     description:
       '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',
     images: [
@@ -210,6 +215,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         </noscript>
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
+        <ServiceWorkerRegistration />
         <script
           id='website-structured-data'
           type='application/ld+json'

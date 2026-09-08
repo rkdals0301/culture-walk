@@ -1,10 +1,13 @@
 import InfoPageShell from '@/components/Info/InfoPageShell';
+import { createPageSocialMetadata } from '@/utils/siteMetadata';
 
 import type { Metadata } from 'next';
 
 import { ArrowUpRight, Clock, FileText, Link2, Mail, MapPin } from 'lucide-react';
 
 const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'rkdals0301@naver.com';
+const TITLE = '문의 | 문화산책';
+const DESCRIPTION = '문화산책 서비스 오류, 데이터 수정, 광고 및 개인정보 관련 문의 방법을 안내합니다.';
 
 const CONTACT_TOPICS = [
   { title: '행사 정보 오류', detail: '위치, 일정, 링크가 실제 안내와 다를 때' },
@@ -22,10 +25,16 @@ const MESSAGE_CHECKLIST = [
 
 export const metadata: Metadata = {
   title: '문의',
-  description: '문화산책 서비스 오류, 데이터 수정, 광고 및 개인정보 관련 문의 방법을 안내합니다.',
+  description: DESCRIPTION,
   alternates: {
     canonical: '/contact',
   },
+  ...createPageSocialMetadata({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: '/contact',
+    imageAlt: '문화산책 문의 안내',
+  }),
 };
 
 const ContactPage = () => {

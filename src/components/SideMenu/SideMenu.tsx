@@ -65,7 +65,7 @@ const SideMenu = () => {
         <div className='flex items-center justify-between gap-4 border-b border-[var(--color-border-primary)] pb-5'>
           <Link href='/' className='flex min-w-0 items-center gap-3' onClick={closeSideMenu}>
             <Image
-              src='/favicon.svg'
+              src='/assets/images/logo-128.png'
               alt='문화산책'
               width={42}
               height={42}

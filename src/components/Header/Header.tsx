@@ -48,7 +48,7 @@ const Header = () => {
           />
           <Link href='/' className='group flex min-w-0 items-center gap-2 sm:gap-2.5 transition-opacity duration-150 hover:opacity-90'>
             <Image
-              src='/favicon.svg'
+              src='/assets/images/logo-128.png'
               alt='문화산책'
               width={32}
               height={32}

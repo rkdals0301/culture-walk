@@ -7,13 +7,7 @@ interface CultureImageFallbackProps {
   classification?: string;
 }
 
-const FALLBACK_ART_BY_TONE = {
-  education: '/assets/images/fallback-education.svg',
-  exhibition: '/assets/images/fallback-exhibition.svg',
-  festival: '/assets/images/fallback-festival.svg',
-  performance: '/assets/images/fallback-performance.svg',
-  other: '/assets/images/fallback-neutral.svg',
-} as const;
+const FALLBACK_ART = '/assets/images/fallback-place.webp';
 
 const FALLBACK_LABEL_BY_TONE = {
   education: '교육·체험',
@@ -25,7 +19,6 @@ const FALLBACK_LABEL_BY_TONE = {
 
 const CultureImageFallback = ({ compact = false, classification }: CultureImageFallbackProps) => {
   const tone = getCultureTone(classification);
-  const fallbackArt = FALLBACK_ART_BY_TONE[tone];
   const fallbackLabel = FALLBACK_LABEL_BY_TONE[tone];
 
   return (
@@ -35,7 +28,7 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
       aria-label={`${classification || '문화행사'} 대표 이미지 없음`}
     >
       <Image
-        src={fallbackArt}
+        src={FALLBACK_ART}
         alt=''
         aria-hidden='true'
         draggable={false}
@@ -48,15 +41,21 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
         className={
           compact
             ? 'absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 via-slate-950/45 to-transparent px-2 pb-2 pt-7'
-            : 'absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/88 via-slate-950/52 to-transparent px-4 pb-4 pt-16 sm:px-5 sm:pb-5'
+            : 'from-slate-950/88 via-slate-950/52 absolute inset-x-0 bottom-0 bg-gradient-to-t to-transparent px-4 pb-4 pt-16 sm:px-5 sm:pb-5'
         }
       >
         {!compact && (
-          <span className='mb-1 block text-[0.62rem] font-semibold tracking-[0.08em] text-white/72'>
+          <span className='text-white/72 mb-1 block text-[0.62rem] font-semibold tracking-[0.08em]'>
             대표 이미지 없음
           </span>
         )}
-        <span className={compact ? 'block truncate text-[0.68rem] font-bold' : 'block text-base font-extrabold tracking-tight sm:text-lg'}>
+        <span
+          className={
+            compact
+              ? 'block truncate text-[0.68rem] font-bold'
+              : 'block text-base font-extrabold tracking-tight sm:text-lg'
+          }
+        >
           {fallbackLabel}
         </span>
       </div>

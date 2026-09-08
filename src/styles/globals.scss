@@ -1925,8 +1925,9 @@
   }
 
   .bottom-sheet-panel {
-    bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - 3rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    bottom: 0;
+    max-height: calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px));
+    overscroll-behavior: contain;
   }
 
   .bottom-sheet-scrim {

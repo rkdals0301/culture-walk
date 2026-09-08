@@ -625,28 +625,47 @@ const MapDashboard = ({
         </button>
       )}
 
-      <div className='safe-area-mobile-list-shell pointer-events-none flex h-full w-full flex-col px-4 pt-[5.4rem] sm:px-6 sm:pt-[6rem] md:hidden'>
+      <div className='pointer-events-none flex h-full w-full flex-col pt-[5.4rem] sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section
-            className='surface-panel pointer-events-auto mt-auto flex h-[calc(100dvh-6.4rem)] max-h-none min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
+            className='surface-panel pointer-events-auto mt-auto flex h-[calc(100dvh-6.4rem)] max-h-none min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] pb-[env(safe-area-inset-bottom,0px)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
             aria-busy={isFilterPending || isLoading}
           >
-            <div className='border-b border-[var(--color-border-primary)] px-4 pb-3 pt-4'>
+            {/* Mobile swipe/grab handle indicator */}
+            <div
+              className='flex w-full shrink-0 cursor-grab items-center justify-center pb-1 pt-2.5 active:cursor-grabbing'
+              onClick={() => setIsMobileSheetVisible(false)}
+              role='button'
+              tabIndex={0}
+              aria-label='행사 목록 접고 지도 보기'
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  setIsMobileSheetVisible(false);
+                }
+              }}
+            >
+              <div className='h-1.5 w-10 rounded-full bg-[var(--color-text-tertiary)]/35 transition-colors hover:bg-[var(--color-text-tertiary)]/60' />
+            </div>
+            <div className='border-b border-[var(--color-border-primary)] px-4 pb-2.5 pt-1'>
               <div className='flex items-center justify-between gap-3'>
-                <div className='min-w-0'>
+                <div className='flex items-center gap-2'>
                   <h3 className='text-base font-bold text-[var(--color-text-primary)]'>행사 목록</h3>
+                  <span className='rounded-full bg-[var(--color-surface-chip)] px-2 py-0.5 text-[0.72rem] font-bold text-[var(--color-brand-primary)]'>
+                    {viewportCount.toLocaleString()}개
+                  </span>
                 </div>
                 <button
                   type='button'
                   onClick={() => setIsMobileSheetVisible(false)}
-                  className='inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[var(--color-surface-chip)] px-3 text-xs font-bold text-[var(--color-text-primary)] transition hover:bg-[var(--color-interactive-hover)]'
+                  className='inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] px-3.5 text-xs font-bold text-[var(--color-text-primary)] shadow-2xs transition hover:bg-[var(--color-interactive-hover)] active:scale-[0.98]'
+                  aria-label='목록 접고 지도 보기'
                 >
                   <MapPinned
                     aria-hidden='true'
-                    className='size-3.5 text-[var(--color-brand-primary)]'
-                    strokeWidth={2}
+                    className='size-4 text-[var(--color-brand-primary)]'
+                    strokeWidth={2.2}
                   />
-                  지도만 보기
+                  <span>지도 보기</span>
                 </button>
               </div>
               <MapResultSummary
@@ -661,7 +680,7 @@ const MapDashboard = ({
               />
               <form
                 role='search'
-                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-2.5 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
+                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-2 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
                 onSubmit={event => event.preventDefault()}
               >
                 <SearchIcon className='size-4 shrink-0 text-[var(--color-brand-primary)]' />
@@ -688,14 +707,14 @@ const MapDashboard = ({
                   </button>
                 )}
               </form>
-              <div className='mt-2.5 flex items-center justify-between gap-2'>
+              <div className='mt-2 flex items-center justify-between gap-1.5'>
                 <button
                   type='button'
                   onClick={() => setIsMobileFiltersOpen(current => !current)}
                   aria-expanded={isMobileFiltersOpen}
                   aria-controls='map-mobile-filters'
                   className={clsx(
-                    'flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all duration-150',
+                    'flex h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-bold transition-all duration-150',
                     isMobileFiltersOpen || hasActiveFilters
                       ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)]'
                       : 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'
@@ -704,7 +723,7 @@ const MapDashboard = ({
                   <ListFilter aria-hidden='true' className='size-3.5' strokeWidth={2} />
                   <span>필터</span>
                   {activeFilterLabels.length > 0 && (
-                    <span className='flex size-5 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-[0.68rem] font-bold text-[var(--color-brand-on-primary)]'>
+                    <span className='flex size-4.5 min-w-[18px] items-center justify-center rounded-full bg-[var(--color-brand-primary)] px-1 text-[0.65rem] font-bold text-[var(--color-brand-on-primary)]'>
                       {activeFilterLabels.length}
                     </span>
                   )}
@@ -714,7 +733,7 @@ const MapDashboard = ({
                     strokeWidth={2.2}
                   />
                 </button>
-                <div className='flex min-w-0 items-center justify-end gap-2'>
+                <div className='flex shrink-0 items-center gap-1.5'>
                   <MapSortControl
                     mode={mapSortMode}
                     hasLocation={Boolean(currentLocation)}
@@ -725,6 +744,7 @@ const MapDashboard = ({
                     isActive={Boolean(currentLocation)}
                     isLocating={isLocating}
                     onToggle={handleLocationToggle}
+                    compact
                   />
                 </div>
               </div>
@@ -757,7 +777,7 @@ const MapDashboard = ({
             </div>
           </section>
         ) : !isDetailRoute ? (
-          <div className='pointer-events-auto mt-auto flex justify-center pb-2'>
+          <div className='pointer-events-auto mt-auto flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]'>
             <button
               type='button'
               onClick={() => setIsMobileSheetVisible(true)}

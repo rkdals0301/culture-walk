@@ -46,7 +46,7 @@ const FeedHeader = ({
       <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <h1 className='text-lg font-bold tracking-tight text-[var(--color-text-primary)] sm:text-xl'>
-            행사 둘러보기
+            전국 문화행사 둘러보기
           </h1>
           <p className='mt-0.5 text-xs text-[var(--color-text-tertiary)]'>
             전국 {totalCount > 0 ? `${totalCount.toLocaleString('ko-KR')}개` : ''}

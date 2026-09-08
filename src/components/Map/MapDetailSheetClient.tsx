@@ -41,9 +41,17 @@ interface MapDetailFallbackProps {
 const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
+  const hasCultureImage =
+    typeof culture.mainImage === 'string' &&
+    Boolean(culture.mainImage.trim()) &&
+    !culture.mainImage.includes('/assets/images/logo');
+
   return (
-    <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-3 z-50 flex h-[calc(100dvh-3rem-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden rounded-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
-      <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-4'>
+    <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden rounded-b-none rounded-t-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:inset-x-auto md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
+      <div className='flex shrink-0 items-center justify-center pb-1 pt-2 lg:hidden' aria-hidden='true'>
+        <div className='h-1.5 w-10 rounded-full bg-[var(--color-text-tertiary)]/35' />
+      </div>
+      <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-2 lg:pt-4'>
         <Link
           href='/map'
           className='mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-primary)] transition hover:opacity-80'
@@ -62,7 +70,39 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
         </h1>
       </header>
 
-      <div className='bottom-sheet-scroll-region min-h-0 flex-1 overflow-y-auto px-5 py-5'>
+      <div className='bottom-sheet-scroll-region min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5'>
+        {/* Main Poster in Fallback */}
+        <div className='relative w-full overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
+          {hasCultureImage ? (
+            <div className='relative flex aspect-[3/4] max-h-[380px] w-full items-center justify-center overflow-hidden bg-black/10'>
+              <div className='pointer-events-none absolute inset-0 select-none overflow-hidden' aria-hidden='true'>
+                <Image
+                  src={culture.mainImage as string}
+                  alt=''
+                  fill
+                  sizes='120px'
+                  className='scale-125 object-cover opacity-35 blur-xl'
+                />
+                <div className='absolute inset-0 bg-black/15' />
+              </div>
+              <div className='relative z-10 size-full p-2.5'>
+                <Image
+                  src={culture.mainImage as string}
+                  alt={culture.title}
+                  fill
+                  sizes='(min-width: 1024px) 520px, 100dvw'
+                  priority
+                  className='object-contain drop-shadow-md'
+                />
+              </div>
+            </div>
+          ) : (
+            <div className='aspect-[16/9] w-full'>
+              <CultureImageFallback classification={culture.classification || '문화행사'} />
+            </div>
+          )}
+        </div>
+
         <dl className='divide-y divide-[var(--color-border-primary)] border-y border-[var(--color-border-primary)] text-sm'>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
@@ -268,6 +308,83 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </span>
         </div>
 
+        {/* Main Poster / Image with Ambient Blur */}
+        <div className='relative w-full overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
+          {hasCultureImage ? (
+            <div className='relative flex aspect-[3/4] max-h-[380px] w-full items-center justify-center overflow-hidden bg-black/10'>
+              {/* Ambient blurred backdrop to eliminate blank side gaps */}
+              <div className='pointer-events-none absolute inset-0 select-none overflow-hidden' aria-hidden='true'>
+                <Image
+                  src={imgSrc as string}
+                  alt=''
+                  fill
+                  sizes='120px'
+                  className='scale-125 object-cover opacity-35 blur-xl'
+                />
+                <div className='absolute inset-0 bg-black/15' />
+              </div>
+              {/* Sharp foreground poster */}
+              <div className='relative z-10 size-full p-2.5'>
+                <Image
+                  src={imgSrc as string}
+                  alt={culture.title}
+                  onError={handleImageError}
+                  fill
+                  sizes='(min-width: 1024px) 520px, 100dvw'
+                  priority
+                  className='object-contain drop-shadow-md'
+                />
+              </div>
+            </div>
+          ) : (
+            <div className='aspect-[16/9] w-full'>
+              <CultureImageFallback classification={culture.classification || '문화행사'} />
+            </div>
+          )}
+        </div>
+
+        {(culture.additionalImages ?? []).length > 0 && (
+          <div className='flex gap-2.5 overflow-x-auto pb-1' aria-label='행사 추가 이미지'>
+            {(culture.additionalImages ?? []).map(image => (
+              <button
+                type='button'
+                key={image.url}
+                onClick={() => {
+                  setImgSrc(image.url);
+                  setImageFailed(false);
+                }}
+                className={`relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl border bg-[var(--color-surface-chip)] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] ${
+                  imgSrc === image.url
+                    ? 'ring-[var(--color-brand-primary)]/40 shadow-xs border-[var(--color-brand-primary)] ring-2'
+                    : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-control)]'
+                }`}
+                aria-label={image.name || '추가 이미지 보기'}
+                aria-pressed={imgSrc === image.url}
+              >
+                {typeof image.thumbnailUrl === 'string' &&
+                image.thumbnailUrl.trim() &&
+                !failedAdditionalImages[image.url] ? (
+                  <Image
+                    src={image.thumbnailUrl}
+                    alt=''
+                    fill
+                    sizes='72px'
+                    className='object-cover'
+                    onError={() =>
+                      setFailedAdditionalImages(current => ({
+                        ...current,
+                        [image.url]: true,
+                      }))
+                    }
+                  />
+                ) : (
+                  <CultureImageFallback compact classification={culture.classification} />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
         <dl className='divide-y divide-[var(--color-border-primary)] border-y border-[var(--color-border-primary)] text-sm'>
           <div className='flex items-baseline justify-between gap-4 py-3'>
             <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
@@ -314,63 +431,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
             </div>
           )}
         </dl>
-
-        <div className='shadow-xs relative aspect-[4/3] overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
-          {hasCultureImage ? (
-            <Image
-              src={imgSrc as string}
-              alt={culture.title}
-              onError={handleImageError}
-              fill
-              sizes='(min-width: 1024px) 520px, 100dvw'
-              priority
-              className='object-contain'
-            />
-          ) : (
-            <CultureImageFallback classification={culture.classification || '문화행사'} />
-          )}
-        </div>
-        {(culture.additionalImages ?? []).length > 0 && (
-          <div className='flex gap-2.5 overflow-x-auto pb-1' aria-label='행사 추가 이미지'>
-            {(culture.additionalImages ?? []).map(image => (
-              <button
-                type='button'
-                key={image.url}
-                onClick={() => {
-                  setImgSrc(image.url);
-                  setImageFailed(false);
-                }}
-                className={`relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl border bg-[var(--color-surface-chip)] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] ${
-                  imgSrc === image.url
-                    ? 'ring-[var(--color-brand-primary)]/40 shadow-xs border-[var(--color-brand-primary)] ring-2'
-                    : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-control)]'
-                }`}
-                aria-label={image.name || '추가 이미지 보기'}
-                aria-pressed={imgSrc === image.url}
-              >
-                {typeof image.thumbnailUrl === 'string' &&
-                image.thumbnailUrl.trim() &&
-                !failedAdditionalImages[image.url] ? (
-                  <Image
-                    src={image.thumbnailUrl}
-                    alt=''
-                    fill
-                    sizes='72px'
-                    className='object-cover'
-                    onError={() =>
-                      setFailedAdditionalImages(current => ({
-                        ...current,
-                        [image.url]: true,
-                      }))
-                    }
-                  />
-                ) : (
-                  <CultureImageFallback compact classification={culture.classification} />
-                )}
-              </button>
-            ))}
-          </div>
-        )}
 
         {culture.overview && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>

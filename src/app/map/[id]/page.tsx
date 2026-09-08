@@ -14,6 +14,7 @@ import { mapCultureListItemToCulture, mapCultureRowToCulture } from '@/services/
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { serializeJsonLd } from '@/utils/jsonLd';
+import { OG_IMAGE_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
 
 import { cache } from 'react';
 
@@ -22,10 +23,12 @@ import { notFound } from 'next/navigation';
 
 import { and, eq } from 'drizzle-orm';
 
-const SITE_URL = process.env.SITE_URL || process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
-const OG_IMAGE_URL = `${SITE_URL}/assets/images/og-image.png?v=20260907`;
 const DETAIL_CACHE_TTL_SECONDS = 60 * 60 * 24;
 const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
+const getEventImageUrl = (mainImage?: string) => {
+  const imageUrl = mainImage?.trim();
+  return imageUrl && imageUrl !== '/assets/images/logo.svg' ? imageUrl : null;
+};
 
 const getCultureById = cache(async (id: number) => {
   const [cacheVersion, cachedDetailRecord] = await Promise.all([getCulturesCacheVersion(), readCultureDetailCache(id)]);
@@ -146,6 +149,11 @@ const parseOfferPrice = (value?: string) => {
   return match ? Number(match[0]) : null;
 };
 
+const toIsoDate = (value: Date | string | null | undefined) => {
+  const date = value instanceof Date ? value : value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const parsedId = parseCultureId(id);
@@ -175,8 +183,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     .filter(Boolean)
     .join(' · ')
     .slice(0, 155);
-  const mainImage = formatted?.mainImage?.trim();
-  const eventImageUrl = mainImage && mainImage !== '/assets/images/logo.svg' ? mainImage : null;
+  const eventImageUrl = getEventImageUrl(formatted?.mainImage);
   const shareImageUrl = eventImageUrl ?? OG_IMAGE_URL;
   const openGraphImage = eventImageUrl
     ? { url: eventImageUrl, alt: title }
@@ -200,8 +207,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       url: `/map/${parsedId}`,
       title,
       description: description || '문화행사 상세 정보',
-      siteName: '문화산책',
+      siteName: SITE_NAME,
       images: [openGraphImage],
+      publishedTime: toIsoDate(formatted?.registrationDate),
+      modifiedTime: toIsoDate(formatted?.updatedAt),
     },
     twitter: {
       card: 'summary_large_image',
@@ -233,6 +242,7 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
   }
 
   const eventUrl = `${SITE_URL}/map/${parsedId}`;
+  const eventImageUrl = getEventImageUrl(formatted.mainImage);
   const isFree = formatted.isFree.includes('무료') || formatted.useFee?.includes('무료');
   const offerPrice = isFree ? 0 : parseOfferPrice(formatted.useFee);
   const hasEnded = formatted.endDate instanceof Date && formatted.endDate.getTime() < Date.now();
@@ -240,8 +250,10 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
   const eventStructuredData = serializeJsonLd({
     '@context': 'https://schema.org',
     '@type': 'Event',
+    '@id': `${eventUrl}#event`,
     name: formatted.title,
     url: eventUrl,
+    inLanguage: 'ko-KR',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: hasEnded ? 'https://schema.org/EventCompleted' : 'https://schema.org/EventScheduled',
     startDate: formatted.startDate instanceof Date ? formatted.startDate.toISOString() : undefined,
@@ -256,12 +268,13 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
         addressCountry: 'KR',
       },
     },
-    image: formatted.mainImage ? [formatted.mainImage] : undefined,
+    image: [eventImageUrl ?? OG_IMAGE_URL],
+    dateModified: toIsoDate(formatted.updatedAt),
     description:
       formatted.programIntroduction || formatted.etcDescription || `${formatted.displayDate} ${formatted.displayPlace}`,
     organizer: {
       '@type': 'Organization',
-      name: formatted.organizationName || '문화산책',
+      name: formatted.organizationName || SITE_NAME,
       url: formatted.homepageAddress || SITE_URL,
     },
     isAccessibleForFree: isFree,

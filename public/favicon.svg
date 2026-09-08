@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <defs>
-    <linearGradient id="brand" x1="88" y1="58" x2="424" y2="454" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#55BFFF"/>
-      <stop offset="0.42" stop-color="#3182F6"/>
-      <stop offset="1" stop-color="#1D5FE2"/>
-    </linearGradient>
-  </defs>
-  <rect x="16" y="16" width="480" height="480" rx="120" fill="url(#brand)"/>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M292 78c-72.9 0-132 59.1-132 132 0 83.4 76.7 153.5 132 203 55.3-49.5 132-119.6 132-203 0-72.9-59.1-132-132-132Zm0 61c-39.2 0-71 31.8-71 71s31.8 71 71 71 71-31.8 71-71-31.8-71-71-71Z" fill="#fff"/>
-  <path d="M94 414c55-52 118-73 187-63 46 7 87 23 137 6" stroke="#fff" stroke-width="27" stroke-linecap="round"/>
-  <circle cx="94" cy="414" r="14" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <path
+    d="M24 1.5C14.33 1.5 6.5 9.18 6.5 18.65c0 8.6 4.7 14.48 8.21 18.81l7.69 9.51a2.06 2.06 0 0 0 3.2 0l7.69-9.51c3.51-4.33 8.21-10.21 8.21-18.81C41.5 9.18 33.67 1.5 24 1.5Z"
+    fill="#3182F6"
+  />
+  <path
+    d="M11.7 19.1c4.9-.15 8.9-2.05 12.3-6.4 3.4 4.35 7.4 6.25 12.3 6.4a1.8 1.8 0 0 1 .8 3.4c-5.2.72-9.5-1.34-13.1-4.82-3.6 3.48-7.9 5.54-13.1 4.82a1.8 1.8 0 0 1 .8-3.4Z"
+    fill="#fff"
+  />
+  <path d="M13.5 23.5h21v2h-21z" fill="#fff" />
+  <path d="M15 25.5h18v9.5a2 2 0 0 1-2 2H17a2 2 0 0 1-2-2z" fill="#fff" />
+  <path d="M20.5 29h7v8h-7z" fill="#3182F6" />
 </svg>
