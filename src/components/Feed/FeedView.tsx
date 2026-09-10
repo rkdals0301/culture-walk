@@ -4,7 +4,7 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { FormattedCulture } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import { MapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 
 import React, { useCallback, useEffect, useRef, useTransition } from 'react';
 
@@ -30,7 +30,6 @@ const FeedView = () => {
     mapFreeOnly,
     setMapFreeOnly,
     mapSortMode,
-    setMapSortMode,
     currentLocation,
     requestLocation,
     cancelLocation,
@@ -135,15 +134,6 @@ const FeedView = () => {
     });
   }, [mapFreeOnly, setMapFreeOnly]);
 
-  const handleSelectSortMode = useCallback(
-    (mode: MapSortMode) => {
-      startTransition(() => {
-        setMapSortMode(mode);
-      });
-    },
-    [setMapSortMode]
-  );
-
   const handleToggleLocation = useCallback(async () => {
     if (locationStatus === 'requesting') {
       cancelLocation();
@@ -159,7 +149,7 @@ const FeedView = () => {
         mapCategory,
         mapRegion,
         mapFreeOnly,
-        sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+        sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
         mapListScrollTop: 0,
         listOpen: false,
       });
@@ -197,8 +187,6 @@ const FeedView = () => {
         regionOptions={regionOptions}
         isFreeOnly={mapFreeOnly}
         onToggleFreeOnly={handleToggleFreeOnly}
-        sortMode={mapSortMode}
-        onSelectSortMode={handleSelectSortMode}
         currentLocation={currentLocation}
         onToggleLocation={handleToggleLocation}
         isLocating={isLocating}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCultureContext } from '@/context/CultureContext';
-import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 
 import React from 'react';
 
@@ -26,7 +26,7 @@ const FloatingMapButton = () => {
       mapCategory,
       mapRegion,
       mapFreeOnly,
-      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+      sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop: 0,
       listOpen: false,
     });

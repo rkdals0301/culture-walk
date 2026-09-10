@@ -7,7 +7,13 @@ interface CultureImageFallbackProps {
   classification?: string;
 }
 
-const FALLBACK_ART = '/assets/images/fallback-place.webp';
+const FALLBACK_ART_BY_TONE = {
+  education: '/assets/images/fallback-education.svg',
+  exhibition: '/assets/images/fallback-exhibition.svg',
+  festival: '/assets/images/fallback-festival.svg',
+  performance: '/assets/images/fallback-performance.svg',
+  other: '/assets/images/fallback-neutral.svg',
+} as const;
 
 const FALLBACK_LABEL_BY_TONE = {
   education: '교육·체험',
@@ -20,6 +26,7 @@ const FALLBACK_LABEL_BY_TONE = {
 const CultureImageFallback = ({ compact = false, classification }: CultureImageFallbackProps) => {
   const tone = getCultureTone(classification);
   const fallbackLabel = FALLBACK_LABEL_BY_TONE[tone];
+  const fallbackArt = FALLBACK_ART_BY_TONE[tone];
 
   return (
     <div
@@ -28,7 +35,7 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
       aria-label={`${classification || '문화행사'} 대표 이미지 없음`}
     >
       <Image
-        src={FALLBACK_ART}
+        src={fallbackArt}
         alt=''
         aria-hidden='true'
         draggable={false}

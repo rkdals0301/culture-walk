@@ -5,6 +5,7 @@ import Button from '@/components/Common/Button';
 import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import Loader from '@/components/Loader/Loader';
+import { CultureDetailFacts, CultureDetailPoster } from '@/components/Map/MapDetailShared';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureById } from '@/hooks/cultureHooks';
@@ -41,11 +42,6 @@ interface MapDetailFallbackProps {
 const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
-  const hasCultureImage =
-    typeof culture.mainImage === 'string' &&
-    Boolean(culture.mainImage.trim()) &&
-    !culture.mainImage.includes('/assets/images/logo');
-
   return (
     <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden rounded-b-none rounded-t-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:inset-x-auto md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <div className='flex shrink-0 items-center justify-center pb-1 pt-2 lg:hidden' aria-hidden='true'>
@@ -71,56 +67,8 @@ const MapDetailFallback = ({ culture }: MapDetailFallbackProps) => {
       </header>
 
       <div className='bottom-sheet-scroll-region min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5'>
-        {/* Main Poster in Fallback */}
-        <div className='relative w-full overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
-          {hasCultureImage ? (
-            <div className='relative flex aspect-[3/4] max-h-[380px] w-full items-center justify-center overflow-hidden bg-black/10'>
-              <div className='pointer-events-none absolute inset-0 select-none overflow-hidden' aria-hidden='true'>
-                <Image
-                  src={culture.mainImage as string}
-                  alt=''
-                  fill
-                  sizes='120px'
-                  className='scale-125 object-cover opacity-35 blur-xl'
-                />
-                <div className='absolute inset-0 bg-black/15' />
-              </div>
-              <div className='relative z-10 size-full p-2.5'>
-                <Image
-                  src={culture.mainImage as string}
-                  alt={culture.title}
-                  fill
-                  sizes='(min-width: 1024px) 520px, 100dvw'
-                  priority
-                  className='object-contain drop-shadow-md'
-                />
-              </div>
-            </div>
-          ) : (
-            <div className='aspect-[16/9] w-full'>
-              <CultureImageFallback classification={culture.classification || '문화행사'} />
-            </div>
-          )}
-        </div>
-
-        <dl className='divide-y divide-[var(--color-border-primary)] border-y border-[var(--color-border-primary)] text-sm'>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
-            <dd className='text-right font-semibold text-[var(--color-text-primary)]'>{culture.displayDate}</dd>
-          </div>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>장소</dt>
-            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>
-              {culture.place || culture.guName}
-            </dd>
-          </div>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>관람료</dt>
-            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
-              {culture.useFee || culture.displayPrice}
-            </dd>
-          </div>
-        </dl>
+        <CultureDetailPoster culture={culture} priority />
+        <CultureDetailFacts culture={culture} />
 
         {culture.overview && (
           <section className='mt-6 border-t border-[var(--color-border-primary)] pt-5'>
@@ -282,8 +230,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
       );
     }
 
-    const hasCultureImage =
-      typeof imgSrc === 'string' && Boolean(imgSrc.trim()) && !imageFailed && !imgSrc.includes('/assets/images/logo');
     const priceTone = getCulturePriceTone(culture);
 
     return (
@@ -308,40 +254,13 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </span>
         </div>
 
-        {/* Main Poster / Image with Ambient Blur */}
-        <div className='relative w-full overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
-          {hasCultureImage ? (
-            <div className='relative flex aspect-[3/4] max-h-[380px] w-full items-center justify-center overflow-hidden bg-black/10'>
-              {/* Ambient blurred backdrop to eliminate blank side gaps */}
-              <div className='pointer-events-none absolute inset-0 select-none overflow-hidden' aria-hidden='true'>
-                <Image
-                  src={imgSrc as string}
-                  alt=''
-                  fill
-                  sizes='120px'
-                  className='scale-125 object-cover opacity-35 blur-xl'
-                />
-                <div className='absolute inset-0 bg-black/15' />
-              </div>
-              {/* Sharp foreground poster */}
-              <div className='relative z-10 size-full p-2.5'>
-                <Image
-                  src={imgSrc as string}
-                  alt={culture.title}
-                  onError={handleImageError}
-                  fill
-                  sizes='(min-width: 1024px) 520px, 100dvw'
-                  priority
-                  className='object-contain drop-shadow-md'
-                />
-              </div>
-            </div>
-          ) : (
-            <div className='aspect-[16/9] w-full'>
-              <CultureImageFallback classification={culture.classification || '문화행사'} />
-            </div>
-          )}
-        </div>
+        <CultureDetailPoster
+          culture={culture}
+          imageSrc={imgSrc}
+          imageFailed={imageFailed}
+          onImageError={handleImageError}
+          priority
+        />
 
         {(culture.additionalImages ?? []).length > 0 && (
           <div className='flex gap-2.5 overflow-x-auto pb-1' aria-label='행사 추가 이미지'>
@@ -385,52 +304,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
           </div>
         )}
 
-        <dl className='divide-y divide-[var(--color-border-primary)] border-y border-[var(--color-border-primary)] text-sm'>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
-            <dd className='text-right font-semibold text-[var(--color-text-primary)]'>{culture.displayDate}</dd>
-          </div>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>장소</dt>
-            <dd className='break-words text-right font-semibold text-[var(--color-text-primary)]'>
-              {culture.place || culture.guName}
-            </dd>
-          </div>
-          <div className='flex items-baseline justify-between gap-4 py-3'>
-            <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>관람료</dt>
-            <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
-              {culture.useFee || culture.displayPrice}
-            </dd>
-          </div>
-          {culture.useTarget && (
-            <div className='flex items-baseline justify-between gap-4 py-3'>
-              <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>대상</dt>
-              <dd className='text-right font-semibold text-[var(--color-text-primary)]'>{culture.useTarget}</dd>
-            </div>
-          )}
-          {culture.organizationName && (
-            <div className='flex items-baseline justify-between gap-4 py-3'>
-              <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>주최</dt>
-              <dd className='text-right font-semibold text-[var(--color-text-primary)]'>{culture.organizationName}</dd>
-            </div>
-          )}
-          {culture.eventTime && (
-            <div className='flex items-baseline justify-between gap-4 py-3'>
-              <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>시간</dt>
-              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
-                {culture.eventTime}
-              </dd>
-            </div>
-          )}
-          {culture.duration && (
-            <div className='flex items-baseline justify-between gap-4 py-3'>
-              <dt className='shrink-0 text-xs font-medium text-[var(--color-text-tertiary)]'>소요</dt>
-              <dd className='whitespace-pre-line text-right font-semibold text-[var(--color-text-primary)]'>
-                {culture.duration}
-              </dd>
-            </div>
-          )}
-        </dl>
+        <CultureDetailFacts culture={culture} extended />
 
         {culture.overview && (
           <section className='border-t border-[var(--color-border-primary)] pt-4'>

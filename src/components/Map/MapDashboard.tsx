@@ -1,38 +1,34 @@
 'use client';
 
 import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
-import CultureList from '@/components/Header/CultureList';
-import CultureListLoading from '@/components/Header/CultureListLoading';
 import { MapFilterControls, MapLocationControl, MapSortControl } from '@/components/Map/MapControls';
+import MapListPanelContent from '@/components/Map/MapListPanelContent';
 import MapResultSummary from '@/components/Map/MapResultSummary';
+import MapSearchField from '@/components/Map/MapSearchField';
 import { useCultureContext } from '@/context/CultureContext';
+import { useMapExploreUrlSync } from '@/hooks/useMapExploreUrlSync';
+import { useMapPanelLayout } from '@/hooks/useMapPanelLayout';
 import { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import {
   type MapSortMode,
-  getMapFilterSignature,
-  parseMapExploreStateFromSearch,
+  getEffectiveMapSortMode,
   serializeMapExploreStateToSearch,
 } from '@/utils/exploreState';
 import { LocationRequestError, calculateDistanceMeters, getGeolocationErrorMessage } from '@/utils/geo';
-import { getMapDetailId, shouldRestoreMapList } from '@/utils/mapRoute';
+import { getMapDetailId } from '@/utils/mapRoute';
 
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
-import { AlertCircle, ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
+import { ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
-import SearchCancelIcon from '../../../public/assets/images/search-cancel-icon.svg';
-import SearchIcon from '../../../public/assets/images/search-icon.svg';
 
 const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
-const DESKTOP_PANEL_WIDTH = 400;
-const DESKTOP_DETAIL_PANEL_WIDTH = 480;
-
 interface MapDashboardProps {
   listRequest?: number;
   visibleCultures: FormattedCulture[];
@@ -79,7 +75,6 @@ const MapDashboard = ({
     setMapListScrollTop,
   } = useCultureContext();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
-  const [isWideDesktop, setIsWideDesktop] = useState(false);
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [focusCultureId, setFocusCultureId] = useState<number | null>(null);
@@ -89,8 +84,6 @@ const MapDashboard = ({
   const isDetailRoute = routeCultureId !== null;
   const selectedCultureId = routeCultureId ?? restoredSelectedCultureId;
   const isLocating = locationStatus === 'requesting';
-  const previousFilterSignatureRef = useRef('');
-  const routeRestorePendingRef = useRef(false);
 
   const visibleCultures = useMemo(() => {
     if (mapSortMode !== 'distance' || !currentLocation) {
@@ -124,44 +117,30 @@ const MapDashboard = ({
 
     return labels;
   }, [mapCategory, mapFreeOnly, mapRegion, searchQuery]);
-  const mapFilterSignature = getMapFilterSignature({
-    searchQuery,
+  const mapFilterSignature = useMapExploreUrlSync({
+    currentLocation,
+    focusCultureId,
+    isMobileSheetVisible,
     mapCategory,
-    mapRegion,
     mapFreeOnly,
-    sortMode: mapSortMode,
+    mapListScrollTop,
+    mapRegion,
+    mapSortMode,
+    restoredSelectedCultureId,
+    searchQuery,
+    setFocusCultureId,
+    setIsMobileSheetVisible,
+    setMapCategory,
+    setMapFreeOnly,
+    setMapListScrollTop,
+    setMapRegion,
+    setMapSortMode,
+    setRestoredSelectedCultureId,
+    setSearchQuery,
   });
   const filterMotionKey = mapFilterSignature;
 
-  useEffect(() => {
-    if (pathname !== '/map' || typeof window === 'undefined') {
-      return;
-    }
-
-    const restoredState = parseMapExploreStateFromSearch(window.location.search);
-    routeRestorePendingRef.current = true;
-    if (restoredState) {
-      setSearchQuery(restoredState.searchQuery);
-      setMapCategory(restoredState.mapCategory);
-      setMapRegion(restoredState.mapRegion);
-      setMapFreeOnly(restoredState.mapFreeOnly);
-      setMapSortMode(restoredState.sortMode);
-      setMapListScrollTop(restoredState.mapListScrollTop);
-      setIsMobileSheetVisible(restoredState.listOpen);
-      setFocusCultureId(restoredState.focusCultureId ?? null);
-      setRestoredSelectedCultureId(restoredState.selectedCultureId ?? null);
-    } else {
-      setSearchQuery('');
-      setMapCategory('all');
-      setMapRegion('all');
-      setMapFreeOnly(false);
-      setMapSortMode('date');
-      setMapListScrollTop(0);
-      setIsMobileSheetVisible(false);
-      setFocusCultureId(null);
-      setRestoredSelectedCultureId(null);
-    }
-  }, [pathname, setMapCategory, setMapFreeOnly, setMapListScrollTop, setMapRegion, setMapSortMode, setSearchQuery]);
+  useMapPanelLayout(isDesktopPanelCollapsed, isDetailRoute);
 
   useEffect(() => {
     const handleOpenMapSearch = () => {
@@ -182,48 +161,6 @@ const MapDashboard = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (pathname !== '/map' || typeof window === 'undefined') {
-      return;
-    }
-
-    if (routeRestorePendingRef.current) {
-      routeRestorePendingRef.current = false;
-      return;
-    }
-
-    const serializedSearch = serializeMapExploreStateToSearch({
-      searchQuery,
-      mapCategory,
-      mapRegion,
-      mapFreeOnly,
-      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
-      mapListScrollTop,
-      listOpen: isMobileSheetVisible,
-      focusCultureId,
-      selectedCultureId: restoredSelectedCultureId,
-    });
-    const nextSearch = serializedSearch ? `?${serializedSearch}` : '';
-    const currentSearch = window.location.search;
-    if (currentSearch === nextSearch) {
-      return;
-    }
-
-    router.replace(`/map${nextSearch}`, { scroll: false });
-  }, [
-    currentLocation,
-    isMobileSheetVisible,
-    mapCategory,
-    mapFreeOnly,
-    mapListScrollTop,
-    mapRegion,
-    mapSortMode,
-    pathname,
-    router,
-    searchQuery,
-    focusCultureId,
-    restoredSelectedCultureId,
-  ]);
 
   const handleCategoryChange = (nextCategory: CultureCategoryKey) => {
     startFilterTransition(() => setMapCategory(nextCategory));
@@ -286,7 +223,7 @@ const MapDashboard = ({
       mapCategory,
       mapRegion,
       mapFreeOnly,
-      sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+      sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop,
       listOpen: false,
     });
@@ -343,29 +280,6 @@ const MapDashboard = ({
     }
   }, [isDetailRoute, isMobileSheetVisible]);
 
-  useEffect(() => {
-    if (isDetailRoute || typeof window === 'undefined') {
-      return;
-    }
-
-    if (!shouldRestoreMapList(window.location.search)) {
-      return;
-    }
-
-    setIsMobileSheetVisible(true);
-  }, [isDetailRoute, pathname]);
-
-  useEffect(() => {
-    if (previousFilterSignatureRef.current === '') {
-      previousFilterSignatureRef.current = mapFilterSignature;
-      return;
-    }
-
-    if (previousFilterSignatureRef.current !== mapFilterSignature) {
-      setMapListScrollTop(0);
-      previousFilterSignatureRef.current = mapFilterSignature;
-    }
-  }, [mapFilterSignature, setMapListScrollTop]);
 
   useEffect(() => {
     if (listRequest === 0) {
@@ -375,106 +289,6 @@ const MapDashboard = ({
     setIsMobileSheetVisible(true);
     document.getElementById('culture-list')?.focus();
   }, [listRequest]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1280px)');
-    const updateViewport = () => setIsWideDesktop(mediaQuery.matches);
-
-    updateViewport();
-    mediaQuery.addEventListener('change', updateViewport);
-    return () => mediaQuery.removeEventListener('change', updateViewport);
-  }, []);
-
-  useEffect(() => {
-    const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
-    const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_DETAIL_PANEL_WIDTH : 0;
-    document.documentElement.style.setProperty('--map-sidebar-width', `${listPanelWidth}px`);
-    document.documentElement.style.setProperty('--map-detail-width', `${detailPanelWidth}px`);
-
-    const notifyMapResize = () => window.dispatchEvent(new Event('resize'));
-    const animationFrame = window.requestAnimationFrame(notifyMapResize);
-    const transitionTimer = window.setTimeout(notifyMapResize, 280);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      window.clearTimeout(transitionTimer);
-    };
-  }, [isDesktopPanelCollapsed, isDetailRoute, isWideDesktop]);
-
-  const renderListPanel = () => {
-    if (isLoading) {
-      return <CultureListLoading />;
-    }
-
-    if (error) {
-      return (
-        <div
-          className='status-callout status-callout-shell flex h-full items-center justify-center px-4 sm:px-6'
-          data-status='api-error'
-          role='alert'
-        >
-          <div className='status-callout-card w-full rounded-[1.25rem] p-5 text-left'>
-            <div className='status-callout-icon' aria-hidden='true'>
-              <AlertCircle className='size-5' strokeWidth={2} />
-            </div>
-            <p className='mt-4 text-base font-semibold'>행사 데이터를 불러오지 못했습니다.</p>
-            <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
-              잠시 후 다시 시도하거나 페이지를 새로고침해 주세요.
-            </p>
-            <button
-              type='button'
-              onClick={onRetry}
-              className='mt-5 inline-flex min-h-11 items-center rounded-xl bg-[var(--color-brand-primary)] px-4 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] active:bg-[var(--color-brand-active)]'
-            >
-              다시 불러오기
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (isClustered) {
-      return (
-        <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
-          <p className='text-base font-semibold'>행사 밀집 지역을 표시하고 있습니다.</p>
-          <p className='mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]'>
-            지도에서 원하는 지역을 눌러 확대하면 해당 지역의 행사 목록을 확인할 수 있습니다.
-          </p>
-        </div>
-      );
-    }
-
-    if (visibleCultures.length === 0) {
-      return (
-        <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
-          <p className='text-base font-semibold'>
-            {hasActiveFilters ? '조건에 맞는 행사가 없습니다.' : '표시할 행사가 없습니다.'}
-          </p>
-          <p className='mt-2 max-w-xs text-sm leading-6 text-[var(--color-text-secondary)]'>
-            {hasActiveFilters ? '검색어를 지우거나 지역·분류 조건을 넓혀보세요.' : '잠시 후 다시 확인해 주세요.'}
-          </p>
-          <button
-            type='button'
-            onClick={resetMapFilters}
-            className='mt-4 inline-flex min-h-11 items-center rounded-lg bg-[var(--color-brand-primary)] px-4 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)]'
-          >
-            {hasActiveFilters ? '조건 초기화' : '필터 초기화'}
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <CultureList
-        cultures={visibleCultures}
-        onItemClick={handleOpenCulture}
-        selectedCultureId={selectedCultureId}
-        currentLocation={currentLocation}
-        initialScrollTop={mapListScrollTop}
-        onScrollPositionChange={setMapListScrollTop}
-      />
-    );
-  };
 
   return (
     <div
@@ -528,35 +342,9 @@ const MapDashboard = ({
                 onReset={resetMapFilters}
               />
 
-              <form
-                role='search'
-                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-3 flex h-11 items-center gap-2.5 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3.5 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
-                onSubmit={event => event.preventDefault()}
-              >
-                <SearchIcon className='size-[18px] shrink-0 text-[var(--color-brand-primary)]' />
-                <input
-                  id='map-search-input'
-                  type='text'
-                  value={searchQuery}
-                  onChange={event => setSearchQuery(event.target.value)}
-                  placeholder='행사명 또는 장소 검색'
-                  aria-label='문화행사 검색'
-                  autoComplete='off'
-                  spellCheck={false}
-                  enterKeyHint='search'
-                  className='min-w-0 flex-1 bg-transparent text-sm font-medium placeholder:text-[var(--color-text-secondary)]'
-                />
-                {searchQuery && (
-                  <button
-                    type='button'
-                    onClick={() => setSearchQuery('')}
-                    className='flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]'
-                    aria-label='검색어 초기화'
-                  >
-                    <SearchCancelIcon className='size-4' />
-                  </button>
-                )}
-              </form>
+              <div className='mt-3'>
+                <MapSearchField id='map-search-input' value={searchQuery} onChange={setSearchQuery} />
+              </div>
 
               <div className='mt-3 border-t border-[var(--color-border-primary)] pt-3'>
                 <MapFilterControls
@@ -603,7 +391,20 @@ const MapDashboard = ({
                 data-filter-pending={isFilterPending ? 'true' : undefined}
                 aria-busy={isFilterPending}
               >
-                {renderListPanel()}
+                <MapListPanelContent
+                  cultures={visibleCultures}
+                  currentLocation={currentLocation}
+                  error={error}
+                  hasActiveFilters={hasActiveFilters}
+                  initialScrollTop={mapListScrollTop}
+                  isClustered={isClustered}
+                  isLoading={isLoading}
+                  onItemClick={handleOpenCulture}
+                  onResetFilters={resetMapFilters}
+                  onRetry={onRetry}
+                  onScrollPositionChange={setMapListScrollTop}
+                  selectedCultureId={selectedCultureId}
+                />
               </div>
             </div>
           </section>
@@ -678,35 +479,9 @@ const MapDashboard = ({
                 onReset={resetMapFilters}
                 compact
               />
-              <form
-                role='search'
-                className='shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 mt-2 flex h-10 items-center gap-2 rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2'
-                onSubmit={event => event.preventDefault()}
-              >
-                <SearchIcon className='size-4 shrink-0 text-[var(--color-brand-primary)]' />
-                <input
-                  id='map-search-input-mobile'
-                  type='text'
-                  value={searchQuery}
-                  onChange={event => setSearchQuery(event.target.value)}
-                  placeholder='행사명 또는 장소 검색'
-                  aria-label='문화행사 검색'
-                  autoComplete='off'
-                  spellCheck={false}
-                  enterKeyHint='search'
-                  className='min-w-0 flex-1 bg-transparent text-xs font-medium placeholder:text-[var(--color-text-secondary)] sm:text-sm'
-                />
-                {searchQuery && (
-                  <button
-                    type='button'
-                    onClick={() => setSearchQuery('')}
-                    className='flex size-7 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)]'
-                    aria-label='검색어 초기화'
-                  >
-                    <SearchCancelIcon className='size-3.5' />
-                  </button>
-                )}
-              </form>
+              <div className='mt-2'>
+                <MapSearchField id='map-search-input-mobile' value={searchQuery} onChange={setSearchQuery} compact />
+              </div>
               <div className='mt-2 flex items-center justify-between gap-1.5'>
                 <button
                   type='button'
@@ -772,7 +547,20 @@ const MapDashboard = ({
                 data-filter-pending={isFilterPending ? 'true' : undefined}
                 aria-busy={isFilterPending}
               >
-                {renderListPanel()}
+                <MapListPanelContent
+                  cultures={visibleCultures}
+                  currentLocation={currentLocation}
+                  error={error}
+                  hasActiveFilters={hasActiveFilters}
+                  initialScrollTop={mapListScrollTop}
+                  isClustered={isClustered}
+                  isLoading={isLoading}
+                  onItemClick={handleOpenCulture}
+                  onResetFilters={resetMapFilters}
+                  onRetry={onRetry}
+                  onScrollPositionChange={setMapListScrollTop}
+                  selectedCultureId={selectedCultureId}
+                />
               </div>
             </div>
           </section>

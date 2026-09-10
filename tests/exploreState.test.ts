@@ -1,5 +1,6 @@
 import {
   getLocationStatus,
+  getEffectiveMapSortMode,
   getMapFilterSignature,
   parseMapExploreStateFromSearch,
   serializeMapExploreStateToSearch,
@@ -24,6 +25,12 @@ test('탐색 조건의 모든 값이 바뀌면 상태 서명도 바뀐다', () =
   assert.notEqual(getMapFilterSignature(baseState), getMapFilterSignature({ ...baseState, mapRegion: '종로구' }));
   assert.notEqual(getMapFilterSignature(baseState), getMapFilterSignature({ ...baseState, mapFreeOnly: true }));
   assert.notEqual(getMapFilterSignature(baseState), getMapFilterSignature({ ...baseState, sortMode: 'distance' }));
+});
+
+test('거리순은 위치가 있을 때만 유지한다', () => {
+  assert.equal(getEffectiveMapSortMode('distance', true), 'distance');
+  assert.equal(getEffectiveMapSortMode('distance', false), 'date');
+  assert.equal(getEffectiveMapSortMode('date', false), 'date');
 });
 
 test('위치 오류와 취소를 사용자 상태로 분류한다', () => {

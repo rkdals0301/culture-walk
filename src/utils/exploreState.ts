@@ -108,6 +108,9 @@ export const getMapFilterSignature = (state: MapFilterState) =>
     state.sortMode,
   ]);
 
+export const getEffectiveMapSortMode = (sortMode: MapSortMode, hasLocation: boolean): MapSortMode =>
+  sortMode === 'distance' && !hasLocation ? 'date' : sortMode;
+
 export const getLocationStatus = (error: unknown): Exclude<LocationStatus, 'idle' | 'requesting' | 'success'> => {
   if (typeof error === 'object' && error !== null && 'status' in error && isLocationStatus(error.status)) {
     if (error.status === 'idle' || error.status === 'requesting' || error.status === 'success') {

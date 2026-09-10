@@ -73,7 +73,7 @@ culture-walk/
 │   │   │   └── [id]/           # 행사 상세 모달/시트 및 SEO 메타데이터
 │   │   ├── privacy/            # 개인정보처리방침
 │   │   ├── layout.tsx          # 루트 레이아웃 (SEO 메타데이터, 폰트, 공급자)
-│   │   ├── page.tsx            # 메인 진입점 (/map 으로 리다이렉트)
+│   │   ├── page.tsx            # 메인 문화행사 피드
 │   │   └── sitemap.ts          # 동적 sitemap.xml 생성기
 │   ├── cache/                  # Cloudflare KV 캐시 유틸리티 (목록/상세 캐싱)
 │   ├── components/             # UI 컴포넌트
@@ -87,13 +87,13 @@ culture-walk/
 │   ├── hooks/                  # 커스텀 훅 (API 에러, 다이얼로그 포커스 등)
 │   ├── server/                 # Cloudflare 바인딩 및 SQLite 에러 핸들러
 │   ├── services/               # 핵심 도메인 로직 (동기화, 정규화, 분산 락, TourAPI 통신)
-│   ├── styles/                 # 전역 스타일시트 및 Pretendard 폰트 세팅
+│   ├── styles/                 # 전역 엔트리 + foundation/info/map/component SCSS 모듈
 │   ├── types/                  # 전역 TypeScript 타입 정의
 │   └── utils/                  # 순수 유틸리티 (좌표 변환, 날짜, 정렬, Kakao SDK 로더)
 ├── db/
 │   ├── migrations/             # D1 데이터베이스 마이그레이션 SQL 파일들
 │   └── schema.sql              # 전체 스키마 참조본
-├── tests/                      # 단위 및 통합 테스트 파일 (53개 테스트 통과)
+├── tests/                      # 단위 및 통합 테스트 파일
 ├── worker.js                   # Cloudflare Worker 진입점 (OpenNext 연동 + Cron 트리거)
 ├── wrangler.jsonc              # Cloudflare Workers / D1 / KV / Cron 설정 파일
 └── open-next.config.ts         # OpenNext Cloudflare 어댑터 설정
@@ -208,15 +208,22 @@ npm run dev
   - `200 OK`: 모든 품질 기준을 통과하고 최근 36시간 내 성공한 동기화가 존재하는 경우
   - `503 Service Unavailable`: D1 바인딩 누락, 비정상 데이터 검출, 또는 최근 36시간 내 동기화 성공 이력이 없는 경우
 
-### 2. 문화행사 목록 조회 (`GET /api/cultures`)
-- 현재 날짜(KST 기준) 이후 종료되는 모든 활성 문화행사 목록을 반환합니다.
-- Cloudflare KV(`CULTURE_CACHE`)를 활용하여 10분간 엣지 캐싱되며, 브라우저 `Cache-Control` 헤더를 통해 고속 응답을 지원합니다.
+### 2. 문화행사 피드 조회 (`GET /api/cultures/feed`)
+- 검색·카테고리·지역·무료 조건을 서버에서 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
+- 페이지와 메타데이터를 Cloudflare KV에 10분간 캐싱하여 D1 row read와 응답 크기를 줄입니다.
 
-### 3. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
+### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
+- 현재 지도 영역만 조회하며 축소 상태에서는 서버 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
+- 클라이언트에서 요청 영역을 그리드에 맞춰 정규화해 인접한 지도 이동의 캐시 재사용률을 높입니다.
+
+### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
 - 상세 정보가 미완료 상태이거나 원본 수정일이 변경된 경우 백그라운드 갱신 요청을 등록하고 최신 상태를 유지합니다.
 
-### 4. 수동 데이터 동기화 (`POST /api/initialize`)
+### 5. 호환용 전체 목록 스냅샷 (`GET /api/cultures`)
+- 기존 연동 호환성을 위해 유지하는 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.
+
+### 6. 수동 데이터 동기화 (`POST /api/initialize`)
 - 헤더에 `x-sync-token: <SYNC_TOKEN>`을 포함하여 호출하면 TourAPI로부터 최신 행사를 즉시 동기화합니다.
 - 분산 락에 의해 이미 동기화가 진행 중인 경우 `409 Conflict`를 반환합니다.
 
@@ -266,7 +273,7 @@ Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 �
 
 ## 🧪 테스트 (Testing)
 
-53개의 단위/통합 테스트를 통해 데이터 정합성과 사용자 플로우를 검증합니다.
+70개 이상의 단위/통합 테스트를 통해 데이터 정합성과 사용자 플로우를 검증합니다.
 
 ```bash
 npm test

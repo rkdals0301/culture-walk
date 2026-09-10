@@ -6,15 +6,15 @@ const root = process.cwd();
 const publicDir = path.join(root, 'public');
 const imagesDir = path.join(publicDir, 'assets', 'images');
 const faviconSource = await fs.readFile(path.join(publicDir, 'favicon.svg'), 'utf8');
-const logoMarkDataUri = `data:image/png;base64,${(await fs.readFile(path.join(imagesDir, 'logo-mark.png'))).toString('base64')}`;
+const appIconSource = await fs.readFile(path.join(imagesDir, 'app-icon.svg'), 'utf8');
 const faviconSvg = Buffer.from(faviconSource);
-const logoMarkSvg = Buffer.from(
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><image href="${logoMarkDataUri}" width="512" height="512" preserveAspectRatio="xMidYMid meet"/></svg>`
-);
+const appIconSvg = Buffer.from(appIconSource);
 
-const pngForSize = size => sharp(faviconSvg, { density: 512 }).resize(size, size).png().toBuffer();
-const [png16, png32, png48, png180, png192, png512] = await Promise.all([16, 32, 48, 180, 192, 512].map(pngForSize));
-const logo128 = await sharp(logoMarkSvg, { density: 512 }).resize(128, 128).png().toBuffer();
+const pngForSize = (source, size) => sharp(source, { density: 512 }).resize(size, size).png().toBuffer();
+const [png16, png32, png48] = await Promise.all([16, 32, 48].map(size => pngForSize(faviconSvg, size)));
+const [png128, png180, png192, png512] = await Promise.all(
+  [128, 180, 192, 512].map(size => pngForSize(appIconSvg, size))
+);
 
 await Promise.all([
   fs.writeFile(path.join(publicDir, 'favicon-16x16.png'), png16),
@@ -23,7 +23,7 @@ await Promise.all([
   fs.writeFile(path.join(publicDir, 'apple-touch-icon-180x180.png'), png180),
   fs.writeFile(path.join(publicDir, 'icon-192x192.png'), png192),
   fs.writeFile(path.join(publicDir, 'icon-512x512.png'), png512),
-  fs.writeFile(path.join(imagesDir, 'logo-128.png'), logo128),
+  fs.writeFile(path.join(imagesDir, 'logo-128.png'), png128),
 ]);
 
 const icoPngs = [
@@ -68,10 +68,4 @@ await sharp(Buffer.from(searchThumbnailSvg), { density: 144 })
   .png({ compressionLevel: 9 })
   .toFile(path.join(imagesDir, 'search-thumbnail.png'));
 
-const fallbackSource = await fs.readFile(path.join(imagesDir, 'fallback-place.svg'), 'utf8');
-await sharp(Buffer.from(fallbackSource.replace('/assets/images/logo-mark.png', logoMarkDataUri)))
-  .resize(960, 1324)
-  .webp({ quality: 85, effort: 6 })
-  .toFile(path.join(imagesDir, 'fallback-place.webp'));
-
-console.log('Generated favicon PNG/ICO, logo-128.png, OG images, and fallback-place.webp');
+console.log('Generated favicon PNG/ICO, unified app icons, logo-128.png, and social images');

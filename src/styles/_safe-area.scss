@@ -1,0 +1,36 @@
+﻿@layer utilities {
+  .safe-area-header-offset {
+    padding-top: env(safe-area-inset-top, 0px);
+    background-color: var(--color-surface-primary);
+    background-color: color-mix(in srgb, var(--color-surface-primary) 94%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  .safe-area-skip-link {
+    top: calc(1rem + env(safe-area-inset-top, 0px));
+    left: max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .safe-area-search-overlay {
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+
+  .safe-area-search-panel {
+    height: calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .safe-area-side-panel {
+    padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  }
+
+  .safe-area-mobile-list-shell {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+}

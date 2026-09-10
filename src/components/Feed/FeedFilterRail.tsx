@@ -1,12 +1,11 @@
 'use client';
 
 import { CULTURE_CATEGORY_OPTIONS, CultureCategoryKey } from '@/utils/cultureCategory';
-import type { MapSortMode } from '@/utils/exploreState';
 import { GeoPoint } from '@/utils/geo';
 
 import React from 'react';
 
-import { Calendar, ChevronDown, Compass, Navigation, RotateCcw, Ticket } from 'lucide-react';
+import { ChevronDown, Compass, RotateCcw, Ticket } from 'lucide-react';
 
 interface FeedFilterRailProps {
   selectedCategory: CultureCategoryKey;
@@ -16,8 +15,6 @@ interface FeedFilterRailProps {
   regionOptions: string[];
   isFreeOnly: boolean;
   onToggleFreeOnly: () => void;
-  sortMode: MapSortMode;
-  onSelectSortMode: (mode: MapSortMode) => void;
   currentLocation: GeoPoint | null;
   onToggleLocation: () => void;
   isLocating: boolean;
@@ -34,8 +31,6 @@ const FeedFilterRail = ({
   regionOptions,
   isFreeOnly,
   onToggleFreeOnly,
-  sortMode,
-  onSelectSortMode,
   currentLocation,
   onToggleLocation,
   isLocating,
@@ -74,7 +69,7 @@ const FeedFilterRail = ({
         </div>
 
         {/* Secondary Filter & Sort Controls Row */}
-        <div className='mt-2 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border-primary)] text-xs'>
+        <div className='mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--color-border-primary)] pt-2 text-xs'>
           <div className='flex flex-wrap items-center gap-2'>
             {/* Region Dropdown */}
             <div className='relative'>
@@ -145,40 +140,6 @@ const FeedFilterRail = ({
             )}
           </div>
 
-          {/* Toss Style Segmented Sort Control */}
-          <div className='flex items-center rounded-xl bg-[var(--color-surface-chip)] p-0.5 text-xs'>
-            <button
-              type='button'
-              onClick={() => onSelectSortMode('date')}
-              aria-pressed={sortMode === 'date'}
-              className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2 py-1 font-bold transition-all ${
-                sortMode === 'date'
-                  ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-primary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Calendar className='size-3 stroke-[2.2]' />
-              <span>일정순</span>
-            </button>
-            <button
-              type='button'
-              onClick={() => {
-                if (!currentLocation) {
-                  onToggleLocation();
-                }
-                onSelectSortMode('distance');
-              }}
-              aria-pressed={sortMode === 'distance'}
-              className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2 py-1 font-bold transition-all ${
-                sortMode === 'distance'
-                  ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)] shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-primary)] hover:text-[var(--color-text-primary)]'
-              }`}
-            >
-              <Navigation className='size-3 stroke-[2.2]' />
-              <span>거리순</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>

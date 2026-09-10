@@ -53,7 +53,7 @@ const Header = () => {
               width={32}
               height={32}
               priority
-              className='size-7 sm:size-8 rounded-lg shadow-2xs transition-transform duration-150 group-hover:scale-105'
+              className='size-7 sm:size-8 transition-transform duration-150 group-hover:scale-105'
             />
             <div className='min-w-0'>
               <span className='block truncate text-sm font-bold tracking-tight sm:text-base'>문화산책</span>

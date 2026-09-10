@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
+import { BRAND_ASSET_VERSION, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
 
 const manifest = (): MetadataRoute.Manifest => ({
   name: SITE_NAME,
@@ -17,13 +17,13 @@ const manifest = (): MetadataRoute.Manifest => ({
   categories: ['travel', 'lifestyle'],
   icons: [
     {
-      src: '/icon-192x192.png',
+      src: `/icon-192x192.png?v=${BRAND_ASSET_VERSION}`,
       sizes: '192x192',
       type: 'image/png',
       purpose: 'any',
     },
     {
-      src: '/icon-512x512.png',
+      src: `/icon-512x512.png?v=${BRAND_ASSET_VERSION}`,
       sizes: '512x512',
       type: 'image/png',
       purpose: 'any',

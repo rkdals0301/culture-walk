@@ -7,8 +7,9 @@ import MapZoomControls from '@/components/Map/MapZoomControls';
 import { useBottomSheet } from '@/context/BottomSheetContext';
 import { useCultureContext } from '@/context/CultureContext';
 import type { CultureMapCluster, CultureMapViewport, FormattedCulture } from '@/types/culture';
-import { serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 import { KakaoMapsSdkError, loadKakaoMapsSdk, resetKakaoMapsSdk } from '@/utils/kakaoMapsSdk';
+import { type CoordinateGroup, groupItemsByCoordinate } from '@/utils/mapMarkers';
 import { getMapDetailId } from '@/utils/mapRoute';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -64,12 +65,7 @@ const CLUSTER_STYLES: Array<Record<string, string>> = [
   },
 ];
 
-interface MarkerGroup {
-  duplicateCultures: FormattedCulture[];
-  lat: number;
-  lng: number;
-  primaryCulture: FormattedCulture;
-}
+type MarkerGroup = CoordinateGroup<FormattedCulture>;
 
 interface MapViewProps {
   visibleClusters: CultureMapCluster[];
@@ -124,28 +120,7 @@ const MapView = ({
     return getMapDetailId(pathname);
   }, [pathname]);
 
-  const markerGroups = useMemo(() => {
-    const groupMap = new Map<string, MarkerGroup>();
-
-    visibleCultures.forEach(culture => {
-      const key = `${culture.lat.toFixed(6)}:${culture.lng.toFixed(6)}`;
-      const existing = groupMap.get(key);
-
-      if (existing) {
-        existing.duplicateCultures.push(culture);
-        return;
-      }
-
-      groupMap.set(key, {
-        lat: culture.lat,
-        lng: culture.lng,
-        primaryCulture: culture,
-        duplicateCultures: [culture],
-      });
-    });
-
-    return Array.from(groupMap.values());
-  }, [visibleCultures]);
+  const markerGroups = useMemo(() => groupItemsByCoordinate(visibleCultures), [visibleCultures]);
 
   const goToMapDetail = useCallback(
     (id: number) => {
@@ -156,7 +131,7 @@ const MapView = ({
         mapCategory,
         mapRegion,
         mapFreeOnly,
-        sortMode: currentLocation ? mapSortMode : mapSortMode === 'distance' ? 'date' : mapSortMode,
+        sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
         mapListScrollTop,
         listOpen: false,
       });
@@ -196,12 +171,12 @@ const MapView = ({
 
   const handleMarkerGroupClick = useCallback(
     (group: MarkerGroup) => {
-      if (group.duplicateCultures.length === 1) {
-        goToMapDetail(group.primaryCulture.id);
+      if (group.duplicateItems.length === 1) {
+        goToMapDetail(group.primaryItem.id);
         return;
       }
 
-      setActiveMarkerId(group.primaryCulture.id);
+      setActiveMarkerId(group.primaryItem.id);
       setCenterPosition({ lat: group.lat, lng: group.lng });
 
       openBottomSheet({
@@ -215,7 +190,7 @@ const MapView = ({
               </p>
             </div>
             <ul className='grid gap-2'>
-              {group.duplicateCultures.map(culture => (
+              {group.duplicateItems.map(culture => (
                 <li key={culture.id}>
                   <button
                     type='button'
@@ -472,7 +447,7 @@ const MapView = ({
 
     markerGroups.forEach((group, index) => {
       const focusedId = pendingDetailId ?? activeMarkerId;
-      const isSelected = focusedId !== null && group.duplicateCultures.some(culture => culture.id === focusedId);
+      const isSelected = focusedId !== null && group.duplicateItems.some(culture => culture.id === focusedId);
       const iconUrl = isSelected
         ? '/assets/images/map-marker-active-icon.svg'
         : '/assets/images/map-marker-default-icon.svg';
@@ -481,7 +456,7 @@ const MapView = ({
 
       const marker = new kakaoMaps.Marker({
         map: useCluster ? null : mapInstance,
-        title: group.primaryCulture.title,
+        title: group.primaryItem.title,
         position: new kakaoMaps.LatLng(group.lat, group.lng),
         image: new kakaoMaps.MarkerImage(iconUrl, iconSize),
         zIndex: isSelected ? markerGroups.length + 1 : markerGroups.length - index,

@@ -1,0 +1,375 @@
+@layer base {
+  :root {
+    --map-header-height: 72px;
+    --map-sidebar-width: 400px;
+    --map-detail-width: 0px;
+    color-scheme: light;
+
+    /* Emil Kowalski Spring Curves (Physics-based easing) */
+    --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Modern Foundation Palette */
+    --palette-blue-950: #172554;
+    --palette-blue-900: #1e3a8a;
+    --palette-blue-800: #1e40af;
+    --palette-blue-700: #1d4ed8;
+    --palette-blue-600: #2563eb;
+    --palette-blue-500: #3b82f6;
+    --palette-blue-400: #60a5fa;
+    --palette-blue-300: #93c5fd;
+    --palette-blue-100: #dbeafe;
+    --palette-blue-050: #eff6ff;
+
+    --palette-coral-800: #9a3412;
+    --palette-coral-700: #c2410c;
+    --palette-coral-600: #ea580c;
+    --palette-coral-500: #f97316;
+    --palette-coral-400: #fb923c;
+    --palette-coral-100: #ffedd5;
+    --palette-coral-050: #fff7ed;
+
+    --palette-slate-950: #020617;
+    --palette-slate-900: #0f172a;
+    --palette-slate-800: #1e293b;
+    --palette-slate-700: #334155;
+    --palette-slate-600: #475569;
+    --palette-slate-500: #64748b;
+    --palette-slate-400: #94a3b8;
+    --palette-slate-300: #cbd5e1;
+    --palette-slate-200: #e2e8f0;
+    --palette-slate-100: #f1f5f9;
+    --palette-slate-050: #f8fafc;
+
+    --palette-red-700: #b91c1c;
+    --palette-red-400: #f87171;
+
+    /* Semantic: page canvas and surface elevation (TDS Light) */
+    --color-bg-primary: #f9fafb;
+    --color-bg-secondary: #f2f4f6;
+    --color-bg-tertiary: #e5e8eb;
+    --color-surface-primary: #ffffff;
+    --color-surface-secondary: #ffffff;
+    --color-surface-elevated: #ffffff;
+    --color-surface-overlay: #ffffff;
+    --color-surface-chip: #f2f4f6;
+
+    /* Semantic: content hierarchy (TDS Typography) */
+    --color-text-primary: #191f28;
+    --color-text-secondary: #4e5968;
+    --color-text-tertiary: #8b95a1;
+    --color-text-disabled: #4e5968;
+    --color-text-inverse: #ffffff;
+
+    /* Semantic: borders and dividers */
+    --color-border-primary: #e5e8eb;
+    --color-border-secondary: #f2f4f6;
+    --color-border-strong: #b0b8c1;
+    --color-border-control: #d1d6db;
+    --color-border-brand: #3182f6;
+    --color-border-brand-subtle: #d0e5ff;
+    --color-border-error: #f04452;
+    --color-divider: #e5e8eb;
+
+    /* Semantic: brand (Toss Signature Blue & Coral) */
+    --color-brand-primary: #3182f6;
+    --color-brand-hover: #1b64da;
+    --color-brand-active: #1957c2;
+    --color-brand-subtle: #e8f3ff;
+    --color-brand-on-primary: #ffffff;
+    --color-accent-primary: #f04452;
+    --color-accent-hover: #d92d3a;
+    --color-accent-active: #b42318;
+    --color-accent-subtle: #fef3f2;
+    --color-accent-text: #b42318;
+    --color-accent-on-primary: #ffffff;
+
+    /* Semantic: status communication */
+    --color-success: #04b05c;
+    --color-success-hover: #03934d;
+    --color-success-subtle: #e6f7ef;
+    --color-success-text: #15803d;
+    --color-success-on-primary: #ffffff;
+    --color-warning: #ff9500;
+    --color-warning-hover: #e08300;
+    --color-warning-subtle: #fff7eb;
+    --color-warning-text: #c2410c;
+    --color-warning-on-primary: #ffffff;
+    --color-error: #f04452;
+    --color-error-hover: #d92d3a;
+    --color-error-subtle: #fef3f2;
+    --color-error-on-primary: #ffffff;
+    --color-info: #3182f6;
+    --color-info-hover: #1b64da;
+    --color-info-subtle: #e8f3ff;
+    --color-info-on-primary: #ffffff;
+
+    /* Semantic: control states */
+    --color-interactive-hover: #f2f4f6;
+    --color-interactive-active: #e5e8eb;
+    --color-interactive-selected: #e8f3ff;
+    --color-interactive-disabled: #f2f4f6;
+    --color-disabled-border: #e5e8eb;
+    --color-focus-ring: #3182f6;
+    --color-input-bg: #ffffff;
+    --color-input-border: #e5e8eb;
+    --color-input-hover: #3182f6;
+    --color-input-focus: var(--color-focus-ring);
+
+    /* Semantic: overlays, depth, loading, and map chrome */
+    --color-overlay: rgba(15, 23, 42, 0.6);
+    --color-sheet-scrim: rgba(15, 23, 42, 0.28);
+    --color-map-loading-overlay: rgba(15, 23, 42, 0.08);
+    --color-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 4px 12px -4px rgba(15, 23, 42, 0.04);
+    --color-shadow-soft: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --color-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --color-shadow-brand: 0 12px 24px -8px rgba(49, 130, 246, 0.28);
+    --color-shadow-accent: 0 12px 24px -8px rgba(240, 68, 82, 0.28);
+    --color-shadow-error: 0 12px 24px -8px rgba(185, 28, 28, 0.25);
+    --color-scrollbar: rgba(49, 130, 246, 0.34);
+    --color-status-neutral: #4e5968;
+    --color-status-neutral-on: #ffffff;
+    --color-map-top-scrim: linear-gradient(
+      180deg,
+      rgba(15, 23, 42, 0.12) 0%,
+      rgba(15, 23, 42, 0.02) 62%,
+      transparent 100%
+    );
+    --color-map-side-scrim: linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.14) 0%,
+      rgba(15, 23, 42, 0.04) 46%,
+      transparent 100%
+    );
+    --color-map-cluster: rgba(49, 130, 246, 0.94);
+    --color-map-cluster-strong: rgba(27, 100, 218, 0.98);
+    --color-map-cluster-text: #ffffff;
+    --color-map-cluster-border: rgba(255, 255, 255, 0.95);
+    --color-map-cluster-shadow: 0 12px 28px -12px rgba(15, 23, 42, 0.45);
+    --color-map-selection-ring: rgba(49, 130, 246, 0.28);
+    --color-image-fallback-surface: #e8f3ff;
+    --color-image-fallback-text: #1d4ed8;
+    --color-skeleton-base: #e2e8f0;
+    --color-skeleton-highlight: #f8fafc;
+
+    /* Semantic: category badge states */
+    --color-category-education-surface: #eff6ff;
+    --color-category-education-text: #1d4ed8;
+    --color-category-exhibition-surface: #eef2ff;
+    --color-category-exhibition-text: #4338ca;
+    --color-category-performance-surface: #faf5ff;
+    --color-category-performance-text: #7e22ce;
+    --color-category-festival-surface: #fff7ed;
+    --color-category-festival-text: #c2410c;
+    --color-category-neutral-surface: #f1f5f9;
+    --color-category-neutral-text: #475569;
+  }
+
+  .dark {
+    color-scheme: dark;
+    /* Dark mode: Toss Dark Matte Slate & Blue */
+    --color-bg-primary: #101012;
+    --color-bg-secondary: #17171c;
+    --color-bg-tertiary: #202027;
+    --color-surface-primary: #17171c;
+    --color-surface-secondary: #202027;
+    --color-surface-elevated: #282833;
+    --color-surface-overlay: #282833;
+    --color-surface-chip: #282833;
+
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #b0b8c1;
+    --color-text-tertiary: #8b95a1;
+    --color-text-disabled: #b0b8c1;
+    --color-text-inverse: #101012;
+
+    --color-border-primary: #282833;
+    --color-border-secondary: #202027;
+    --color-border-strong: #383847;
+    --color-border-control: #383847;
+    --color-border-brand: #3182f6;
+    --color-border-brand-subtle: #192a4a;
+    --color-border-error: #f04452;
+    --color-divider: #282833;
+
+    --color-brand-primary: #3182f6;
+    --color-brand-hover: #5299f7;
+    --color-brand-active: #1b64da;
+    --color-brand-subtle: #192a4a;
+    --color-brand-on-primary: #ffffff;
+    --color-accent-primary: #f04452;
+    --color-accent-hover: #fa616d;
+    --color-accent-active: #d92d3a;
+    --color-accent-subtle: #3a1619;
+    --color-accent-text: #fa616d;
+    --color-accent-on-primary: #ffffff;
+
+    --color-success: #04b05c;
+    --color-success-hover: #26c773;
+    --color-success-subtle: #092c19;
+    --color-success-text: #26c773;
+    --color-success-on-primary: #ffffff;
+    --color-warning: #ff9500;
+    --color-warning-hover: #ffa82e;
+    --color-warning-subtle: #331f00;
+    --color-warning-text: #ffa82e;
+    --color-warning-on-primary: #ffffff;
+    --color-error: #f04452;
+    --color-error-hover: #fa616d;
+    --color-error-subtle: #3a1619;
+    --color-error-on-primary: #ffffff;
+    --color-info: #3182f6;
+    --color-info-hover: #5299f7;
+    --color-info-subtle: #192a4a;
+    --color-info-on-primary: #ffffff;
+
+    --color-interactive-hover: #202027;
+    --color-interactive-active: #282833;
+    --color-interactive-selected: #192a4a;
+    --color-interactive-disabled: #202027;
+    --color-disabled-border: #282833;
+    --color-focus-ring: #3182f6;
+    --color-input-bg: #202027;
+    --color-input-border: #383847;
+    --color-input-hover: #3182f6;
+    --color-input-focus: #3182f6;
+
+    --color-overlay: rgba(2, 6, 23, 0.76);
+    --color-sheet-scrim: rgba(2, 6, 23, 0.65);
+    --color-map-loading-overlay: rgba(2, 6, 23, 0.2);
+    --color-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.65);
+    --color-shadow-soft: 0 12px 32px -16px rgba(0, 0, 0, 0.45);
+    --color-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.32);
+    --color-shadow-brand: 0 12px 28px -8px rgba(82, 153, 247, 0.34);
+    --color-shadow-accent: 0 12px 28px -8px rgba(250, 97, 109, 0.28);
+    --color-shadow-error: 0 12px 28px -8px rgba(248, 113, 113, 0.25);
+    --color-scrollbar: rgba(82, 153, 247, 0.48);
+    --color-status-neutral: #b0b8c1;
+    --color-status-neutral-on: #101012;
+    --color-map-top-scrim: linear-gradient(180deg, rgba(2, 6, 23, 0.3) 0%, rgba(2, 6, 23, 0.08) 62%, transparent 100%);
+    --color-map-side-scrim: linear-gradient(90deg, rgba(2, 6, 23, 0.35) 0%, rgba(2, 6, 23, 0.12) 46%, transparent 100%);
+    --color-map-cluster: rgba(82, 153, 247, 0.96);
+    --color-map-cluster-strong: rgba(49, 130, 246, 0.98);
+    --color-map-cluster-text: #ffffff;
+    --color-map-cluster-border: rgba(255, 255, 255, 0.92);
+    --color-map-cluster-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.75);
+    --color-map-selection-ring: rgba(82, 153, 247, 0.38);
+    --color-image-fallback-surface: #192a4a;
+    --color-image-fallback-text: #93c5fd;
+    --color-skeleton-base: #1e293b;
+    --color-skeleton-highlight: #334155;
+
+    --color-category-education-surface: #172554;
+    --color-category-education-text: #93c5fd;
+    --color-category-exhibition-surface: #1e1b4b;
+    --color-category-exhibition-text: #a5b4fc;
+    --color-category-performance-surface: #3b0764;
+    --color-category-performance-text: #d8b4fe;
+    --color-category-festival-surface: #431407;
+    --color-category-festival-text: #fdba74;
+    --color-category-neutral-surface: #1e293b;
+    --color-category-neutral-text: #cbd5e1;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    font-family: var(
+      --font-pretendard,
+      'Pretendard Variable',
+      Pretendard,
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      Roboto,
+      'Helvetica Neue',
+      'Segoe UI',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      sans-serif
+    );
+    letter-spacing: -0.025em;
+    color: var(--color-text-primary);
+    background: var(--color-bg-primary);
+    overscroll-behavior: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    letter-spacing: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--color-scrollbar);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  *::-webkit-resizer {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}

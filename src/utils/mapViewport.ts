@@ -8,6 +8,7 @@ import type { CultureMapBounds } from '@/types/culture';
 export const MAP_CLUSTER_LEVEL = 10;
 export const MAP_CLUSTER_GRID_SIZE = 0.25;
 export const MAP_PREFETCH_PADDING_RATIO = 0.25;
+export const MAP_ITEM_REQUEST_GRID_SIZE = 0.05;
 
 export type MapDataMode = 'clusters' | 'items';
 
@@ -28,6 +29,21 @@ export const expandMapBounds = (
     swLng: Math.max(-180, bounds.swLng - lngPadding),
     neLat: Math.min(90, bounds.neLat + latPadding),
     neLng: Math.min(180, bounds.neLng + lngPadding),
+  };
+};
+
+export const snapMapBoundsOutward = (bounds: CultureMapBounds, gridSize: number): CultureMapBounds => {
+  if (!Number.isFinite(gridSize) || gridSize <= 0) return bounds;
+
+  const floorToGrid = (value: number) => Math.floor(value / gridSize) * gridSize;
+  const ceilToGrid = (value: number) => Math.ceil(value / gridSize) * gridSize;
+  const normalize = (value: number) => Number(value.toFixed(6));
+
+  return {
+    swLat: normalize(Math.max(-90, floorToGrid(bounds.swLat))),
+    swLng: normalize(Math.max(-180, floorToGrid(bounds.swLng))),
+    neLat: normalize(Math.min(90, ceilToGrid(bounds.neLat))),
+    neLng: normalize(Math.min(180, ceilToGrid(bounds.neLng))),
   };
 };
 

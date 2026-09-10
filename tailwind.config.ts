@@ -5,6 +5,10 @@ export default {
   content: ['./src/app/**/*.{js,ts,jsx,tsx,mdx}', './src/components/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
+      boxShadow: {
+        '2xs': '0 1px rgb(15 23 42 / 0.04)',
+        xs: '0 1px 2px rgb(15 23 42 / 0.06)',
+      },
       fontFamily: {
         pretendard: [
           '"Pretendard Variable"',
@@ -30,6 +34,9 @@ export default {
       height: {
         160: '40rem', // 640px
         175: '43.75rem', // 700px
+      },
+      spacing: {
+        '4.5': '1.125rem',
       },
     },
   },

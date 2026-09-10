@@ -4,10 +4,13 @@ import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
 import {
   type MapDataMode,
+  MAP_CLUSTER_GRID_SIZE,
+  MAP_ITEM_REQUEST_GRID_SIZE,
   expandMapBounds,
   getMapDataMode,
   isBoundsWithin,
   isCoordinateWithinBounds,
+  snapMapBoundsOutward,
 } from '@/utils/mapViewport';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -173,7 +176,12 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
         : null,
     [hasBounds, neLat, neLng, swLat, swLng]
   );
-  const fetchBounds = useMemo(() => (bounds ? expandMapBounds(bounds) : null), [bounds]);
+  const fetchBounds = useMemo(() => {
+    if (!bounds) return null;
+    const expanded = expandMapBounds(bounds);
+    const requestGridSize = mode === 'clusters' ? MAP_CLUSTER_GRID_SIZE : MAP_ITEM_REQUEST_GRID_SIZE;
+    return snapMapBoundsOutward(expanded, requestGridSize);
+  }, [bounds, mode]);
   const boundsKey = hasBounds ? `${swLat},${swLng},${neLat},${neLng}` : '';
   const fetchBoundsKey = fetchBounds
     ? `${fetchBounds.swLat},${fetchBounds.swLng},${fetchBounds.neLat},${fetchBounds.neLng}`

@@ -4,8 +4,17 @@ import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const stylesPath = fileURLToPath(new URL('../src/styles/globals.scss', import.meta.url));
+const foundationStylesPath = fileURLToPath(new URL('../src/styles/_foundation.scss', import.meta.url));
+const componentStylesPath = fileURLToPath(new URL('../src/styles/_components.scss', import.meta.url));
 const mapViewPath = fileURLToPath(new URL('../src/components/Map/MapView.tsx', import.meta.url));
+
+const readThemeStyles = async () => {
+  const [foundation, components] = await Promise.all([
+    readFile(foundationStylesPath, 'utf8'),
+    readFile(componentStylesPath, 'utf8'),
+  ]);
+  return `${foundation}\n${components}`;
+};
 
 const readToken = (source: string, token: string) => {
   const value = source.match(new RegExp(`${token}:\\s*(#[0-9a-f]{6});`, 'i'))?.[1];
@@ -31,7 +40,7 @@ const contrastRatio = (foreground: string, background: string) => {
 };
 
 test('disabled text remains readable against disabled surfaces in both themes', async () => {
-  const source = await readFile(stylesPath, 'utf8');
+  const source = await readThemeStyles();
   const lightTheme = source.slice(source.indexOf(':root {'), source.indexOf('\n  .dark {'));
   const darkTheme = source.slice(source.indexOf('.dark {'));
 
@@ -50,7 +59,7 @@ test('disabled text remains readable against disabled surfaces in both themes', 
 });
 
 test('dark mode tones down only the map canvas', async () => {
-  const [styles, mapView] = await Promise.all([readFile(stylesPath, 'utf8'), readFile(mapViewPath, 'utf8')]);
+  const [styles, mapView] = await Promise.all([readThemeStyles(), readFile(mapViewPath, 'utf8')]);
 
   assert.match(mapView, /className='map-canvas size-full'/);
   assert.match(styles, /\.dark \.map-canvas\s*\{[\s\S]*?filter:\s*brightness\(0\.82\) saturate\(0\.88\);/);

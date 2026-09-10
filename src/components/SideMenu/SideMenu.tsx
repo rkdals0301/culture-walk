@@ -69,7 +69,7 @@ const SideMenu = () => {
               alt='문화산책'
               width={40}
               height={40}
-              className='size-10 rounded-xl shadow-xs transition-transform duration-150 hover:scale-105'
+              className='size-10 transition-transform duration-150 hover:scale-105'
             />
             <div className='min-w-0'>
               <h2 id='side-menu-title' className='truncate text-lg font-bold tracking-tight'>

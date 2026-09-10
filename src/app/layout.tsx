@@ -11,7 +11,7 @@ import { SideMenuProvider } from '@/context/SideMenuContext';
 import ThemeProvider from '@/providers/ThemeProvider';
 import '@/styles/globals.scss';
 import { serializeJsonLd } from '@/utils/jsonLd';
-import { OG_IMAGE_URL, SEARCH_THUMBNAIL_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
+import { BRAND_ASSET_VERSION, OG_IMAGE_URL, SEARCH_THUMBNAIL_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
 
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
@@ -88,13 +88,16 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon-16x16.png?v=20260908-5', type: 'image/png', sizes: '16x16' },
-      { url: '/favicon-32x32.png?v=20260908-5', type: 'image/png', sizes: '32x32' },
-      { url: '/favicon-48x48.png?v=20260908-5', type: 'image/png', sizes: '48x48' },
-      { url: '/favicon.ico?v=20260908-5', sizes: 'any' },
+      { url: `/favicon.svg?v=${BRAND_ASSET_VERSION}`, type: 'image/svg+xml', sizes: 'any' },
+      { url: `/favicon-16x16.png?v=${BRAND_ASSET_VERSION}`, type: 'image/png', sizes: '16x16' },
+      { url: `/favicon-32x32.png?v=${BRAND_ASSET_VERSION}`, type: 'image/png', sizes: '32x32' },
+      { url: `/favicon-48x48.png?v=${BRAND_ASSET_VERSION}`, type: 'image/png', sizes: '48x48' },
+      { url: `/favicon.ico?v=${BRAND_ASSET_VERSION}`, sizes: 'any' },
     ],
-    shortcut: '/favicon.ico?v=20260908-5',
-    apple: [{ url: '/apple-touch-icon-180x180.png?v=20260908-5', type: 'image/png', sizes: '180x180' }],
+    shortcut: `/favicon.ico?v=${BRAND_ASSET_VERSION}`,
+    apple: [
+      { url: `/apple-touch-icon-180x180.png?v=${BRAND_ASSET_VERSION}`, type: 'image/png', sizes: '180x180' },
+    ],
   },
   description:
     '전국 문화행사 지도를 통해 지역별 축제와 행사 정보를 한눈에 확인하세요. 매일 갱신되는 행사 정보를 지도에서 직접 찾아보세요.',

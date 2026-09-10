@@ -10,13 +10,18 @@ const contextPath = fileURLToPath(new URL('../src/context/CultureContext.tsx', i
 const apiErrorPath = fileURLToPath(new URL('../src/hooks/useApiError.ts', import.meta.url));
 const toastPath = fileURLToPath(new URL('../src/components/Toast/ToastContainer.tsx', import.meta.url));
 const headerPath = fileURLToPath(new URL('../src/components/Header/Header.tsx', import.meta.url));
-const stylesPath = fileURLToPath(new URL('../src/styles/globals.scss', import.meta.url));
+const stylePaths = [
+  '../src/styles/_safe-area.scss',
+  '../src/styles/_map-layout.scss',
+  '../src/styles/_components.scss',
+].map(path => fileURLToPath(new URL(path, import.meta.url)));
+const readPresentationStyles = async () => (await Promise.all(stylePaths.map(path => readFile(path, 'utf8')))).join('\n');
 
 test('모바일 지도는 피드 링크와 지도 컨트롤 사이에 안전한 세로 간격을 확보한다', async () => {
   const [shell, view, styles] = await Promise.all([
     readFile(shellPath, 'utf8'),
     readFile(viewPath, 'utf8'),
-    readFile(stylesPath, 'utf8'),
+    readPresentationStyles(),
   ]);
 
   assert.match(shell, /safe-area-map-feed-link/);
@@ -34,7 +39,7 @@ test('모바일 지도는 피드 링크와 지도 컨트롤 사이에 안전한 
 });
 
 test('지도 API 인라인 오류는 피드 링크 아래의 별도 레인에 표시된다', async () => {
-  const styles = await readFile(stylesPath, 'utf8');
+  const styles = await readPresentationStyles();
 
   assert.match(
     styles,
@@ -43,10 +48,11 @@ test('지도 API 인라인 오류는 피드 링크 아래의 별도 레인에 �
   assert.match(styles, /\.map-inline-status\s*\{[\s\S]*?right:\s*calc\(5rem \+ env\(safe-area-inset-right, 0px\)\);/);
 });
 
-test('문화 목록 자동 로드는 이미 실패한 요청을 마운트된 소비자가 다시 시작하지 않는다', async () => {
+test('전역 컨텍스트는 전체 문화 목록을 직접 로드하지 않는다', async () => {
   const source = await readFile(contextPath, 'utf8');
 
-  assert.match(source, /if \(!force && culturesError\) \{\s*return;\s*\}/);
+  assert.doesNotMatch(source, /axiosInstance\.get\('\/api\/cultures'\)/);
+  assert.doesNotMatch(source, /filteredCultures|mapCultures|loadCultures/);
 });
 
 test('동일 API 오류 토스트는 중복 표시를 막는 식별자를 사용한다', async () => {
@@ -56,7 +62,7 @@ test('동일 API 오류 토스트는 중복 표시를 막는 식별자를 사용
 });
 
 test('오류 알림은 토스 스타일의 안전 영역 플로팅 표면으로 표시된다', async () => {
-  const [toastSource, styles] = await Promise.all([readFile(toastPath, 'utf8'), readFile(stylesPath, 'utf8')]);
+  const [toastSource, styles] = await Promise.all([readFile(toastPath, 'utf8'), readPresentationStyles()]);
 
   assert.match(toastSource, /className='culture-toast-container'/);
   assert.match(toastSource, /toastClassName='culture-toast'/);
@@ -98,19 +104,13 @@ test('상세창이 열린 상태에서 테마 토글은 외부 클릭으로 처�
   assert.match(source, /data-keeps-detail-open[\s\S]*?<ThemeToggleButton \/>/);
 });
 
-test('API 오류 토스트는 오류 상태 반영 이후에 한 번 표시된다', async () => {
+test('상세 API 오류 토스트는 오류 상태 반영 이후에 한 번 표시된다', async () => {
   const source = await readFile(contextPath, 'utf8');
 
-  assert.match(source, /pendingCulturesErrorRef/);
   assert.match(source, /pendingCultureErrorRef/);
-  assert.match(
-    source,
-    /useEffect\(\(\) => \{[\s\S]*?const error = pendingCulturesErrorRef\.current \?\? culturesError;[\s\S]*?handleError\(error\);/
-  );
   assert.match(
     source,
     /useEffect\(\(\) => \{[\s\S]*?const error = pendingCultureErrorRef\.current \?\? cultureError;[\s\S]*?handleError\(error\);/
   );
-  assert.doesNotMatch(source, /setCulturesError\(normalizedError\);\s*handleError\(caughtError\);/);
   assert.doesNotMatch(source, /setCultureError\(normalizedError\);\s*handleError\(caughtError\);/);
 });
