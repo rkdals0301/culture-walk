@@ -1,3 +1,4 @@
+import { readCulturesListFallbackCache, readCulturesListFallbackMetadata } from '@/cache/kv';
 import { cultureSyncRuns, cultures, cultureTourApiDetails } from '@/db/schema';
 import { getDb } from '@/db/client';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
@@ -19,14 +20,60 @@ import {
 
 const MAX_SYNC_AGE_HOURS = 36;
 
+const getAgeHours = (value: string | null | undefined, now: Date) => {
+  if (!value) return null;
+  const timestamp = new Date(value).getTime();
+  if (!Number.isFinite(timestamp)) return null;
+  return Math.max(0, (now.getTime() - timestamp) / (60 * 60 * 1000));
+};
+
+const readFallbackStatus = async (now: Date) => {
+  const [items, metadata] = await Promise.all([
+    readCulturesListFallbackCache(),
+    readCulturesListFallbackMetadata(),
+  ]);
+
+  return {
+    available: Boolean(items?.length),
+    itemCount: items?.length ?? 0,
+    cachedAt: metadata?.cachedAt ?? null,
+    cacheAgeHours: getAgeHours(metadata?.cachedAt, now),
+  };
+};
+
 export async function GET() {
   try {
     const db = await getDb();
     if (!db) {
+      const now = new Date();
+      const fallback = await readFallbackStatus(now);
+      if (fallback.available) {
+        return NextResponse.json(
+          {
+            ok: true,
+            status: 'degraded',
+            checkedAt: now.toISOString(),
+            databaseStatus: 'missing',
+            reason: 'd1-binding-missing',
+            message: 'D1 바인딩을 사용할 수 없어 KV snapshot으로 서비스를 계속 제공합니다.',
+            fallback,
+            latestSync: null,
+          },
+          {
+            status: 200,
+            headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
+          }
+        );
+      }
+
       return NextResponse.json(
         {
           ok: false,
+          status: 'unavailable',
+          checkedAt: now.toISOString(),
+          databaseStatus: 'missing',
           error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.',
+          fallback,
         },
         { status: 503 }
       );
@@ -128,10 +175,16 @@ export async function GET() {
       implausibleActiveDates === 0 &&
       hasFreshSuccessfulSync;
 
+    const fallback = ok ? null : await readFallbackStatus(now);
+    const servingDegraded = Boolean(!ok && fallback?.available);
+
     return NextResponse.json(
       {
-        ok,
+        ok: ok || servingDegraded,
+        status: ok ? 'healthy' : servingDegraded ? 'degraded' : 'unavailable',
         checkedAt: now.toISOString(),
+        databaseStatus: 'available',
+        fallback,
         total,
         sourceActiveTotal,
         tourApiActiveTotal,
@@ -167,7 +220,7 @@ export async function GET() {
           : null,
       },
       {
-        status: ok ? 200 : 503,
+        status: ok || servingDegraded ? 200 : 503,
         headers: {
           'Cache-Control': 'no-store',
         },
@@ -179,8 +232,37 @@ export async function GET() {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
+      const now = new Date();
+      const fallback = await readFallbackStatus(now);
+      if (fallback.available) {
+        return NextResponse.json(
+          {
+            ok: true,
+            status: 'degraded',
+            checkedAt: now.toISOString(),
+            databaseStatus: 'quota-exhausted',
+            reason: 'd1-daily-row-read-limit',
+            message: 'D1 일일 읽기 한도에 도달해 KV snapshot으로 서비스를 계속 제공합니다.',
+            fallback,
+            latestSync: null,
+          },
+          {
+            status: 200,
+            headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
+          }
+        );
+      }
+
       return NextResponse.json(
-        { ok: false, error: 'Cloudflare D1 일일 읽기 한도에 도달했습니다.', reason: 'd1-daily-row-read-limit' },
+        {
+          ok: false,
+          status: 'unavailable',
+          checkedAt: now.toISOString(),
+          databaseStatus: 'quota-exhausted',
+          error: 'Cloudflare D1 일일 읽기 한도에 도달했습니다.',
+          reason: 'd1-daily-row-read-limit',
+          fallback,
+        },
         {
           status: 503,
           headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' },

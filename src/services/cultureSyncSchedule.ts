@@ -12,6 +12,7 @@ export const getCultureScheduledJob = (cron: string): CultureScheduledJob => {
 };
 
 interface SyncHealthPayload {
+  reason?: unknown;
   latestSync?: {
     status?: unknown;
     ageHours?: unknown;
@@ -19,6 +20,10 @@ interface SyncHealthPayload {
 }
 
 export const shouldRunScheduledSync = (health: SyncHealthPayload | null) => {
+  if (health?.reason === 'd1-daily-row-read-limit') {
+    return false;
+  }
+
   const latestSync = health?.latestSync;
   if (!latestSync || latestSync.status !== 'success') {
     return true;

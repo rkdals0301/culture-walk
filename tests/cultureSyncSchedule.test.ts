@@ -29,6 +29,10 @@ test('최신 동기화가 실패 또는 고착 상태면 복구 동기화를 실
   assert.equal(shouldRunScheduledSync(null), true);
 });
 
+test('D1 일일 읽기 한도가 소진된 동안에는 snapshot 재시도를 건너뛴다', () => {
+  assert.equal(shouldRunScheduledSync({ reason: 'd1-daily-row-read-limit', latestSync: null }), false);
+});
+
 test('등록된 cron만 snapshot과 detail refresh 작업으로 분류한다', () => {
   assert.equal(getCultureScheduledJob(SYNC_CRON), 'snapshot');
   assert.equal(getCultureScheduledJob(DETAIL_REFRESH_CRON), 'detail-refresh');

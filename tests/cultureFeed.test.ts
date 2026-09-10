@@ -6,6 +6,7 @@ import {
   getCultureRegionOptions,
   isFreeCultureListItem,
 } from '@/services/cultureFeed';
+import { filterCurrentCultureListItems } from '@/services/cultureList';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -74,4 +75,16 @@ test('문화 피드 캐시 키는 입력 공백과 과도한 검색어를 정규
   });
 
   assert.equal(JSON.parse(key).searchQuery.length, 100);
+});
+
+test('KV read model은 오늘 이미 종료된 행사를 제외한다', () => {
+  const current = filterCurrentCultureListItems(
+    [
+      createCulture({ id: 1, endDate: new Date('2026-09-09T00:00:00.000Z') }),
+      createCulture({ id: 2, endDate: new Date('2026-09-11T00:00:00.000Z') }),
+    ],
+    new Date('2026-09-10T03:00:00.000Z')
+  );
+
+  assert.deepEqual(current.map(item => item.id), [2]);
 });

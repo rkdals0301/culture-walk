@@ -5,12 +5,17 @@ import { getKoreaDateStartIso } from '@/utils/dateUtils';
 const CULTURE_CACHE_VERSION_KEY = 'cultures:cache-version';
 const CULTURE_LIST_CACHE_NAMESPACE = 'cultures:list:v6';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
+const CULTURE_LIST_FALLBACK_METADATA_KEY = 'cultures:list:last-meta:v1';
 const CULTURE_FEED_PAGE_CACHE_NAMESPACE = 'cultures:feed-page:v1';
 const CULTURE_FEED_METADATA_CACHE_NAMESPACE = 'cultures:feed-metadata:v1';
 const CULTURE_MAP_VIEWPORT_CACHE_NAMESPACE = 'cultures:map-viewport:v1';
 const CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:last:v1';
 const LEGACY_CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:v2:';
 const CULTURE_LIST_FALLBACK_TTL_SECONDS = 60 * 60 * 24 * 14;
+export interface CultureListFallbackMetadata {
+  cachedAt: string;
+  itemCount: number;
+}
 type StoredCultureDetail = {
   cacheVersion: string;
   culture: Culture;
@@ -159,6 +164,9 @@ export const readCulturesListCache = async () => {
 export const readCulturesListFallbackCache = async () =>
   readKvCache<CultureListItem[]>(CULTURE_LIST_FALLBACK_CACHE_KEY);
 
+export const readCulturesListFallbackMetadata = async () =>
+  readKvCache<CultureListFallbackMetadata>(CULTURE_LIST_FALLBACK_METADATA_KEY);
+
 export const getCultureFeedPageCacheKey = async (payload: {
   filters: string;
   cursor: string | null;
@@ -226,13 +234,23 @@ export const writeCultureMapViewportCache = async (
 ) => writeKvCache(await getCultureMapViewportCacheKey(payload), response, ttlSeconds);
 
 export const writeCulturesListCaches = async (cultures: CultureListItem[], ttlSeconds: number) => {
+  const cachedAt = new Date().toISOString();
   await Promise.all([
     writeKvCache(await getCulturesListCacheKey(), cultures, ttlSeconds),
     writeKvCache(CULTURE_LIST_FALLBACK_CACHE_KEY, cultures, CULTURE_LIST_FALLBACK_TTL_SECONDS),
+    writeKvCache(
+      CULTURE_LIST_FALLBACK_METADATA_KEY,
+      { cachedAt, itemCount: cultures.length } satisfies CultureListFallbackMetadata,
+      CULTURE_LIST_FALLBACK_TTL_SECONDS
+    ),
   ]);
 };
 
 export const readCultureListItemCache = async (id: number) => {
+  const fallback = await readCulturesListFallbackCache();
+  const fallbackCulture = fallback?.find(culture => culture.id === id);
+  if (fallbackCulture) return fallbackCulture;
+
   const cachedCultures = await readCulturesListCache();
   return cachedCultures?.find(culture => culture.id === id) ?? null;
 };

@@ -1,16 +1,17 @@
 import {
   readCultureFeedPageCache,
-  readCulturesListFallbackCache,
   writeCultureFeedPageCache,
 } from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import {
   buildCultureFeedResult,
   createCultureFeedFilterKey,
+  type CultureFeedFilters,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
 import { getCultureFeedPage } from '@/services/cultureFeedData';
-import { CultureFeedPage } from '@/types/culture';
+import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
 import { NextResponse } from 'next/server';
@@ -60,6 +61,29 @@ const responseHeaders = (source?: string) => ({
   ...(source ? { 'X-Culture-Data-Source': source } : {}),
 });
 
+const buildPageFromSnapshot = (
+  snapshotItems: readonly CultureListItem[],
+  filters: CultureFeedFilters,
+  filterKey: string,
+  cursor: CultureFeedCursor | null,
+  limit: number
+): CultureFeedPage => {
+  const result = buildCultureFeedResult(snapshotItems, filters);
+  const offset = cursor?.offset ?? 0;
+  const items = result.items.slice(offset, offset + limit);
+  const nextOffset = offset + items.length;
+  const hasMore = nextOffset < result.items.length;
+
+  return {
+    items,
+    nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
+    hasMore,
+    totalCount: result.items.length,
+    freeCount: result.freeCount,
+    regionOptions: result.regionOptions,
+  };
+};
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const searchParams = url.searchParams;
@@ -89,6 +113,17 @@ export async function GET(request: Request) {
   const cachedPage = await readCultureFeedPageCache({ filters: filterKey, cursor: cursorValue, limit });
   if (cachedPage) {
     return NextResponse.json(cachedPage, { headers: responseHeaders('kv-feed-page-cache') });
+  }
+
+  const readModel = await readCultureReadModelSnapshot();
+  if (readModel) {
+    const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
+    await writeCultureFeedPageCache(
+      { filters: filterKey, cursor: cursorValue, limit },
+      page,
+      PAGE_CACHE_TTL_SECONDS
+    );
+    return NextResponse.json(page, { headers: responseHeaders('kv-read-model') });
   }
 
   try {
@@ -131,26 +166,6 @@ export async function GET(request: Request) {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
-      const fallback = await readCulturesListFallbackCache();
-      if (fallback) {
-        const fallbackResult = buildCultureFeedResult(fallback, filters);
-        const offset = cursor?.offset ?? 0;
-        const items = fallbackResult.items.slice(offset, offset + limit);
-        const nextOffset = offset + items.length;
-        const hasMore = nextOffset < fallbackResult.items.length;
-        const page: CultureFeedPage = {
-          items,
-          nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
-          hasMore,
-          totalCount: fallbackResult.items.length,
-          freeCount: fallbackResult.freeCount,
-          regionOptions: fallbackResult.regionOptions,
-        };
-
-        await writeCultureFeedPageCache({ filters: filterKey, cursor: cursorValue, limit }, page, 60);
-        return NextResponse.json(page, { headers: responseHeaders('kv-list-fallback') });
-      }
-
       return NextResponse.json(
         { error: '문화 목록을 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
         { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }

@@ -27,7 +27,7 @@ const filters = {
   freeOnly: false,
 };
 
-test('D1 fallback 지도 목록은 snapshot에서 현재 bounds만 반환한다', () => {
+test('KV read model 지도 목록은 snapshot에서 현재 bounds만 반환한다', () => {
   const response = buildCultureMapResponseFromSnapshot(
     [item({ id: 1 }), item({ id: 2, lat: 35.18, lng: 129.07, guName: '부산 중구' })],
     {
@@ -43,7 +43,7 @@ test('D1 fallback 지도 목록은 snapshot에서 현재 bounds만 반환한다'
   assert.equal(response.viewportCount, 1);
 });
 
-test('D1 fallback 지도 cluster는 같은 grid의 행사를 하나로 묶는다', () => {
+test('KV read model 지도 cluster는 같은 grid의 행사를 하나로 묶는다', () => {
   const response = buildCultureMapResponseFromSnapshot(
     [item({ id: 1, lat: 37.51, lng: 126.91 }), item({ id: 2, lat: 37.62, lng: 127.02 })],
     {
@@ -59,7 +59,7 @@ test('D1 fallback 지도 cluster는 같은 grid의 행사를 하나로 묶는다
   assert.equal(response.clusters.reduce((sum, cluster) => sum + cluster.count, 0), 2);
 });
 
-test('D1 fallback 지도도 검색·지역·무료 필터를 동일하게 적용한다', () => {
+test('KV read model 지도도 검색·지역·무료 필터를 동일하게 적용한다', () => {
   const response = buildCultureMapResponseFromSnapshot(
     [
       item({ id: 1, title: '서울 무료 공연' }),

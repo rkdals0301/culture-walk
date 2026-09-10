@@ -27,6 +27,32 @@ const toDateOrNow = (value?: string | null) => {
   return parsed;
 };
 
+export const filterCurrentCultureListItems = (
+  items: readonly CultureListItem[],
+  referenceDate: Date = new Date()
+) => {
+  const koreaToday = new Date(getKoreaDateStartIso(referenceDate)).getTime();
+
+  return items.filter(item => {
+    const endDate = new Date(item.endDate).getTime();
+    return Number.isFinite(endDate) && endDate >= koreaToday;
+  });
+};
+
+export const readCultureReadModelSnapshot = async (): Promise<CultureListSnapshot | null> => {
+  const fallback = await readCulturesListFallbackCache();
+  if (fallback?.length) {
+    return { items: filterCurrentCultureListItems(fallback), source: 'kv-list-fallback' };
+  }
+
+  const cached = await readCulturesListCache();
+  if (cached?.length) {
+    return { items: filterCurrentCultureListItems(cached), source: 'kv-list-cache' };
+  }
+
+  return null;
+};
+
 const queryCultureListFromD1 = async () => {
   const db = await getDb();
   if (!db) return null;
@@ -100,10 +126,8 @@ export const refreshCultureListSnapshotCache = async () => {
 };
 
 export const getCultureListSnapshot = async (): Promise<CultureListSnapshot | null> => {
-  const cached = await readCulturesListCache();
-  if (cached) {
-    return { items: cached, source: 'kv-list-cache' };
-  }
+  const readModel = await readCultureReadModelSnapshot();
+  if (readModel) return readModel;
 
   try {
     const items = await refreshCultureListSnapshotCache();
@@ -116,7 +140,7 @@ export const getCultureListSnapshot = async (): Promise<CultureListSnapshot | nu
         // Temporarily promote the last known good snapshot so paginated feed requests
         // do not retry the exhausted D1 database for every scroll page.
         await writeCulturesListCaches(fallback, 60);
-        return { items: fallback, source: 'kv-list-fallback' };
+        return { items: filterCurrentCultureListItems(fallback), source: 'kv-list-fallback' };
       }
     }
 

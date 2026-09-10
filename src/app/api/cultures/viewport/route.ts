@@ -1,10 +1,10 @@
 import {
   readCultureMapViewportCache,
-  readCulturesListFallbackCache,
   writeCultureMapViewportCache,
 } from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import { createCultureFeedFilterKey, normalizeCultureFeedFilters } from '@/services/cultureFeed';
+import { readCultureReadModelSnapshot } from '@/services/cultureList';
 import { buildCultureMapResponseFromSnapshot, getCultureMapData } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -80,6 +80,13 @@ export async function GET(request: Request) {
     return NextResponse.json(cached, { headers: responseHeaders('kv-map-viewport') });
   }
 
+  const readModel = await readCultureReadModelSnapshot();
+  if (readModel) {
+    const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
+    await writeCultureMapViewportCache(cachePayload, result, KV_VIEWPORT_CACHE_SECONDS);
+    return NextResponse.json(result, { headers: responseHeaders('kv-read-model') });
+  }
+
   try {
     const result = await getCultureMapData({ filters, bounds, level });
     if (!result) {
@@ -94,13 +101,6 @@ export async function GET(request: Request) {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
-      const fallback = await readCulturesListFallbackCache();
-      if (fallback) {
-        const result = buildCultureMapResponseFromSnapshot(fallback, { filters, bounds, level });
-        await writeCultureMapViewportCache(cachePayload, result, 60);
-        return NextResponse.json(result, { headers: responseHeaders('kv-list-fallback') });
-      }
-
       return NextResponse.json(
         { error: '지도 영역 데이터를 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
         { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }
