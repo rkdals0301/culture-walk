@@ -1,5 +1,5 @@
 export const SYNC_CRON = '10 19,20 * * *';
-export const DETAIL_REFRESH_CRON = '2,7,12,17,22,27,32,37,42,47,52,57 * * * *';
+export const DETAIL_REFRESH_CRON = '2,17,32,47 * * * *';
 export const RECOVERY_SYNC_UTC_HOUR = 20;
 export const RECOVERY_FRESHNESS_HOURS = 2;
 

@@ -1,4 +1,5 @@
 import { bumpCulturesCacheVersion } from '@/cache/kv';
+import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 
 import { refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
@@ -48,6 +49,15 @@ export const syncCultures = async (
       beforeApply: options.beforeApply,
     });
     await bumpCulturesCacheVersion();
+
+    try {
+      await refreshCultureListSnapshotCache();
+    } catch (error) {
+      // The D1 snapshot is already authoritative at this point. Cache warming is
+      // best-effort so a temporary quota/network problem must not roll back a
+      // successful synchronization.
+      console.warn('문화 목록 KV snapshot 보강을 건너뜁니다.', error);
+    }
 
     // Detail enrichment is best-effort: the core snapshot remains authoritative and must not fail because of it.
     // It does not bump the list cache version; the list cache can expire naturally after summary updates.

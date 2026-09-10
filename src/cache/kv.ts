@@ -1,5 +1,5 @@
 import { getWorkerEnv } from '@/server/cloudflare';
-import { Culture, CultureFeedMetadata, CultureFeedPage, CultureListItem } from '@/types/culture';
+import { Culture, CultureFeedMetadata, CultureFeedPage, CultureListItem, CultureMapResponse } from '@/types/culture';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 const CULTURE_CACHE_VERSION_KEY = 'cultures:cache-version';
@@ -7,8 +7,10 @@ const CULTURE_LIST_CACHE_NAMESPACE = 'cultures:list:v6';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
 const CULTURE_FEED_PAGE_CACHE_NAMESPACE = 'cultures:feed-page:v1';
 const CULTURE_FEED_METADATA_CACHE_NAMESPACE = 'cultures:feed-metadata:v1';
+const CULTURE_MAP_VIEWPORT_CACHE_NAMESPACE = 'cultures:map-viewport:v1';
 const CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:last:v1';
 const LEGACY_CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:v2:';
+const CULTURE_LIST_FALLBACK_TTL_SECONDS = 60 * 60 * 24 * 14;
 type StoredCultureDetail = {
   cacheVersion: string;
   culture: Culture;
@@ -196,10 +198,37 @@ export const writeCultureFeedMetadataCache = async (
   ttlSeconds: number
 ) => writeKvCache(await getCultureFeedMetadataCacheKey(filters), metadata, ttlSeconds);
 
+export const getCultureMapViewportCacheKey = async (payload: {
+  bounds: { swLat: number; swLng: number; neLat: number; neLng: number };
+  filters: string;
+  level: number;
+}) =>
+  createCacheKey(CULTURE_MAP_VIEWPORT_CACHE_NAMESPACE, {
+    version: await getCulturesCacheVersion(),
+    koreaDate: getKoreaDateStartIso().slice(0, 10),
+    ...payload,
+  });
+
+export const readCultureMapViewportCache = async (payload: {
+  bounds: { swLat: number; swLng: number; neLat: number; neLng: number };
+  filters: string;
+  level: number;
+}) => readKvCache<CultureMapResponse>(await getCultureMapViewportCacheKey(payload));
+
+export const writeCultureMapViewportCache = async (
+  payload: {
+    bounds: { swLat: number; swLng: number; neLat: number; neLng: number };
+    filters: string;
+    level: number;
+  },
+  response: CultureMapResponse,
+  ttlSeconds: number
+) => writeKvCache(await getCultureMapViewportCacheKey(payload), response, ttlSeconds);
+
 export const writeCulturesListCaches = async (cultures: CultureListItem[], ttlSeconds: number) => {
   await Promise.all([
     writeKvCache(await getCulturesListCacheKey(), cultures, ttlSeconds),
-    writeKvCache(CULTURE_LIST_FALLBACK_CACHE_KEY, cultures, 60 * 60 * 24),
+    writeKvCache(CULTURE_LIST_FALLBACK_CACHE_KEY, cultures, CULTURE_LIST_FALLBACK_TTL_SECONDS),
   ]);
 };
 

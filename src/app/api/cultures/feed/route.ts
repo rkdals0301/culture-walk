@@ -1,6 +1,11 @@
-import { readCultureFeedPageCache, writeCultureFeedPageCache } from '@/cache/kv';
+import {
+  readCultureFeedPageCache,
+  readCulturesListFallbackCache,
+  writeCultureFeedPageCache,
+} from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import {
+  buildCultureFeedResult,
   createCultureFeedFilterKey,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
@@ -126,6 +131,26 @@ export async function GET(request: Request) {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
+      const fallback = await readCulturesListFallbackCache();
+      if (fallback) {
+        const fallbackResult = buildCultureFeedResult(fallback, filters);
+        const offset = cursor?.offset ?? 0;
+        const items = fallbackResult.items.slice(offset, offset + limit);
+        const nextOffset = offset + items.length;
+        const hasMore = nextOffset < fallbackResult.items.length;
+        const page: CultureFeedPage = {
+          items,
+          nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
+          hasMore,
+          totalCount: fallbackResult.items.length,
+          freeCount: fallbackResult.freeCount,
+          regionOptions: fallbackResult.regionOptions,
+        };
+
+        await writeCultureFeedPageCache({ filters: filterKey, cursor: cursorValue, limit }, page, 60);
+        return NextResponse.json(page, { headers: responseHeaders('kv-list-fallback') });
+      }
+
       return NextResponse.json(
         { error: '문화 목록을 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
         { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }

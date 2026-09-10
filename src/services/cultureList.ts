@@ -17,6 +17,8 @@ export interface CultureListSnapshot {
   source: CultureListSnapshotSource;
 }
 
+const CULTURE_LIST_CACHE_TTL_SECONDS = 60 * 60;
+
 const toDateOrNow = (value?: string | null) => {
   if (!value) return new Date();
 
@@ -89,6 +91,14 @@ const queryCultureListFromD1 = async () => {
   return sortCulturesByRelevantDate(items, koreaToday);
 };
 
+export const refreshCultureListSnapshotCache = async () => {
+  const items = await queryCultureListFromD1();
+  if (!items) return null;
+
+  await writeCulturesListCaches(items, CULTURE_LIST_CACHE_TTL_SECONDS);
+  return items;
+};
+
 export const getCultureListSnapshot = async (): Promise<CultureListSnapshot | null> => {
   const cached = await readCulturesListCache();
   if (cached) {
@@ -96,10 +106,8 @@ export const getCultureListSnapshot = async (): Promise<CultureListSnapshot | nu
   }
 
   try {
-    const items = await queryCultureListFromD1();
+    const items = await refreshCultureListSnapshotCache();
     if (!items) return null;
-
-    await writeCulturesListCaches(items, 60 * 10);
     return { items, source: 'd1' };
   } catch (error) {
     if (hasD1DailyRowReadLimitError(error)) {

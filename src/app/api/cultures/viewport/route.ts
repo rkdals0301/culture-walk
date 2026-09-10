@@ -1,6 +1,11 @@
+import {
+  readCultureMapViewportCache,
+  readCulturesListFallbackCache,
+  writeCultureMapViewportCache,
+} from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
-import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
-import { getCultureMapData } from '@/services/cultureMap';
+import { createCultureFeedFilterKey, normalizeCultureFeedFilters } from '@/services/cultureFeed';
+import { buildCultureMapResponseFromSnapshot, getCultureMapData } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -10,6 +15,7 @@ export const dynamic = 'force-dynamic';
 
 const HTTP_CACHE_SECONDS = 60;
 const HTTP_STALE_SECONDS = 300;
+const KV_VIEWPORT_CACHE_SECONDS = 60 * 15;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 const parseFiniteNumber = (value: string | null) => {
@@ -39,9 +45,9 @@ const parseMapLevel = (value: string | null) => {
   return Math.min(14, Math.max(1, Math.round(parsed)));
 };
 
-const responseHeaders = () => ({
+const responseHeaders = (source = 'd1-viewport') => ({
   'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
-  'X-Culture-Data-Source': 'd1-viewport',
+  'X-Culture-Data-Source': source,
 });
 
 export async function GET(request: Request) {
@@ -63,6 +69,16 @@ export async function GET(request: Request) {
     freeOnly: parseBoolean(url.searchParams.get('free')),
   });
   const level = parseMapLevel(url.searchParams.get('level'));
+  const cachePayload = {
+    bounds,
+    filters: createCultureFeedFilterKey(filters),
+    level: level ?? 0,
+  };
+  const cached = await readCultureMapViewportCache(cachePayload);
+
+  if (cached) {
+    return NextResponse.json(cached, { headers: responseHeaders('kv-map-viewport') });
+  }
 
   try {
     const result = await getCultureMapData({ filters, bounds, level });
@@ -70,6 +86,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
+    await writeCultureMapViewportCache(cachePayload, result, KV_VIEWPORT_CACHE_SECONDS);
     return NextResponse.json(result, { headers: responseHeaders() });
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {
@@ -77,6 +94,13 @@ export async function GET(request: Request) {
     }
 
     if (hasD1DailyRowReadLimitError(error)) {
+      const fallback = await readCulturesListFallbackCache();
+      if (fallback) {
+        const result = buildCultureMapResponseFromSnapshot(fallback, { filters, bounds, level });
+        await writeCultureMapViewportCache(cachePayload, result, 60);
+        return NextResponse.json(result, { headers: responseHeaders('kv-list-fallback') });
+      }
+
       return NextResponse.json(
         { error: '지도 영역 데이터를 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
         { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }
