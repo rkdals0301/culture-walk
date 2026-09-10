@@ -22,3 +22,11 @@ test('detects the D1 daily row write limit through a wrapped database error', ()
 
   assert.equal(hasD1DailyRowWriteLimitError(error), true);
 });
+
+test('does not confuse D1 read and write quota errors', () => {
+  const readError = new Error("D1_ERROR: Your account has exceeded D1's free tier daily row read limit.");
+  const writeError = new Error("D1_ERROR: Your account has exceeded D1's free tier daily row write limit.");
+
+  assert.equal(hasD1DailyRowReadLimitError(writeError), false);
+  assert.equal(hasD1DailyRowWriteLimitError(readError), false);
+});

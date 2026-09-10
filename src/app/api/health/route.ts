@@ -1,6 +1,6 @@
 import { cultureSyncRuns, cultures, cultureTourApiDetails } from '@/db/schema';
 import { getDb } from '@/db/client';
-import { hasMissingSqliteTableError } from '@/server/sqliteError';
+import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 import { NextResponse } from 'next/server';
@@ -176,6 +176,16 @@ export async function GET() {
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {
       return NextResponse.json({ ok: false, error: 'cultures 테이블이 없습니다.' }, { status: 503 });
+    }
+
+    if (hasD1DailyRowReadLimitError(error)) {
+      return NextResponse.json(
+        { ok: false, error: 'Cloudflare D1 일일 읽기 한도에 도달했습니다.', reason: 'd1-daily-row-read-limit' },
+        {
+          status: 503,
+          headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' },
+        }
+      );
     }
 
     console.error('헬스체크 실패:', error);

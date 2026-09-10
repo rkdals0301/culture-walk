@@ -1,5 +1,5 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
-import { hasD1DailyRowWriteLimitError } from './src/server/sqliteError';
+import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from './src/server/sqliteError';
 import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from './src/services/cultureSyncDetails';
 import {
   acquireInitializeLock,
@@ -101,7 +101,19 @@ const worker = {
 
     try {
       if (job === 'detail-refresh') {
-        await runScheduledDetailRefresh(env);
+        try {
+          await runScheduledDetailRefresh(env);
+        } catch (error) {
+          if (hasD1DailyRowReadLimitError(error)) {
+            console.warn('[cron] detail refresh skipped reason=d1-daily-row-read-limit');
+            return;
+          }
+          if (hasD1DailyRowWriteLimitError(error)) {
+            console.warn('[cron] detail refresh skipped reason=d1-daily-row-write-limit');
+            return;
+          }
+          throw error;
+        }
         return;
       }
 
