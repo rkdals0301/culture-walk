@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: 00000000000000000000000000000000
+      NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: '00000000000000000000000000000000'
 
     steps:
       - name: Checkout
