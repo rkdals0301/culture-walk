@@ -43,6 +43,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Check production smoke script
+        run: node --check scripts/production-smoke.mjs
+
       - name: Build Cloudflare worker
         run: npm run cf:build
 
