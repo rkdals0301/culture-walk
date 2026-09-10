@@ -24,7 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "1.20.4",
+    "@opennextjs/cloudflare": "1.20.6",
     "@tanstack/react-virtual": "^3.10.8",
     "axios": "^1.18.1",
     "clsx": "^2.1.1",
@@ -43,7 +43,7 @@
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260828.1",
+    "@cloudflare/workers-types": "^5.20260910.1",
     "@playwright/test": "^1.63.0",
     "@svgr/webpack": "^8.1.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -59,9 +59,10 @@
     "tailwindcss": "^3.4.13",
     "tsx": "^4.23.0",
     "typescript": "^5.6.2",
-    "wrangler": "^4.127.0"
+    "wrangler": "^4.130.0"
   },
   "overrides": {
+    "sharp": "0.35.4",
     "next": {
       "postcss": "^8.5.26"
     }
