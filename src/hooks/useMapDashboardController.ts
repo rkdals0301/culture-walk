@@ -34,6 +34,7 @@ export const useMapDashboardController = ({
     mapRegion,
     mapFreeOnly,
     mapSortMode,
+    mapCamera,
     locationStatus,
     mapListScrollTop,
     setSearchQuery,
@@ -44,6 +45,7 @@ export const useMapDashboardController = ({
     currentLocation,
     setCurrentLocation,
     setMapSortMode,
+    setMapCamera,
     requestLocation: requestLocationFromProvider,
     cancelLocation,
     setMapListScrollTop,
@@ -89,6 +91,7 @@ export const useMapDashboardController = ({
     focusCultureId,
     isMobileSheetVisible,
     mapCategory,
+    mapCamera,
     mapFreeOnly,
     mapListScrollTop,
     mapRegion,
@@ -98,6 +101,7 @@ export const useMapDashboardController = ({
     setFocusCultureId,
     setIsMobileSheetVisible,
     setMapCategory,
+    setMapCamera,
     setMapFreeOnly,
     setMapListScrollTop,
     setMapRegion,
@@ -182,6 +186,7 @@ export const useMapDashboardController = ({
       sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop,
       listOpen: false,
+      mapCamera,
     });
     const detailPath = `/map/${culture.id}`;
     const detailUrl = serializedSearch ? `${detailPath}?${serializedSearch}` : detailPath;

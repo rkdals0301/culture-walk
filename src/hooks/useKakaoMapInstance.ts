@@ -1,4 +1,5 @@
 import { KakaoMapsSdkError, loadKakaoMapsSdk, resetKakaoMapsSdk } from '@/utils/kakaoMapsSdk';
+import { type MapCameraState, normalizeMapCameraState } from '@/utils/exploreState';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -47,9 +48,14 @@ const CLUSTER_STYLES: Array<Record<string, string>> = [
   },
 ];
 
-export const useKakaoMapInstance = () => {
+interface UseKakaoMapInstanceOptions {
+  initialCamera?: MapCameraState | null;
+}
+
+export const useKakaoMapInstance = ({ initialCamera = null }: UseKakaoMapInstanceOptions = {}) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerClustererRef = useRef<kakao.maps.MarkerClusterer | null>(null);
+  const initialCameraRef = useRef(normalizeMapCameraState(initialCamera));
   const [mapInstance, setMapInstance] = useState<kakao.maps.Map | null>(null);
   const [sdkError, setSdkError] = useState<KakaoMapsSdkError | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -72,9 +78,10 @@ export const useKakaoMapInstance = () => {
         }
 
         const kakaoMaps = window.kakao.maps;
+        const camera = initialCameraRef.current;
         const map = new kakaoMaps.Map(mapContainerRef.current, {
-          center: new kakaoMaps.LatLng(DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng),
-          level: DEFAULT_MAP_LEVEL,
+          center: new kakaoMaps.LatLng(camera?.lat ?? DEFAULT_MAP_CENTER.lat, camera?.lng ?? DEFAULT_MAP_CENTER.lng),
+          level: camera?.level ?? DEFAULT_MAP_LEVEL,
           draggable: true,
           disableDoubleClick: false,
           disableDoubleClickZoom: false,

@@ -1,5 +1,6 @@
 import type { CultureCategoryKey } from '@/utils/cultureCategory';
 import {
+  type MapCameraState,
   type MapSortMode,
   getEffectiveMapSortMode,
   getMapFilterSignature,
@@ -16,6 +17,7 @@ interface UseMapExploreUrlSyncOptions {
   focusCultureId: number | null;
   isMobileSheetVisible: boolean;
   mapCategory: CultureCategoryKey;
+  mapCamera: MapCameraState | null;
   mapFreeOnly: boolean;
   mapListScrollTop: number;
   mapRegion: string;
@@ -25,6 +27,7 @@ interface UseMapExploreUrlSyncOptions {
   setFocusCultureId: (id: number | null) => void;
   setIsMobileSheetVisible: (isVisible: boolean) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
+  setMapCamera: (camera: MapCameraState | null) => void;
   setMapFreeOnly: (freeOnly: boolean) => void;
   setMapListScrollTop: (scrollTop: number) => void;
   setMapRegion: (region: string) => void;
@@ -38,6 +41,7 @@ export const useMapExploreUrlSync = ({
   focusCultureId,
   isMobileSheetVisible,
   mapCategory,
+  mapCamera,
   mapFreeOnly,
   mapListScrollTop,
   mapRegion,
@@ -47,6 +51,7 @@ export const useMapExploreUrlSync = ({
   setFocusCultureId,
   setIsMobileSheetVisible,
   setMapCategory,
+  setMapCamera,
   setMapFreeOnly,
   setMapListScrollTop,
   setMapRegion,
@@ -58,6 +63,7 @@ export const useMapExploreUrlSync = ({
   const router = useRouter();
   const routeRestorePendingRef = useRef(false);
   const previousFilterSignatureRef = useRef('');
+  const mapCameraRef = useRef(mapCamera);
   const mapFilterSignature = getMapFilterSignature({
     searchQuery,
     mapCategory,
@@ -65,6 +71,10 @@ export const useMapExploreUrlSync = ({
     mapFreeOnly,
     sortMode: mapSortMode,
   });
+
+  useEffect(() => {
+    mapCameraRef.current = mapCamera;
+  }, [mapCamera]);
 
   useEffect(() => {
     if (pathname !== '/map' || typeof window === 'undefined') return;
@@ -79,6 +89,7 @@ export const useMapExploreUrlSync = ({
     setMapSortMode(restoredState?.sortMode ?? 'date');
     setMapListScrollTop(restoredState?.mapListScrollTop ?? 0);
     setIsMobileSheetVisible(restoredState?.listOpen ?? false);
+    setMapCamera(restoredState?.mapCamera ?? null);
     setFocusCultureId(restoredState?.focusCultureId ?? null);
     setRestoredSelectedCultureId(restoredState?.selectedCultureId ?? null);
   }, [
@@ -86,6 +97,7 @@ export const useMapExploreUrlSync = ({
     setFocusCultureId,
     setIsMobileSheetVisible,
     setMapCategory,
+    setMapCamera,
     setMapFreeOnly,
     setMapListScrollTop,
     setMapRegion,
@@ -110,6 +122,7 @@ export const useMapExploreUrlSync = ({
       sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop,
       listOpen: isMobileSheetVisible,
+      mapCamera: mapCameraRef.current,
       focusCultureId,
       selectedCultureId: restoredSelectedCultureId,
     });

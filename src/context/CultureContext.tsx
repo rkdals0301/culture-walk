@@ -1,7 +1,12 @@
 'use client';
 
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import type { LocationStatus, MapSortMode } from '@/utils/exploreState';
+import {
+  type LocationStatus,
+  type MapCameraState,
+  type MapSortMode,
+  normalizeMapCameraState,
+} from '@/utils/exploreState';
 import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/geo';
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
@@ -16,6 +21,7 @@ interface CultureContextValue {
   locationStatus: LocationStatus;
   locationError: LocationRequestError | null;
   mapListScrollTop: number;
+  mapCamera: MapCameraState | null;
   setSearchQuery: (query: string) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
   setMapRegion: (region: string) => void;
@@ -25,6 +31,7 @@ interface CultureContextValue {
   requestLocation: () => Promise<GeoPoint | null>;
   cancelLocation: () => void;
   setMapListScrollTop: (scrollTop: number) => void;
+  setMapCamera: (camera: MapCameraState | null) => void;
   resetMapFilters: () => void;
 }
 
@@ -40,6 +47,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
   const [locationError, setLocationError] = useState<LocationRequestError | null>(null);
   const [mapListScrollTop, setMapListScrollTopState] = useState(0);
+  const [mapCamera, setMapCameraState] = useState<MapCameraState | null>(null);
 
   const locationRequestRef = useRef<{
     controller: AbortController;
@@ -113,6 +121,20 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapListScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
   }, []);
 
+  const setMapCamera = useCallback((camera: MapCameraState | null) => {
+    const normalized = normalizeMapCameraState(camera);
+    setMapCameraState(current => {
+      if (
+        current?.lat === normalized?.lat &&
+        current?.lng === normalized?.lng &&
+        current?.level === normalized?.level
+      ) {
+        return current;
+      }
+      return normalized;
+    });
+  }, []);
+
   const resetMapFilters = useCallback(() => {
     setSearchQueryState('');
     setMapCategory('all');
@@ -133,6 +155,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
+      mapCamera,
       setSearchQuery,
       setMapCategory,
       setMapRegion,
@@ -142,6 +165,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       requestLocation,
       cancelLocation,
       setMapListScrollTop,
+      setMapCamera,
       resetMapFilters,
     }),
     [
@@ -154,12 +178,14 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
+      mapCamera,
       setSearchQuery,
       updateCurrentLocation,
       setMapSortMode,
       requestLocation,
       cancelLocation,
       setMapListScrollTop,
+      setMapCamera,
       resetMapFilters,
     ]
   );

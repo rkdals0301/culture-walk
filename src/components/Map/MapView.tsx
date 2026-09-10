@@ -11,7 +11,12 @@ import { useKakaoMapInstance } from '@/hooks/useKakaoMapInstance';
 import { useKakaoMapMarkers } from '@/hooks/useKakaoMapMarkers';
 import { useKakaoMapViewport } from '@/hooks/useKakaoMapViewport';
 import type { CultureMapCluster, CultureMapViewport, FormattedCulture } from '@/types/culture';
-import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import {
+  getEffectiveMapSortMode,
+  normalizeMapCameraState,
+  parseMapExploreStateFromSearch,
+  serializeMapExploreStateToSearch,
+} from '@/utils/exploreState';
 import { type CoordinateGroup, groupItemsByCoordinate } from '@/utils/mapMarkers';
 import { getMapDetailId } from '@/utils/mapRoute';
 
@@ -54,10 +59,17 @@ const MapView = ({
     mapFreeOnly,
     mapSortMode,
     mapListScrollTop,
+    mapCamera,
+    setMapCamera,
   } = useCultureContext();
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
-  const { mapContainerRef, markerClustererRef, mapInstance, sdkError, isMapReady, retry } = useKakaoMapInstance();
+  const [initialCamera] = useState(() =>
+    typeof window === 'undefined' ? null : parseMapExploreStateFromSearch(window.location.search)?.mapCamera ?? null
+  );
+  const { mapContainerRef, markerClustererRef, mapInstance, sdkError, isMapReady, retry } = useKakaoMapInstance({
+    initialCamera,
+  });
 
   const selectedCultureId = useMemo(() => {
     return getMapDetailId(pathname);
@@ -74,7 +86,18 @@ const MapView = ({
     selectedCulture,
     currentLocation,
     onViewportChange,
+    onCameraChange: setMapCamera,
   });
+
+  const getCurrentMapCamera = useCallback(() => {
+    if (!mapInstance || !window.kakao?.maps) return mapCamera;
+    const center = mapInstance.getCenter();
+    return normalizeMapCameraState({
+      lat: center.getLat(),
+      lng: center.getLng(),
+      level: mapInstance.getLevel(),
+    });
+  }, [mapCamera, mapInstance]);
 
   const goToMapDetail = useCallback(
     (id: number) => {
@@ -88,6 +111,7 @@ const MapView = ({
         sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
         mapListScrollTop,
         listOpen: false,
+        mapCamera: getCurrentMapCamera(),
       });
       const detailPath = `/map/${id}${serializedSearch ? `?${serializedSearch}` : ''}`;
       if (selectedCultureId !== null) {
@@ -99,6 +123,7 @@ const MapView = ({
     },
     [
       currentLocation,
+      getCurrentMapCamera,
       mapCategory,
       mapFreeOnly,
       mapListScrollTop,

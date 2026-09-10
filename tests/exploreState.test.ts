@@ -41,7 +41,7 @@ test('위치 오류와 취소를 사용자 상태로 분류한다', () => {
   assert.equal(getLocationStatus(new Error('unknown')), 'unavailable');
 });
 
-test('탐색 URL 상태를 직렬화하고 복원하면 검색·필터·정렬·스크롤이 보존된다', () => {
+test('탐색 URL 상태를 직렬화하고 복원하면 검색·필터·정렬·스크롤·지도 카메라가 보존된다', () => {
   const state: MapExploreUrlState = {
     searchQuery: '공연',
     mapCategory: 'performance',
@@ -50,11 +50,20 @@ test('탐색 URL 상태를 직렬화하고 복원하면 검색·필터·정렬·
     sortMode: 'date',
     mapListScrollTop: 248,
     listOpen: true,
+    mapCamera: { lat: 37.57961, lng: 126.97704, level: 8 },
     focusCultureId: 11902,
     selectedCultureId: 11902,
   };
 
   assert.deepEqual(parseMapExploreStateFromSearch(`?${serializeMapExploreStateToSearch(state)}`), state);
+});
+
+test('유효하지 않은 지도 카메라 URL은 복원하지 않는다', () => {
+  const parsed = parseMapExploreStateFromSearch('?lat=91&lng=126.977&level=99');
+  assert.equal(parsed?.mapCamera, null);
+
+  const partial = parseMapExploreStateFromSearch('?level=9');
+  assert.equal(partial?.mapCamera, null);
 });
 
 test('탐색 조건이 없는 URL은 복원하지 않는다', () => {

@@ -9,6 +9,10 @@ test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를
   const cluster = page.getByRole('button', { name: '이 영역의 행사 2개, 확대해서 보기' });
   await expect(cluster).toBeVisible();
   await cluster.click();
+  const mapCanvas = page.getByRole('region', { name: '전국 문화행사 지도' });
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-level', '9');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lat', '37.5796');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lng', '126.977');
 
   const isMobile = (page.viewportSize()?.width ?? 0) < 768;
   const openListButton = page.getByRole('button', { name: /행사 목록 열기, 현재 영역 2개 행사/ });
@@ -36,6 +40,10 @@ test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를
   await duplicateSheet.getByRole('button', { name: /^문화산책 테스트 공연 2099-/ }).click();
 
   await expect(page).toHaveURL(url => url.pathname === '/map/101');
+  const detailUrl = new URL(page.url());
+  expect(detailUrl.searchParams.get('lat')).toBe('37.5796');
+  expect(detailUrl.searchParams.get('lng')).toBe('126.977');
+  expect(detailUrl.searchParams.get('level')).toBe('9');
   const detailSheet = page.getByRole('dialog', { name: '행사 상세 정보' });
   await expect(detailSheet.getByRole('heading', { name: '문화산책 테스트 공연' })).toBeVisible();
   await expect(detailSheet.getByText('E2E 행사 소개')).toBeVisible();
@@ -52,9 +60,15 @@ test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를
   expect(returnUrl.searchParams.get('free')).toBe('1');
   expect(returnUrl.searchParams.get('list')).toBe('open');
   expect(returnUrl.searchParams.get('focus')).toBe('101');
+  expect(returnUrl.searchParams.get('lat')).toBe('37.5796');
+  expect(returnUrl.searchParams.get('lng')).toBe('126.977');
+  expect(returnUrl.searchParams.get('level')).toBe('9');
 
   const restoredSearch = isMobile ? page.locator('#map-search-input-mobile') : page.locator('#map-search-input');
   await expect(restoredSearch).toHaveValue('문화산책');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-level', '9');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lat', '37.5796');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lng', '126.977');
   if (isMobile) {
     await expect(page.getByRole('button', { name: '목록 접고 지도 보기', exact: true })).toBeVisible();
   } else {

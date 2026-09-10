@@ -19,9 +19,16 @@ export interface MapFilterState {
   sortMode: MapSortMode;
 }
 
+export interface MapCameraState {
+  lat: number;
+  lng: number;
+  level: number;
+}
+
 export interface MapExploreUrlState extends MapFilterState {
   mapListScrollTop: number;
   listOpen: boolean;
+  mapCamera?: MapCameraState | null;
   focusCultureId?: number | null;
   selectedCultureId?: number | null;
 }
@@ -35,11 +42,41 @@ const isCultureCategoryKey = (value: unknown): value is CultureCategoryKey =>
 const isMapSortMode = (value: unknown): value is MapSortMode =>
   typeof value === 'string' && MAP_SORT_MODES.includes(value as MapSortMode);
 
+export const normalizeMapCameraState = (
+  camera: Partial<MapCameraState> | null | undefined
+): MapCameraState | null => {
+  if (!camera) return null;
+
+  const lat = Number(camera.lat);
+  const lng = Number(camera.lng);
+  const level = Number(camera.level);
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    !Number.isInteger(level) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180 ||
+    level < 1 ||
+    level > 14
+  ) {
+    return null;
+  }
+
+  return {
+    lat: Number(lat.toFixed(5)),
+    lng: Number(lng.toFixed(5)),
+    level,
+  };
+};
+
 export const serializeMapExploreStateToSearch = (state: MapExploreUrlState) => {
   const params = new URLSearchParams();
   const normalizedQuery = state.searchQuery.trim();
   const focusCultureId = state.focusCultureId;
   const selectedCultureId = state.selectedCultureId;
+  const mapCamera = normalizeMapCameraState(state.mapCamera);
 
   if (normalizedQuery) params.set('q', normalizedQuery);
   if (state.mapCategory !== 'all') params.set('category', state.mapCategory);
@@ -48,6 +85,11 @@ export const serializeMapExploreStateToSearch = (state: MapExploreUrlState) => {
   if (state.sortMode === 'distance') params.set('sort', 'distance');
   if (state.mapListScrollTop > 0) params.set('scroll', String(Math.round(state.mapListScrollTop)));
   if (state.listOpen) params.set('list', 'open');
+  if (mapCamera) {
+    params.set('lat', String(mapCamera.lat));
+    params.set('lng', String(mapCamera.lng));
+    params.set('level', String(mapCamera.level));
+  }
   if (typeof focusCultureId === 'number' && Number.isSafeInteger(focusCultureId) && focusCultureId > 0) {
     params.set('focus', String(focusCultureId));
   }
@@ -60,7 +102,9 @@ export const serializeMapExploreStateToSearch = (state: MapExploreUrlState) => {
 
 export const parseMapExploreStateFromSearch = (search: string): MapExploreUrlState | null => {
   const params = new URLSearchParams(search);
-  const hasExploreState = ['q', 'category', 'region', 'free', 'sort', 'scroll', 'list', 'focus', 'selected'].some(key => params.has(key));
+  const hasExploreState = ['q', 'category', 'region', 'free', 'sort', 'scroll', 'list', 'lat', 'lng', 'level', 'focus', 'selected'].some(
+    key => params.has(key)
+  );
 
   if (!hasExploreState) {
     return null;
@@ -71,6 +115,17 @@ export const parseMapExploreStateFromSearch = (search: string): MapExploreUrlSta
   const parsedSelectedCultureId = Number(params.get('selected'));
   const parsedCategory = params.get('category');
   const parsedSortMode = params.get('sort');
+  const cameraLat = params.get('lat');
+  const cameraLng = params.get('lng');
+  const cameraLevel = params.get('level');
+  const mapCamera =
+    cameraLat?.trim() && cameraLng?.trim() && cameraLevel?.trim()
+      ? normalizeMapCameraState({
+          lat: Number(cameraLat),
+          lng: Number(cameraLng),
+          level: Number(cameraLevel),
+        })
+      : null;
 
   return {
     searchQuery: params.get('q') ?? '',
@@ -80,6 +135,7 @@ export const parseMapExploreStateFromSearch = (search: string): MapExploreUrlSta
     sortMode: isMapSortMode(parsedSortMode) ? parsedSortMode : 'date',
     mapListScrollTop: Number.isFinite(parsedScrollTop) && parsedScrollTop > 0 ? parsedScrollTop : 0,
     listOpen: params.get('list') === 'open',
+    mapCamera,
     focusCultureId: Number.isSafeInteger(parsedFocusCultureId) && parsedFocusCultureId > 0 ? parsedFocusCultureId : null,
     selectedCultureId:
       Number.isSafeInteger(parsedSelectedCultureId) && parsedSelectedCultureId > 0 ? parsedSelectedCultureId : null,

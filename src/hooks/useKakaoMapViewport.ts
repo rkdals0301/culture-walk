@@ -1,4 +1,5 @@
 import type { CultureMapViewport, FormattedCulture } from '@/types/culture';
+import type { MapCameraState } from '@/utils/exploreState';
 import type { GeoPoint } from '@/utils/geo';
 
 import { useCallback, useEffect, useRef } from 'react';
@@ -9,6 +10,7 @@ interface UseKakaoMapViewportOptions {
   selectedCulture: FormattedCulture | null;
   currentLocation: GeoPoint | null;
   onViewportChange: (viewport: CultureMapViewport) => void;
+  onCameraChange?: (camera: MapCameraState) => void;
 }
 
 export const useKakaoMapViewport = ({
@@ -17,6 +19,7 @@ export const useKakaoMapViewport = ({
   selectedCulture,
   currentLocation,
   onViewportChange,
+  onCameraChange,
 }: UseKakaoMapViewportOptions) => {
   const selectedCultureIdRef = useRef<number | null>(selectedCultureId);
 
@@ -54,6 +57,17 @@ export const useKakaoMapViewport = ({
     if (!mapInstance || !window.kakao?.maps) return;
 
     let publishTimer: number | null = null;
+    const publishCamera = () => {
+      const center = mapInstance.getCenter();
+      const camera = {
+        lat: center.getLat(),
+        lng: center.getLng(),
+        level: mapInstance.getLevel(),
+      };
+      if (Number.isFinite(camera.lat) && Number.isFinite(camera.lng)) {
+        onCameraChange?.(camera);
+      }
+    };
     const publishBounds = () => {
       const bounds = mapInstance.getBounds();
       const southWest = bounds.getSouthWest();
@@ -73,16 +87,18 @@ export const useKakaoMapViewport = ({
       }
     };
     const handleIdle = () => {
+      publishCamera();
       if (publishTimer !== null) window.clearTimeout(publishTimer);
       publishTimer = window.setTimeout(publishBounds, 250);
     };
 
     window.kakao.maps.event.addListener(mapInstance, 'idle', handleIdle);
+    handleIdle();
     return () => {
       if (publishTimer !== null) window.clearTimeout(publishTimer);
       window.kakao?.maps.event.removeListener(mapInstance, 'idle', handleIdle);
     };
-  }, [mapInstance, onViewportChange]);
+  }, [mapInstance, onCameraChange, onViewportChange]);
 
   return { panTo };
 };

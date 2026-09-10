@@ -75,10 +75,21 @@ const installKakaoMapsMock = async (page: Page) => {
         this.container = container;
         this.center = options.center;
         this.level = options.level;
+        this.syncDebugState();
       }
 
       getLevel() {
         return this.level;
+      }
+
+      getCenter() {
+        return this.center;
+      }
+
+      private syncDebugState() {
+        this.container.dataset.e2eMapLevel = String(this.level);
+        this.container.dataset.e2eMapLat = String(this.center.getLat());
+        this.container.dataset.e2eMapLng = String(this.center.getLng());
       }
 
       getBounds() {
@@ -87,11 +98,13 @@ const installKakaoMapsMock = async (page: Page) => {
 
       setLevel(level: number) {
         this.level = level;
+        this.syncDebugState();
         queueMicrotask(() => emit(this, 'idle'));
       }
 
       setCenter(position: MockLatLng) {
         this.center = position;
+        this.syncDebugState();
         queueMicrotask(() => emit(this, 'idle'));
       }
 
@@ -102,6 +115,7 @@ const installKakaoMapsMock = async (page: Page) => {
 
       panTo(position: MockLatLng) {
         this.center = position;
+        this.syncDebugState();
         queueMicrotask(() => emit(this, 'idle'));
       }
 

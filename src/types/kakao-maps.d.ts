@@ -26,6 +26,7 @@ declare namespace kakao.maps {
 
   class Map {
     constructor(container: HTMLElement, options: MapOptions);
+    getCenter(): LatLng;
     getLevel(): number;
     getBounds(): LatLngBounds;
     setLevel(level: number): void;
