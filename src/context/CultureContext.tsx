@@ -1,17 +1,12 @@
 'use client';
 
-import useApiError from '@/hooks/useApiError';
-import { FormattedCulture } from '@/types/culture';
-import axiosInstance from '@/utils/axiosInstance';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import { formatCultureData } from '@/utils/cultureUtils';
 import type { LocationStatus, MapSortMode } from '@/utils/exploreState';
 import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/geo';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
 interface CultureContextValue {
-  culture: FormattedCulture | null;
   searchQuery: string;
   mapCategory: CultureCategoryKey;
   mapRegion: string;
@@ -21,8 +16,6 @@ interface CultureContextValue {
   locationStatus: LocationStatus;
   locationError: LocationRequestError | null;
   mapListScrollTop: number;
-  isCultureLoading: boolean;
-  cultureError: Error | null;
   setSearchQuery: (query: string) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
   setMapRegion: (region: string) => void;
@@ -33,15 +26,11 @@ interface CultureContextValue {
   cancelLocation: () => void;
   setMapListScrollTop: (scrollTop: number) => void;
   resetMapFilters: () => void;
-  loadCultureById: (id: number) => Promise<void>;
 }
 
 const CultureContext = createContext<CultureContextValue | undefined>(undefined);
 
 export const CultureProvider = ({ children }: { children: React.ReactNode }) => {
-  const { handleError } = useApiError();
-
-  const [culture, setCultureState] = useState<FormattedCulture | null>(null);
   const [searchQuery, setSearchQueryState] = useState('');
   const [mapCategory, setMapCategory] = useState<CultureCategoryKey>('all');
   const [mapRegion, setMapRegion] = useState('all');
@@ -51,25 +40,11 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
   const [locationError, setLocationError] = useState<LocationRequestError | null>(null);
   const [mapListScrollTop, setMapListScrollTopState] = useState(0);
-  const [isCultureLoading, setIsCultureLoading] = useState(false);
-  const [cultureError, setCultureError] = useState<Error | null>(null);
 
-  const cultureRequestVersionRef = useRef(0);
-  const pendingCultureErrorRef = useRef<unknown>(null);
   const locationRequestRef = useRef<{
     controller: AbortController;
     promise: Promise<GeoPoint | null>;
   } | null>(null);
-
-  useEffect(() => {
-    if (!cultureError) {
-      return;
-    }
-
-    const error = pendingCultureErrorRef.current ?? cultureError;
-    pendingCultureErrorRef.current = null;
-    handleError(error);
-  }, [cultureError, handleError]);
 
   const setSearchQuery = useCallback((query: string) => {
     setSearchQueryState(query);
@@ -138,48 +113,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapListScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
   }, []);
 
-  const loadCultureById = useCallback(
-    async (id: number) => {
-      const requestVersion = cultureRequestVersionRef.current + 1;
-      cultureRequestVersionRef.current = requestVersion;
-
-      if (!id || Number.isNaN(id)) {
-        setCultureState(null);
-        setIsCultureLoading(false);
-        setCultureError(null);
-        return;
-      }
-
-      setIsCultureLoading(true);
-      setCultureError(null);
-
-      try {
-        const response = await axiosInstance.get(`/api/cultures/${id}`);
-        const formattedCulture = formatCultureData([response.data])[0] ?? null;
-
-        if (cultureRequestVersionRef.current !== requestVersion) {
-          return;
-        }
-
-        setCultureState(formattedCulture);
-      } catch (caughtError) {
-        if (cultureRequestVersionRef.current !== requestVersion) {
-          return;
-        }
-
-        const normalizedError =
-          caughtError instanceof Error ? caughtError : new Error('문화 상세 조회에 실패했습니다.');
-        pendingCultureErrorRef.current = caughtError;
-        setCultureError(normalizedError);
-      } finally {
-        if (cultureRequestVersionRef.current === requestVersion) {
-          setIsCultureLoading(false);
-        }
-      }
-    },
-    []
-  );
-
   const resetMapFilters = useCallback(() => {
     setSearchQueryState('');
     setMapCategory('all');
@@ -191,7 +124,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
 
   const value = useMemo(
     () => ({
-      culture,
       searchQuery,
       mapCategory,
       mapRegion,
@@ -201,8 +133,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
-      isCultureLoading,
-      cultureError,
       setSearchQuery,
       setMapCategory,
       setMapRegion,
@@ -213,10 +143,8 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       cancelLocation,
       setMapListScrollTop,
       resetMapFilters,
-      loadCultureById,
     }),
     [
-      culture,
       searchQuery,
       mapCategory,
       mapRegion,
@@ -226,8 +154,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
-      isCultureLoading,
-      cultureError,
       setSearchQuery,
       updateCurrentLocation,
       setMapSortMode,
@@ -235,7 +161,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       cancelLocation,
       setMapListScrollTop,
       resetMapFilters,
-      loadCultureById,
     ]
   );
 

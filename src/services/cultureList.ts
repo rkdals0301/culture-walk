@@ -14,7 +14,7 @@ import {
 } from '@/services/cultureSyncTypes';
 import { CultureListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
-import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { getKoreaDateStartIso, toDateOrNow } from '@/utils/dateUtils';
 
 export type CultureListSnapshotSource = 'kv-read-model' | 'd1-read-through';
 
@@ -24,14 +24,6 @@ export interface CultureListSnapshot {
   cachedAt: string | null;
   revisions: Record<string, string>;
 }
-
-const toDateOrNow = (value?: string | null) => {
-  if (!value) return new Date();
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return new Date();
-  return parsed;
-};
 
 export const filterCurrentCultureListItems = (
   items: readonly CultureListItem[],

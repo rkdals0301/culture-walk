@@ -19,7 +19,7 @@ import {
 import type { D1Binding } from '@/services/cultureSyncTypes';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import type { Culture, CultureListItem } from '@/types/culture';
-import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { getKoreaDateStartIso, toDateOrNow } from '@/utils/dateUtils';
 
 export type CulturePublicReadSource = 'kv-detail-cache' | 'kv-read-model' | 'd1-read-through';
 
@@ -35,12 +35,6 @@ type CulturePublicReadOptions = {
 };
 
 const DETAIL_READ_THROUGH_TTL_SECONDS = 60 * 60 * 24 * 7;
-
-const toDateOrNow = (value?: string | null) => {
-  if (!value) return new Date();
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-};
 
 const readCultureDetailFromD1 = async (d1: D1Binding, id: number) => {
   const result = await d1

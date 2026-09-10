@@ -55,6 +55,13 @@ test('전역 컨텍스트는 전체 문화 목록을 직접 로드하지 않는�
   assert.doesNotMatch(source, /filteredCultures|mapCultures|loadCultures/);
 });
 
+test('전역 탐색 컨텍스트는 상세 조회 상태나 상세 API 요청을 소유하지 않는다', async () => {
+  const source = await readFile(contextPath, 'utf8');
+
+  assert.doesNotMatch(source, /loadCultureById|isCultureLoading|cultureError|cultureRequestVersionRef/);
+  assert.doesNotMatch(source, /\/api\/cultures\/\$\{id\}/);
+});
+
 test('동일 API 오류 토스트는 중복 표시를 막는 식별자를 사용한다', async () => {
   const source = await readFile(apiErrorPath, 'utf8');
 
@@ -102,15 +109,4 @@ test('상세창이 열린 상태에서 테마 토글은 외부 클릭으로 처�
   const source = await readFile(headerPath, 'utf8');
 
   assert.match(source, /data-keeps-detail-open[\s\S]*?<ThemeToggleButton \/>/);
-});
-
-test('상세 API 오류 토스트는 오류 상태 반영 이후에 한 번 표시된다', async () => {
-  const source = await readFile(contextPath, 'utf8');
-
-  assert.match(source, /pendingCultureErrorRef/);
-  assert.match(
-    source,
-    /useEffect\(\(\) => \{[\s\S]*?const error = pendingCultureErrorRef\.current \?\? cultureError;[\s\S]*?handleError\(error\);/
-  );
-  assert.doesNotMatch(source, /setCultureError\(normalizedError\);\s*handleError\(caughtError\);/);
 });

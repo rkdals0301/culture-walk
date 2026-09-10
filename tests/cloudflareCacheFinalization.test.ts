@@ -83,7 +83,6 @@ test('publishing a new read model immediately replaces isolate memory for that b
 
 test('detail refresh reports only successfully refreshed culture ids for precise edge purge', async () => {
   const originalFetch = globalThis.fetch;
-  const refreshedCultureIds: number[] = [];
   const staleRow = {
     id: 42,
     sourceKey: 'tourapi:123',
@@ -110,14 +109,13 @@ test('detail refresh reports only successfully refreshed culture ids for precise
     })) as typeof fetch;
 
   try {
-    const refreshed = await refreshStaleCachedTourApiDetails(
+    const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
-      d1,
-      { refreshedCultureIds }
+      d1
     );
 
-    assert.equal(refreshed, 1);
-    assert.deepEqual(refreshedCultureIds, [42]);
+    assert.equal(result.refreshed, 1);
+    assert.deepEqual(result.refreshedCultureIds, [42]);
   } finally {
     globalThis.fetch = originalFetch;
   }

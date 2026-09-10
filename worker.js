@@ -123,11 +123,10 @@ async function runScheduledDetailRefresh(env, ctx) {
   const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
   try {
     await heartbeat.ensureHeld();
-    const refreshedCultureIds = [];
-    const refreshed = await refreshStaleCachedTourApiDetails(
+    const { refreshed, refreshedCultureIds } = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       d1,
-      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE, refreshedCultureIds }
+      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
     );
     console.info(`[cron] detail refresh completed refreshed=${refreshed}`);
     if (refreshedCultureIds.length > 0) {

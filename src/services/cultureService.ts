@@ -1,5 +1,6 @@
 import { CultureRow, NewCultureRow } from '@/db/schema';
 import { Culture, CultureListItem, TourApiFestival, TourApiFestivalDetails } from '@/types/culture';
+import { toDateOrNow } from '@/utils/dateUtils';
 
 import { createTourApiSourceKey } from './cultureIdentity';
 import { classifyTourApiFee, normalizeTourApiDetails, normalizeTourApiImageUrl } from './tourApiDetails';
@@ -107,14 +108,6 @@ const resolveClassification = (festival: TourApiFestival) => {
   if (/(공연|콘서트|연극|뮤지컬|오페라|무용|국악|음악회)/.test(value)) return '공연';
   if (/(교육|체험|워크숍|클래스)/.test(value)) return '교육·체험';
   return normalizeCultureClassification(festival.festivaltype) || '축제';
-};
-
-const toDateOrNow = (value?: string | null) => {
-  if (!value) return new Date();
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return new Date();
-  return parsed;
 };
 
 const isBetween = (value: number, min: number, max: number) => value >= min && value <= max;

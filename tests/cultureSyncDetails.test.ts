@@ -62,12 +62,13 @@ test('partial detail responses preserve stored data and schedule a retry', async
   }) as typeof fetch;
 
   try {
-    const refreshed = await refreshStaleCachedTourApiDetails(
+    const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
       d1
     );
 
-    assert.equal(refreshed, 0);
+    assert.equal(result.refreshed, 0);
+    assert.deepEqual(result.refreshedCultureIds, []);
     assert.equal(batches.length, 0);
 
     const retryUpdate = executed.find(call => call.query.includes('detail_sync_fail_count = ?'));
@@ -140,13 +141,14 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
     })) as typeof fetch;
 
   try {
-    const refreshed = await refreshStaleCachedTourApiDetails(
+    const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
       d1,
       { cache }
     );
 
-    assert.equal(refreshed, 1);
+    assert.equal(result.refreshed, 1);
+    assert.deepEqual(result.refreshedCultureIds, [42]);
     const detailWrite = writes.find(write => write.key.startsWith('cultures:detail:last:v1'));
     assert.ok(detailWrite);
     const stored = JSON.parse(detailWrite.value) as { cacheVersion: string; culture: { id: number; title: string } };
