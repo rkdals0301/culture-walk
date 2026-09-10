@@ -37,8 +37,8 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
   - 한국 경위도 범위(위도 33~39.8, 경도 124~132) 밖이거나 위경도가 역전(Swapped)된 데이터 자동 감지 및 보정
   - KST(한국 표준시, UTC+9) 15:00 UTC 날짜 경계선 기준의 정확한 당일 행사 판별
 - **분산 락 & 하트비트**: D1 데이터베이스 기반 소유권 락(`acquireInitializeLock`)과 하트비트 갱신을 통해 동시 동기화 충돌 방지
-- **KV read model + D1 원본 저장소**: 전체 동기화 성공 시 사용자 조회용 행사 snapshot을 KV에 장기 보관하고 피드·지도는 KV를 우선 조회합니다. D1은 동기화/영구 저장 계층으로 유지하며 quota 초과 시에도 마지막 정상 snapshot으로 서비스를 계속 제공합니다.
-- **2단계 온디맨드 상세 수집**: 목록 수집 시에는 기본 정보만 빠르게 적재하고, 상세 조회 시 또는 15분 단위 백그라운드 크론을 통해 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 점진적으로 동기화 및 KV 캐시 반영
+- **KV read model + D1 원본 저장소**: D1은 TourAPI 동기화와 영구 저장에만 사용하고, 브라우저·검색봇·사이트맵·헬스체크를 포함한 공개 조회는 KV read model에서 처리합니다. 전체 동기화 성공 시 목록 read model 1개와 변경된 상세 read model만 게시하여 D1 row read와 KV write를 트래픽에서 분리합니다.
+- **2단계 상세 수집**: 목록 수집 시에는 기본 정보만 빠르게 적재하고, 1시간 단위 백그라운드 크론에서 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 점진적으로 동기화합니다. 공개 상세 조회는 D1을 직접 호출하지 않고 KV 상세 캐시 또는 목록 요약으로 즉시 응답합니다.
 
 ---
 
@@ -65,9 +65,9 @@ culture-walk/
 │   ├── app/                    # Next.js App Router (페이지 및 API 엔드포인트)
 │   │   ├── about/              # 서비스 소개 페이지
 │   │   ├── api/
-│   │   │   ├── cultures/       # 행사 목록 조회 API (KV 캐싱 적용)
-│   │   │   │   └── [id]/       # 행사 상세 조회 API (D1 + KV 캐싱)
-│   │   │   ├── health/         # 서비스 상태 및 데이터 품질 모니터링 API
+│   │   │   ├── cultures/       # 행사 목록/상세 조회 API (공개 조회는 KV read model 전용)
+│   │   │   │   └── [id]/       # 행사 상세 조회 API (KV 상세 캐시 + 목록 요약 fallback)
+│   │   │   ├── health/         # KV read model freshness 기반 경량 헬스체크 API
 │   │   │   └── initialize/     # TourAPI 데이터 수동 동기화 엔드포인트
 │   │   ├── contact/            # 문의 페이지
 │   │   ├── map/                # 메인 지도 탐색 화면
@@ -198,33 +198,30 @@ npm run dev
 
 ## 📡 API 및 운영 가이드 (Operations)
 
-### 1. 헬스체크 및 데이터 품질 모니터링 (`GET /api/health`)
-데이터베이스와 동기화 상태의 무결성뿐 아니라 KV read model의 대체 서비스 가능 여부를 함께 검증합니다.
-- **반환 데이터**:
-  - 총 데이터 수, 활성/비활성 행사 수, TourAPI 연동 행사 수
-  - 정상 좌표, 위경도 전도 보정 좌표, 이상 좌표 수
-  - 비정상 행사 기간(종료일 < 시작일 등) 유무
-  - 캐시된 상세 정보 개수 및 최근 동기화 경과 시간(`ageHours`)
+### 1. 헬스체크 (`GET /api/health`)
+헬스체크 자체가 D1 row read를 소비하지 않도록 공개 API는 KV read model의 존재 여부와 게시 시각만 검사합니다. 데이터베이스 심층 진단은 전체 동기화의 검증·로그에서 수행합니다.
 - **응답 상태**:
-  - `200 healthy`: D1 품질 기준을 통과하고 최근 36시간 내 성공한 동기화가 존재하는 경우
-  - `200 degraded`: D1 quota 소진 또는 동기화 지연이 있어도 KV snapshot으로 사용자 조회 서비스를 계속 제공할 수 있는 경우
-  - `503 unavailable`: D1이 정상 서비스를 제공하지 못하고 사용할 수 있는 KV fallback도 없는 경우
+  - `200 healthy`: KV read model이 존재하고 게시 후 36시간 이내인 경우
+  - `200 degraded`: 사용 가능한 KV read model은 있지만 게시 시각을 알 수 없거나 36시간보다 오래된 경우
+  - `503 unavailable`: 서비스에 사용할 KV read model 자체가 없는 경우
+- `databaseStatus`는 의도적으로 `not-probed`이며, public health 요청은 D1 상태를 조회하지 않습니다.
 
 ### 2. 문화행사 피드 조회 (`GET /api/cultures/feed`)
 - 전체 동기화에서 생성한 KV read model에 검색·카테고리·지역·무료 조건을 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
-- 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용해 KV write 사용량을 억제합니다. read model이 없는 초기/복구 상황에서만 D1을 조회합니다.
+- 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용합니다. read model이 없으면 D1로 우회하지 않고 `503`으로 실패하여 사용자 트래픽이 D1 quota를 소모하지 않도록 합니다.
 
 ### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
 - KV read model에서 현재 지도 영역만 계산하며 축소 상태에서는 Worker 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
 - 클라이언트에서 요청 영역을 그리드에 맞춰 정규화해 인접한 지도 이동의 캐시 재사용률을 높입니다.
-- 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용하며, read model이 없는 경우에만 D1 조회 경로를 사용합니다.
+- 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용하며, 공개 요청에서는 D1 fallback을 사용하지 않습니다.
 
 ### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
-- 상세 정보가 미완료 상태이거나 원본 수정일이 변경된 경우 백그라운드 갱신 요청을 등록하고 최신 상태를 유지합니다.
+- 풍부한 상세 KV cache가 있으면 이를 사용하고, 아직 게시되지 않은 행사는 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다.
+- 상세정보 갱신과 D1 write는 공개 요청이 아니라 백그라운드 detail cron에서만 수행합니다.
 
 ### 5. 호환용 전체 목록 스냅샷 (`GET /api/cultures`)
-- 기존 연동 호환성을 위해 유지하는 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.
+- 기존 연동 호환성을 위해 유지하는 KV read model 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.
 
 ### 6. 수동 데이터 동기화 (`POST /api/initialize`)
 - 헤더에 `x-sync-token: <SYNC_TOKEN>`을 포함하여 호출하면 TourAPI로부터 최신 행사를 즉시 동기화합니다.
@@ -269,14 +266,15 @@ Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 �
 - **전체 스냅샷 동기화 (`10 0,1 * * *`)**:
   - UTC 00:10 (KST 09:10): Cloudflare 일일 무료 사용량 리셋 직후 정기 전체 행사 스냅샷 동기화
   - UTC 01:10 (KST 10:10): 이전 동기화가 실패했거나 누락된 경우를 위한 자동 복구(Recovery) 동기화
-- **상세 정보 점진적 갱신 (`2,17,32,47 * * * *`)**:
-  - 15분 주기 Cron으로 캐시되지 않았거나 오래된 행사의 상세 데이터(`detailCommon2` 등)를 순차적으로 갱신합니다. 사전 조회에서 보강 대상이 없으면 D1 lock write 없이 즉시 종료합니다.
+- **상세 정보 점진적 갱신 (`17 * * * *`)**:
+  - 1시간 주기 Cron으로 캐시되지 않았거나 원본 수정일이 변경된 행사의 상세 데이터(`detailCommon2` 등)를 최대 12건씩 갱신합니다. 성공한 항목은 KV 상세 read model에도 즉시 게시합니다.
+  - 전체 snapshot 성공 시 현재 유효한 상세 레코드도 KV와 비교하여 누락되었거나 변경된 항목만 다시 게시하므로, 평상시 KV write 수를 낮게 유지합니다.
 
 ---
 
 ## 🧪 테스트 (Testing)
 
-80개 이상의 단위/통합 테스트와 Playwright 브라우저 회귀 테스트를 통해 데이터 정합성과 사용자 플로우를 검증합니다.
+90개 이상의 단위/통합 테스트와 Playwright 브라우저 회귀 테스트를 통해 데이터 정합성과 사용자 플로우를 검증합니다.
 
 ```bash
 npm test

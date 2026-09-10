@@ -1,17 +1,6 @@
-import {
-  getCulturesCacheVersion,
-  readCultureDetailCache,
-  readCultureListItemCache,
-  readLegacyCultureDetailCache,
-  writeCultureDetailCache,
-} from '@/cache/kv';
 import MapDetailSheetClient from '@/components/Map/MapDetailSheetClient';
 import MapShell from '@/components/Map/MapShell';
-import { getDb } from '@/db/client';
-import { cultureTourApiDetails, cultures } from '@/db/schema';
-import { hasD1DailyRowReadLimitError } from '@/server/sqliteError';
-import { mapCultureListItemToCulture, mapCultureRowToCulture } from '@/services/cultureService';
-import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
+import { getCulturePublicRead } from '@/services/cultureReadModel';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { serializeJsonLd } from '@/utils/jsonLd';
 import { OG_IMAGE_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
@@ -21,9 +10,6 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { and, eq } from 'drizzle-orm';
-
-const DETAIL_CACHE_TTL_SECONDS = 60 * 60 * 24;
 const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 const getEventImageUrl = (mainImage?: string) => {
   const imageUrl = mainImage?.trim();
@@ -31,113 +17,7 @@ const getEventImageUrl = (mainImage?: string) => {
 };
 
 const getCultureById = cache(async (id: number) => {
-  const [cacheVersion, cachedDetailRecord] = await Promise.all([getCulturesCacheVersion(), readCultureDetailCache(id)]);
-  const cachedDetail = cachedDetailRecord?.culture;
-  const hasDetailCache = cachedDetail?.id === id;
-  if (hasDetailCache) {
-    return cachedDetail;
-  }
-
-  const readCachedCulture = async () => {
-    if (cachedDetail?.id === id) {
-      return cachedDetail;
-    }
-
-    const legacyDetail = await readLegacyCultureDetailCache(id);
-    if (legacyDetail?.id === id) {
-      await writeCultureDetailCache(id, cacheVersion, legacyDetail, DETAIL_CACHE_TTL_SECONDS);
-      return legacyDetail;
-    }
-
-    const cachedCulture = await readCultureListItemCache(id);
-    return cachedCulture ? mapCultureListItemToCulture(cachedCulture) : null;
-  };
-
-  const db = await getDb();
-  if (!db) {
-    return readCachedCulture();
-  }
-
-  let row;
-  try {
-    [row] = await db
-      .select({
-        id: cultures.id,
-        sourceKey: cultures.sourceKey,
-        classification: cultures.classification,
-        date: cultures.date,
-        endDate: cultures.endDate,
-        etcDescription: cultures.etcDescription,
-        guName: cultures.guName,
-        homepageDetailAddress: cultures.homepageDetailAddress,
-        isFree: cultures.isFree,
-        lat: cultures.lat,
-        lng: cultures.lng,
-        mainImage: cultures.mainImage,
-        homepageAddress: cultures.homepageAddress,
-        organizationName: cultures.organizationName,
-        place: cultures.place,
-        performerInformation: cultures.performerInformation,
-        programIntroduction: cultures.programIntroduction,
-        registrationDate: cultures.registrationDate,
-        startDate: cultures.startDate,
-        themeClassification: cultures.themeClassification,
-        register: cultures.register,
-        title: cultures.title,
-        useFee: cultures.useFee,
-        useTarget: cultures.useTarget,
-        createdAt: cultures.createdAt,
-        updatedAt: cultures.updatedAt,
-      })
-      .from(cultures)
-      .where(and(eq(cultures.id, id), eq(cultures.isActive, true)))
-      .limit(1);
-  } catch (queryError) {
-    const fallback = await readCachedCulture();
-    if (fallback) {
-      console.warn(`D1 상세 행 조회를 건너뛰고 캐시를 사용합니다. id=${id}`, queryError);
-      return fallback;
-    }
-
-    if (hasD1DailyRowReadLimitError(queryError)) {
-      console.warn(`D1 일일 row read 한도로 상세 페이지 조회를 중단합니다. id=${id}`, queryError);
-      return null;
-    }
-
-    throw queryError;
-  }
-
-  if (!row) {
-    return null;
-  }
-
-  let details = null;
-  let detailQueryFailed = false;
-  if (row.sourceKey) {
-    try {
-      details = await db.query.cultureTourApiDetails.findFirst({
-        where: eq(cultureTourApiDetails.sourceKey, row.sourceKey),
-      });
-    } catch (detailError) {
-      detailQueryFailed = true;
-      console.warn(`상세 캐시 조회를 건너뜁니다. sourceKey=${row.sourceKey}`, detailError);
-    }
-  }
-
-  if (detailQueryFailed) {
-    const fallback = await readCachedCulture();
-    if (fallback) {
-      return fallback;
-    }
-  }
-
-  const hasCurrentCompleteDetails = Boolean(details?.isComplete && details.sourceModifiedAt === row.registrationDate);
-  const culture = mapCultureRowToCulture(row, details ? parseStoredTourApiDetails(details) : undefined);
-  if (hasCurrentCompleteDetails) {
-    await writeCultureDetailCache(id, cacheVersion, culture, DETAIL_CACHE_TTL_SECONDS);
-  }
-
-  return culture;
+  return (await getCulturePublicRead(id)).culture;
 });
 
 const parseOfferPrice = (value?: string) => {

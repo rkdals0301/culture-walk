@@ -1,5 +1,5 @@
 export const SYNC_CRON = '10 0,1 * * *';
-export const DETAIL_REFRESH_CRON = '2,17,32,47 * * * *';
+export const DETAIL_REFRESH_CRON = '17 * * * *';
 export const RECOVERY_SYNC_UTC_HOUR = 1;
 export const RECOVERY_FRESHNESS_HOURS = 2;
 
@@ -12,7 +12,6 @@ export const getCultureScheduledJob = (cron: string): CultureScheduledJob => {
 };
 
 interface SyncHealthPayload {
-  reason?: unknown;
   latestSync?: {
     status?: unknown;
     ageHours?: unknown;
@@ -20,10 +19,6 @@ interface SyncHealthPayload {
 }
 
 export const shouldRunScheduledSync = (health: SyncHealthPayload | null) => {
-  if (health?.reason === 'd1-daily-row-read-limit') {
-    return false;
-  }
-
   const latestSync = health?.latestSync;
   if (!latestSync || latestSync.status !== 'success') {
     return true;

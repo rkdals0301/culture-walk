@@ -1,23 +1,27 @@
-import { readCulturesListCache, readCulturesListFallbackCache, writeCulturesListCaches } from '@/cache/kv';
-import { getDb } from '@/db/client';
-import { cultures } from '@/db/schema';
-import { hasD1DailyRowReadLimitError } from '@/server/sqliteError';
+import {
+  type CultureCacheBinding,
+  readCultureReadModelCache,
+  writeCultureReadModelCache,
+} from '@/cache/kv';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
-import { KOREA_LAT_MAX, KOREA_LAT_MIN, KOREA_LNG_MAX, KOREA_LNG_MIN } from '@/services/cultureSyncTypes';
+import {
+  type D1Binding,
+  KOREA_LAT_MAX,
+  KOREA_LAT_MIN,
+  KOREA_LNG_MAX,
+  KOREA_LNG_MIN,
+} from '@/services/cultureSyncTypes';
 import { CultureListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
-import { and, eq, gte, isNotNull, or, sql } from 'drizzle-orm';
-
-export type CultureListSnapshotSource = 'kv-list-cache' | 'd1' | 'kv-list-fallback';
+export type CultureListSnapshotSource = 'kv-read-model';
 
 export interface CultureListSnapshot {
   items: CultureListItem[];
   source: CultureListSnapshotSource;
+  cachedAt: string | null;
 }
-
-const CULTURE_LIST_CACHE_TTL_SECONDS = 60 * 60;
 
 const toDateOrNow = (value?: string | null) => {
   if (!value) return new Date();
@@ -40,110 +44,86 @@ export const filterCurrentCultureListItems = (
 };
 
 export const readCultureReadModelSnapshot = async (): Promise<CultureListSnapshot | null> => {
-  const fallback = await readCulturesListFallbackCache();
-  if (fallback?.length) {
-    return { items: filterCurrentCultureListItems(fallback), source: 'kv-list-fallback' };
-  }
+  const readModel = await readCultureReadModelCache();
+  if (!readModel?.items.length) return null;
 
-  const cached = await readCulturesListCache();
-  if (cached?.length) {
-    return { items: filterCurrentCultureListItems(cached), source: 'kv-list-cache' };
-  }
-
-  return null;
+  return {
+    items: filterCurrentCultureListItems(readModel.items),
+    source: 'kv-read-model',
+    cachedAt: readModel.cachedAt,
+  };
 };
 
-const queryCultureListFromD1 = async () => {
-  const db = await getDb();
-  if (!db) return null;
-
+const queryCultureListFromD1 = async (d1: D1Binding) => {
   const koreaToday = getKoreaDateStartIso();
-  const rows = await db
-    .select({
-      id: cultures.id,
-      classification: cultures.classification,
-      endDate: cultures.endDate,
-      guName: cultures.guName,
-      isFree: cultures.isFree,
-      lat: cultures.lat,
-      lng: cultures.lng,
-      mainImage: cultures.mainImage,
-      place: cultures.place,
-      startDate: cultures.startDate,
-      title: cultures.title,
-      useFee: cultures.useFee,
-    })
-    .from(cultures)
-    .where(
-      and(
-        eq(cultures.isActive, true),
-        isNotNull(cultures.lat),
-        isNotNull(cultures.lng),
-        isNotNull(cultures.startDate),
-        isNotNull(cultures.endDate),
-        or(
-          and(
-            sql`${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
-            sql`${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
-          ),
-          and(
-            sql`${cultures.lng} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}`,
-            sql`${cultures.lat} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}`
-          )
-        ),
-        gte(cultures.endDate, koreaToday)
-      )
-    );
+  const result = await d1
+    .prepare(
+      `SELECT id, classification, end_date AS endDate, gu_name AS guName, is_free AS isFree,
+              lat, lng, main_image AS mainImage, place, start_date AS startDate, title, use_fee AS useFee
+       FROM cultures
+       WHERE is_active = 1
+         AND lat IS NOT NULL
+         AND lng IS NOT NULL
+         AND start_date IS NOT NULL
+         AND end_date IS NOT NULL
+         AND (
+           (lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?)
+           OR (lng BETWEEN ? AND ? AND lat BETWEEN ? AND ?)
+         )
+         AND end_date >= ?`
+    )
+    .bind(
+      KOREA_LAT_MIN,
+      KOREA_LAT_MAX,
+      KOREA_LNG_MIN,
+      KOREA_LNG_MAX,
+      KOREA_LAT_MIN,
+      KOREA_LAT_MAX,
+      KOREA_LNG_MIN,
+      KOREA_LNG_MAX,
+      koreaToday
+    )
+    .all();
 
-  const items: CultureListItem[] = rows.map(row => {
-    const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
+  const items = (result.results ?? []).flatMap(row => {
+    const id = Number(row.id);
+    const lat = Number(row.lat);
+    const lng = Number(row.lng);
+    if (!Number.isInteger(id) || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
 
-    return {
-      id: row.id,
-      classification: normalizeCultureClassification(row.classification),
-      endDate: toDateOrNow(row.endDate ?? row.startDate),
-      guName: row.guName ?? '',
-      isFree: row.isFree ?? '',
+    const coordinates = normalizeCultureCoordinates(lat, lng);
+    return [{
+      id,
+      classification: normalizeCultureClassification(String(row.classification ?? '')),
+      endDate: toDateOrNow(String(row.endDate ?? row.startDate ?? '')),
+      guName: String(row.guName ?? ''),
+      isFree: String(row.isFree ?? ''),
       lat: coordinates.lat,
       lng: coordinates.lng,
-      mainImage: row.mainImage ?? '/assets/images/logo.svg',
-      place: row.place ?? '',
-      startDate: toDateOrNow(row.startDate),
-      title: row.title ?? '',
-      useFee: row.useFee ?? '',
-    };
+      mainImage: String(row.mainImage ?? '/assets/images/logo.svg'),
+      place: String(row.place ?? ''),
+      startDate: toDateOrNow(String(row.startDate ?? '')),
+      title: String(row.title ?? ''),
+      useFee: String(row.useFee ?? ''),
+    } satisfies CultureListItem];
   });
 
   return sortCulturesByRelevantDate(items, koreaToday);
 };
 
-export const refreshCultureListSnapshotCache = async () => {
-  const items = await queryCultureListFromD1();
-  if (!items) return null;
+export const refreshCultureListSnapshotCache = async (options: {
+  cache?: CultureCacheBinding;
+  d1: D1Binding;
+}) => {
+  const items = await queryCultureListFromD1(options.d1);
 
-  await writeCulturesListCaches(items, CULTURE_LIST_CACHE_TTL_SECONDS);
-  return items;
-};
-
-export const getCultureListSnapshot = async (): Promise<CultureListSnapshot | null> => {
-  const readModel = await readCultureReadModelSnapshot();
-  if (readModel) return readModel;
-
-  try {
-    const items = await refreshCultureListSnapshotCache();
-    if (!items) return null;
-    return { items, source: 'd1' };
-  } catch (error) {
-    if (hasD1DailyRowReadLimitError(error)) {
-      const fallback = await readCulturesListFallbackCache();
-      if (fallback) {
-        // Temporarily promote the last known good snapshot so paginated feed requests
-        // do not retry the exhausted D1 database for every scroll page.
-        await writeCulturesListCaches(fallback, 60);
-        return { items: filterCurrentCultureListItems(fallback), source: 'kv-list-fallback' };
-      }
-    }
-
-    throw error;
-  }
+  const readModel = await writeCultureReadModelCache(items, options.cache);
+  console.info(
+    `[read-model] publish ${readModel.published ? 'completed' : 'failed'} items=${items.length} cachedAt=${readModel.cachedAt}`
+  );
+  return {
+    items,
+    cachedAt: readModel.cachedAt,
+    published: readModel.published,
+  };
 };

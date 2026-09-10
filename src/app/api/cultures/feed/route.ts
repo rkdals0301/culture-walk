@@ -1,11 +1,9 @@
-import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import {
   buildCultureFeedResult,
   createCultureFeedFilterKey,
   type CultureFeedFilters,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
-import { getCultureFeedPage } from '@/services/cultureFeedData';
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -112,47 +110,8 @@ export async function GET(request: Request) {
     return NextResponse.json(page, { headers: responseHeaders('kv-read-model') });
   }
 
-  try {
-    const feedResult = await getCultureFeedPage({
-      filters,
-      limit,
-      offset: cursor?.offset ?? 0,
-    });
-    if (!feedResult) {
-      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
-    }
-
-    const offset = cursor?.offset ?? 0;
-    const items = feedResult.items;
-    const nextOffset = offset + items.length;
-    const hasMore = nextOffset < feedResult.metadata.totalCount;
-    const page: CultureFeedPage = {
-      items,
-      nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
-      hasMore,
-      totalCount: feedResult.metadata.totalCount,
-      freeCount: feedResult.metadata.freeCount,
-      regionOptions: feedResult.metadata.regionOptions,
-    };
-
-    return NextResponse.json(page, {
-      headers: responseHeaders(
-        feedResult.metadata.source === 'kv-feed-metadata' ? 'd1-feed-page+kv-metadata' : 'd1-feed-page+kv-metadata-refresh'
-      ),
-    });
-  } catch (error) {
-    if (hasMissingSqliteTableError(error, 'cultures')) {
-      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
-    }
-
-    if (hasD1DailyRowReadLimitError(error)) {
-      return NextResponse.json(
-        { error: '문화 목록을 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
-        { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }
-      );
-    }
-
-    console.error('문화 피드 데이터를 가져오는데 실패했습니다.', error);
-    return NextResponse.json({ error: '문화 목록 데이터를 가져오는데 실패했습니다.' }, { status: 500 });
-  }
+  return NextResponse.json(
+    { error: '문화 목록 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
+    { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' } }
+  );
 }

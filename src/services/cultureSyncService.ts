@@ -1,8 +1,8 @@
-import { bumpCulturesCacheVersion } from '@/cache/kv';
+import { type CultureCacheBinding } from '@/cache/kv';
 import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 
-import { refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
+import { publishCurrentCultureDetailReadModels, refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
 import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from './cultureSyncRunRepository';
@@ -13,6 +13,7 @@ type SyncCulturesOptions = {
   trigger?: string;
   beforeEach?: () => Promise<boolean>;
   beforeApply?: () => Promise<void>;
+  cache?: CultureCacheBinding;
 };
 
 export const syncCultures = async (
@@ -48,10 +49,11 @@ export const syncCultures = async (
       beforeEach: options.beforeEach,
       beforeApply: options.beforeApply,
     });
-    await bumpCulturesCacheVersion();
 
+    let listReadModelPublished = false;
     try {
-      await refreshCultureListSnapshotCache();
+      const publication = await refreshCultureListSnapshotCache({ d1, cache: options.cache });
+      listReadModelPublished = publication.published;
     } catch (error) {
       // The D1 snapshot is already authoritative at this point. Cache warming is
       // best-effort so a temporary quota/network problem must not roll back a
@@ -64,12 +66,23 @@ export const syncCultures = async (
     try {
       await refreshStaleCachedTourApiDetails(config, d1, {
         beforeEach: options.beforeEach,
+        cache: listReadModelPublished ? options.cache : undefined,
       });
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
         throw error;
       }
       console.warn('TourAPI 상세 캐시 보강을 건너뜁니다.', error);
+    }
+
+    try {
+      if (listReadModelPublished) {
+        await publishCurrentCultureDetailReadModels(d1, options.cache);
+      }
+    } catch (error) {
+      // The list read model remains sufficient to serve the app. Rich detail
+      // publication is best-effort and can recover on the next daily sync.
+      console.warn('문화 상세 KV read model 게시를 건너뜁니다.', error);
     }
 
     if (options.beforeEach && !(await options.beforeEach())) {

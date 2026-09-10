@@ -1,7 +1,6 @@
-import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
-import { buildCultureMapResponseFromSnapshot, getCultureMapData } from '@/services/cultureMap';
+import { buildCultureMapResponseFromSnapshot } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -40,7 +39,7 @@ const parseMapLevel = (value: string | null) => {
   return Math.min(14, Math.max(1, Math.round(parsed)));
 };
 
-const responseHeaders = (source = 'd1-viewport') => ({
+const responseHeaders = (source = 'kv-read-model') => ({
   'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
   'X-Culture-Data-Source': source,
 });
@@ -71,26 +70,8 @@ export async function GET(request: Request) {
     return NextResponse.json(result, { headers: responseHeaders('kv-read-model') });
   }
 
-  try {
-    const result = await getCultureMapData({ filters, bounds, level });
-    if (!result) {
-      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
-    }
-
-    return NextResponse.json(result, { headers: responseHeaders() });
-  } catch (error) {
-    if (hasMissingSqliteTableError(error, 'cultures')) {
-      return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
-    }
-
-    if (hasD1DailyRowReadLimitError(error)) {
-      return NextResponse.json(
-        { error: '지도 영역 데이터를 잠시 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' },
-        { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' } }
-      );
-    }
-
-    console.error('지도 영역 문화 데이터를 가져오는데 실패했습니다.', error);
-    return NextResponse.json({ error: '지도 영역 데이터를 가져오는데 실패했습니다.' }, { status: 500 });
-  }
+  return NextResponse.json(
+    { error: '지도 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
+    { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' } }
+  );
 }

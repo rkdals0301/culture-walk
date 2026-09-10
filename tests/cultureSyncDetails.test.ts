@@ -3,16 +3,17 @@ import {
   refreshStaleCachedTourApiDetails,
   requestCultureDetailRefresh,
 } from '@/services/cultureSyncDetails';
+import type { CultureCacheBinding } from '@/cache/kv';
 import { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
 const staleRow = {
-  culture_id: 42,
-  source_key: 'tourapi:123',
-  registration_date: '2026-07-01T00:00:00.000Z',
-  detail_sync_fail_count: 2,
+  id: 42,
+  sourceKey: 'tourapi:123',
+  registrationDate: '2026-07-01T00:00:00.000Z',
+  detailSyncFailCount: 2,
 };
 
 test('partial detail responses preserve stored data and schedule a retry', async () => {
@@ -28,7 +29,7 @@ test('partial detail responses preserve stored data and schedule a retry', async
     },
     all: async () => {
       executed.push({ query, values });
-      return query.includes('SELECT cultures.id AS culture_id') ? { results: [staleRow] } : { results: [] };
+      return query.includes('detailSyncFailCount') ? { results: [staleRow] } : { results: [] };
     },
   });
 
@@ -74,6 +75,79 @@ test('partial detail responses preserve stored data and schedule a retry', async
     assert.equal(retryUpdate?.values[3], 'tourapi:123');
     assert.ok(!executed.some(call => call.query.includes('INSERT INTO culture_tour_api_details')));
     assert.ok(!executed.some(call => call.query.includes('homepage_detail_address = ?')));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('successful detail refresh publishes a rich KV detail read model', async () => {
+  const originalFetch = globalThis.fetch;
+  const writes: Array<{ key: string; value: string }> = [];
+
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, nextValues),
+    run: async () => ({}),
+    all: async () =>
+      query.includes('detailSyncFailCount')
+        ? {
+            results: [
+              {
+                ...staleRow,
+                classification: '축제',
+                date: '2026.09.10 ~ 2026.09.12',
+                endDate: '2026-09-12T00:00:00.000Z',
+                guName: '서울 중구',
+                isFree: '정보 없음',
+                lat: 37.56,
+                lng: 126.98,
+                mainImage: '/event.jpg',
+                place: '서울광장',
+                startDate: '2026-09-10T00:00:00.000Z',
+                title: '테스트 축제',
+                useFee: '요금 정보 확인 필요',
+                createdAt: '2026-09-01T00:00:00.000Z',
+                updatedAt: '2026-09-01T00:00:00.000Z',
+              },
+            ],
+          }
+        : { results: [] },
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+  const cache: CultureCacheBinding = {
+    get: async key =>
+      key === 'cultures:read-model:v1'
+        ? { cachedAt: '2026-09-10T00:10:00.000Z', items: [{ id: 42 }] }
+        : null,
+    put: async (key, value) => {
+      writes.push({ key, value });
+    },
+  };
+
+  globalThis.fetch = (async () =>
+    Response.json({
+      response: {
+        header: { resultCode: '0000', resultMsg: 'OK' },
+        body: { items: { item: [{}] }, totalCount: 1 },
+      },
+    })) as typeof fetch;
+
+  try {
+    const refreshed = await refreshStaleCachedTourApiDetails(
+      { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
+      d1,
+      { cache }
+    );
+
+    assert.equal(refreshed, 1);
+    const detailWrite = writes.find(write => write.key.startsWith('cultures:detail:last:v1'));
+    assert.ok(detailWrite);
+    const stored = JSON.parse(detailWrite.value) as { cacheVersion: string; culture: { id: number; title: string } };
+    assert.equal(stored.cacheVersion, '2026-09-10T00:10:00.000Z');
+    assert.equal(stored.culture.id, 42);
+    assert.equal(stored.culture.title, '테스트 축제');
   } finally {
     globalThis.fetch = originalFetch;
   }

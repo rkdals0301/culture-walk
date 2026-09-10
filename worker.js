@@ -48,6 +48,7 @@ async function runScheduledSync(env, ctx, trigger) {
       trigger,
       beforeEach: () => heartbeat.renew(),
       beforeApply: heartbeat.ensureHeld,
+      cache: env.CULTURE_CACHE,
     });
     console.info(
       `[cron] snapshot completed trigger=${trigger} fetched=${result.fetched} inserted=${result.inserted} updated=${result.updated}`
@@ -80,11 +81,11 @@ async function runScheduledDetailRefresh(env) {
     const refreshed = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       d1,
-      { beforeEach: () => heartbeat.renew() }
+      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
     );
     console.info(`[cron] detail refresh completed refreshed=${refreshed}`);
     // Detail enrichment updates the detail cache and summary columns, but does not change
-    // the event list shape enough to invalidate the full list cache on every 5-minute run.
+    // the event list shape enough to republish the full list read model on every hourly run.
   } finally {
     await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);

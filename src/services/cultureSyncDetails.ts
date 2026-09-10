@@ -1,4 +1,17 @@
-import { createTourApiDetailSummary, serializeTourApiDetails } from '@/services/tourApiDetails';
+import {
+  type CultureCacheBinding,
+  readCultureDetailCache,
+  readCultureReadModelCache,
+  writeCultureDetailCache,
+} from '@/cache/kv';
+import type { CultureTourApiDetailsRow } from '@/db/schema';
+import { type CultureContentRow, mapCultureRowToCulture } from '@/services/cultureService';
+import {
+  createTourApiDetailSummary,
+  parseStoredTourApiDetails,
+  serializeTourApiDetails,
+} from '@/services/tourApiDetails';
+import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 import { getTourApiContentId } from './cultureIdentity';
 import { fetchTourApiFestivalDetails } from './cultureSyncSource';
@@ -6,13 +19,39 @@ import { D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, TourApiConfig } from './
 
 const STALE_DETAIL_REFRESH_LIMIT = 12;
 const DETAIL_REFRESH_REQUEST_COOLDOWN_MINUTES = 5;
+const DETAIL_READ_MODEL_TTL_SECONDS = 60 * 60 * 24 * 7;
+const DETAIL_READ_MODEL_WRITE_BATCH_SIZE = 25;
 
-type StaleDetailRow = {
-  culture_id?: number;
-  source_key?: string;
-  registration_date?: string | null;
-  detail_sync_fail_count?: number | null;
-};
+type StaleDetailRow = CultureContentRow & { detailSyncFailCount?: number | null };
+
+const CULTURE_CONTENT_SELECT = `
+  cultures.id AS id,
+  cultures.source_key AS "sourceKey",
+  cultures.classification AS classification,
+  cultures.date AS date,
+  cultures.end_date AS "endDate",
+  cultures.etc_description AS "etcDescription",
+  cultures.gu_name AS "guName",
+  cultures.homepage_detail_address AS "homepageDetailAddress",
+  cultures.is_free AS "isFree",
+  cultures.lat AS lat,
+  cultures.lng AS lng,
+  cultures.main_image AS "mainImage",
+  cultures.homepage_address AS "homepageAddress",
+  cultures.organization_name AS "organizationName",
+  cultures.place AS place,
+  cultures.performer_information AS "performerInformation",
+  cultures.program_introduction AS "programIntroduction",
+  cultures.registration_date AS "registrationDate",
+  cultures.start_date AS "startDate",
+  cultures.theme_classification AS "themeClassification",
+  cultures.register AS register,
+  cultures.title AS title,
+  cultures.use_fee AS "useFee",
+  cultures.use_target AS "useTarget",
+  cultures.created_at AS "createdAt",
+  cultures.updated_at AS "updatedAt"
+`;
 
 const retryDelayMinutes = (failCount: number, sourceKey: string) => {
   const base = failCount <= 1 ? 10 : failCount === 2 ? 30 : Math.min(120 * 2 ** (failCount - 3), 24 * 60);
@@ -67,9 +106,11 @@ const refreshCachedDetail = async (
   d1: D1Binding,
   row: StaleDetailRow,
   beforeWrite?: () => Promise<boolean>,
+  cache?: CultureCacheBinding,
+  cacheVersion = 'detail-refresh',
 ) => {
-  const cultureId = Number(row.culture_id);
-  const sourceKey = row.source_key;
+  const cultureId = Number(row.id);
+  const sourceKey = row.sourceKey;
   const contentId = getTourApiContentId(sourceKey);
 
   if (!Number.isInteger(cultureId) || !sourceKey || !contentId) return false;
@@ -104,7 +145,7 @@ const refreshCachedDetail = async (
       )
       .bind(
         sourceKey,
-        row.registration_date ?? null,
+        row.registrationDate ?? null,
         serialized.commonJson,
         serialized.introJson,
         serialized.infoJson,
@@ -145,17 +186,22 @@ const refreshCachedDetail = async (
       ),
   ]);
 
+  if (cache) {
+    const culture = mapCultureRowToCulture({ ...row, updatedAt: syncedAt }, details);
+    await writeCultureDetailCache(cultureId, cacheVersion, culture, DETAIL_READ_MODEL_TTL_SECONDS, cache);
+  }
+
   return true;
 };
 
 export const refreshStaleCachedTourApiDetails = async (
   config: TourApiConfig,
   d1: D1Binding,
-  options: { beforeEach?: () => Promise<boolean> } = {}
+  options: { beforeEach?: () => Promise<boolean>; cache?: CultureCacheBinding } = {}
 ) => {
   const result = await d1
     .prepare(
-      `SELECT cultures.id AS culture_id, cultures.source_key, cultures.registration_date, cultures.detail_sync_fail_count
+      `SELECT ${CULTURE_CONTENT_SELECT}, cultures.detail_sync_fail_count AS "detailSyncFailCount"
        FROM cultures
        LEFT JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
        WHERE cultures.is_active = 1
@@ -175,13 +221,22 @@ export const refreshStaleCachedTourApiDetails = async (
     .bind(STALE_DETAIL_REFRESH_LIMIT)
     .all();
 
+  const readModel = options.cache ? await readCultureReadModelCache(options.cache) : null;
+  const cacheVersion = readModel?.cachedAt ?? 'legacy-read-model';
   let refreshed = 0;
   for (const row of result.results ?? []) {
     if (options.beforeEach && !(await options.beforeEach())) {
       throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
     }
     try {
-      refreshed += (await refreshCachedDetail(config, d1, row as StaleDetailRow, options.beforeEach)) ? 1 : 0;
+      refreshed += (await refreshCachedDetail(
+        config,
+        d1,
+        row as StaleDetailRow,
+        options.beforeEach,
+        options.cache,
+        cacheVersion
+      )) ? 1 : 0;
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
         throw error;
@@ -191,8 +246,8 @@ export const refreshStaleCachedTourApiDetails = async (
         throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
       }
 
-      const sourceKey = String(row.source_key ?? '');
-      const failCount = Number(row.detail_sync_fail_count ?? 0) + 1;
+      const sourceKey = String(row.sourceKey ?? '');
+      const failCount = Number(row.detailSyncFailCount ?? 0) + 1;
       const retryAt = new Date(Date.now() + retryDelayMinutes(failCount, sourceKey) * 60 * 1000).toISOString();
       await d1
         .prepare(
@@ -207,4 +262,89 @@ export const refreshStaleCachedTourApiDetails = async (
   }
 
   return refreshed;
+};
+
+export const publishCurrentCultureDetailReadModels = async (
+  d1: D1Binding,
+  cache?: CultureCacheBinding
+) => {
+  if (!cache) return { attempted: 0, published: 0 };
+
+  const result = await d1
+    .prepare(
+      `SELECT ${CULTURE_CONTENT_SELECT},
+              details.source_key AS "detailSourceKey",
+              details.source_modified_at AS "detailSourceModifiedAt",
+              details.common_json AS "detailCommonJson",
+              details.intro_json AS "detailIntroJson",
+              details.info_json AS "detailInfoJson",
+              details.images_json AS "detailImagesJson",
+              details.is_complete AS "detailIsComplete",
+              details.synced_at AS "detailSyncedAt"
+       FROM cultures
+       INNER JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
+       WHERE cultures.is_active = 1
+         AND cultures.end_date >= ?
+         AND details.is_complete = 1
+         AND details.source_modified_at IS cultures.registration_date
+       ORDER BY cultures.id`
+    )
+    .bind(getKoreaDateStartIso())
+    .all();
+
+  const rows = result.results ?? [];
+  const readModel = await readCultureReadModelCache(cache);
+  const cacheVersion = readModel?.cachedAt ?? 'legacy-read-model';
+  let published = 0;
+  let skipped = 0;
+
+  for (let index = 0; index < rows.length; index += DETAIL_READ_MODEL_WRITE_BATCH_SIZE) {
+    const batch = rows.slice(index, index + DETAIL_READ_MODEL_WRITE_BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async rawRow => {
+        const row = rawRow as StaleDetailRow & Record<string, unknown>;
+        const cultureId = Number(row.id);
+        if (!Number.isInteger(cultureId) || cultureId < 1) return 'skipped' as const;
+
+        const existing = await readCultureDetailCache(cultureId, cache);
+        const existingUpdatedAt = existing?.culture?.updatedAt
+          ? new Date(existing.culture.updatedAt).getTime()
+          : Number.NaN;
+        const rowUpdatedAt = row.updatedAt ? new Date(row.updatedAt).getTime() : Number.NaN;
+        if (
+          existing?.cacheVersion === cacheVersion &&
+          Number.isFinite(existingUpdatedAt) &&
+          Number.isFinite(rowUpdatedAt) &&
+          existingUpdatedAt === rowUpdatedAt
+        ) {
+          return 'skipped' as const;
+        }
+
+        const detailRow = {
+          sourceKey: String(row.detailSourceKey ?? row.sourceKey ?? ''),
+          sourceModifiedAt: row.detailSourceModifiedAt ? String(row.detailSourceModifiedAt) : null,
+          commonJson: String(row.detailCommonJson ?? '{}'),
+          introJson: String(row.detailIntroJson ?? '{}'),
+          infoJson: String(row.detailInfoJson ?? '[]'),
+          imagesJson: String(row.detailImagesJson ?? '[]'),
+          isComplete: Boolean(Number(row.detailIsComplete ?? 0)),
+          syncedAt: String(row.detailSyncedAt ?? ''),
+        } satisfies CultureTourApiDetailsRow;
+        const culture = mapCultureRowToCulture(row, parseStoredTourApiDetails(detailRow));
+        const written = await writeCultureDetailCache(
+          culture.id,
+          cacheVersion,
+          culture,
+          DETAIL_READ_MODEL_TTL_SECONDS,
+          cache
+        );
+        return written ? 'published' as const : 'failed' as const;
+      })
+    );
+    published += results.filter(result => result === 'published').length;
+    skipped += results.filter(result => result === 'skipped').length;
+  }
+
+  console.info(`[read-model] detail publish attempted=${rows.length} published=${published} skipped=${skipped}`);
+  return { attempted: rows.length, published, skipped };
 };

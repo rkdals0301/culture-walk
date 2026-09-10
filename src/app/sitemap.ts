@@ -1,13 +1,10 @@
-import { getDb } from '@/db/client';
-import { cultures } from '@/db/schema';
-import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { readCultureReadModelSnapshot } from '@/services/cultureList';
 import { SITE_URL } from '@/utils/siteMetadata';
 
 import type { MetadataRoute } from 'next';
 
-import { and, asc, eq, gte } from 'drizzle-orm';
-
-// D1 is available only at request time in the Cloudflare worker, not during the Next build.
+// The sitemap is generated from the same KV read model as the public app so
+// crawlers cannot consume the D1 daily row-read budget.
 export const dynamic = 'force-dynamic';
 
 const STATIC_ENTRIES: MetadataRoute.Sitemap = [
@@ -38,7 +35,8 @@ const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   },
 ];
 
-const parseLastModified = (value: string) => {
+const parseLastModified = (value: string | null) => {
+  if (!value) return undefined;
   const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value) ? `${value.replace(' ', 'T')}Z` : value;
   const date = new Date(normalized);
   return Number.isNaN(date.getTime()) ? undefined : date;
@@ -59,36 +57,23 @@ const toSitemapImage = (value: string | null) => {
 };
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
-  const db = await getDb();
-  if (!db) {
-    if (process.env.NODE_ENV !== 'production') {
-      return STATIC_ENTRIES;
-    }
+  const snapshot = await readCultureReadModelSnapshot();
+  if (!snapshot) return STATIC_ENTRIES;
+  const lastModified = parseLastModified(snapshot.cachedAt);
 
-    throw new Error('사이트맵 생성을 위한 D1 데이터베이스 바인딩을 찾을 수 없습니다.');
-  }
-
-  const rows = await db
-    .select({
-      id: cultures.id,
-      mainImage: cultures.mainImage,
-      updatedAt: cultures.updatedAt,
-    })
-    .from(cultures)
-    .where(and(eq(cultures.isActive, true), gte(cultures.endDate, getKoreaDateStartIso())))
-    .orderBy(asc(cultures.id));
-
-  const cultureEntries: MetadataRoute.Sitemap = rows.map(row => {
+  const cultureEntries: MetadataRoute.Sitemap = [...snapshot.items]
+    .sort((left, right) => left.id - right.id)
+    .map(row => {
     const image = toSitemapImage(row.mainImage);
 
     return {
       url: `${SITE_URL}/map/${row.id}`,
-      lastModified: parseLastModified(row.updatedAt),
+      ...(lastModified ? { lastModified } : {}),
       changeFrequency: 'daily',
       priority: 0.8,
       ...(image ? { images: [image] } : {}),
     };
-  });
+    });
 
   return [...STATIC_ENTRIES, ...cultureEntries];
 };

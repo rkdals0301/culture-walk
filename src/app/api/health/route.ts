@@ -1,276 +1,84 @@
-import { readCulturesListFallbackCache, readCulturesListFallbackMetadata } from '@/cache/kv';
-import { cultureSyncRuns, cultures, cultureTourApiDetails } from '@/db/schema';
-import { getDb } from '@/db/client';
-import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
-import { getKoreaDateStartIso } from '@/utils/dateUtils';
+import { readCultureReadModelSnapshot } from '@/services/cultureList';
 
 import { NextResponse } from 'next/server';
-import { desc, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import {
-  KOREA_LAT_MAX,
-  KOREA_LAT_MIN,
-  KOREA_LNG_MAX,
-  KOREA_LNG_MIN,
-  toCount,
-} from '@/services/cultureSyncTypes';
-
 const MAX_SYNC_AGE_HOURS = 36;
 
-const getAgeHours = (value: string | null | undefined, now: Date) => {
+const getAgeHours = (value: string | null, now: Date) => {
   if (!value) return null;
   const timestamp = new Date(value).getTime();
   if (!Number.isFinite(timestamp)) return null;
   return Math.max(0, (now.getTime() - timestamp) / (60 * 60 * 1000));
 };
 
-const readFallbackStatus = async (now: Date) => {
-  const [items, metadata] = await Promise.all([
-    readCulturesListFallbackCache(),
-    readCulturesListFallbackMetadata(),
-  ]);
-
-  return {
-    available: Boolean(items?.length),
-    itemCount: items?.length ?? 0,
-    cachedAt: metadata?.cachedAt ?? null,
-    cacheAgeHours: getAgeHours(metadata?.cachedAt, now),
-  };
-};
-
+/**
+ * Public health is deliberately read-model-only. A health probe must never be
+ * capable of exhausting the D1 row-read budget it is supposed to observe.
+ * Deep database diagnostics belong in scheduled sync logs / Cloudflare tools.
+ */
 export async function GET() {
-  try {
-    const db = await getDb();
-    if (!db) {
-      const now = new Date();
-      const fallback = await readFallbackStatus(now);
-      if (fallback.available) {
-        return NextResponse.json(
-          {
-            ok: true,
-            status: 'degraded',
-            checkedAt: now.toISOString(),
-            databaseStatus: 'missing',
-            reason: 'd1-binding-missing',
-            message: 'D1 바인딩을 사용할 수 없어 KV snapshot으로 서비스를 계속 제공합니다.',
-            fallback,
-            latestSync: null,
-          },
-          {
-            status: 200,
-            headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
-          }
-        );
-      }
+  const now = new Date();
+  const snapshot = await readCultureReadModelSnapshot();
 
-      return NextResponse.json(
-        {
-          ok: false,
-          status: 'unavailable',
-          checkedAt: now.toISOString(),
-          databaseStatus: 'missing',
-          error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.',
-          fallback,
-        },
-        { status: 503 }
-      );
-    }
-
-    const now = new Date();
-    const koreaToday = getKoreaDateStartIso(now);
-    const maximumPlausibleEndDate = `${now.getUTCFullYear() + 5}-12-31T23:59:59.999Z`;
-
-    const [aggregateRows, latestSyncRun] = await Promise.all([
-      db.select({
-        total: sql<number>`COUNT(*)`,
-        sourceActiveTotal: sql<number>`SUM(CASE WHEN ${cultures.isActive} = 1 THEN 1 ELSE 0 END)`,
-        tourApiActiveTotal: sql<number>`SUM(
-          CASE WHEN ${cultures.isActive} = 1 AND ${cultures.sourceKey} LIKE 'tourapi:%' THEN 1 ELSE 0 END
-        )`,
-        legacyTotal: sql<number>`SUM(
-          CASE WHEN ${cultures.sourceKey} IS NULL OR ${cultures.sourceKey} NOT LIKE 'tourapi:%' THEN 1 ELSE 0 END
-        )`,
-        deactivatedTotal: sql<number>`SUM(CASE WHEN ${cultures.isActive} = 0 THEN 1 ELSE 0 END)`,
-        activeTotal: sql<number>`SUM(
-          CASE WHEN ${cultures.isActive} = 1 AND ${cultures.endDate} >= ${koreaToday} THEN 1 ELSE 0 END
-        )`,
-        activeNormalCoordinates: sql<number>`SUM(
-          CASE WHEN ${cultures.isActive} = 1 AND ${cultures.endDate} >= ${koreaToday}
-            AND ${cultures.lat} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}
-            AND ${cultures.lng} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}
-          THEN 1 ELSE 0 END
-        )`,
-        activeSwappedCoordinates: sql<number>`SUM(
-          CASE WHEN ${cultures.isActive} = 1 AND ${cultures.endDate} >= ${koreaToday}
-            AND ${cultures.lng} BETWEEN ${KOREA_LAT_MIN} AND ${KOREA_LAT_MAX}
-            AND ${cultures.lat} BETWEEN ${KOREA_LNG_MIN} AND ${KOREA_LNG_MAX}
-          THEN 1 ELSE 0 END
-        )`,
-        implausibleActiveDates: sql<number>`SUM(
-          CASE WHEN ${cultures.isActive} = 1
-            AND (${cultures.endDate} > ${maximumPlausibleEndDate} OR ${cultures.endDate} < ${cultures.startDate})
-          THEN 1 ELSE 0 END
-        )`,
-        // updated_at contains both SQLite and ISO 8601 timestamps, so compare them chronologically.
-        latestUpdatedAt: sql<string | null>`strftime(
-          '%Y-%m-%dT%H:%M:%fZ',
-          MAX(CASE WHEN ${cultures.isActive} = 1 THEN julianday(${cultures.updatedAt}) ELSE NULL END)
-        )`,
-        latestEndDate: sql<string | null>`MAX(
-          CASE WHEN ${cultures.isActive} = 1 THEN ${cultures.endDate} ELSE NULL END
-        )`,
-        detailCachedTotal: sql<number>`(
-          SELECT COUNT(*) FROM ${cultureTourApiDetails}
-        )`,
-        detailCompleteTotal: sql<number>`(
-          SELECT COUNT(*) FROM ${cultureTourApiDetails} WHERE ${cultureTourApiDetails.isComplete} = 1
-        )`,
-        detailCurrentTotal: sql<number>`(
-          SELECT COUNT(*)
-          FROM culture_tour_api_details details
-          INNER JOIN cultures detail_culture ON detail_culture.source_key = details.source_key
-          WHERE details.is_complete = 1
-            AND detail_culture.is_active = 1
-            AND details.source_modified_at IS detail_culture.registration_date
-        )`,
-      })
-      .from(cultures),
-      db.query.cultureSyncRuns.findFirst({ orderBy: [desc(cultureSyncRuns.startedAt)] }),
-    ]);
-
-    const row = aggregateRows[0];
-    const total = toCount(row?.total);
-    const sourceActiveTotal = toCount(row?.sourceActiveTotal);
-    const tourApiActiveTotal = toCount(row?.tourApiActiveTotal);
-    const legacyTotal = toCount(row?.legacyTotal);
-    const deactivatedTotal = toCount(row?.deactivatedTotal);
-    const activeTotal = toCount(row?.activeTotal);
-    const activeNormalCoordinates = toCount(row?.activeNormalCoordinates);
-    const activeSwappedCoordinates = toCount(row?.activeSwappedCoordinates);
-    const activeVisible = activeNormalCoordinates + activeSwappedCoordinates;
-    const activeInvalidCoordinates = Math.max(activeTotal - activeVisible, 0);
-    const implausibleActiveDates = toCount(row?.implausibleActiveDates);
-    const detailCachedTotal = toCount(row?.detailCachedTotal);
-    const detailCompleteTotal = toCount(row?.detailCompleteTotal);
-    const detailCurrentTotal = toCount(row?.detailCurrentTotal);
-    const latestSyncCompletedAt = latestSyncRun?.completedAt ?? null;
-    const latestSyncAgeHours = latestSyncCompletedAt
-      ? (now.getTime() - new Date(`${latestSyncCompletedAt.replace(' ', 'T')}Z`).getTime()) / (60 * 60 * 1000)
-      : null;
-    const hasFreshSuccessfulSync =
-      latestSyncRun?.status === 'success' &&
-      latestSyncAgeHours !== null &&
-      Number.isFinite(latestSyncAgeHours) &&
-      latestSyncAgeHours <= MAX_SYNC_AGE_HOURS;
-    const ok =
-      total > 0 &&
-      sourceActiveTotal > 0 &&
-      tourApiActiveTotal === sourceActiveTotal &&
-      legacyTotal === 0 &&
-      activeVisible > 0 &&
-      activeInvalidCoordinates === 0 &&
-      implausibleActiveDates === 0 &&
-      hasFreshSuccessfulSync;
-
-    const fallback = ok ? null : await readFallbackStatus(now);
-    const servingDegraded = Boolean(!ok && fallback?.available);
-
+  if (!snapshot?.items.length) {
     return NextResponse.json(
       {
-        ok: ok || servingDegraded,
-        status: ok ? 'healthy' : servingDegraded ? 'degraded' : 'unavailable',
+        ok: false,
+        status: 'unavailable',
         checkedAt: now.toISOString(),
-        databaseStatus: 'available',
-        fallback,
-        total,
-        sourceActiveTotal,
-        tourApiActiveTotal,
-        legacyTotal,
-        deactivatedTotal,
-        activeTotal,
-        activeVisible,
-        activeNormalCoordinates,
-        activeSwappedCoordinates,
-        activeInvalidCoordinates,
-        implausibleActiveDates,
-        detailCachedTotal,
-        detailCompleteTotal,
-        detailCurrentTotal,
-        latestUpdatedAt: row?.latestUpdatedAt ?? null,
-        latestEndDate: row?.latestEndDate ?? null,
-        latestSync: latestSyncRun
-          ? {
-              id: latestSyncRun.id,
-              trigger: latestSyncRun.trigger,
-              status: latestSyncRun.status,
-              startedAt: latestSyncRun.startedAt,
-              completedAt: latestSyncRun.completedAt,
-              ageHours: latestSyncAgeHours,
-              fetched: latestSyncRun.fetchedCount,
-              inserted: latestSyncRun.insertedCount,
-              updated: latestSyncRun.updatedCount,
-              reactivated: latestSyncRun.reactivatedCount,
-              deactivated: latestSyncRun.deactivatedCount,
-              skipped: latestSyncRun.skippedCount,
-              error: latestSyncRun.errorMessage,
-            }
-          : null,
+        servingSource: 'kv-read-model',
+        databaseStatus: 'not-probed',
+        reason: 'read-model-missing',
+        readModel: {
+          available: false,
+          itemCount: 0,
+          cachedAt: null,
+          ageHours: null,
+        },
+        latestSync: null,
       },
       {
-        status: ok || servingDegraded ? 200 : 503,
-        headers: {
-          'Cache-Control': 'no-store',
-        },
+        status: 503,
+        headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' },
       }
     );
-  } catch (error) {
-    if (hasMissingSqliteTableError(error, 'cultures')) {
-      return NextResponse.json({ ok: false, error: 'cultures 테이블이 없습니다.' }, { status: 503 });
-    }
-
-    if (hasD1DailyRowReadLimitError(error)) {
-      const now = new Date();
-      const fallback = await readFallbackStatus(now);
-      if (fallback.available) {
-        return NextResponse.json(
-          {
-            ok: true,
-            status: 'degraded',
-            checkedAt: now.toISOString(),
-            databaseStatus: 'quota-exhausted',
-            reason: 'd1-daily-row-read-limit',
-            message: 'D1 일일 읽기 한도에 도달해 KV snapshot으로 서비스를 계속 제공합니다.',
-            fallback,
-            latestSync: null,
-          },
-          {
-            status: 200,
-            headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
-          }
-        );
-      }
-
-      return NextResponse.json(
-        {
-          ok: false,
-          status: 'unavailable',
-          checkedAt: now.toISOString(),
-          databaseStatus: 'quota-exhausted',
-          error: 'Cloudflare D1 일일 읽기 한도에 도달했습니다.',
-          reason: 'd1-daily-row-read-limit',
-          fallback,
-        },
-        {
-          status: 503,
-          headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'd1-unavailable' },
-        }
-      );
-    }
-
-    console.error('헬스체크 실패:', error);
-    return NextResponse.json({ ok: false, error: '헬스체크 실패' }, { status: 500 });
   }
+
+  const ageHours = getAgeHours(snapshot.cachedAt, now);
+  const fresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
+  const reason = snapshot.cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
+
+  return NextResponse.json(
+    {
+      ok: true,
+      status: fresh ? 'healthy' : 'degraded',
+      checkedAt: now.toISOString(),
+      servingSource: 'kv-read-model',
+      databaseStatus: 'not-probed',
+      reason,
+      message: fresh
+        ? 'KV read model이 최신 상태입니다.'
+        : 'KV read model로 서비스를 제공 중이며 다음 snapshot 동기화를 기다리고 있습니다.',
+      readModel: {
+        available: true,
+        itemCount: snapshot.items.length,
+        cachedAt: snapshot.cachedAt,
+        ageHours,
+      },
+      latestSync: snapshot.cachedAt
+        ? {
+            status: 'success',
+            completedAt: snapshot.cachedAt,
+            ageHours,
+          }
+        : null,
+    },
+    {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
+    }
+  );
 }

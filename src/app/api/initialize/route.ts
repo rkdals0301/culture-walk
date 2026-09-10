@@ -1,3 +1,4 @@
+import type { CultureCacheBinding } from '@/cache/kv';
 import { getWorkerEnv } from '@/server/cloudflare';
 import { hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         trigger,
         beforeEach: () => heartbeat.renew(),
         beforeApply: heartbeat.ensureHeld,
+        cache: env.CULTURE_CACHE as CultureCacheBinding | undefined,
       }
     );
 
