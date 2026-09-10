@@ -14,6 +14,7 @@ export interface CultureListFallbackMetadata {
 export interface CultureReadModel {
   cachedAt: string | null;
   items: CultureListItem[];
+  revisions?: Record<string, string>;
 }
 type StoredCultureDetail = {
   cacheVersion: string;
@@ -132,6 +133,7 @@ export const readCultureReadModelCache = async (
   const legacyReadModel = {
     cachedAt: legacyMetadata?.cachedAt ?? null,
     items: legacyItems,
+    revisions: {},
   };
   if (!cacheOverride) {
     cultureReadModelMemoryCache = {
@@ -144,11 +146,13 @@ export const readCultureReadModelCache = async (
 
 export const writeCultureReadModelCache = async (
   cultures: CultureListItem[],
+  revisions: Record<string, string>,
   cacheOverride?: CultureCacheBinding
 ) => {
   const readModel: CultureReadModel = {
     cachedAt: new Date().toISOString(),
     items: cultures,
+    revisions,
   };
   const published = await writeKvCache(
     CULTURE_READ_MODEL_CACHE_KEY,

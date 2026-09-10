@@ -51,9 +51,11 @@ export const syncCultures = async (
     });
 
     let listReadModelPublished = false;
+    let listReadModelRevisions: Record<string, string> = {};
     try {
       const publication = await refreshCultureListSnapshotCache({ d1, cache: options.cache });
       listReadModelPublished = publication.published;
+      listReadModelRevisions = publication.revisions;
     } catch (error) {
       // The D1 snapshot is already authoritative at this point. Cache warming is
       // best-effort so a temporary quota/network problem must not roll back a
@@ -67,6 +69,7 @@ export const syncCultures = async (
       await refreshStaleCachedTourApiDetails(config, d1, {
         beforeEach: options.beforeEach,
         cache: listReadModelPublished ? options.cache : undefined,
+        readModelRevisions: listReadModelPublished ? listReadModelRevisions : undefined,
       });
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
@@ -77,7 +80,7 @@ export const syncCultures = async (
 
     try {
       if (listReadModelPublished) {
-        await publishCurrentCultureDetailReadModels(d1, options.cache);
+        await publishCurrentCultureDetailReadModels(d1, options.cache, listReadModelRevisions);
       }
     } catch (error) {
       // The list read model remains sufficient to serve the app. Rich detail

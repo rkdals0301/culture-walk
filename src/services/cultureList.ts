@@ -21,6 +21,7 @@ export interface CultureListSnapshot {
   items: CultureListItem[];
   source: CultureListSnapshotSource;
   cachedAt: string | null;
+  revisions: Record<string, string>;
 }
 
 const toDateOrNow = (value?: string | null) => {
@@ -51,7 +52,30 @@ export const readCultureReadModelSnapshot = async (): Promise<CultureListSnapsho
     items: filterCurrentCultureListItems(readModel.items),
     source: 'kv-read-model',
     cachedAt: readModel.cachedAt,
+    revisions: readModel.revisions ?? {},
   };
+};
+
+const hashCultureListItem = (item: CultureListItem) => {
+  const payload = JSON.stringify([
+    item.classification,
+    item.endDate,
+    item.guName,
+    item.isFree,
+    item.lat,
+    item.lng,
+    item.mainImage,
+    item.place,
+    item.startDate,
+    item.title,
+    item.useFee,
+  ]);
+  let hash = 2166136261;
+  for (let index = 0; index < payload.length; index += 1) {
+    hash ^= payload.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
 };
 
 const queryCultureListFromD1 = async (d1: D1Binding) => {
@@ -59,7 +83,8 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
   const result = await d1
     .prepare(
       `SELECT id, classification, end_date AS endDate, gu_name AS guName, is_free AS isFree,
-              lat, lng, main_image AS mainImage, place, start_date AS startDate, title, use_fee AS useFee
+              lat, lng, main_image AS mainImage, place, start_date AS startDate, title, use_fee AS useFee,
+              registration_date AS sourceModifiedAt
        FROM cultures
        WHERE is_active = 1
          AND lat IS NOT NULL
@@ -85,6 +110,7 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
     )
     .all();
 
+  const revisions: Record<string, string> = {};
   const items = (result.results ?? []).flatMap(row => {
     const id = Number(row.id);
     const lat = Number(row.lat);
@@ -92,7 +118,7 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
     if (!Number.isInteger(id) || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
 
     const coordinates = normalizeCultureCoordinates(lat, lng);
-    return [{
+    const item = {
       id,
       classification: normalizeCultureClassification(String(row.classification ?? '')),
       endDate: toDateOrNow(String(row.endDate ?? row.startDate ?? '')),
@@ -105,25 +131,28 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
       startDate: toDateOrNow(String(row.startDate ?? '')),
       title: String(row.title ?? ''),
       useFee: String(row.useFee ?? ''),
-    } satisfies CultureListItem];
+    } satisfies CultureListItem;
+    revisions[String(id)] = `${String(row.sourceModifiedAt ?? '')}:${hashCultureListItem(item)}`;
+    return [item];
   });
 
-  return sortCulturesByRelevantDate(items, koreaToday);
+  return { items: sortCulturesByRelevantDate(items, koreaToday), revisions };
 };
 
 export const refreshCultureListSnapshotCache = async (options: {
   cache?: CultureCacheBinding;
   d1: D1Binding;
 }) => {
-  const items = await queryCultureListFromD1(options.d1);
+  const { items, revisions } = await queryCultureListFromD1(options.d1);
 
-  const readModel = await writeCultureReadModelCache(items, options.cache);
+  const readModel = await writeCultureReadModelCache(items, revisions, options.cache);
   console.info(
     `[read-model] publish ${readModel.published ? 'completed' : 'failed'} items=${items.length} cachedAt=${readModel.cachedAt}`
   );
   return {
     items,
     cachedAt: readModel.cachedAt,
+    revisions,
     published: readModel.published,
   };
 };

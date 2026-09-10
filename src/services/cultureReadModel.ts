@@ -37,9 +37,10 @@ export const getCulturePublicRead = async (id: number): Promise<CulturePublicRea
     };
   }
 
+  const itemRevision = snapshot.revisions[String(id)];
   const detailMatchesReadModel =
     detail?.culture?.id === id &&
-    (snapshot.cachedAt === null || detail.cacheVersion === snapshot.cachedAt);
+    (!itemRevision || detail.cacheVersion === itemRevision);
   if (detailMatchesReadModel) {
     return {
       culture: detail.culture,

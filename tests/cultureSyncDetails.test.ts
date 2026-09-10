@@ -1,5 +1,6 @@
 import {
   hasStaleCachedTourApiDetails,
+  publishCurrentCultureDetailReadModels,
   refreshStaleCachedTourApiDetails,
   requestCultureDetailRefresh,
 } from '@/services/cultureSyncDetails';
@@ -119,7 +120,11 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
   const cache: CultureCacheBinding = {
     get: async key =>
       key === 'cultures:read-model:v1'
-        ? { cachedAt: '2026-09-10T00:10:00.000Z', items: [{ id: 42 }] }
+        ? {
+            cachedAt: '2026-09-10T00:10:00.000Z',
+            items: [{ id: 42 }],
+            revisions: { '42': 'source-revision-42' },
+          }
         : null,
     put: async (key, value) => {
       writes.push({ key, value });
@@ -145,12 +150,48 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
     const detailWrite = writes.find(write => write.key.startsWith('cultures:detail:last:v1'));
     assert.ok(detailWrite);
     const stored = JSON.parse(detailWrite.value) as { cacheVersion: string; culture: { id: number; title: string } };
-    assert.equal(stored.cacheVersion, '2026-09-10T00:10:00.000Z');
+    assert.equal(stored.cacheVersion, 'source-revision-42');
     assert.equal(stored.culture.id, 42);
     assert.equal(stored.culture.title, '테스트 축제');
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('detail read-model publisher skips unchanged entries with the same item revision', async () => {
+  const writes: Array<{ key: string; value: string }> = [];
+  const updatedAt = '2026-09-10T00:20:00.000Z';
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, nextValues),
+    run: async () => ({}),
+    all: async () => ({
+      results: query.includes('detailSourceKey')
+        ? [{ id: 42, updatedAt, detailSourceKey: 'tourapi:123' }]
+        : [],
+    }),
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+  const cache: CultureCacheBinding = {
+    get: async key =>
+      key.startsWith('cultures:detail:last:v1')
+        ? { cacheVersion: 'source-revision-42', culture: { id: 42, updatedAt } }
+        : null,
+    put: async (key, value) => {
+      writes.push({ key, value });
+    },
+  };
+
+  const result = await publishCurrentCultureDetailReadModels(
+    d1,
+    cache,
+    { '42': 'source-revision-42' }
+  );
+
+  assert.deepEqual(result, { attempted: 1, published: 0, skipped: 1 });
+  assert.equal(writes.length, 0);
 });
 
 test('detail refresh requests respect a cooldown and retry backoff', async () => {

@@ -197,7 +197,11 @@ const refreshCachedDetail = async (
 export const refreshStaleCachedTourApiDetails = async (
   config: TourApiConfig,
   d1: D1Binding,
-  options: { beforeEach?: () => Promise<boolean>; cache?: CultureCacheBinding } = {}
+  options: {
+    beforeEach?: () => Promise<boolean>;
+    cache?: CultureCacheBinding;
+    readModelRevisions?: Record<string, string>;
+  } = {}
 ) => {
   const result = await d1
     .prepare(
@@ -221,8 +225,12 @@ export const refreshStaleCachedTourApiDetails = async (
     .bind(STALE_DETAIL_REFRESH_LIMIT)
     .all();
 
-  const readModel = options.cache ? await readCultureReadModelCache(options.cache) : null;
-  const cacheVersion = readModel?.cachedAt ?? 'legacy-read-model';
+  const readModel = options.readModelRevisions
+    ? null
+    : options.cache
+      ? await readCultureReadModelCache(options.cache)
+      : null;
+  const readModelRevisions = options.readModelRevisions ?? readModel?.revisions ?? {};
   let refreshed = 0;
   for (const row of result.results ?? []) {
     if (options.beforeEach && !(await options.beforeEach())) {
@@ -235,7 +243,7 @@ export const refreshStaleCachedTourApiDetails = async (
         row as StaleDetailRow,
         options.beforeEach,
         options.cache,
-        cacheVersion
+        readModelRevisions[String(row.id)] ?? 'legacy-read-model'
       )) ? 1 : 0;
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
@@ -266,7 +274,8 @@ export const refreshStaleCachedTourApiDetails = async (
 
 export const publishCurrentCultureDetailReadModels = async (
   d1: D1Binding,
-  cache?: CultureCacheBinding
+  cache?: CultureCacheBinding,
+  readModelRevisions?: Record<string, string>
 ) => {
   if (!cache) return { attempted: 0, published: 0 };
 
@@ -293,8 +302,8 @@ export const publishCurrentCultureDetailReadModels = async (
     .all();
 
   const rows = result.results ?? [];
-  const readModel = await readCultureReadModelCache(cache);
-  const cacheVersion = readModel?.cachedAt ?? 'legacy-read-model';
+  const readModel = readModelRevisions ? null : await readCultureReadModelCache(cache);
+  const revisions = readModelRevisions ?? readModel?.revisions ?? {};
   let published = 0;
   let skipped = 0;
 
@@ -305,6 +314,7 @@ export const publishCurrentCultureDetailReadModels = async (
         const row = rawRow as StaleDetailRow & Record<string, unknown>;
         const cultureId = Number(row.id);
         if (!Number.isInteger(cultureId) || cultureId < 1) return 'skipped' as const;
+        const cacheVersion = revisions[String(cultureId)] ?? 'legacy-read-model';
 
         const existing = await readCultureDetailCache(cultureId, cache);
         const existingUpdatedAt = existing?.culture?.updatedAt
