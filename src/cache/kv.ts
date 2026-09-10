@@ -25,7 +25,12 @@ export type CultureCacheBinding = {
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
 };
 
-let cultureReadModelMemoryCache: { value: CultureReadModel; expiresAt: number } | null = null;
+type CultureReadModelMemoryEntry = {
+  value: CultureReadModel;
+  expiresAt: number;
+};
+
+const cultureReadModelMemoryCache = new WeakMap<object, CultureReadModelMemoryEntry>();
 
 const sortObjectKeys = (value: unknown): unknown => {
   if (Array.isArray(value)) {
@@ -106,18 +111,20 @@ export const readCulturesListFallbackMetadata = async (cacheOverride?: CultureCa
 export const readCultureReadModelCache = async (
   cacheOverride?: CultureCacheBinding
 ): Promise<CultureReadModel | null> => {
-  if (!cacheOverride && cultureReadModelMemoryCache && cultureReadModelMemoryCache.expiresAt > Date.now()) {
-    return cultureReadModelMemoryCache.value;
+  const cache = await getCultureCache(cacheOverride);
+  if (!cache) return null;
+
+  const memoryEntry = cultureReadModelMemoryCache.get(cache);
+  if (memoryEntry && memoryEntry.expiresAt > Date.now()) {
+    return memoryEntry.value;
   }
 
-  const current = await readKvCache<CultureReadModel>(CULTURE_READ_MODEL_CACHE_KEY, cacheOverride);
+  const current = await readKvCache<CultureReadModel>(CULTURE_READ_MODEL_CACHE_KEY, cache);
   if (current?.items?.length) {
-    if (!cacheOverride) {
-      cultureReadModelMemoryCache = {
-        value: current,
-        expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
-      };
-    }
+    cultureReadModelMemoryCache.set(cache, {
+      value: current,
+      expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
+    });
     return current;
   }
 
@@ -125,8 +132,8 @@ export const readCultureReadModelCache = async (
   // dedicated read-model envelope was introduced. New syncs only publish the
   // single read-model key below, keeping KV writes bounded on the Free plan.
   const [legacyItems, legacyMetadata] = await Promise.all([
-    readCulturesListFallbackCache(cacheOverride),
-    readCulturesListFallbackMetadata(cacheOverride),
+    readCulturesListFallbackCache(cache),
+    readCulturesListFallbackMetadata(cache),
   ]);
   if (!legacyItems?.length) return null;
 
@@ -135,12 +142,10 @@ export const readCultureReadModelCache = async (
     items: legacyItems,
     revisions: {},
   };
-  if (!cacheOverride) {
-    cultureReadModelMemoryCache = {
-      value: legacyReadModel,
-      expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
-    };
-  }
+  cultureReadModelMemoryCache.set(cache, {
+    value: legacyReadModel,
+    expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
+  });
   return legacyReadModel;
 };
 
@@ -154,17 +159,20 @@ export const writeCultureReadModelCache = async (
     items: cultures,
     revisions,
   };
+  const cache = await getCultureCache(cacheOverride);
+  if (!cache) return { ...readModel, published: false };
+
   const published = await writeKvCache(
     CULTURE_READ_MODEL_CACHE_KEY,
     readModel,
     CULTURE_READ_MODEL_TTL_SECONDS,
-    cacheOverride
+    cache
   );
-  if (published && !cacheOverride) {
-    cultureReadModelMemoryCache = {
+  if (published) {
+    cultureReadModelMemoryCache.set(cache, {
       value: readModel,
       expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
-    };
+    });
   }
   return { ...readModel, published };
 };
