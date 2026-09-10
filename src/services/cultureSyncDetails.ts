@@ -40,6 +40,28 @@ export const requestCultureDetailRefresh = async (d1: D1Binding, sourceKey: stri
     .run();
 };
 
+export const hasStaleCachedTourApiDetails = async (d1: D1Binding) => {
+  const result = await d1
+    .prepare(
+      `SELECT 1 AS pending
+       FROM cultures
+       LEFT JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
+       WHERE cultures.is_active = 1
+         AND cultures.source_key LIKE 'tourapi:%'
+         AND (cultures.detail_next_retry_at IS NULL OR cultures.detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (
+           cultures.detail_refresh_requested_at IS NOT NULL
+           OR details.source_key IS NULL
+           OR details.is_complete != 1
+           OR details.source_modified_at IS NOT cultures.registration_date
+         )
+       LIMIT 1`
+    )
+    .all();
+
+  return (result.results?.length ?? 0) > 0;
+};
+
 const refreshCachedDetail = async (
   config: TourApiConfig,
   d1: D1Binding,

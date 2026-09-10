@@ -1,4 +1,8 @@
-import { refreshStaleCachedTourApiDetails, requestCultureDetailRefresh } from '@/services/cultureSyncDetails';
+import {
+  hasStaleCachedTourApiDetails,
+  refreshStaleCachedTourApiDetails,
+  requestCultureDetailRefresh,
+} from '@/services/cultureSyncDetails';
 import { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
 
 import assert from 'node:assert/strict';
@@ -97,4 +101,28 @@ test('detail refresh requests respect a cooldown and retry backoff', async () =>
   assert.match(executed[0].query, /detail_next_retry_at IS NULL/);
   assert.match(executed[0].query, /detail_refresh_requested_at IS NULL/);
   assert.match(executed[0].query, /datetime\('now', '-5 minutes'\)/);
+});
+
+test('detail refresh preflight avoids lock writes when there is no pending detail work', async () => {
+  const executed: string[] = [];
+  const createStatement = (query: string): D1Statement => ({
+    bind: () => createStatement(query),
+    run: async () => {
+      executed.push(query);
+      return {};
+    },
+    all: async () => {
+      executed.push(query);
+      return { results: [] };
+    },
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+
+  assert.equal(await hasStaleCachedTourApiDetails(d1), false);
+  assert.equal(executed.length, 1);
+  assert.match(executed[0], /SELECT 1 AS pending/);
+  assert.doesNotMatch(executed[0], /INSERT INTO initialize_sync_locks/);
 });

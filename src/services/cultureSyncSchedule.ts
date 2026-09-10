@@ -1,6 +1,15 @@
 export const SYNC_CRON = '10 19,20 * * *';
+export const DETAIL_REFRESH_CRON = '2,7,12,17,22,27,32,37,42,47,52,57 * * * *';
 export const RECOVERY_SYNC_UTC_HOUR = 20;
 export const RECOVERY_FRESHNESS_HOURS = 2;
+
+export type CultureScheduledJob = 'snapshot' | 'detail-refresh' | 'unknown';
+
+export const getCultureScheduledJob = (cron: string): CultureScheduledJob => {
+  if (cron === SYNC_CRON) return 'snapshot';
+  if (cron === DETAIL_REFRESH_CRON) return 'detail-refresh';
+  return 'unknown';
+};
 
 interface SyncHealthPayload {
   latestSync?: {

@@ -1,5 +1,8 @@
 import {
+  DETAIL_REFRESH_CRON,
+  getCultureScheduledJob,
   RECOVERY_FRESHNESS_HOURS,
+  SYNC_CRON,
   shouldRunScheduledSync,
 } from '../src/services/cultureSyncSchedule';
 
@@ -24,4 +27,10 @@ test('최신 동기화가 실패 또는 고착 상태면 복구 동기화를 실
   assert.equal(shouldRunScheduledSync({ latestSync: { status: 'failed', ageHours: 0.5 } }), true);
   assert.equal(shouldRunScheduledSync({ latestSync: { status: 'running', ageHours: null } }), true);
   assert.equal(shouldRunScheduledSync(null), true);
+});
+
+test('등록된 cron만 snapshot과 detail refresh 작업으로 분류한다', () => {
+  assert.equal(getCultureScheduledJob(SYNC_CRON), 'snapshot');
+  assert.equal(getCultureScheduledJob(DETAIL_REFRESH_CRON), 'detail-refresh');
+  assert.equal(getCultureScheduledJob('* * * * *'), 'unknown');
 });
