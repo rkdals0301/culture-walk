@@ -50,7 +50,7 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 | **Styling** | Tailwind CSS 3, Sass (SCSS), Framer Motion, Lucide React |
 | **Platform** | Cloudflare Workers, OpenNext (`@opennextjs/cloudflare` 1.20.4) |
 | **Database** | Cloudflare D1 (Serverless SQLite), Drizzle ORM |
-| **Caching** | Cloudflare KV (`CULTURE_CACHE`), Cloudflare Images (`IMAGES`) |
+| **Caching** | Cloudflare KV (`CULTURE_CACHE`), Cloudflare Workers Cache, Cloudflare Images (`IMAGES`) |
 | **External APIs** | 공공데이터포털 한국관광공사 TourAPI (KorService2), 카카오 지도 SDK |
 | **Virtualization** | @tanstack/react-virtual |
 | **Testing** | Node.js Test Runner with `tsx` (TypeScript 기반 테스트 러너) |
@@ -209,16 +209,19 @@ npm run dev
 ### 2. 문화행사 피드 조회 (`GET /api/cultures/feed`)
 - 전체 동기화에서 생성한 KV read model에 검색·카테고리·지역·무료 조건을 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
 - 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용합니다. KV read model이 없을 때만 D1에서 현재 목록을 1회 read-through하고 KV를 다시 채우며, 동일 Worker 인스턴스의 동시 cold miss는 하나의 in-flight rebuild를 공유합니다.
+- 브라우저에는 짧은 TTL을 제공하고 Workers Cache에는 별도의 긴 Edge TTL과 `stale-while-revalidate`/`stale-if-error`를 적용합니다. snapshot 갱신 직후 관련 cache tag를 purge해 오래된 목록 응답을 즉시 제거합니다.
 
 ### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
 - KV read model에서 현재 지도 영역만 계산하며 축소 상태에서는 Worker 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
 - 클라이언트에서 요청 영역을 그리드에 맞춰 정규화해 인접한 지도 이동의 캐시 재사용률을 높입니다.
 - 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용합니다. KV read model이 없을 때만 목록과 동일한 D1 read-through 복구 경로를 사용합니다.
+- 정규화된 viewport URL별 응답은 Workers Cache에서 재사용하므로 같은 영역을 다시 보는 요청은 Worker 계산과 KV 조회 전에 Edge에서 처리될 수 있습니다.
 
 ### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
 - 풍부한 상세 KV cache가 있고 행사 revision이 일치하면 이를 사용합니다. 캐시가 없거나 오래됐으면 D1에서 해당 행사 1건과 유효한 상세 레코드를 읽고 즉시 응답한 뒤 KV에 write-through합니다.
 - D1 read-through까지 실패한 경우에도 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다. 공개 요청은 D1 원본 데이터를 수정하지 않습니다.
+- 상세 Edge cache는 상세 동기화가 실제 데이터를 갱신했을 때 cache tag purge로 무효화합니다. 평상시 재요청은 가까운 Cloudflare Edge에서 바로 반환할 수 있습니다.
 
 ### 5. 호환용 전체 목록 스냅샷 (`GET /api/cultures`)
 - 기존 연동 호환성을 위해 유지하는 KV read model 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.

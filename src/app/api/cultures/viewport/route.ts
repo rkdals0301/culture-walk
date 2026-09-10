@@ -1,6 +1,11 @@
 import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { buildCultureMapResponseFromSnapshot } from '@/services/cultureMap';
+import {
+  CULTURE_EDGE_CACHE_TAGS,
+  createPublicEdgeCacheHeaders,
+  NO_STORE_CACHE_HEADERS,
+} from '@/server/httpCache';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -8,8 +13,10 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const HTTP_CACHE_SECONDS = 60;
-const HTTP_STALE_SECONDS = 300;
+const HTTP_CACHE_SECONDS = 30;
+const EDGE_CACHE_SECONDS = 300;
+const HTTP_STALE_SECONDS = 600;
+const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 const parseFiniteNumber = (value: string | null) => {
@@ -39,17 +46,25 @@ const parseMapLevel = (value: string | null) => {
   return Math.min(14, Math.max(1, Math.round(parsed)));
 };
 
-const responseHeaders = (source = 'kv-read-model') => ({
-  'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
-  'X-Culture-Data-Source': source,
-});
+const responseHeaders = (source = 'kv-read-model') =>
+  createPublicEdgeCacheHeaders({
+    browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
+    edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
+    staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
+    staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+    source,
+    tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
+  });
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const bounds = parseBounds(url.searchParams);
 
   if (!bounds) {
-    return NextResponse.json({ error: '현재 지도 영역 좌표가 올바르지 않습니다.' }, { status: 400 });
+    return NextResponse.json(
+      { error: '현재 지도 영역 좌표가 올바르지 않습니다.' },
+      { status: 400, headers: NO_STORE_CACHE_HEADERS }
+    );
   }
 
   const categoryValue = url.searchParams.get('category') ?? 'all';
@@ -72,6 +87,9 @@ export async function GET(request: Request) {
 
   return NextResponse.json(
     { error: '지도 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
-    { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' } }
+    {
+      status: 503,
+      headers: { ...NO_STORE_CACHE_HEADERS, 'X-Culture-Data-Source': 'kv-read-model-missing' },
+    }
   );
 }

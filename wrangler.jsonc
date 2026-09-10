@@ -10,6 +10,10 @@
   "observability": {
     "enabled": true
   },
+  "cache": {
+    "enabled": true,
+    "cross_version_cache": false
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

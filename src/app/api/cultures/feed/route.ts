@@ -4,6 +4,11 @@ import {
   type CultureFeedFilters,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
+import {
+  CULTURE_EDGE_CACHE_TAGS,
+  createPublicEdgeCacheHeaders,
+  NO_STORE_CACHE_HEADERS,
+} from '@/server/httpCache';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -14,9 +19,10 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 20;
-const HTTP_SHARED_CACHE_SECONDS = 60 * 10;
 const HTTP_CACHE_SECONDS = 30;
+const EDGE_CACHE_SECONDS = 60 * 10;
 const HTTP_STALE_SECONDS = 60 * 30;
+const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60 * 24;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 interface CultureFeedCursor {
@@ -50,10 +56,15 @@ const decodeCursor = (value: string | null): CultureFeedCursor | null => {
   }
 };
 
-const responseHeaders = (source?: string) => ({
-  'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_SHARED_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
-  ...(source ? { 'X-Culture-Data-Source': source } : {}),
-});
+const responseHeaders = (source?: string) =>
+  createPublicEdgeCacheHeaders({
+    browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
+    edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
+    staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
+    staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+    source,
+    tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
+  });
 
 const buildPageFromSnapshot = (
   snapshotItems: readonly CultureListItem[],
@@ -96,11 +107,17 @@ export async function GET(request: Request) {
   const cursor = decodeCursor(searchParams.get('cursor'));
 
   if (searchParams.has('cursor') && !cursor) {
-    return NextResponse.json({ error: '유효하지 않은 문화 목록 커서입니다.' }, { status: 400 });
+    return NextResponse.json(
+      { error: '유효하지 않은 문화 목록 커서입니다.' },
+      { status: 400, headers: NO_STORE_CACHE_HEADERS }
+    );
   }
 
   if (cursor && cursor.filters !== filterKey) {
-    return NextResponse.json({ error: '문화 목록 필터가 변경되었습니다. 처음부터 다시 불러와주세요.' }, { status: 409 });
+    return NextResponse.json(
+      { error: '문화 목록 필터가 변경되었습니다. 처음부터 다시 불러와주세요.' },
+      { status: 409, headers: NO_STORE_CACHE_HEADERS }
+    );
   }
 
   const readModel = await getCulturePublicListSnapshot();
@@ -111,6 +128,9 @@ export async function GET(request: Request) {
 
   return NextResponse.json(
     { error: '문화 목록 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
-    { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' } }
+    {
+      status: 503,
+      headers: { ...NO_STORE_CACHE_HEADERS, 'X-Culture-Data-Source': 'kv-read-model-missing' },
+    }
   );
 }
