@@ -51,15 +51,17 @@ const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
   return { text: '진행중', variant: 'ongoing' as const };
 };
 
-const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAboveFold = false }: FeedCultureCardProps) => {
+const FeedCultureCard = ({
+  culture,
+  currentLocation = null,
+  onOpenCulture,
+  isAboveFold = false,
+}: FeedCultureCardProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
 
   const hasCultureImage =
-    typeof imgSrc === 'string' &&
-    Boolean(imgSrc.trim()) &&
-    !imageFailed &&
-    !imgSrc.includes('/assets/images/logo');
+    typeof imgSrc === 'string' && Boolean(imgSrc.trim()) && !imageFailed && !imgSrc.includes('/assets/images/logo');
 
   const distance = useMemo(() => {
     return currentLocation
@@ -82,7 +84,7 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
         }
       }}
       aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}`}
-      className='feed-card group flex flex-col cursor-pointer rounded-xl transition-transform duration-150 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
+      className='feed-card group flex cursor-pointer flex-col rounded-xl transition-transform duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
     >
       {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
       <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
@@ -98,12 +100,12 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
             className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
           />
         ) : (
-          <CultureImageFallback compact classification={culture.classification} />
+          <CultureImageFallback compact classification={culture.classification} priority={isAboveFold} />
         )}
 
         {/* Minimal status badge (Only essential signal) */}
         {(dDay || isFree) && (
-          <div className='absolute left-2.5 top-2.5 flex items-center gap-1 pointer-events-none'>
+          <div className='pointer-events-none absolute left-2.5 top-2.5 flex items-center gap-1'>
             {dDay && (
               <span
                 className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
@@ -130,7 +132,9 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
       <div className='mt-2.5 flex flex-1 flex-col gap-1'>
         {/* Category & Region */}
         <div className='flex items-center gap-1 text-[0.72rem] font-medium text-[var(--color-text-tertiary)]'>
-          <span className='font-semibold text-[var(--color-brand-primary)]'>{culture.classification || '문화행사'}</span>
+          <span className='font-semibold text-[var(--color-brand-primary)]'>
+            {culture.classification || '문화행사'}
+          </span>
           <span>·</span>
           <span className='truncate'>{culture.guName || '전국'}</span>
           {distance && (
@@ -146,7 +150,7 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
 
         {/* Title */}
         <h3
-          className='text-sm sm:text-[0.98rem] font-semibold leading-snug tracking-tight text-[var(--color-text-primary)] transition-colors duration-150 group-hover:text-[var(--color-brand-primary)]'
+          className='text-sm font-semibold leading-snug tracking-tight text-[var(--color-text-primary)] transition-colors duration-150 group-hover:text-[var(--color-brand-primary)] sm:text-[0.98rem]'
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -163,9 +167,7 @@ const FeedCultureCard = ({ culture, currentLocation = null, onOpenCulture, isAbo
           <div className='flex items-center justify-between gap-1'>
             <span className='truncate text-[var(--color-text-secondary)]'>{culture.displayPlace}</span>
             {!isFree && culture.displayPrice && (
-              <span className='shrink-0 font-medium text-[var(--color-text-primary)]'>
-                {culture.displayPrice}
-              </span>
+              <span className='shrink-0 font-medium text-[var(--color-text-primary)]'>{culture.displayPrice}</span>
             )}
           </div>
         </div>

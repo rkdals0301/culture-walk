@@ -560,3 +560,5 @@ $RECYCLE.BIN/
 .playwright-cli/
 .playwright-mcp/
 output/
+test-results/
+playwright-report/

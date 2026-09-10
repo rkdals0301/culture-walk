@@ -5,6 +5,7 @@ import Image from 'next/image';
 interface CultureImageFallbackProps {
   compact?: boolean;
   classification?: string;
+  priority?: boolean;
 }
 
 const FALLBACK_ART_BY_TONE = {
@@ -23,7 +24,7 @@ const FALLBACK_LABEL_BY_TONE = {
   other: '문화행사',
 } as const;
 
-const CultureImageFallback = ({ compact = false, classification }: CultureImageFallbackProps) => {
+const CultureImageFallback = ({ compact = false, classification, priority = false }: CultureImageFallbackProps) => {
   const tone = getCultureTone(classification);
   const fallbackLabel = FALLBACK_LABEL_BY_TONE[tone];
   const fallbackArt = FALLBACK_ART_BY_TONE[tone];
@@ -41,6 +42,8 @@ const CultureImageFallback = ({ compact = false, classification }: CultureImageF
         draggable={false}
         fill
         sizes={compact ? '96px' : '(max-width: 640px) 50vw, 480px'}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         unoptimized
         className='size-full select-none object-cover'
       />
