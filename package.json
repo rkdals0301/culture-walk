@@ -19,7 +19,8 @@
     "db:seed:local": "node scripts/seed-local-sample.mjs",
     "db:seed:local:from-production": "node scripts/seed-local-sample.mjs --from-production --reset-local",
     "test": "tsx --test tests/**/*.test.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "test:e2e:run": "node scripts/prepare-e2e.mjs && playwright test",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

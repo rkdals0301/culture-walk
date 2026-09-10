@@ -2,19 +2,31 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3005;
 const baseURL = `http://127.0.0.1:${PORT}`;
+const isCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: './e2e',
+  outputDir: 'test-results/e2e',
   fullyParallel: true,
-  forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
-  reporter: process.env.CI ? 'github' : 'list',
+  forbidOnly: isCI,
+  retries: isCI ? 1 : 0,
+  workers: isCI ? 2 : undefined,
+  reporter: isCI ? 'github' : 'list',
+  timeout: 20_000,
+  expect: {
+    timeout: 5_000,
+  },
   use: {
     baseURL,
+    actionTimeout: 6_000,
+    navigationTimeout: 12_000,
+    locale: 'ko-KR',
+    timezoneId: 'Asia/Seoul',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
   },
   projects: [
     {
@@ -22,6 +34,7 @@ export default defineConfig({
       use: {
         ...devices['iPhone 13'],
         browserName: 'chromium',
+        viewport: { width: 390, height: 844 },
       },
     },
     {
@@ -29,13 +42,14 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         browserName: 'chromium',
+        viewport: { width: 1440, height: 900 },
       },
     },
   ],
   webServer: {
-    command: `npm run dev -- --hostname 127.0.0.1 --port ${PORT}`,
+    command: `npx wrangler dev --local --persist-to .wrangler/e2e --ip 127.0.0.1 --port ${PORT} --show-interactive-dev-session=false --log-level=warn`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    reuseExistingServer: false,
+    timeout: 60_000,
   },
 });
