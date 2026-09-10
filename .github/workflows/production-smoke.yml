@@ -1,0 +1,60 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Production URL to verify
+        required: false
+        default: https://culturewalk.gangmin.dev
+      require_healthy:
+        description: Fail unless /api/health reports healthy
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '20 1 * * *'
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Verify production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SMOKE_BASE_URL: ${{ github.event.inputs.base_url || 'https://culturewalk.gangmin.dev' }}
+      SMOKE_REQUIRE_HEALTHY: ${{ github.event_name == 'schedule' || github.event.inputs.require_healthy == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Run production smoke
+        run: npm run smoke:production
+
+      - name: Publish smoke summary
+        if: always()
+        run: |
+          if [ -f test-results/production-smoke/summary.md ]; then
+            cat test-results/production-smoke/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload smoke telemetry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-smoke-${{ github.run_id }}
+          path: test-results/production-smoke
+          if-no-files-found: ignore
+          retention-days: 14
