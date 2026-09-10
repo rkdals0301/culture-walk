@@ -1,5 +1,5 @@
 import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } from './.open-next/worker.js';
-import { CULTURE_EDGE_CACHE_TAGS } from './src/server/httpCache';
+import { CULTURE_EDGE_CACHE_TAGS, getCultureDetailEdgeCacheTag } from './src/server/httpCache';
 import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from './src/server/sqliteError';
 import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from './src/services/cultureSyncDetails';
 import {
@@ -123,17 +123,22 @@ async function runScheduledDetailRefresh(env, ctx) {
   const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
   try {
     await heartbeat.ensureHeld();
+    const refreshedCultureIds = [];
     const refreshed = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
       d1,
-      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
+      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE, refreshedCultureIds }
     );
     console.info(`[cron] detail refresh completed refreshed=${refreshed}`);
-    if (refreshed > 0) {
-      await purgeCultureEdgeCache(ctx, [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.detail], 'detail-refresh');
+    if (refreshedCultureIds.length > 0) {
+      await purgeCultureEdgeCache(
+        ctx,
+        [...new Set(refreshedCultureIds)].map(getCultureDetailEdgeCacheTag),
+        'detail-refresh'
+      );
     }
-    // Detail enrichment updates the detail cache and summary columns, but does not change
-    // the event list shape enough to republish the full list read model on every hourly run.
+    // Detail enrichment updates only the touched detail responses. Feed, map,
+    // sitemap, and unrelated detail edge entries stay warm.
   } finally {
     await heartbeat.stop();
     await releaseInitializeLock(env, lockOwner);

@@ -5,6 +5,9 @@ export const CULTURE_EDGE_CACHE_TAGS = {
   sitemap: 'culture-sitemap',
 } as const;
 
+export const getCultureDetailEdgeCacheTag = (id: string | number) =>
+  `${CULTURE_EDGE_CACHE_TAGS.detail}-${id}`;
+
 export const NO_STORE_CACHE_HEADERS = {
   'Cache-Control': 'no-store',
   'Cloudflare-CDN-Cache-Control': 'no-store',

@@ -2,6 +2,7 @@ import { getCulturePublicRead } from '@/services/cultureReadModel';
 import {
   CULTURE_EDGE_CACHE_TAGS,
   createPublicEdgeCacheHeaders,
+  getCultureDetailEdgeCacheTag,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
 
@@ -21,11 +22,7 @@ const responseHeaders = (source: string, id: string) =>
     staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
     staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
     source,
-    tags: [
-      CULTURE_EDGE_CACHE_TAGS.all,
-      CULTURE_EDGE_CACHE_TAGS.detail,
-      `${CULTURE_EDGE_CACHE_TAGS.detail}-${id}`,
-    ],
+    tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.detail, getCultureDetailEdgeCacheTag(id)],
   });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {

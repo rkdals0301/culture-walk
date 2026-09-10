@@ -201,6 +201,7 @@ export const refreshStaleCachedTourApiDetails = async (
     beforeEach?: () => Promise<boolean>;
     cache?: CultureCacheBinding;
     readModelRevisions?: Record<string, string>;
+    refreshedCultureIds?: number[];
   } = {}
 ) => {
   const result = await d1
@@ -237,14 +238,21 @@ export const refreshStaleCachedTourApiDetails = async (
       throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
     }
     try {
-      refreshed += (await refreshCachedDetail(
+      const cultureId = Number(row.id);
+      const didRefresh = await refreshCachedDetail(
         config,
         d1,
         row as StaleDetailRow,
         options.beforeEach,
         options.cache,
         readModelRevisions[String(row.id)] ?? 'legacy-read-model'
-      )) ? 1 : 0;
+      );
+      if (didRefresh) {
+        refreshed += 1;
+        if (Number.isInteger(cultureId) && cultureId > 0) {
+          options.refreshedCultureIds?.push(cultureId);
+        }
+      }
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
         throw error;
