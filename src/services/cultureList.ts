@@ -3,6 +3,7 @@ import {
   readCultureReadModelCache,
   writeCultureReadModelCache,
 } from '@/cache/kv';
+import { getWorkerEnv } from '@/server/cloudflare';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
 import {
   type D1Binding,
@@ -15,7 +16,7 @@ import { CultureListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
-export type CultureListSnapshotSource = 'kv-read-model';
+export type CultureListSnapshotSource = 'kv-read-model' | 'd1-read-through';
 
 export interface CultureListSnapshot {
   items: CultureListItem[];
@@ -44,8 +45,10 @@ export const filterCurrentCultureListItems = (
   });
 };
 
-export const readCultureReadModelSnapshot = async (): Promise<CultureListSnapshot | null> => {
-  const readModel = await readCultureReadModelCache();
+export const readCultureReadModelSnapshot = async (
+  cacheOverride?: CultureCacheBinding
+): Promise<CultureListSnapshot | null> => {
+  const readModel = await readCultureReadModelCache(cacheOverride);
   if (!readModel?.items.length) return null;
 
   return {
@@ -77,6 +80,9 @@ const hashCultureListItem = (item: CultureListItem) => {
   }
   return (hash >>> 0).toString(16).padStart(8, '0');
 };
+
+export const createCultureListItemRevision = (item: CultureListItem, sourceModifiedAt?: string | null) =>
+  `${sourceModifiedAt ?? ''}:${hashCultureListItem(item)}`;
 
 const queryCultureListFromD1 = async (d1: D1Binding) => {
   const koreaToday = getKoreaDateStartIso();
@@ -132,7 +138,7 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
       title: String(row.title ?? ''),
       useFee: String(row.useFee ?? ''),
     } satisfies CultureListItem;
-    revisions[String(id)] = `${String(row.sourceModifiedAt ?? '')}:${hashCultureListItem(item)}`;
+    revisions[String(id)] = createCultureListItemRevision(item, String(row.sourceModifiedAt ?? ''));
     return [item];
   });
 
@@ -155,4 +161,60 @@ export const refreshCultureListSnapshotCache = async (options: {
     revisions,
     published: readModel.published,
   };
+};
+
+type CulturePublicListReadOptions = {
+  cache?: CultureCacheBinding;
+  d1?: D1Binding;
+};
+
+let cultureListReadThroughPromise: Promise<CultureListSnapshot | null> | null = null;
+
+const readCultureListFromD1AndWarmCache = async (
+  d1: D1Binding,
+  cache?: CultureCacheBinding
+): Promise<CultureListSnapshot | null> => {
+  try {
+    const publication = await refreshCultureListSnapshotCache({ d1, cache });
+    if (!publication.items.length) return null;
+
+    return {
+      items: filterCurrentCultureListItems(publication.items),
+      source: 'd1-read-through',
+      cachedAt: publication.published ? publication.cachedAt : null,
+      revisions: publication.revisions,
+    };
+  } catch (error) {
+    console.error('[read-model] D1 read-through failed', error);
+    return null;
+  }
+};
+
+/**
+ * Public list reads stay KV-first. On a KV miss, Paid D1 acts as a read-through
+ * recovery source and the successful result is published back to KV. Runtime
+ * misses share one in-flight rebuild so a cold cache does not stampede D1.
+ */
+export const getCulturePublicListSnapshot = async (
+  options?: CulturePublicListReadOptions
+): Promise<CultureListSnapshot | null> => {
+  const env = options ? null : await getWorkerEnv();
+  const cache = options?.cache ?? (env?.CULTURE_CACHE as CultureCacheBinding | undefined);
+  const cached = await readCultureReadModelSnapshot(cache);
+  if (cached) return cached;
+
+  const d1 = options?.d1 ?? (env?.DB as D1Binding | undefined);
+  if (!d1) return null;
+
+  if (options) {
+    return readCultureListFromD1AndWarmCache(d1, cache);
+  }
+
+  if (!cultureListReadThroughPromise) {
+    cultureListReadThroughPromise = readCultureListFromD1AndWarmCache(d1, cache).finally(() => {
+      cultureListReadThroughPromise = null;
+    });
+  }
+
+  return cultureListReadThroughPromise;
 };

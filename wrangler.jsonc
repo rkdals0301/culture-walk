@@ -14,6 +14,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "images": {
+    "binding": "IMAGES"
+  },
   "vars": {
     "APP_BASE_URL": "https://culturewalk.gangmin.dev",
     "SITE_URL": "https://culturewalk.gangmin.dev",

@@ -4,7 +4,7 @@ import {
   type CultureFeedFilters,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
-import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -103,11 +103,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: '문화 목록 필터가 변경되었습니다. 처음부터 다시 불러와주세요.' }, { status: 409 });
   }
 
-  const cursorValue = searchParams.get('cursor');
-  const readModel = await readCultureReadModelSnapshot();
+  const readModel = await getCulturePublicListSnapshot();
   if (readModel) {
     const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
-    return NextResponse.json(page, { headers: responseHeaders('kv-read-model') });
+    return NextResponse.json(page, { headers: responseHeaders(readModel.source) });
   }
 
   return NextResponse.json(

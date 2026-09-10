@@ -37,8 +37,8 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
   - 한국 경위도 범위(위도 33~39.8, 경도 124~132) 밖이거나 위경도가 역전(Swapped)된 데이터 자동 감지 및 보정
   - KST(한국 표준시, UTC+9) 15:00 UTC 날짜 경계선 기준의 정확한 당일 행사 판별
 - **분산 락 & 하트비트**: D1 데이터베이스 기반 소유권 락(`acquireInitializeLock`)과 하트비트 갱신을 통해 동시 동기화 충돌 방지
-- **KV read model + D1 원본 저장소**: D1은 TourAPI 동기화와 영구 저장에만 사용하고, 브라우저·검색봇·사이트맵·헬스체크를 포함한 공개 조회는 KV read model에서 처리합니다. 전체 동기화 성공 시 목록 read model 1개와 변경된 상세 read model만 게시하여 D1 row read와 KV write를 트래픽에서 분리합니다.
-- **2단계 상세 수집**: 목록 수집 시에는 기본 정보만 빠르게 적재하고, 1시간 단위 백그라운드 크론에서 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 점진적으로 동기화합니다. 공개 상세 조회는 D1을 직접 호출하지 않고 KV 상세 캐시 또는 목록 요약으로 즉시 응답합니다.
+- **KV 우선 read model + D1 read-through 복구**: 평상시 공개 조회는 KV read model에서 처리하고 D1은 TourAPI 동기화와 영구 저장소 역할에 집중합니다. 다만 KV read model이 비어 있거나 상세 캐시가 누락·구버전이면 Paid D1을 안전한 read-through 소스로 사용하고 성공 결과를 KV에 다시 게시하여 사용자 503과 정보 누락을 줄입니다.
+- **2단계 상세 수집**: 목록 수집 시에는 기본 정보만 빠르게 적재하고, 1시간 단위 백그라운드 크론에서 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 점진적으로 동기화합니다. 상세 KV cache miss 시에는 해당 행사 1건만 D1에서 읽어 풍부한 상세를 즉시 제공하고 KV에 write-through합니다.
 
 ---
 
@@ -50,7 +50,7 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 | **Styling** | Tailwind CSS 3, Sass (SCSS), Framer Motion, Lucide React |
 | **Platform** | Cloudflare Workers, OpenNext (`@opennextjs/cloudflare` 1.20.4) |
 | **Database** | Cloudflare D1 (Serverless SQLite), Drizzle ORM |
-| **Caching** | Cloudflare KV (`CULTURE_CACHE`) |
+| **Caching** | Cloudflare KV (`CULTURE_CACHE`), Cloudflare Images (`IMAGES`) |
 | **External APIs** | 공공데이터포털 한국관광공사 TourAPI (KorService2), 카카오 지도 SDK |
 | **Virtualization** | @tanstack/react-virtual |
 | **Testing** | Node.js Test Runner with `tsx` (TypeScript 기반 테스트 러너) |
@@ -65,8 +65,8 @@ culture-walk/
 │   ├── app/                    # Next.js App Router (페이지 및 API 엔드포인트)
 │   │   ├── about/              # 서비스 소개 페이지
 │   │   ├── api/
-│   │   │   ├── cultures/       # 행사 목록/상세 조회 API (공개 조회는 KV read model 전용)
-│   │   │   │   └── [id]/       # 행사 상세 조회 API (KV 상세 캐시 + 목록 요약 fallback)
+│   │   │   ├── cultures/       # 행사 목록/상세 조회 API (KV 우선 + D1 read-through 복구)
+│   │   │   │   └── [id]/       # 행사 상세 조회 API (KV 상세 캐시 + D1 read-through + 목록 요약 fallback)
 │   │   │   ├── health/         # KV read model freshness 기반 경량 헬스체크 API
 │   │   │   └── initialize/     # TourAPI 데이터 수동 동기화 엔드포인트
 │   │   ├── contact/            # 문의 페이지
@@ -208,17 +208,17 @@ npm run dev
 
 ### 2. 문화행사 피드 조회 (`GET /api/cultures/feed`)
 - 전체 동기화에서 생성한 KV read model에 검색·카테고리·지역·무료 조건을 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
-- 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용합니다. read model이 없으면 D1로 우회하지 않고 `503`으로 실패하여 사용자 트래픽이 D1 quota를 소모하지 않도록 합니다.
+- 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용합니다. KV read model이 없을 때만 D1에서 현재 목록을 1회 read-through하고 KV를 다시 채우며, 동일 Worker 인스턴스의 동시 cold miss는 하나의 in-flight rebuild를 공유합니다.
 
 ### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
 - KV read model에서 현재 지도 영역만 계산하며 축소 상태에서는 Worker 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
 - 클라이언트에서 요청 영역을 그리드에 맞춰 정규화해 인접한 지도 이동의 캐시 재사용률을 높입니다.
-- 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용하며, 공개 요청에서는 D1 fallback을 사용하지 않습니다.
+- 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용합니다. KV read model이 없을 때만 목록과 동일한 D1 read-through 복구 경로를 사용합니다.
 
 ### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
-- 풍부한 상세 KV cache가 있으면 이를 사용하고, 아직 게시되지 않은 행사는 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다.
-- 상세정보 갱신과 D1 write는 공개 요청이 아니라 백그라운드 detail cron에서만 수행합니다.
+- 풍부한 상세 KV cache가 있고 행사 revision이 일치하면 이를 사용합니다. 캐시가 없거나 오래됐으면 D1에서 해당 행사 1건과 유효한 상세 레코드를 읽고 즉시 응답한 뒤 KV에 write-through합니다.
+- D1 read-through까지 실패한 경우에도 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다. 공개 요청은 D1 원본 데이터를 수정하지 않습니다.
 
 ### 5. 호환용 전체 목록 스냅샷 (`GET /api/cultures`)
 - 기존 연동 호환성을 위해 유지하는 KV read model 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.

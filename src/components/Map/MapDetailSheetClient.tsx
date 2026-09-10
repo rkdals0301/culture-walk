@@ -4,11 +4,8 @@ import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import Button from '@/components/Common/Button';
 import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
-import Loader from '@/components/Loader/Loader';
 import { CultureDetailFacts, CultureDetailPoster } from '@/components/Map/MapDetailShared';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import { useCultureContext } from '@/context/CultureContext';
-import { useCultureById } from '@/hooks/cultureHooks';
 import type { FormattedCulture } from '@/types/culture';
 import { createCultureDetailSignature, getCulturePriceTone } from '@/utils/cultureUtils';
 
@@ -122,10 +119,7 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     return idValue ? parseInt(idValue, 10) : NaN;
   }, [params]);
 
-  const { isLoading, error } = useCultureById(cultureId);
-  const { culture: loadedCulture } = useCultureContext();
-  const culture =
-    loadedCulture?.id === cultureId ? loadedCulture : initialCulture.id === cultureId ? initialCulture : null;
+  const culture = initialCulture.id === cultureId ? initialCulture : null;
   const cultureDetailSignature = createCultureDetailSignature(culture);
   const { openBottomSheet } = useBottomSheet();
   const lastSheetSignatureRef = useRef('');
@@ -204,21 +198,6 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
   }, [culture, handleOpenExternalLink]);
 
   const renderContent = useCallback(() => {
-    if (isLoading && !culture) {
-      return <Loader />;
-    }
-    if (error && !culture) {
-      return (
-        <div className='flex size-full flex-col items-center justify-center gap-4'>
-          <p role='alert' className='text-center'>
-            죄송합니다, 데이터를 불러오는 중에 문제가 발생했습니다.
-          </p>
-          <Button ariaLabel='다시 시도' onClick={() => window.location.reload()}>
-            다시 시도
-          </Button>
-        </div>
-      );
-    }
     if (!culture) {
       return (
         <div className='surface-card flex flex-col items-center justify-center gap-4 rounded-xl p-6 text-center'>
@@ -399,10 +378,10 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
         )}
       </div>
     );
-  }, [error, failedAdditionalImages, handleImageError, imageFailed, imgSrc, isLoading, culture, router]);
+  }, [failedAdditionalImages, handleImageError, imageFailed, imgSrc, culture, router]);
 
   useEffect(() => {
-    const signature = `${cultureId}:${isLoading ? 'loading' : 'ready'}:${error?.message ?? 'no-error'}:${cultureDetailSignature}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;
+    const signature = `${cultureId}:${cultureDetailSignature}:${imgSrc ?? 'no-image'}:${imageFailed ? 'image-failed' : 'image-ready'}`;
     if (lastSheetSignatureRef.current === signature) {
       return;
     }
@@ -419,11 +398,9 @@ const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => 
     culture?.id,
     cultureDetailSignature,
     cultureId,
-    error?.message,
     handleBottomSheetClose,
     imageFailed,
     imgSrc,
-    isLoading,
     openBottomSheet,
     renderContent,
     renderFooter,

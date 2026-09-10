@@ -15,8 +15,9 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Culture data must always come from the current D1-backed API. Do not cache
-  // it in the service worker, otherwise an installed app could show stale events.
+  // Culture data must always come from the current server read path (KV-first,
+  // D1 read-through recovery). Do not cache it in the service worker, otherwise
+  // an installed app could silently show stale events.
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) {
     return;

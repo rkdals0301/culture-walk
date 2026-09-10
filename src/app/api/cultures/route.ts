@@ -1,4 +1,4 @@
-import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { CultureListItem } from '@/types/culture';
 
 import { NextResponse } from 'next/server';
@@ -18,7 +18,7 @@ const listResponse = (data: CultureListItem[], source?: string) =>
   });
 
 export async function GET() {
-  const snapshot = await readCultureReadModelSnapshot();
+  const snapshot = await getCulturePublicListSnapshot();
   if (!snapshot) {
     return NextResponse.json(
       { error: '문화 목록 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
@@ -26,5 +26,5 @@ export async function GET() {
     );
   }
 
-  return listResponse(snapshot.items, 'kv-read-model');
+  return listResponse(snapshot.items, snapshot.source);
 }

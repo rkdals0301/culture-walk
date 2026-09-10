@@ -1,10 +1,10 @@
-import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { SITE_URL } from '@/utils/siteMetadata';
 
 import type { MetadataRoute } from 'next';
 
-// The sitemap is generated from the same KV read model as the public app so
-// crawlers cannot consume the D1 daily row-read budget.
+// The sitemap is generated from the same KV-first read model as the public app.
+// Paid D1 is only used to recover a missing KV model, not on the normal crawler path.
 export const dynamic = 'force-dynamic';
 
 const STATIC_ENTRIES: MetadataRoute.Sitemap = [
@@ -57,7 +57,7 @@ const toSitemapImage = (value: string | null) => {
 };
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
-  const snapshot = await readCultureReadModelSnapshot();
+  const snapshot = await getCulturePublicListSnapshot();
   if (!snapshot) return STATIC_ENTRIES;
   const lastModified = parseLastModified(snapshot.cachedAt);
 

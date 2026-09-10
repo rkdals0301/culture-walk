@@ -1,5 +1,5 @@
 import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
-import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { buildCultureMapResponseFromSnapshot } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -64,10 +64,10 @@ export async function GET(request: Request) {
   });
   const level = parseMapLevel(url.searchParams.get('level'));
 
-  const readModel = await readCultureReadModelSnapshot();
+  const readModel = await getCulturePublicListSnapshot();
   if (readModel) {
     const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
-    return NextResponse.json(result, { headers: responseHeaders('kv-read-model') });
+    return NextResponse.json(result, { headers: responseHeaders(readModel.source) });
   }
 
   return NextResponse.json(
