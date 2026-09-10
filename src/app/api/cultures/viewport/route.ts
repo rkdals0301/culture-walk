@@ -1,9 +1,5 @@
-import {
-  readCultureMapViewportCache,
-  writeCultureMapViewportCache,
-} from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
-import { createCultureFeedFilterKey, normalizeCultureFeedFilters } from '@/services/cultureFeed';
+import { normalizeCultureFeedFilters } from '@/services/cultureFeed';
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
 import { buildCultureMapResponseFromSnapshot, getCultureMapData } from '@/services/cultureMap';
 import type { CultureMapBounds } from '@/types/culture';
@@ -15,7 +11,6 @@ export const dynamic = 'force-dynamic';
 
 const HTTP_CACHE_SECONDS = 60;
 const HTTP_STALE_SECONDS = 300;
-const KV_VIEWPORT_CACHE_SECONDS = 60 * 15;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 const parseFiniteNumber = (value: string | null) => {
@@ -69,21 +64,10 @@ export async function GET(request: Request) {
     freeOnly: parseBoolean(url.searchParams.get('free')),
   });
   const level = parseMapLevel(url.searchParams.get('level'));
-  const cachePayload = {
-    bounds,
-    filters: createCultureFeedFilterKey(filters),
-    level: level ?? 0,
-  };
-  const cached = await readCultureMapViewportCache(cachePayload);
-
-  if (cached) {
-    return NextResponse.json(cached, { headers: responseHeaders('kv-map-viewport') });
-  }
 
   const readModel = await readCultureReadModelSnapshot();
   if (readModel) {
     const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
-    await writeCultureMapViewportCache(cachePayload, result, KV_VIEWPORT_CACHE_SECONDS);
     return NextResponse.json(result, { headers: responseHeaders('kv-read-model') });
   }
 
@@ -93,7 +77,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: '문화 데이터 저장소가 아직 준비되지 않았습니다.' }, { status: 503 });
     }
 
-    await writeCultureMapViewportCache(cachePayload, result, KV_VIEWPORT_CACHE_SECONDS);
     return NextResponse.json(result, { headers: responseHeaders() });
   } catch (error) {
     if (hasMissingSqliteTableError(error, 'cultures')) {

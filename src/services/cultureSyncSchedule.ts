@@ -1,6 +1,6 @@
-export const SYNC_CRON = '10 19,20 * * *';
+export const SYNC_CRON = '10 0,1 * * *';
 export const DETAIL_REFRESH_CRON = '2,17,32,47 * * * *';
-export const RECOVERY_SYNC_UTC_HOUR = 20;
+export const RECOVERY_SYNC_UTC_HOUR = 1;
 export const RECOVERY_FRESHNESS_HOURS = 2;
 
 export type CultureScheduledJob = 'snapshot' | 'detail-refresh' | 'unknown';

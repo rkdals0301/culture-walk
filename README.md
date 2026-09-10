@@ -212,12 +212,12 @@ npm run dev
 
 ### 2. 문화행사 피드 조회 (`GET /api/cultures/feed`)
 - 전체 동기화에서 생성한 KV read model에 검색·카테고리·지역·무료 조건을 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
-- 페이지 결과도 Cloudflare KV에 10분간 캐싱합니다. read model이 없는 초기/복구 상황에서만 D1을 조회합니다.
+- 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용해 KV write 사용량을 억제합니다. read model이 없는 초기/복구 상황에서만 D1을 조회합니다.
 
 ### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
 - KV read model에서 현재 지도 영역만 계산하며 축소 상태에서는 Worker 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
 - 클라이언트에서 요청 영역을 그리드에 맞춰 정규화해 인접한 지도 이동의 캐시 재사용률을 높입니다.
-- 뷰포트 결과 자체도 KV에 캐시하며 read model이 없는 경우에만 D1 조회 경로를 사용합니다.
+- 요청별 viewport 결과를 KV에 쓰지 않고 HTTP cache 재사용과 Worker 계산을 사용하며, read model이 없는 경우에만 D1 조회 경로를 사용합니다.
 
 ### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
@@ -266,9 +266,9 @@ npm run deploy
 
 ### 3. 백그라운드 Cron 트리거 (`wrangler.jsonc`, `worker.js`)
 Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 자동으로 수행됩니다:
-- **전체 스냅샷 동기화 (`10 19,20 * * *`)**:
-  - UTC 19:10 (KST 04:10): 일일 정기 전체 행사 스냅샷 동기화
-  - UTC 20:10 (KST 05:10): 이전 동기화가 실패했거나 누락된 경우를 위한 자동 복구(Recovery) 동기화
+- **전체 스냅샷 동기화 (`10 0,1 * * *`)**:
+  - UTC 00:10 (KST 09:10): Cloudflare 일일 무료 사용량 리셋 직후 정기 전체 행사 스냅샷 동기화
+  - UTC 01:10 (KST 10:10): 이전 동기화가 실패했거나 누락된 경우를 위한 자동 복구(Recovery) 동기화
 - **상세 정보 점진적 갱신 (`2,17,32,47 * * * *`)**:
   - 15분 주기 Cron으로 캐시되지 않았거나 오래된 행사의 상세 데이터(`detailCommon2` 등)를 순차적으로 갱신합니다. 사전 조회에서 보강 대상이 없으면 D1 lock write 없이 즉시 종료합니다.
 

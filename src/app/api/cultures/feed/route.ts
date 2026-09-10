@@ -1,7 +1,3 @@
-import {
-  readCultureFeedPageCache,
-  writeCultureFeedPageCache,
-} from '@/cache/kv';
 import { hasD1DailyRowReadLimitError, hasMissingSqliteTableError } from '@/server/sqliteError';
 import {
   buildCultureFeedResult,
@@ -20,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 20;
-const PAGE_CACHE_TTL_SECONDS = 60 * 10;
+const HTTP_SHARED_CACHE_SECONDS = 60 * 10;
 const HTTP_CACHE_SECONDS = 30;
 const HTTP_STALE_SECONDS = 60 * 30;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
@@ -57,7 +53,7 @@ const decodeCursor = (value: string | null): CultureFeedCursor | null => {
 };
 
 const responseHeaders = (source?: string) => ({
-  'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${PAGE_CACHE_TTL_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
+  'Cache-Control': `public, max-age=${HTTP_CACHE_SECONDS}, s-maxage=${HTTP_SHARED_CACHE_SECONDS}, stale-while-revalidate=${HTTP_STALE_SECONDS}`,
   ...(source ? { 'X-Culture-Data-Source': source } : {}),
 });
 
@@ -110,19 +106,9 @@ export async function GET(request: Request) {
   }
 
   const cursorValue = searchParams.get('cursor');
-  const cachedPage = await readCultureFeedPageCache({ filters: filterKey, cursor: cursorValue, limit });
-  if (cachedPage) {
-    return NextResponse.json(cachedPage, { headers: responseHeaders('kv-feed-page-cache') });
-  }
-
   const readModel = await readCultureReadModelSnapshot();
   if (readModel) {
     const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
-    await writeCultureFeedPageCache(
-      { filters: filterKey, cursor: cursorValue, limit },
-      page,
-      PAGE_CACHE_TTL_SECONDS
-    );
     return NextResponse.json(page, { headers: responseHeaders('kv-read-model') });
   }
 
@@ -148,12 +134,6 @@ export async function GET(request: Request) {
       freeCount: feedResult.metadata.freeCount,
       regionOptions: feedResult.metadata.regionOptions,
     };
-
-    await writeCultureFeedPageCache(
-      { filters: filterKey, cursor: cursorValue, limit },
-      page,
-      PAGE_CACHE_TTL_SECONDS
-    );
 
     return NextResponse.json(page, {
       headers: responseHeaders(
