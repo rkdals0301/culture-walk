@@ -12,6 +12,7 @@ import {
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
+import type { MapSortMode } from '@/utils/exploreState';
 
 import { NextResponse } from 'next/server';
 
@@ -96,11 +97,21 @@ export async function GET(request: Request) {
   const category = VALID_CATEGORIES.includes(categoryValue as CultureCategoryKey)
     ? (categoryValue as CultureCategoryKey)
     : 'all';
+  const sortValue = searchParams.get('sort');
+  const sortMode: MapSortMode = sortValue === 'distance' ? 'distance' : 'date';
+  const latParam = searchParams.get('lat');
+  const lngParam = searchParams.get('lng');
+  const userLat = latParam ? Number(latParam) : null;
+  const userLng = lngParam ? Number(lngParam) : null;
+
   const filters = normalizeCultureFeedFilters({
     searchQuery: searchParams.get('q') ?? '',
     category,
     region: searchParams.get('region') ?? 'all',
     freeOnly: parseBoolean(searchParams.get('free')),
+    sortMode,
+    userLat: typeof userLat === 'number' && Number.isFinite(userLat) ? userLat : null,
+    userLng: typeof userLng === 'number' && Number.isFinite(userLng) ? userLng : null,
   });
   const filterKey = createCultureFeedFilterKey(filters);
   const limit = parsePositiveInteger(searchParams.get('limit'), DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
@@ -123,7 +134,9 @@ export async function GET(request: Request) {
   const readModel = await getCulturePublicListSnapshot();
   if (readModel) {
     const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
-    return NextResponse.json(page, { headers: responseHeaders(readModel.source) });
+    const headers =
+      filters.sortMode === 'distance' ? NO_STORE_CACHE_HEADERS : responseHeaders(readModel.source);
+    return NextResponse.json(page, { headers });
   }
 
   return NextResponse.json(

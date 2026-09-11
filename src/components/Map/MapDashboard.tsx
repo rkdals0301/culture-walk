@@ -1,13 +1,19 @@
 'use client';
 
 import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
-import { MapFilterControls, MapLocationControl, MapSortControl } from '@/components/Map/MapControls';
+import {
+  CategoryChips,
+  FreeOnlyToggle,
+  LocationToggle,
+  RegionSelect,
+  ResetFiltersButton,
+} from '@/components/Common/FilterControls';
+import { MapFilterControls, MapSortControl } from '@/components/Map/MapControls';
 import MapListPanelContent from '@/components/Map/MapListPanelContent';
 import MapResultSummary from '@/components/Map/MapResultSummary';
 import MapSearchField from '@/components/Map/MapSearchField';
 import { useMapDashboardController } from '@/hooks/useMapDashboardController';
 import { FormattedCulture } from '@/types/culture';
-import { CULTURE_CATEGORY_OPTIONS } from '@/utils/cultureCategory';
 
 import clsx from 'clsx';
 import { ChevronUp, List, ListFilter, MapPinned, X } from 'lucide-react';
@@ -135,11 +141,12 @@ const MapDashboard = ({
                   isLocating={isLocating}
                   onChange={handleSortChange}
                 />
-                <MapLocationControl
+                <LocationToggle
                   isActive={Boolean(currentLocation)}
                   isLocating={isLocating}
                   onToggle={handleLocationToggle}
                   compact
+                  size='sm'
                 />
               </div>
               <MapResultSummary
@@ -215,70 +222,49 @@ const MapDashboard = ({
             </button>
           </div>
 
-          {/* Category Chips */}
-          <div className='grid grid-cols-5 gap-1' role='group' aria-label='행사 분류 필터'>
-            {CULTURE_CATEGORY_OPTIONS.map(option => {
-              const isActive = mapCategory === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type='button'
-                  onClick={() => handleCategoryChange(option.key)}
-                  aria-pressed={isActive}
-                  className={clsx(
-                    'h-8 min-w-0 whitespace-nowrap rounded-lg px-1 text-[0.72rem] font-bold transition-all duration-150',
-                    isActive
-                      ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-xs'
-                      : 'border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)]'
-                  )}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Category Chips - unified rounded-full pill styling */}
+          <CategoryChips
+            selected={mapCategory}
+            onSelect={handleCategoryChange}
+            layout='grid'
+            size='sm'
+          />
 
-          {/* Quick controls row: Sort, Location, Free toggle, Reset */}
-          <div className='flex items-center justify-between gap-1.5 border-t border-[var(--color-border-primary)] pt-2 text-xs'>
+          {/* Quick controls row: Sort, Region, Free toggle, Location, Reset */}
+          <div className='flex flex-wrap items-center justify-between gap-1.5 border-t border-[var(--color-border-primary)] pt-2 text-xs'>
+            <div className='flex items-center gap-1.5'>
+              <RegionSelect
+                region={mapRegion}
+                regionOptions={regionOptions}
+                onChange={handleRegionChange}
+                size='sm'
+              />
+              <FreeOnlyToggle
+                isFreeOnly={mapFreeOnly}
+                onToggle={() => handleFreeOnlyChange(!mapFreeOnly)}
+                size='sm'
+              />
+              <LocationToggle
+                isActive={Boolean(currentLocation)}
+                isLocating={isLocating}
+                onToggle={handleLocationToggle}
+                size='sm'
+                compact
+              />
+            </div>
             <div className='flex items-center gap-1.5'>
               <MapSortControl
                 mode={mapSortMode}
                 hasLocation={Boolean(currentLocation)}
                 isLocating={isLocating}
                 onChange={handleSortChange}
+                size='sm'
               />
-              <MapLocationControl
-                isActive={Boolean(currentLocation)}
-                isLocating={isLocating}
-                onToggle={handleLocationToggle}
-                compact
-              />
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <label
-                className={clsx(
-                  'flex h-8 shrink-0 cursor-pointer select-none items-center gap-1 rounded-lg border px-2 text-[0.72rem] font-bold transition-all',
-                  mapFreeOnly
-                    ? 'border-[var(--color-success)] bg-[var(--color-success-subtle)] text-[var(--color-success-text)]'
-                    : 'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-chip)]'
-                )}
-              >
-                <input
-                  type='checkbox'
-                  checked={mapFreeOnly}
-                  onChange={e => handleFreeOnlyChange(e.target.checked)}
-                  className='sr-only'
-                />
-                무료만
-              </label>
               {hasActiveFilters && (
-                <button
-                  type='button'
-                  onClick={resetMapFilters}
-                  className='text-[0.72rem] font-semibold text-[var(--color-brand-primary)] underline-offset-2 hover:underline'
-                >
-                  초기화
-                </button>
+                <ResetFiltersButton
+                  onReset={resetMapFilters}
+                  size='sm'
+                />
               )}
             </div>
           </div>
@@ -377,11 +363,12 @@ const MapDashboard = ({
                     isLocating={isLocating}
                     onChange={handleSortChange}
                   />
-                  <MapLocationControl
+                  <LocationToggle
                     isActive={Boolean(currentLocation)}
                     isLocating={isLocating}
                     onToggle={handleLocationToggle}
                     compact
+                    size='sm'
                   />
                 </div>
               </div>

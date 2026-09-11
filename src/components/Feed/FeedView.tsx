@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { CalendarX, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 
+import type { MapSortMode } from '@/utils/exploreState';
 import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 
 import FeedCultureCard from './FeedCultureCard';
@@ -60,6 +61,8 @@ const FeedView = () => {
     category: mapCategory,
     region: mapRegion,
     freeOnly: mapFreeOnly,
+    sortMode: mapSortMode,
+    currentLocation,
   });
   const [, startTransition] = useTransition();
   const feedContentRef = useRef<HTMLDivElement>(null);
@@ -195,6 +198,30 @@ const FeedView = () => {
     setMapSortMode,
   ]);
 
+  const handleSortChange = useCallback(
+    async (nextMode: MapSortMode) => {
+      if (nextMode === 'distance') {
+        if (!currentLocation) {
+          try {
+            const loc = await requestLocation();
+            if (loc) {
+              setMapSortMode('distance');
+            }
+          } catch (locationError) {
+            if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
+              toast.info(getGeolocationErrorMessage(locationError));
+            } else {
+              toast.error(getGeolocationErrorMessage(locationError));
+            }
+          }
+          return;
+        }
+      }
+      setMapSortMode(nextMode);
+    },
+    [currentLocation, requestLocation, setMapSortMode]
+  );
+
   const handleOpenCulture = useCallback(
     (culture: FormattedCulture) => {
       if (feedContentRef.current) {
@@ -209,6 +236,7 @@ const FeedView = () => {
     mapCategory !== 'all' ||
     mapRegion !== 'all' ||
     mapFreeOnly ||
+    mapSortMode !== 'date' ||
     Boolean(searchQuery) ||
     Boolean(currentLocation);
   const handleClearSearch = useCallback(() => setSearchQuery(''), [setSearchQuery]);
@@ -244,6 +272,8 @@ const FeedView = () => {
         onResetFilters={resetMapFilters}
         isFiltered={isFiltered}
         totalCount={totalCount}
+        sortMode={mapSortMode}
+        onChangeSortMode={handleSortChange}
       />
 
       {/* Main Grid Content Area */}
@@ -301,7 +331,7 @@ const FeedView = () => {
                 culture={culture}
                 currentLocation={currentLocation}
                 onOpenCulture={handleOpenCulture}
-                isAboveFold={index < 5}
+                isAboveFold={index < 4}
               />
             ))}
           </div>

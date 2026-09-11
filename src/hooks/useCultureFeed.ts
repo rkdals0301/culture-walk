@@ -5,6 +5,8 @@ import type { CultureFeedPage, FormattedCulture } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
+import type { MapSortMode } from '@/utils/exploreState';
+import type { GeoPoint } from '@/utils/geo';
 
 import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 
@@ -16,6 +18,8 @@ interface UseCultureFeedOptions {
   category: CultureCategoryKey;
   region: string;
   freeOnly: boolean;
+  sortMode?: MapSortMode;
+  currentLocation?: GeoPoint | null;
 }
 
 const isRequestAborted = (error: unknown) =>
@@ -38,9 +42,16 @@ const feedMemoryCache = new Map<string, FeedCacheEntry>();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const getFeedCacheKey = (filters: CultureFeedFilters) =>
-  `${filters.searchQuery}|${filters.category}|${filters.region}|${filters.freeOnly ? '1' : '0'}`;
+  `${filters.searchQuery}|${filters.category}|${filters.region}|${filters.freeOnly ? '1' : '0'}|${filters.sortMode ?? 'date'}|${filters.userLat ? filters.userLat.toFixed(4) : ''}|${filters.userLng ? filters.userLng.toFixed(4) : ''}`;
 
-export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseCultureFeedOptions) => {
+export const useCultureFeed = ({
+  searchQuery,
+  category,
+  region,
+  freeOnly,
+  sortMode = 'date',
+  currentLocation = null,
+}: UseCultureFeedOptions) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => searchQuery.trim());
 
   useEffect(() => {
@@ -54,8 +65,11 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
       category,
       region,
       freeOnly,
+      sortMode: sortMode === 'distance' && currentLocation ? 'distance' : 'date',
+      userLat: sortMode === 'distance' && currentLocation ? currentLocation.lat : null,
+      userLng: sortMode === 'distance' && currentLocation ? currentLocation.lng : null,
     }),
-    [category, debouncedSearchQuery, freeOnly, region]
+    [category, currentLocation, debouncedSearchQuery, freeOnly, region, sortMode]
   );
 
   const filterKey = useMemo(() => getFeedCacheKey(filters), [filters]);
@@ -85,6 +99,11 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
         free: filters.freeOnly ? '1' : '0',
       };
       if (filters.searchQuery) params.q = filters.searchQuery;
+      if (filters.sortMode) params.sort = filters.sortMode;
+      if (filters.userLat != null && filters.userLng != null) {
+        params.lat = filters.userLat;
+        params.lng = filters.userLng;
+      }
       if (cursor) params.cursor = cursor;
 
       const response = await axiosInstance.get<CultureFeedPage>('/api/cultures/feed', {

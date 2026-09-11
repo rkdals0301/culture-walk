@@ -1,4 +1,6 @@
 import { CultureCategoryKey, matchesCultureCategory } from '@/utils/cultureCategory';
+import type { MapSortMode } from '@/utils/exploreState';
+import { calculateDistanceMeters } from '@/utils/geo';
 import { CultureListItem } from '@/types/culture';
 
 export interface CultureFeedFilters {
@@ -6,6 +8,9 @@ export interface CultureFeedFilters {
   category: CultureCategoryKey;
   region: string;
   freeOnly: boolean;
+  sortMode?: MapSortMode;
+  userLat?: number | null;
+  userLng?: number | null;
 }
 
 export interface CultureFeedResult {
@@ -28,6 +33,9 @@ export const normalizeCultureFeedFilters = (filters: CultureFeedFilters): Cultur
   category: filters.category,
   region: filters.region.trim().slice(0, MAX_REGION_LENGTH),
   freeOnly: filters.freeOnly,
+  sortMode: filters.sortMode === 'distance' ? 'distance' : 'date',
+  userLat: typeof filters.userLat === 'number' && Number.isFinite(filters.userLat) ? filters.userLat : null,
+  userLng: typeof filters.userLng === 'number' && Number.isFinite(filters.userLng) ? filters.userLng : null,
 });
 
 export const createCultureFeedFilterKey = (filters: CultureFeedFilters) =>
@@ -84,6 +92,15 @@ export const buildCultureFeedResult = (
     if (isFreeCultureListItem(culture)) {
       freeCount += 1;
     }
+  }
+
+  if (normalized.sortMode === 'distance' && normalized.userLat != null && normalized.userLng != null) {
+    const userPoint = { lat: normalized.userLat, lng: normalized.userLng };
+    filteredItems.sort((a, b) => {
+      const distA = calculateDistanceMeters(userPoint, { lat: a.lat, lng: a.lng });
+      const distB = calculateDistanceMeters(userPoint, { lat: b.lat, lng: b.lng });
+      return distA - distB;
+    });
   }
 
   return {
