@@ -562,3 +562,7 @@ $RECYCLE.BIN/
 output/
 test-results/
 playwright-report/
+
+# Local visual QA artifacts. Production assets belong under /public.
+/.audit/
+/*.png

@@ -41,3 +41,22 @@ test('detail refresh returns touched ids instead of mutating an array owned by i
   assert.match(details, /return \{ refreshed, refreshedCultureIds \};/);
   assert.match(worker, /const \{ refreshed, refreshedCultureIds \} = await refreshStaleCachedTourApiDetails/);
 });
+
+test('map data hook delegates bounded client cache and viewport projection to a pure utility', async () => {
+  const source = await readProjectFile('../src/hooks/useCultureMapData.ts');
+
+  assert.match(source, /cultureMapClientCache/);
+  assert.match(source, /normalizeCultureMapResponse/);
+  assert.match(source, /selectCultureMapViewport/);
+  assert.doesNotMatch(source, /new Map<string, CultureMapCacheEntry>|getBoundsArea|isBoundsWithin|isCoordinateWithinBounds/);
+});
+
+test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
+  const source = await readProjectFile('../src/styles/_information.scss');
+
+  assert.match(source, /@use '.\/information-base';/);
+  assert.match(source, /@use '.\/information-editorial';/);
+  assert.match(source, /@include information-base\.styles;/);
+  assert.match(source, /@include information-editorial\.styles;/);
+  assert.ok(source.split(/\r?\n/).length < 20);
+});

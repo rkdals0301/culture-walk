@@ -1,15 +1,16 @@
 import type { CultureMapBounds, CultureMapResponse, CultureMapViewport, FormattedCulture } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
-import { CultureCategoryKey } from '@/utils/cultureCategory';
-import { formatCultureData } from '@/utils/cultureUtils';
 import {
-  type MapDataMode,
+  cultureMapClientCache,
+  normalizeCultureMapResponse,
+  selectCultureMapViewport,
+} from '@/utils/cultureMapClientCache';
+import { CultureCategoryKey } from '@/utils/cultureCategory';
+import {
   MAP_CLUSTER_GRID_SIZE,
   MAP_ITEM_REQUEST_GRID_SIZE,
   expandMapBounds,
   getMapDataMode,
-  isBoundsWithin,
-  isCoordinateWithinBounds,
   snapMapBoundsOutward,
 } from '@/utils/mapViewport';
 
@@ -18,8 +19,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 
 const REQUEST_DEBOUNCE_MS = 250;
-const CLIENT_CACHE_TTL_MS = 60_000;
-const CLIENT_CACHE_MAX_ENTRIES = 12;
 
 const EMPTY_MAP_RESPONSE: CultureMapResponse = {
   items: [],
@@ -28,107 +27,6 @@ const EMPTY_MAP_RESPONSE: CultureMapResponse = {
   totalCount: 0,
   viewportCount: 0,
   regionOptions: [],
-};
-
-interface CultureMapCacheEntry {
-  expiresAt: number;
-  fetchedBounds: CultureMapBounds;
-  filterKey: string;
-  mode: MapDataMode;
-  response: CultureMapResponse;
-}
-
-const cultureMapCache = new Map<string, CultureMapCacheEntry>();
-
-const getBoundsArea = (bounds: CultureMapBounds) =>
-  Math.max(0, bounds.neLat - bounds.swLat) * Math.max(0, bounds.neLng - bounds.swLng);
-
-const readCultureMapCache = (filterKey: string, bounds: CultureMapBounds, mode: MapDataMode) => {
-  let matchedKey: string | null = null;
-  let matchedEntry: CultureMapCacheEntry | null = null;
-  let matchedArea = Number.POSITIVE_INFINITY;
-
-  cultureMapCache.forEach((entry, key) => {
-    if (entry.expiresAt <= Date.now()) {
-      cultureMapCache.delete(key);
-      return;
-    }
-
-    if (entry.filterKey !== filterKey || entry.mode !== mode || !isBoundsWithin(bounds, entry.fetchedBounds)) {
-      return;
-    }
-
-    const area = getBoundsArea(entry.fetchedBounds);
-    if (area <= matchedArea) {
-      matchedKey = key;
-      matchedEntry = entry;
-      matchedArea = area;
-    }
-  });
-
-  if (matchedKey === null || matchedEntry === null) {
-    return null;
-  }
-
-  const selectedKey = matchedKey as string;
-  const selectedEntry = matchedEntry as CultureMapCacheEntry;
-
-  // Promote the entry so the bounded cache behaves like a small LRU.
-  cultureMapCache.delete(selectedKey);
-  cultureMapCache.set(selectedKey, selectedEntry);
-  return selectedEntry.response;
-};
-
-const writeCultureMapCache = (
-  filterKey: string,
-  mode: MapDataMode,
-  fetchedBounds: CultureMapBounds,
-  response: CultureMapResponse
-) => {
-  const key = `${filterKey}:${fetchedBounds.swLat},${fetchedBounds.swLng},${fetchedBounds.neLat},${fetchedBounds.neLng}`;
-  cultureMapCache.delete(key);
-  cultureMapCache.set(key, {
-    expiresAt: Date.now() + CLIENT_CACHE_TTL_MS,
-    fetchedBounds,
-    filterKey,
-    mode,
-    response,
-  });
-
-  while (cultureMapCache.size > CLIENT_CACHE_MAX_ENTRIES) {
-    const oldestKey = cultureMapCache.keys().next().value;
-    if (oldestKey === undefined) break;
-    cultureMapCache.delete(oldestKey);
-  }
-};
-
-const normalizeMapResponse = (response: Partial<CultureMapResponse>): CultureMapResponse => ({
-  items: response.items ?? [],
-  clusters: response.clusters ?? [],
-  isClustered: response.isClustered ?? false,
-  totalCount: response.totalCount ?? 0,
-  viewportCount: response.viewportCount ?? 0,
-  regionOptions: response.regionOptions ?? [],
-});
-
-const selectCurrentViewport = (response: CultureMapResponse, bounds: CultureMapBounds): CultureMapResponse => {
-  if (response.isClustered) {
-    const clusters = response.clusters.filter(cluster => isCoordinateWithinBounds(cluster.lat, cluster.lng, bounds));
-    return {
-      ...response,
-      items: [],
-      clusters,
-      viewportCount: clusters.reduce((sum, cluster) => sum + cluster.count, 0),
-    };
-  }
-
-  const items = response.items.filter(item => isCoordinateWithinBounds(item.lat, item.lng, bounds));
-  return {
-    ...response,
-    items: formatCultureData(items),
-    clusters: [],
-    viewportCount: items.length,
-  };
 };
 
 interface UseCultureMapDataOptions {
@@ -204,9 +102,9 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
     setIsLoading(true);
     setError(null);
 
-    const cachedResponse = readCultureMapCache(filterKey, bounds, mode);
+    const cachedResponse = cultureMapClientCache.read(filterKey, bounds, mode);
     if (cachedResponse) {
-      setData(selectCurrentViewport(cachedResponse, bounds));
+      setData(selectCultureMapViewport(cachedResponse, bounds));
       setIsLoading(false);
       return;
     }
@@ -232,9 +130,9 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
         .then(response => {
           if (version !== requestVersionRef.current) return;
 
-          const responseData = normalizeMapResponse(response.data);
-          writeCultureMapCache(filterKey, mode, fetchBounds, responseData);
-          setData(selectCurrentViewport(responseData, bounds));
+          const responseData = normalizeCultureMapResponse(response.data);
+          cultureMapClientCache.write(filterKey, mode, fetchBounds, responseData);
+          setData(selectCultureMapViewport(responseData, bounds));
         })
         .catch(caughtError => {
           if (version !== requestVersionRef.current || isRequestAborted(caughtError)) return;
@@ -271,11 +169,7 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
   ]);
 
   const retry = useCallback(() => {
-    cultureMapCache.forEach((entry, key) => {
-      if (entry.filterKey === filterKey && entry.mode === mode) {
-        cultureMapCache.delete(key);
-      }
-    });
+    cultureMapClientCache.invalidate(filterKey, mode);
     setRetryNonce(value => value + 1);
   }, [filterKey, mode]);
 
