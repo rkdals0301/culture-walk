@@ -1,23 +1,17 @@
 'use client';
 
-import CultureImageFallback from '@/components/Common/CultureImageFallback';
+import CultureDetailGallery from '@/components/CultureDetail/CultureDetailGallery';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import type { FormattedCulture } from '@/types/culture';
+import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 import {
   formatCultureDetailText,
-  getCulturePriceTone,
-  getCultureTiming,
-  getUniqueCultureAdditionalInformation,
   hasMeaningfulCultureValue,
-  isCultureProgramRedundant,
-  normalizeCultureContent,
-  splitCultureContact,
 } from '@/utils/cultureUtils';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -25,16 +19,12 @@ import {
   ArrowLeft,
   Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Compass,
   Copy,
   ExternalLink,
-  Maximize2,
   Navigation,
   Phone,
   Share2,
-  X,
 } from 'lucide-react';
 
 interface CultureDetailViewProps {
@@ -75,122 +65,19 @@ const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
 const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
   const router = useRouter();
 
-  // Consolidate all available images into a unified gallery list
-  const imageList = useMemo(() => {
-    const list: string[] = [];
-    if (culture.mainImage && !culture.mainImage.includes('/assets/images/logo')) {
-      list.push(culture.mainImage);
-    }
-    (culture.additionalImages ?? []).forEach(img => {
-      if (img.url && !list.includes(img.url)) {
-        list.push(img.url);
-      }
-    });
-    return list;
-  }, [culture.additionalImages, culture.mainImage]);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageFailed, setImageFailed] = useState(false);
+  const detail = useMemo(() => getCultureDetailViewModel(culture), [culture]);
+  const { imageList } = detail;
   const [copiedAddress, setCopiedAddress] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-
-  const currentImageUrl = imageList[currentIndex] || culture.mainImage;
 
   const dday = useMemo(() => getDDayText(culture.startDate, culture.endDate), [culture.startDate, culture.endDate]);
-  const priceTone = getCulturePriceTone(culture);
-  const { eventTime: displayEventTime, duration: displayDuration } = getCultureTiming(culture);
+  const { eventTime: displayEventTime, duration: displayDuration } = detail;
   const hasTarget = hasMeaningfulCultureValue(culture.useTarget);
   const hasOrganization = hasMeaningfulCultureValue(culture.organizationName);
   const hasContact = hasMeaningfulCultureValue(culture.contact);
   const hasFestivalGrade = hasMeaningfulCultureValue(culture.festivalGrade);
-  const hasOverview = hasMeaningfulCultureValue(culture.overview);
-  const hasProgram =
-    hasMeaningfulCultureValue(culture.programIntroduction) &&
-    !isCultureProgramRedundant(culture.overview, culture.programIntroduction);
-  const contactSegments = useMemo(() => splitCultureContact(culture.contact), [culture.contact]);
-  const visibleAdditionalInformation = useMemo(
-    () =>
-      getUniqueCultureAdditionalInformation(culture.additionalInformation, [
-        culture.overview,
-        culture.programIntroduction,
-      ]),
-    [culture.additionalInformation, culture.overview, culture.programIntroduction]
-  );
+  const { contactSegments, hasOverview, hasProgram, visibleAdditionalInformation } = detail;
 
-  const hasCultureImage =
-    typeof currentImageUrl === 'string' &&
-    Boolean(currentImageUrl.trim()) &&
-    !imageFailed &&
-    !currentImageUrl.includes('/assets/images/logo');
-
-  const venueName = hasMeaningfulCultureValue(culture.place)
-    ? normalizeCultureContent(culture.place)
-    : normalizeCultureContent(culture.guName);
-  const address = hasMeaningfulCultureValue(culture.address) ? normalizeCultureContent(culture.address) : '';
-  const fullAddress = address || venueName;
-  const hasSeparateAddress = Boolean(address) && address !== normalizeCultureContent(culture.place);
-
-  const displayFee = hasMeaningfulCultureValue(culture.useFee)
-    ? formatCultureDetailText(culture.useFee)
-    : hasMeaningfulCultureValue(culture.displayPrice)
-      ? formatCultureDetailText(culture.displayPrice)
-      : priceTone === 'free'
-        ? '무료'
-        : '요금 정보 확인';
-
-  // Gallery Navigation Handlers
-  const handlePrevImage = useCallback(() => {
-    if (imageList.length <= 1) return;
-    setCurrentIndex(prev => (prev > 0 ? prev - 1 : imageList.length - 1));
-    setImageFailed(false);
-  }, [imageList.length]);
-
-  const handleNextImage = useCallback(() => {
-    if (imageList.length <= 1) return;
-    setCurrentIndex(prev => (prev < imageList.length - 1 ? prev + 1 : 0));
-    setImageFailed(false);
-  }, [imageList.length]);
-
-  // Touch Gesture Swipe Handlers (Non-intrusive to vertical scroll)
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  }, []);
-
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (touchStartX.current === null || touchStartY.current === null) return;
-      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-      const deltaY = e.changedTouches[0].clientY - touchStartY.current;
-
-      // Trigger only if horizontal swipe dominates vertical scroll and exceeds 35px
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 35) {
-        if (deltaX < 0) {
-          handleNextImage();
-        } else {
-          handlePrevImage();
-        }
-      }
-      touchStartX.current = null;
-      touchStartY.current = null;
-    },
-    [handleNextImage, handlePrevImage]
-  );
-
-  // Keyboard navigation for Lightbox
-  useEffect(() => {
-    if (!isLightboxOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsLightboxOpen(false);
-      if (e.key === 'ArrowLeft') handlePrevImage();
-      if (e.key === 'ArrowRight') handleNextImage();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen, handleNextImage, handlePrevImage]);
+  const { address, displayFee, fullAddress, hasSeparateAddress, venueName } = detail;
 
   const handleBack = useCallback(() => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -300,105 +187,7 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
         <div className='lg:grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start lg:gap-12 xl:gap-16'>
           {/* The poster is the visual anchor. Everything around it stays serviceable. */}
           <div className='lg:sticky lg:top-20'>
-            <div
-              className='group relative mx-auto aspect-[4/5] w-full max-w-md select-none overflow-hidden rounded-xl border border-[var(--color-detail-divider)] bg-[var(--color-surface-secondary)] sm:aspect-[3/4] lg:max-w-none'
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              {hasCultureImage ? (
-                <div
-                  className='relative size-full cursor-zoom-in'
-                  onClick={() => setIsLightboxOpen(true)}
-                  title='클릭하여 전체 포스터 크게 보기'
-                >
-                  <Image
-                    src={currentImageUrl}
-                    alt={culture.title}
-                    fill
-                    sizes='(min-width: 1024px) 420px, (min-width: 640px) 440px, 100vw'
-                    className='object-contain transition-opacity duration-200'
-                    priority
-                    onError={() => setImageFailed(true)}
-                  />
-                </div>
-              ) : (
-                <div className='size-full'>
-                  <CultureImageFallback classification={culture.classification || '문화행사'} />
-                </div>
-              )}
-
-              {/* Navigation is available on hover, while the caption below keeps the image clean. */}
-              {imageList.length > 1 && (
-                <>
-                  <button
-                    type='button'
-                    onClick={e => {
-                      e.stopPropagation();
-                      handlePrevImage();
-                    }}
-                    aria-label='이전 사진 보기'
-                    className='absolute left-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-md border border-white/20 bg-zinc-950/75 text-white opacity-0 transition hover:bg-zinc-950 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white active:scale-95 group-hover:opacity-100'
-                  >
-                    <ChevronLeft className='size-4' strokeWidth={1.8} />
-                  </button>
-                  <button
-                    type='button'
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleNextImage();
-                    }}
-                    aria-label='다음 사진 보기'
-                    className='absolute right-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-md border border-white/20 bg-zinc-950/75 text-white opacity-0 transition hover:bg-zinc-950 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white active:scale-95 group-hover:opacity-100'
-                  >
-                    <ChevronRight className='size-4' strokeWidth={1.8} />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {hasCultureImage && (
-              <div className='mt-2.5 flex items-center justify-between gap-3 px-0.5 text-xs'>
-                <button
-                  type='button'
-                  onClick={() => setIsLightboxOpen(true)}
-                  className='inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 font-medium text-[var(--color-brand-primary)] transition hover:bg-[var(--color-brand-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95'
-                >
-                  <Maximize2 className='size-3.5' strokeWidth={1.8} />
-                  <span>포스터 크게 보기</span>
-                </button>
-                {imageList.length > 1 && (
-                  <span className='tabular-nums text-[var(--color-text-tertiary)]'>
-                    {currentIndex + 1} / {imageList.length}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {imageList.length > 1 && (
-              <div
-                className='mt-2 flex justify-center gap-2 overflow-x-auto pb-1 lg:justify-start'
-                aria-label='추가 사진 목록'
-              >
-                {imageList.map((imgUrl, idx) => (
-                  <button
-                    type='button'
-                    key={`${imgUrl}-${idx}`}
-                    onClick={() => {
-                      setCurrentIndex(idx);
-                      setImageFailed(false);
-                    }}
-                    className={`relative size-14 shrink-0 overflow-hidden rounded-md border transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95 ${
-                      currentIndex === idx
-                        ? 'border-2 border-[var(--color-brand-primary)]'
-                        : 'border-[var(--color-detail-divider)] opacity-75 hover:opacity-100'
-                    }`}
-                    aria-label={`사진 ${idx + 1} 선택`}
-                  >
-                    <Image src={imgUrl} alt='' fill sizes='56px' className='object-cover' />
-                  </button>
-                ))}
-              </div>
-            )}
+            <CultureDetailGallery culture={culture} imageList={imageList} />
 
             <div className='mt-5 hidden lg:flex lg:flex-col lg:gap-2'>
               {primaryExternalUrl && (
@@ -728,82 +517,6 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
         </div>
       </footer>
 
-      {isLightboxOpen && hasCultureImage && (
-        <div
-          role='dialog'
-          aria-modal='true'
-          aria-label='포스터 전체화면 크게 보기'
-          className='fixed inset-0 z-50 flex select-none flex-col bg-zinc-950/95'
-          onClick={() => setIsLightboxOpen(false)}
-        >
-          <div
-            className='flex h-14 shrink-0 items-center justify-between px-4 text-white sm:px-6'
-            onClick={e => e.stopPropagation()}
-          >
-            <div className='flex items-center gap-2'>
-              <span className='text-xs font-medium tabular-nums text-zinc-300'>
-                {imageList.length > 1 ? `${currentIndex + 1} / ${imageList.length}` : '원본 포스터'}
-              </span>
-              <span className='hidden text-xs text-zinc-400 sm:inline'>클릭 또는 ESC 키로 닫기</span>
-            </div>
-
-            <button
-              type='button'
-              onClick={() => setIsLightboxOpen(false)}
-              aria-label='확대 보기 닫기'
-              className='flex size-10 items-center justify-center rounded-md text-zinc-300 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white active:scale-95'
-            >
-              <X className='size-5' strokeWidth={1.8} />
-            </button>
-          </div>
-
-          <div
-            className='relative flex flex-1 items-center justify-center overflow-hidden p-4'
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            onClick={e => e.stopPropagation()}
-          >
-            <Image
-              src={currentImageUrl}
-              alt={culture.title}
-              fill
-              sizes='100vw'
-              className='select-none object-contain'
-              priority
-            />
-
-            {/* Lightbox Nav Arrows (when multiple images) */}
-            {imageList.length > 1 && (
-              <>
-                <button
-                  type='button'
-                  onClick={handlePrevImage}
-                  aria-label='이전 사진'
-                  className='absolute left-3 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/15 bg-zinc-900/85 text-white transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white active:scale-95'
-                >
-                  <ChevronLeft className='size-6' strokeWidth={1.8} />
-                </button>
-                <button
-                  type='button'
-                  onClick={handleNextImage}
-                  aria-label='다음 사진'
-                  className='absolute right-3 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/15 bg-zinc-900/85 text-white transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white active:scale-95'
-                >
-                  <ChevronRight className='size-6' strokeWidth={1.8} />
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className='pb-6 pt-2 text-center text-xs text-zinc-400'>
-            {imageList.length > 1 ? (
-              <span>좌우로 밀거나 키보드 방향키로 사진을 넘길 수 있습니다</span>
-            ) : (
-              <span>화면 빈 곳을 탭하거나 닫기(X)를 누르면 상세 페이지로 돌아갑니다</span>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

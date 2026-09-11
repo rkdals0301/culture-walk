@@ -1,13 +1,7 @@
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import type { FormattedCulture } from '@/types/culture';
-import {
-  formatCultureDetailText,
-  getCulturePriceTone,
-  getCultureTiming,
-  hasMeaningfulCultureValue,
-  normalizeCultureContent,
-  splitCultureContact,
-} from '@/utils/cultureUtils';
+import { formatCultureDetailText, hasMeaningfulCultureValue } from '@/utils/cultureUtils';
+import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 
 import Image from 'next/image';
 
@@ -67,21 +61,8 @@ interface CultureDetailFactsProps {
 }
 
 export const CultureDetailFacts = ({ culture, extended = false }: CultureDetailFactsProps) => {
-  const { eventTime, duration } = getCultureTiming(culture);
-  const venueName = hasMeaningfulCultureValue(culture.place)
-    ? normalizeCultureContent(culture.place)
-    : normalizeCultureContent(culture.guName);
-  const address = hasMeaningfulCultureValue(culture.address) ? normalizeCultureContent(culture.address) : '';
-  const hasSeparateAddress = Boolean(address) && address !== normalizeCultureContent(culture.place);
-  const priceTone = getCulturePriceTone(culture);
-  const fee = hasMeaningfulCultureValue(culture.useFee)
-    ? formatCultureDetailText(culture.useFee)
-    : hasMeaningfulCultureValue(culture.displayPrice)
-      ? formatCultureDetailText(culture.displayPrice)
-      : priceTone === 'free'
-        ? '무료'
-        : '요금 정보 확인';
-  const contactSegments = splitCultureContact(culture.contact);
+  const { address, contactSegments, displayFee: fee, duration, eventTime, hasSeparateAddress, venueName } =
+    getCultureDetailViewModel(culture);
 
   return (
     <dl className='border-t border-[var(--color-detail-divider)] text-sm'>

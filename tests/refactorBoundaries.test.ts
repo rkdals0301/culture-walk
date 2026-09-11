@@ -55,6 +55,23 @@ test('MapDetailSheetClient owns lifecycle state while detail presentation lives 
   assert.doesNotMatch(source, /GoogleAdSlot|CultureDetailFacts|next\/image|getCulturePriceTone/);
 });
 
+test('culture detail presentation delegates gallery state and shared derived fields to dedicated modules', async () => {
+  const [detailView, gallery, mapDetailShared, mapDetailSheet] = await Promise.all([
+    readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailGallery.tsx'),
+    readProjectFile('../src/components/Map/MapDetailShared.tsx'),
+    readProjectFile('../src/components/Map/MapDetailSheetContent.tsx'),
+  ]);
+
+  assert.match(detailView, /CultureDetailGallery/);
+  assert.match(detailView, /getCultureDetailViewModel/);
+  assert.doesNotMatch(detailView, /handlePrevImage|handleNextImage|isLightboxOpen/);
+  assert.match(gallery, /handlePrevImage/);
+  assert.match(gallery, /isLightboxOpen/);
+  assert.match(mapDetailShared, /getCultureDetailViewModel/);
+  assert.match(mapDetailSheet, /getCultureDetailViewModel/);
+});
+
 test('detail refresh returns touched ids instead of mutating an array owned by its caller', async () => {
   const [details, worker] = await Promise.all([
     readProjectFile('../src/services/cultureSyncDetails.ts'),

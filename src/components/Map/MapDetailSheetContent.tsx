@@ -4,12 +4,10 @@ import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { CultureDetailFacts, CultureDetailPoster } from '@/components/Map/MapDetailShared';
 import type { FormattedCulture } from '@/types/culture';
+import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 import {
   formatCultureDetailText,
-  getCulturePriceTone,
-  getUniqueCultureAdditionalInformation,
   hasMeaningfulCultureValue,
-  isCultureProgramRedundant,
 } from '@/utils/cultureUtils';
 
 import Image from 'next/image';
@@ -180,21 +178,13 @@ export const MapDetailSheetContent = ({
     );
   }
 
-  const priceTone = getCulturePriceTone(culture);
-  const hasOverview = hasMeaningfulCultureValue(culture.overview);
-  const hasProgram =
-    hasMeaningfulCultureValue(culture.programIntroduction) &&
-    !isCultureProgramRedundant(culture.overview, culture.programIntroduction);
+  const { hasOverview, hasProgram, priceTone, visibleAdditionalInformation } = getCultureDetailViewModel(culture);
   const hasUsageInformation = [
     culture.bookingPlace,
     culture.placeInformation,
     culture.festivalGrade,
     culture.discountInformation,
   ].some(hasMeaningfulCultureValue);
-  const visibleAdditionalInformation = getUniqueCultureAdditionalInformation(culture.additionalInformation, [
-    culture.overview,
-    culture.programIntroduction,
-  ]);
 
   return (
     <div className='flex flex-col gap-4'>
