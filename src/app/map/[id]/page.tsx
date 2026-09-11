@@ -143,6 +143,7 @@ const MapDetailPage = async ({ params }: { params: Promise<{ id: string }> }) =>
       name: formatted.place || formatted.displayPlace,
       address: {
         '@type': 'PostalAddress',
+        streetAddress: formatted.address || undefined,
         addressLocality,
         addressRegion,
         addressCountry: 'KR',

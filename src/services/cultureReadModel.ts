@@ -1,14 +1,7 @@
-import {
-  type CultureCacheBinding,
-  readCultureDetailCache,
-  writeCultureDetailCache,
-} from '@/cache/kv';
+import { type CultureCacheBinding, readCultureDetailCache, writeCultureDetailCache } from '@/cache/kv';
 import type { CultureTourApiDetailsRow } from '@/db/schema';
 import { getWorkerEnv } from '@/server/cloudflare';
-import {
-  createCultureListItemRevision,
-  getCulturePublicListSnapshot,
-} from '@/services/cultureList';
+import { createCultureListItemRevision, getCulturePublicListSnapshot } from '@/services/cultureList';
 import {
   type CultureContentRow,
   mapCultureListItemToCulture,
@@ -103,10 +96,7 @@ const readCultureDetailFromD1 = async (d1: D1Binding, id: number) => {
         syncedAt: String(row.detailSyncedAt ?? ''),
       } satisfies CultureTourApiDetailsRow)
     : undefined;
-  const culture = mapCultureRowToCulture(
-    contentRow,
-    detailRow ? parseStoredTourApiDetails(detailRow) : undefined
-  );
+  const culture = mapCultureRowToCulture(contentRow, detailRow ? parseStoredTourApiDetails(detailRow) : undefined);
   const coordinates = normalizeCultureCoordinates(Number(row.lat), Number(row.lng));
   const listItem: CultureListItem = {
     id: Number(row.id),
@@ -147,12 +137,16 @@ export const getCulturePublicRead = async (
   ]);
   const item = snapshot?.items.find(culture => culture.id === id) ?? null;
   const itemRevision = snapshot?.revisions[String(id)];
-  const detailMatchesReadModel =
-    detail?.culture?.id === id &&
-    (!itemRevision || detail.cacheVersion === itemRevision);
+  const detailMatchesReadModel = detail?.culture?.id === id && (!itemRevision || detail.cacheVersion === itemRevision);
   if (detailMatchesReadModel) {
     return {
-      culture: detail.culture,
+      culture: {
+        ...detail.culture,
+        // Older KV detail entries predate the separate address field. The
+        // list read model still carries the original address, so backfill it
+        // without forcing a paid refresh just to render the detail page.
+        address: detail.culture.address || item?.place || detail.culture.place || '',
+      },
       source: 'kv-detail-cache',
       readModelAvailable: true,
     };
@@ -164,13 +158,7 @@ export const getCulturePublicRead = async (
       if (readThrough) {
         if (cache) {
           const cacheVersion = itemRevision ?? readThrough.revision;
-          await writeCultureDetailCache(
-            id,
-            cacheVersion,
-            readThrough.culture,
-            DETAIL_READ_THROUGH_TTL_SECONDS,
-            cache
-          );
+          await writeCultureDetailCache(id, cacheVersion, readThrough.culture, DETAIL_READ_THROUGH_TTL_SECONDS, cache);
         }
 
         return {

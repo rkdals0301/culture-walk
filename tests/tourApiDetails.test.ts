@@ -44,7 +44,10 @@ const details: TourApiFestivalDetails = {
 
 test('TourAPI HTML text and links are normalized safely', () => {
   assert.equal(normalizeTourApiText('<p>첫 줄<br>둘째 줄</p>'), '첫 줄\n둘째 줄');
-  assert.equal(extractTourApiUrl('<a href="https://example.com/path?a=1&amp;b=2">링크</a>'), 'https://example.com/path?a=1&b=2');
+  assert.equal(
+    extractTourApiUrl('<a href="https://example.com/path?a=1&amp;b=2">링크</a>'),
+    'https://example.com/path?a=1&b=2'
+  );
 });
 
 test('TourAPI detail fields retain their original meaning', () => {
@@ -69,4 +72,19 @@ test('detail summary stores searchable fee and link fields on the culture row', 
   assert.equal(summary.homepageDetailAddress, 'https://ticket.example.com/reserve');
   assert.equal(summary.performerInformation, '매일 19:00');
   assert.equal(summary.useTarget, '전체 관람가');
+});
+
+test('organization names remove repeated sponsor entries while preserving co-organizers', () => {
+  const normalized = normalizeTourApiDetails({
+    common: {},
+    intro: {
+      sponsor1: '부산광역시',
+      sponsor2: '부산광역시, 부산광역시생활체육문화센터',
+    },
+    info: [],
+    images: [],
+    complete: true,
+  });
+
+  assert.equal(normalized.organizationName, '부산광역시 · 부산광역시생활체육문화센터');
 });

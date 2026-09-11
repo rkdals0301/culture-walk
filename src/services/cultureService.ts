@@ -164,6 +164,7 @@ export function mapCultureRowToCulture(row: CultureContentRow, tourApiDetails?: 
   const endDate = toDateOrNow(row.endDate ?? row.startDate);
   const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
   const details = tourApiDetails ? normalizeTourApiDetails(tourApiDetails) : null;
+  const address = row.place ?? '';
   const programIntroduction = details
     ? Array.from(new Set([details.program, details.subevent].filter(Boolean))).join('\n\n')
     : (row.programIntroduction ?? '');
@@ -186,6 +187,7 @@ export function mapCultureRowToCulture(row: CultureContentRow, tourApiDetails?: 
     homepageAddress: details?.eventHomepage || row.homepageAddress || '',
     organizationName: details?.organizationName || row.organizationName || '',
     place: details?.eventPlace || row.place || '',
+    address,
     performerInformation: details?.eventTime || row.performerInformation || '',
     programIntroduction,
     registrationDate: row.registrationDate ?? '',
@@ -225,6 +227,7 @@ export const mapCultureListItemToCulture = (item: CultureListItem): Culture => (
   homepageAddress: '',
   organizationName: '',
   place: item.place,
+  address: item.place,
   performerInformation: '',
   programIntroduction: '',
   registrationDate: '',

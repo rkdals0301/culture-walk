@@ -1,9 +1,5 @@
 import { CultureTourApiDetailsRow, NewCultureRow } from '@/db/schema';
-import {
-  CultureAdditionalInformation,
-  CultureDetailImage,
-  TourApiFestivalDetails,
-} from '@/types/culture';
+import { CultureAdditionalInformation, CultureDetailImage, TourApiFestivalDetails } from '@/types/culture';
 
 const decodeHtmlEntities = (value: string) =>
   value
@@ -62,6 +58,15 @@ export const normalizeTourApiImageUrl = (value?: string | null) => {
 const uniqueTexts = (values: Array<string | undefined | null>) =>
   Array.from(new Set(values.map(normalizeTourApiText).filter(Boolean)));
 
+const uniqueOrganizationNames = (values: Array<string | undefined | null>) => {
+  const names = values
+    .flatMap(value => normalizeTourApiText(value).split(/\s*(?:·|,|\/|\n)\s*/))
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(names));
+};
+
 const formatContact = (name?: string, telephone?: string) => {
   const safeName = normalizeTourApiText(name);
   const safeTelephone = normalizeTourApiText(telephone);
@@ -94,7 +99,7 @@ export const normalizeTourApiDetails = (details: TourApiFestivalDetails): Normal
   const { common, intro } = details;
   const sponsor1 = normalizeTourApiText(intro?.sponsor1);
   const sponsor2 = normalizeTourApiText(intro?.sponsor2);
-  const organizationName = uniqueTexts([sponsor1, sponsor2]).join(' · ');
+  const organizationName = uniqueOrganizationNames([sponsor1, sponsor2]).join(' · ');
   const contact = uniqueTexts([
     formatContact(sponsor1, intro?.sponsor1tel),
     formatContact(sponsor2, intro?.sponsor2tel),

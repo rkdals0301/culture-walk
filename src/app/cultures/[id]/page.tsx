@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-
 import CultureDetailView from '@/components/CultureDetail/CultureDetailView';
 import { getCulturePublicRead } from '@/services/cultureReadModel';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { serializeJsonLd } from '@/utils/jsonLd';
 import { OG_IMAGE_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
+
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,9 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     `${formatted.title} - ${formatted.displayDate} (${formatted.displayPlace}). 일정, 장소, 관람료, 상세 정보 안내.`;
   const canonicalUrl = `${SITE_URL}/cultures/${numericId}`;
   const imageUrl =
-    formatted.mainImage && !formatted.mainImage.includes('/assets/images/logo')
-      ? formatted.mainImage
-      : OG_IMAGE_URL;
+    formatted.mainImage && !formatted.mainImage.includes('/assets/images/logo') ? formatted.mainImage : OG_IMAGE_URL;
 
   return {
     title: {
@@ -102,6 +100,7 @@ export default async function CultureDetailPage({ params }: PageProps) {
       name: formatted.place || formatted.guName || '서울',
       address: {
         '@type': 'PostalAddress',
+        streetAddress: formatted.address || undefined,
         addressLocality: formatted.guName || '서울',
         addressCountry: 'KR',
       },
@@ -119,10 +118,7 @@ export default async function CultureDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <script
-        type='application/ld+json'
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
-      />
+      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <CultureDetailView culture={formatted} />
     </>
   );

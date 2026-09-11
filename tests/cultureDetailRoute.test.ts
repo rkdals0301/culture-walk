@@ -1,6 +1,6 @@
+import type { Culture } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { serializeJsonLd } from '@/utils/jsonLd';
-import type { Culture } from '@/types/culture';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -17,6 +17,7 @@ test('formatCultureData preserves detailed overview, images, and extra fields fo
     register: '관리자',
     guName: '종로구',
     place: '국립현대미술관 서울관',
+    address: '서울특별시 종로구 삼청로 30',
     isFree: '무료',
     useFee: '전시 무료 관람',
     useTarget: '전연령 관람 가능',

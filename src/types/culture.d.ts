@@ -110,6 +110,7 @@ export interface Culture {
   homepageAddress: string; // 홈페이지 주소
   organizationName: string; // 기관명
   place: string; // 장소
+  address: string; // 행사 주소
   performerInformation: string; // 운영·공연 시간(기존 DB 필드명)
   programIntroduction: string; // 프로그램 소개
   registrationDate: string; // 신청일

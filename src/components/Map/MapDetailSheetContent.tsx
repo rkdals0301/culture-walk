@@ -4,12 +4,18 @@ import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { CultureDetailFacts, CultureDetailPoster } from '@/components/Map/MapDetailShared';
 import type { FormattedCulture } from '@/types/culture';
-import { getCulturePriceTone } from '@/utils/cultureUtils';
+import {
+  formatCultureDetailText,
+  getCulturePriceTone,
+  getUniqueCultureAdditionalInformation,
+  hasMeaningfulCultureValue,
+  isCultureProgramRedundant,
+} from '@/utils/cultureUtils';
 
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 
 import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
 
@@ -28,9 +34,9 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
   return (
     <article className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden rounded-b-none rounded-t-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl md:inset-x-auto md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'>
       <div className='flex shrink-0 items-center justify-center pb-1 pt-2 lg:hidden' aria-hidden='true'>
-        <div className='h-1.5 w-10 rounded-full bg-[var(--color-text-tertiary)]/35' />
+        <div className='bg-[var(--color-text-tertiary)]/35 h-1.5 w-10 rounded-full' />
       </div>
-      <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-2 lg:pt-4'>
+      <header className='border-b border-[var(--color-detail-divider)] px-5 pb-5 pt-2 lg:pt-4'>
         <div className='mb-4 flex items-center justify-between'>
           <Link
             href='/map'
@@ -63,7 +69,7 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
         <CultureDetailFacts culture={culture} />
 
         {culture.overview && (
-          <section className='mt-6 border-t border-[var(--color-border-primary)] pt-5'>
+          <section className='mt-6 border-t border-[var(--color-detail-divider)] pt-5'>
             <h2 className='text-xs font-bold uppercase tracking-wider text-[var(--color-brand-primary)]'>행사 소개</h2>
             <p className='mt-2 whitespace-pre-line break-words text-sm leading-relaxed text-[var(--color-text-secondary)]'>
               {culture.overview}
@@ -73,7 +79,7 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
 
         {hasExternalLinks && (
           <nav
-            className='mt-6 grid auto-cols-fr grid-flow-col gap-2.5 border-t border-[var(--color-border-primary)] pt-5'
+            className='mt-6 grid auto-cols-fr grid-flow-col gap-2.5 border-t border-[var(--color-detail-divider)] pt-5'
             aria-label='행사 링크'
           >
             {culture.homepageAddress && (
@@ -92,7 +98,7 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
                 href={culture.homepageDetailAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='shadow-xs flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-white transition hover:bg-[var(--color-brand-hover)]'
+                className='flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-white shadow-xs transition hover:bg-[var(--color-brand-hover)]'
               >
                 <span>예약 / 상세</span>
                 <ExternalLink aria-hidden='true' className='size-3.5' strokeWidth={2} />
@@ -129,7 +135,11 @@ export const MapDetailSheetFooter = ({ culture, onOpenExternalLink }: MapDetailS
         </Button>
       )}
       {hasBookingLink && (
-        <Button fullWidth ariaLabel='예약 웹사이트로 이동' onClick={() => onOpenExternalLink(culture.homepageDetailAddress)}>
+        <Button
+          fullWidth
+          ariaLabel='예약 웹사이트로 이동'
+          onClick={() => onOpenExternalLink(culture.homepageDetailAddress)}
+        >
           <span>예약하기</span>
           <ExternalLink aria-hidden='true' className='ml-1.5 size-4' strokeWidth={1.8} />
         </Button>
@@ -171,6 +181,20 @@ export const MapDetailSheetContent = ({
   }
 
   const priceTone = getCulturePriceTone(culture);
+  const hasOverview = hasMeaningfulCultureValue(culture.overview);
+  const hasProgram =
+    hasMeaningfulCultureValue(culture.programIntroduction) &&
+    !isCultureProgramRedundant(culture.overview, culture.programIntroduction);
+  const hasUsageInformation = [
+    culture.bookingPlace,
+    culture.placeInformation,
+    culture.festivalGrade,
+    culture.discountInformation,
+  ].some(hasMeaningfulCultureValue);
+  const visibleAdditionalInformation = getUniqueCultureAdditionalInformation(culture.additionalInformation, [
+    culture.overview,
+    culture.programIntroduction,
+  ]);
 
   return (
     <div className='flex flex-col gap-4'>
@@ -184,11 +208,13 @@ export const MapDetailSheetContent = ({
         <div className='flex flex-wrap items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-3 py-1 text-xs' />
           {culture.guName && (
-            <span className='shadow-2xs rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
+            <span className='rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] shadow-2xs'>
               {culture.guName}
             </span>
           )}
-          <span className={`shadow-2xs rounded-full border px-3 py-1 text-xs font-bold ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}>
+          <span
+            className={`rounded-full border px-3 py-1 text-xs font-bold shadow-2xs ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}
+          >
             {culture.displayPrice}
           </span>
         </div>
@@ -218,13 +244,15 @@ export const MapDetailSheetContent = ({
               onClick={() => onSelectImage(image.url)}
               className={`relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl border bg-[var(--color-surface-chip)] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] ${
                 imageSrc === image.url
-                  ? 'ring-[var(--color-brand-primary)]/40 shadow-xs border-[var(--color-brand-primary)] ring-2'
+                  ? 'ring-[var(--color-brand-primary)]/40 border-[var(--color-brand-primary)] shadow-xs ring-2'
                   : 'border-[var(--color-border-primary)] hover:border-[var(--color-border-control)]'
               }`}
               aria-label={image.name || '추가 이미지 보기'}
               aria-pressed={imageSrc === image.url}
             >
-              {typeof image.thumbnailUrl === 'string' && image.thumbnailUrl.trim() && !failedAdditionalImages[image.url] ? (
+              {typeof image.thumbnailUrl === 'string' &&
+              image.thumbnailUrl.trim() &&
+              !failedAdditionalImages[image.url] ? (
                 <Image
                   src={image.thumbnailUrl}
                   alt=''
@@ -243,77 +271,69 @@ export const MapDetailSheetContent = ({
 
       <CultureDetailFacts culture={culture} extended />
 
-      {culture.overview && (
-        <section className='border-t border-[var(--color-border-primary)] pt-4'>
-          <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>행사 소개</p>
+      {hasOverview && (
+        <section className='border-t border-[var(--color-detail-divider)] pt-4'>
+          <h2 className='text-base font-semibold tracking-tight text-[var(--color-text-primary)]'>행사 소개</h2>
           <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--color-text-secondary)]'>
             {culture.overview}
           </p>
         </section>
       )}
 
-      {culture.programIntroduction && (
-        <section className='border-t border-[var(--color-border-primary)] pt-4'>
-          <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>프로그램</p>
+      {hasProgram && (
+        <section className='border-t border-[var(--color-detail-divider)] pt-4'>
+          <h2 className='text-base font-semibold tracking-tight text-[var(--color-text-primary)]'>프로그램</h2>
           <p className='mt-2 whitespace-pre-line break-words text-sm leading-6 text-[var(--color-text-secondary)]'>
             {culture.programIntroduction}
           </p>
         </section>
       )}
 
-      {(culture.bookingPlace ||
-        culture.placeInformation ||
-        culture.contact ||
-        culture.festivalGrade ||
-        culture.discountInformation) && (
-        <section className='border-t border-[var(--color-border-primary)] pt-4'>
-          <p className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>이용 안내</p>
+      {hasUsageInformation && (
+        <section className='border-t border-[var(--color-detail-divider)] pt-4'>
+          <h2 className='text-base font-semibold tracking-tight text-[var(--color-text-primary)]'>이용 안내</h2>
           <dl className='mt-2 grid gap-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
-            {culture.bookingPlace && (
+            {hasMeaningfulCultureValue(culture.bookingPlace) && (
               <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
                 <dt className='font-semibold text-[var(--color-text-primary)]'>예매처</dt>
-                <dd className='whitespace-pre-line break-words'>{culture.bookingPlace}</dd>
+                <dd className='whitespace-pre-line break-words'>{formatCultureDetailText(culture.bookingPlace)}</dd>
               </div>
             )}
-            {culture.placeInformation && (
+            {hasMeaningfulCultureValue(culture.placeInformation) && (
               <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
-                <dt className='font-semibold text-[var(--color-text-primary)]'>행사장</dt>
-                <dd className='whitespace-pre-line break-words'>{culture.placeInformation}</dd>
+                <dt className='font-semibold text-[var(--color-text-primary)]'>장소 안내</dt>
+                <dd className='whitespace-pre-line break-words'>{formatCultureDetailText(culture.placeInformation)}</dd>
               </div>
             )}
-            {culture.contact && (
-              <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
-                <dt className='font-semibold text-[var(--color-text-primary)]'>문의</dt>
-                <dd className='whitespace-pre-line break-words'>{culture.contact}</dd>
-              </div>
-            )}
-            {culture.festivalGrade && (
+            {hasMeaningfulCultureValue(culture.festivalGrade) && (
               <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
                 <dt className='font-semibold text-[var(--color-text-primary)]'>등급</dt>
                 <dd className='break-words'>{culture.festivalGrade}</dd>
               </div>
             )}
-            {culture.discountInformation && (
+            {hasMeaningfulCultureValue(culture.discountInformation) && (
               <div className='grid grid-cols-[3.8rem_1fr] gap-3'>
                 <dt className='font-semibold text-[var(--color-text-primary)]'>할인</dt>
-                <dd className='whitespace-pre-line break-words'>{culture.discountInformation}</dd>
+                <dd className='whitespace-pre-line break-words'>
+                  {formatCultureDetailText(culture.discountInformation)}
+                </dd>
               </div>
             )}
           </dl>
         </section>
       )}
 
-      {(culture.additionalInformation ?? []).length > 0 && (
-        <details className='group border-t border-[var(--color-border-primary)] pt-4'>
-          <summary className='flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold'>
-            <span className='text-[0.72rem] font-bold uppercase tracking-[0.1em] text-[var(--color-brand-primary)]'>
-              상세 안내
-            </span>
-            <span className='text-xs text-[var(--color-text-secondary)] group-open:hidden'>열기</span>
-            <span className='hidden text-xs text-[var(--color-text-secondary)] group-open:inline'>닫기</span>
+      {visibleAdditionalInformation.length > 0 && (
+        <details open className='group border-t border-[var(--color-detail-divider)] pt-4'>
+          <summary className='flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[var(--color-text-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'>
+            <span>추가 안내</span>
+            <ChevronDown
+              className='size-4 shrink-0 text-[var(--color-text-tertiary)] transition-transform duration-200 group-open:rotate-180'
+              strokeWidth={1.8}
+            />
           </summary>
           <dl className='mt-3 grid gap-3 text-sm leading-6 text-[var(--color-text-secondary)]'>
-            {(culture.additionalInformation ?? []).map((item, index) => (
+            {visibleAdditionalInformation.map((item, index) => (
               <div key={`${item.name}:${index}`}>
                 <dt className='font-semibold text-[var(--color-text-primary)]'>{item.name}</dt>
                 <dd className='mt-1 whitespace-pre-line break-words'>{item.text}</dd>
