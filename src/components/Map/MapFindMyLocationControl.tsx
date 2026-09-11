@@ -1,34 +1,22 @@
 'use client';
 
 import IconButton from '@/components/Common/IconButton';
-import { useCultureContext } from '@/context/CultureContext';
-import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
+import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 
 import React, { useCallback } from 'react';
-import { toast } from 'react-toastify';
 
 import MapFindMyLocationIcon from '../../../public/assets/images/map-find-my-location-icon.svg';
 
 const MapFindMyLocationControl = () => {
-  const { locationStatus, requestLocation, cancelLocation } = useCultureContext();
-  const loading = locationStatus === 'requesting';
+  const { isLocating: loading, requestLocationWithFeedback, toggleLocation } = useExploreLocationControls();
 
   const handleFindMyLocation = useCallback(async () => {
     if (loading) {
-      cancelLocation();
+      await toggleLocation();
       return;
     }
-
-    try {
-      await requestLocation();
-    } catch (error) {
-      if (error instanceof LocationRequestError && error.status === 'cancelled') {
-        toast.info(getGeolocationErrorMessage(error));
-      } else {
-        toast.error(getGeolocationErrorMessage(error));
-      }
-    }
-  }, [cancelLocation, loading, requestLocation]);
+    await requestLocationWithFeedback();
+  }, [loading, requestLocationWithFeedback, toggleLocation]);
 
   return (
     <div className='surface-panel rounded-2xl p-1 shadow-lg backdrop-blur-md'>

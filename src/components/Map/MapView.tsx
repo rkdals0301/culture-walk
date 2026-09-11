@@ -17,6 +17,7 @@ import {
   parseMapExploreStateFromSearch,
   serializeMapExploreStateToSearch,
 } from '@/utils/exploreState';
+import { getMapCamera, getMapListScrollTop, setMapCamera } from '@/utils/exploreNavigationMemory';
 import { type CoordinateGroup, groupItemsByCoordinate } from '@/utils/mapMarkers';
 import { getMapDetailId } from '@/utils/mapRoute';
 
@@ -58,9 +59,6 @@ const MapView = ({
     mapCategory,
     mapFreeOnly,
     mapSortMode,
-    mapListScrollTop,
-    mapCamera,
-    setMapCamera,
   } = useCultureContext();
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
@@ -90,14 +88,14 @@ const MapView = ({
   });
 
   const getCurrentMapCamera = useCallback(() => {
-    if (!mapInstance || !window.kakao?.maps) return mapCamera;
+    if (!mapInstance || !window.kakao?.maps) return getMapCamera();
     const center = mapInstance.getCenter();
     return normalizeMapCameraState({
       lat: center.getLat(),
       lng: center.getLng(),
       level: mapInstance.getLevel(),
     });
-  }, [mapCamera, mapInstance]);
+  }, [mapInstance]);
 
   const goToMapDetail = useCallback(
     (id: number) => {
@@ -109,7 +107,7 @@ const MapView = ({
         mapRegion,
         mapFreeOnly,
         sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
-        mapListScrollTop,
+        mapListScrollTop: getMapListScrollTop(),
         listOpen: false,
         mapCamera: getCurrentMapCamera(),
       });
@@ -126,7 +124,6 @@ const MapView = ({
       getCurrentMapCamera,
       mapCategory,
       mapFreeOnly,
-      mapListScrollTop,
       mapRegion,
       mapSortMode,
       router,

@@ -2,18 +2,16 @@
 
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
+import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import { FormattedCulture } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
+import { getFeedScrollTop, setFeedScrollTop } from '@/utils/exploreNavigationMemory';
 
 import React, { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { CalendarX, Search } from 'lucide-react';
-import { toast } from 'react-toastify';
-
-import type { MapSortMode } from '@/utils/exploreState';
-import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 
 import FeedCultureCard from './FeedCultureCard';
 import FeedFilterRail from './FeedFilterRail';
@@ -34,16 +32,10 @@ const FeedView = () => {
     mapFreeOnly,
     setMapFreeOnly,
     mapSortMode,
-    setMapSortMode,
     currentLocation,
-    setCurrentLocation,
-    requestLocation,
-    cancelLocation,
-    locationStatus,
-    feedScrollTop,
-    setFeedScrollTop,
     resetMapFilters,
   } = useCultureContext();
+  const { changeSortMode, isLocating, toggleLocation } = useExploreLocationControls();
   const {
     cultures,
     totalCount,
@@ -69,20 +61,19 @@ const FeedView = () => {
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const isLocating = locationStatus === 'requesting';
-
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
     setShowScrollTop(scrollTop > 300);
     setFeedScrollTop(scrollTop);
-  }, [setFeedScrollTop]);
+  }, []);
 
   // Restore feed scroll position when returning from detail page
   useEffect(() => {
-    if (feedScrollTop > 0 && feedContentRef.current && cultures.length > 0) {
-      feedContentRef.current.scrollTop = feedScrollTop;
+    const savedScrollTop = getFeedScrollTop();
+    if (savedScrollTop > 0 && feedContentRef.current && cultures.length > 0) {
+      feedContentRef.current.scrollTop = savedScrollTop;
     }
-  }, [cultures.length, feedScrollTop]);
+  }, [cultures.length]);
 
   const handleScrollToTop = useCallback(() => {
     if (feedContentRef.current) {
@@ -165,63 +156,6 @@ const FeedView = () => {
     });
   }, [mapFreeOnly, setMapFreeOnly]);
 
-  const handleToggleLocation = useCallback(async () => {
-    if (locationStatus === 'requesting') {
-      cancelLocation();
-      return;
-    }
-
-    if (currentLocation) {
-      setCurrentLocation(null);
-      if (mapSortMode === 'distance') {
-        setMapSortMode('date');
-      }
-      return;
-    }
-
-    try {
-      await requestLocation();
-    } catch (locationError) {
-      if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
-        toast.info(getGeolocationErrorMessage(locationError));
-      } else {
-        toast.error(getGeolocationErrorMessage(locationError));
-      }
-    }
-  }, [
-    cancelLocation,
-    currentLocation,
-    locationStatus,
-    mapSortMode,
-    requestLocation,
-    setCurrentLocation,
-    setMapSortMode,
-  ]);
-
-  const handleSortChange = useCallback(
-    async (nextMode: MapSortMode) => {
-      if (nextMode === 'distance') {
-        if (!currentLocation) {
-          try {
-            const loc = await requestLocation();
-            if (loc) {
-              setMapSortMode('distance');
-            }
-          } catch (locationError) {
-            if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
-              toast.info(getGeolocationErrorMessage(locationError));
-            } else {
-              toast.error(getGeolocationErrorMessage(locationError));
-            }
-          }
-          return;
-        }
-      }
-      setMapSortMode(nextMode);
-    },
-    [currentLocation, requestLocation, setMapSortMode]
-  );
-
   const handleOpenCulture = useCallback(
     (culture: FormattedCulture) => {
       if (feedContentRef.current) {
@@ -229,7 +163,7 @@ const FeedView = () => {
       }
       router.push(`/cultures/${culture.id}`);
     },
-    [router, setFeedScrollTop]
+    [router]
   );
 
   const isFiltered =
@@ -267,13 +201,13 @@ const FeedView = () => {
         isFreeOnly={mapFreeOnly}
         onToggleFreeOnly={handleToggleFreeOnly}
         currentLocation={currentLocation}
-        onToggleLocation={handleToggleLocation}
+        onToggleLocation={toggleLocation}
         isLocating={isLocating}
         onResetFilters={resetMapFilters}
         isFiltered={isFiltered}
         totalCount={totalCount}
         sortMode={mapSortMode}
-        onChangeSortMode={handleSortChange}
+        onChangeSortMode={changeSortMode}
       />
 
       {/* Main Grid Content Area */}

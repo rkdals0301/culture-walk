@@ -1,16 +1,13 @@
 import { useCultureContext } from '@/context/CultureContext';
+import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import type { FormattedCulture } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
-import {
-  type MapSortMode,
-  getEffectiveMapSortMode,
-  serializeMapExploreStateToSearch,
-} from '@/utils/exploreState';
-import { LocationRequestError, calculateDistanceMeters, getGeolocationErrorMessage } from '@/utils/geo';
+import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } from '@/utils/exploreNavigationMemory';
+import { calculateDistanceMeters } from '@/utils/geo';
 import { getMapDetailId } from '@/utils/mapRoute';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
-import { toast } from 'react-toastify';
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -34,22 +31,15 @@ export const useMapDashboardController = ({
     mapRegion,
     mapFreeOnly,
     mapSortMode,
-    mapCamera,
-    locationStatus,
-    mapListScrollTop,
     setSearchQuery,
     setMapCategory,
     setMapRegion,
     setMapFreeOnly,
     resetMapFilters,
     currentLocation,
-    setCurrentLocation,
     setMapSortMode,
-    setMapCamera,
-    requestLocation: requestLocationFromProvider,
-    cancelLocation,
-    setMapListScrollTop,
   } = useCultureContext();
+  const { changeSortMode: handleSortChange, isLocating, toggleLocation: handleLocationToggle } = useExploreLocationControls();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(true);
 
   useEffect(() => {
@@ -67,7 +57,6 @@ export const useMapDashboardController = ({
   const routeCultureId = getMapDetailId(pathname);
   const isDetailRoute = routeCultureId !== null;
   const selectedCultureId = routeCultureId ?? restoredSelectedCultureId;
-  const isLocating = locationStatus === 'requesting';
 
   const visibleCultures = useMemo(() => {
     if (mapSortMode !== 'distance' || !currentLocation) {
@@ -99,9 +88,7 @@ export const useMapDashboardController = ({
     focusCultureId,
     isMobileSheetVisible,
     mapCategory,
-    mapCamera,
     mapFreeOnly,
-    mapListScrollTop,
     mapRegion,
     mapSortMode,
     restoredSelectedCultureId,
@@ -109,9 +96,7 @@ export const useMapDashboardController = ({
     setFocusCultureId,
     setIsMobileSheetVisible,
     setMapCategory,
-    setMapCamera,
     setMapFreeOnly,
-    setMapListScrollTop,
     setMapRegion,
     setMapSortMode,
     setRestoredSelectedCultureId,
@@ -147,44 +132,6 @@ export const useMapDashboardController = ({
     startFilterTransition(() => setMapRegion(nextRegion));
   };
 
-  const requestLocation = async () => {
-    try {
-      return await requestLocationFromProvider();
-    } catch (locationError) {
-      if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
-        toast.info(getGeolocationErrorMessage(locationError));
-      } else {
-        toast.error(getGeolocationErrorMessage(locationError));
-      }
-      return null;
-    }
-  };
-
-  const handleSortChange = async (nextMode: MapSortMode) => {
-    if (nextMode === 'date') {
-      setMapSortMode('date');
-      return;
-    }
-
-    const location = await requestLocation();
-    if (location) setMapSortMode('distance');
-  };
-
-  const handleLocationToggle = async () => {
-    if (locationStatus === 'requesting') {
-      cancelLocation();
-      return;
-    }
-
-    if (currentLocation) {
-      setCurrentLocation(null);
-      if (mapSortMode === 'distance') setMapSortMode('date');
-      return;
-    }
-
-    await requestLocation();
-  };
-
   const handleOpenCulture = (culture: FormattedCulture) => {
     const serializedSearch = serializeMapExploreStateToSearch({
       searchQuery,
@@ -192,9 +139,9 @@ export const useMapDashboardController = ({
       mapRegion,
       mapFreeOnly,
       sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
-      mapListScrollTop,
+      mapListScrollTop: getMapListScrollTop(),
       listOpen: false,
-      mapCamera,
+      mapCamera: getMapCamera(),
     });
     const detailPath = `/map/${culture.id}`;
     const detailUrl = serializedSearch ? `${detailPath}?${serializedSearch}` : detailPath;
@@ -266,7 +213,7 @@ export const useMapDashboardController = ({
     isMobileSheetVisible,
     mapCategory,
     mapFreeOnly,
-    mapListScrollTop,
+    mapListScrollTop: getMapListScrollTop(),
     mapRegion,
     mapSortMode,
     resetMapFilters,

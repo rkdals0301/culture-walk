@@ -1,12 +1,8 @@
 'use client';
 
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import {
-  type LocationStatus,
-  type MapCameraState,
-  type MapSortMode,
-  normalizeMapCameraState,
-} from '@/utils/exploreState';
+import { type LocationStatus, type MapSortMode } from '@/utils/exploreState';
+import { resetExploreNavigationMemory } from '@/utils/exploreNavigationMemory';
 import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/geo';
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
@@ -20,9 +16,6 @@ interface CultureContextValue {
   mapSortMode: MapSortMode;
   locationStatus: LocationStatus;
   locationError: LocationRequestError | null;
-  mapListScrollTop: number;
-  feedScrollTop: number;
-  mapCamera: MapCameraState | null;
   setSearchQuery: (query: string) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
   setMapRegion: (region: string) => void;
@@ -31,9 +24,6 @@ interface CultureContextValue {
   setMapSortMode: (mode: MapSortMode) => void;
   requestLocation: () => Promise<GeoPoint | null>;
   cancelLocation: () => void;
-  setMapListScrollTop: (scrollTop: number) => void;
-  setFeedScrollTop: (scrollTop: number) => void;
-  setMapCamera: (camera: MapCameraState | null) => void;
   resetMapFilters: () => void;
 }
 
@@ -48,9 +38,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [mapSortMode, setMapSortMode] = useState<MapSortMode>('date');
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
   const [locationError, setLocationError] = useState<LocationRequestError | null>(null);
-  const [mapListScrollTop, setMapListScrollTopState] = useState(0);
-  const [feedScrollTop, setFeedScrollTopState] = useState(0);
-  const [mapCamera, setMapCameraState] = useState<MapCameraState | null>(null);
 
   const locationRequestRef = useRef<{
     controller: AbortController;
@@ -120,36 +107,13 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     request.controller.abort();
   }, []);
 
-  const setMapListScrollTop = useCallback((scrollTop: number) => {
-    setMapListScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
-  }, []);
-
-  const setFeedScrollTop = useCallback((scrollTop: number) => {
-    setFeedScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
-  }, []);
-
-  const setMapCamera = useCallback((camera: MapCameraState | null) => {
-    const normalized = normalizeMapCameraState(camera);
-    setMapCameraState(current => {
-      if (
-        current?.lat === normalized?.lat &&
-        current?.lng === normalized?.lng &&
-        current?.level === normalized?.level
-      ) {
-        return current;
-      }
-      return normalized;
-    });
-  }, []);
-
   const resetMapFilters = useCallback(() => {
     setSearchQueryState('');
     setMapCategory('all');
     setMapRegion('all');
     setMapFreeOnly(false);
     setMapSortMode('date');
-    setMapListScrollTopState(0);
-    setFeedScrollTopState(0);
+    resetExploreNavigationMemory();
     updateCurrentLocation(null);
   }, [updateCurrentLocation]);
 
@@ -163,9 +127,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       mapSortMode,
       locationStatus,
       locationError,
-      mapListScrollTop,
-      feedScrollTop,
-      mapCamera,
       setSearchQuery,
       setMapCategory,
       setMapRegion,
@@ -174,9 +135,6 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       setMapSortMode,
       requestLocation,
       cancelLocation,
-      setMapListScrollTop,
-      setFeedScrollTop,
-      setMapCamera,
       resetMapFilters,
     }),
     [
@@ -188,17 +146,11 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       mapSortMode,
       locationStatus,
       locationError,
-      mapListScrollTop,
-      feedScrollTop,
-      mapCamera,
       setSearchQuery,
       updateCurrentLocation,
       setMapSortMode,
       requestLocation,
       cancelLocation,
-      setMapListScrollTop,
-      setFeedScrollTop,
-      setMapCamera,
       resetMapFilters,
     ]
   );

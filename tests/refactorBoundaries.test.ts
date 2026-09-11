@@ -22,6 +22,30 @@ test('MapDashboard keeps navigation and exploration side effects in its controll
   assert.doesNotMatch(source, /useCultureContext|useMapExploreUrlSync|usePathname|useRouter|LocationRequestError|toast\./);
 });
 
+test('feed and map navigation memory stays outside the global reactive culture context', async () => {
+  const [context, feed, mapView] = await Promise.all([
+    readProjectFile('../src/context/CultureContext.tsx'),
+    readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/components/Map/MapView.tsx'),
+  ]);
+
+  assert.doesNotMatch(context, /useState\([^\n]*ScrollTop|useState<[^>]*MapCameraState/);
+  assert.match(feed, /exploreNavigationMemory/);
+  assert.match(mapView, /exploreNavigationMemory/);
+});
+
+test('feed and map reuse one shared location and distance-sort controller', async () => {
+  const [feed, mapController, mapLocationControl] = await Promise.all([
+    readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/hooks/useMapDashboardController.ts'),
+    readProjectFile('../src/components/Map/MapFindMyLocationControl.tsx'),
+  ]);
+
+  assert.match(feed, /useExploreLocationControls/);
+  assert.match(mapController, /useExploreLocationControls/);
+  assert.match(mapLocationControl, /useExploreLocationControls/);
+});
+
 test('MapDetailSheetClient owns lifecycle state while detail presentation lives in a separate component', async () => {
   const source = await readProjectFile('../src/components/Map/MapDetailSheetClient.tsx');
 

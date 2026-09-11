@@ -35,15 +35,15 @@ test('FeedView와 CultureList는 리스트 스크롤 시 탑으로 이동할 수
   assert.match(cultureList, /showScrollTop/, 'CultureList must track scroll top visibility');
 });
 
-test('FeedView는 활성화된 내 주변 위치를 다시 클릭했을 때 위치를 끄고 정렬을 기본값으로 복귀한다', () => {
-  const feedView = readFileSync(
-    resolve(__dirname, '../src/components/Feed/FeedView.tsx'),
+test('공통 탐색 위치 컨트롤은 활성화된 내 주변 위치를 다시 클릭했을 때 위치를 끄고 정렬을 기본값으로 복귀한다', () => {
+  const locationControls = readFileSync(
+    resolve(__dirname, '../src/hooks/useExploreLocationControls.ts'),
     'utf-8'
   );
   assert.match(
-    feedView,
+    locationControls,
     /if\s*\(\s*currentLocation\s*\)\s*\{[\s\S]*?setCurrentLocation\(null\);[\s\S]*?setMapSortMode\('date'\);/,
-    'FeedView must reset currentLocation to null and revert sort mode to date when location is toggled off'
+    'shared location controls must reset currentLocation to null and revert sort mode to date when location is toggled off'
   );
 });
 
