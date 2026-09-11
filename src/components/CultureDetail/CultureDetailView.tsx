@@ -232,8 +232,8 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
       id='culture-detail-scroll-container'
       className='relative h-full overflow-y-auto bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors'
     >
-      {/* 1. Refined Minimal Sticky Navigation Header */}
-      <header className='sticky top-0 z-40 border-b border-[var(--color-border-primary)]/80 bg-[var(--color-surface-primary)]/90 backdrop-blur-md transition-colors'>
+      {/* 1. Solid Navigation Header (No transparency) */}
+      <header className='sticky top-0 z-40 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] transition-colors'>
         <div className='mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8'>
           <button
             type='button'
@@ -619,8 +619,8 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
         </div>
       </main>
 
-      {/* 8. Mobile Floating Bottom Action Bar (Hidden on desktop) */}
-      <footer className='fixed inset-x-0 bottom-0 z-30 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]/95 p-3 shadow-lg backdrop-blur-md transition-colors pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] lg:hidden'>
+      {/* 8. Mobile Floating Bottom Action Bar (Solid opaque surface, hidden on desktop) */}
+      <footer className='fixed inset-x-0 bottom-0 z-30 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] p-3 shadow-lg transition-colors pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] lg:hidden'>
         <div className='mx-auto flex max-w-lg items-center justify-between gap-2.5'>
           <button
             type='button'
