@@ -196,7 +196,28 @@ export const getCulturePublicListSnapshot = async (
   if (cached) return cached;
 
   const d1 = options?.d1 ?? (env?.DB as D1Binding | undefined);
-  if (!d1) return null;
+  if (!d1) {
+    if (process.env.NODE_ENV === 'development' && !options) {
+      try {
+        const prodUrl = process.env.APP_BASE_URL || 'https://culturewalk.gangmin.dev';
+        const res = await fetch(`${prodUrl}/api/cultures`);
+        if (res.ok) {
+          const items = (await res.json()) as CultureListItem[];
+          if (Array.isArray(items) && items.length) {
+            return {
+              items: filterCurrentCultureListItems(items),
+              source: 'kv-read-model',
+              cachedAt: new Date().toISOString(),
+              revisions: {},
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('[read-model] Local dev proxy fallback failed', err);
+      }
+    }
+    return null;
+  }
 
   if (options) {
     return readCultureListFromD1AndWarmCache(d1, cache);

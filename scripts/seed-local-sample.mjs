@@ -292,7 +292,7 @@ const buildUpsertStatement = (tableName, columns, rows, conflictColumn) => {
 const buildInsertStatements = (tableName, columns, rows, conflictColumn) => {
   if (rows.length === 0) return '';
 
-  const rowsPerStatement = tableName === 'cultures' ? 10 : 50;
+  const rowsPerStatement = tableName === 'cultures' ? 10 : 5;
   const statements = [];
   for (let index = 0; index < rows.length; index += rowsPerStatement) {
     statements.push(

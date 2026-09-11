@@ -38,7 +38,7 @@ const FeedFilterRail = ({
   isFiltered,
 }: FeedFilterRailProps) => {
   return (
-    <div className='sticky top-14 sm:top-16 z-20 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]/95 backdrop-blur-md transition-colors'>
+    <div className='sticky top-14 sm:top-16 z-20 border-b border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] shadow-2xs transition-colors'>
       <div className='mx-auto max-w-7xl px-4 py-2.5 sm:px-6 lg:px-8'>
         {/* Toss App Horizontal Category Scroll Chips */}
         <div
@@ -77,7 +77,7 @@ const FeedFilterRail = ({
                 aria-label='지역 필터'
                 value={selectedRegion}
                 onChange={e => onSelectRegion(e.target.value)}
-                className='h-8 sm:h-9 appearance-none rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] pl-3 pr-7 text-base sm:text-xs font-semibold text-[var(--color-text-primary)] shadow-2xs transition-colors hover:border-[var(--color-border-control)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)]'
+                className='h-8 sm:h-9 appearance-none rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] pl-3 pr-7 text-xs font-semibold text-[var(--color-text-primary)] shadow-2xs transition-colors hover:border-[var(--color-border-control)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)]'
               >
                 <option value='all'>전국 전체</option>
                 {regionOptions.map(region => (

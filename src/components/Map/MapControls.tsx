@@ -57,7 +57,7 @@ export const MapFilterControls = ({
           value={region}
           onChange={event => onRegionChange(event.target.value)}
           aria-label='지역 필터'
-          className='h-10 w-full cursor-pointer rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 pr-8 text-base sm:text-xs font-semibold text-[var(--color-text-primary)] transition hover:border-[var(--color-input-hover)] focus-visible:border-[var(--color-input-focus)]'
+          className='h-10 w-full cursor-pointer rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 pr-8 text-xs font-semibold text-[var(--color-text-primary)] transition hover:border-[var(--color-input-hover)] focus-visible:border-[var(--color-input-focus)]'
         >
           <option value='all'>전국 (전체 지역)</option>
           {regionOptions.map(option => (

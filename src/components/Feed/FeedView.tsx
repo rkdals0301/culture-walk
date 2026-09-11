@@ -6,7 +6,7 @@ import { FormattedCulture } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 
-import React, { useCallback, useEffect, useRef, useTransition } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +17,7 @@ import FeedFilterRail from './FeedFilterRail';
 import FeedHeader from './FeedHeader';
 import FeedSkeleton from './FeedSkeleton';
 import FloatingMapButton from './FloatingMapButton';
+import ScrollToTopButton from './ScrollToTopButton';
 
 const FeedView = () => {
   const router = useRouter();
@@ -57,8 +58,20 @@ const FeedView = () => {
   const [, startTransition] = useTransition();
   const feedContentRef = useRef<HTMLDivElement>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const isLocating = locationStatus === 'requesting';
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setShowScrollTop(e.currentTarget.scrollTop > 300);
+  }, []);
+
+  const handleScrollToTop = useCallback(() => {
+    if (feedContentRef.current) {
+      feedContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -167,6 +180,7 @@ const FeedView = () => {
     <div
       ref={feedContentRef}
       id='feed-content'
+      onScroll={handleScroll}
       className='relative h-full overflow-y-auto bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]'
     >
       {/* Editorial Header with Inline Search */}
@@ -278,6 +292,11 @@ const FeedView = () => {
 
       {/* Floating Map Switcher */}
       <FloatingMapButton />
+
+      {/* Floating Scroll to Top Button */}
+      <div className='fixed right-4 sm:right-6 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-40'>
+        <ScrollToTopButton visible={showScrollTop} onClick={handleScrollToTop} />
+      </div>
     </div>
   );
 };
