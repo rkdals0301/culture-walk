@@ -77,7 +77,7 @@ const FeedFilterRail = ({
                 aria-label='지역 필터'
                 value={selectedRegion}
                 onChange={e => onSelectRegion(e.target.value)}
-                className='h-8 sm:h-9 appearance-none rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] pl-3 pr-7 text-xs font-semibold text-[var(--color-text-primary)] shadow-2xs transition-colors hover:border-[var(--color-border-control)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)]'
+                className='h-8 sm:h-9 appearance-none rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] pl-3 pr-7 text-base sm:text-xs font-semibold text-[var(--color-text-primary)] shadow-2xs transition-colors hover:border-[var(--color-border-control)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-focus-ring)]'
               >
                 <option value='all'>전국 전체</option>
                 {regionOptions.map(region => (

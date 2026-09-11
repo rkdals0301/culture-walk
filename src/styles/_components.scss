@@ -1,4 +1,4 @@
-﻿.map-server-cluster {
+.map-server-cluster {
   display: inline-flex;
   min-width: 3.25rem;
   height: 3.25rem;
@@ -483,6 +483,15 @@ textarea {
   box-shadow: none;
   appearance: none;
   touch-action: manipulation;
+}
+
+/* iOS Safari Auto-Zoom Prevention: Ensure form controls are at least 16px on mobile viewports */
+@media screen and (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 :where(a, button, input, optgroup, select, textarea, summary):focus-visible {

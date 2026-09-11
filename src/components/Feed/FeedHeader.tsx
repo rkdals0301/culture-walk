@@ -28,6 +28,7 @@ const FeedHeader = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearchChange(inputValue.trim());
+    (e.currentTarget.querySelector('input') as HTMLInputElement | null)?.blur();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +70,8 @@ const FeedHeader = ({
               value={inputValue}
               onChange={handleInputChange}
               placeholder='행사명, 장소 검색'
-              className='h-full flex-1 bg-transparent px-2.5 font-medium text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none'
+              enterKeyHint='search'
+              className='h-full flex-1 bg-transparent px-2.5 text-base sm:text-sm font-medium text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none'
               autoComplete='off'
               spellCheck={false}
             />

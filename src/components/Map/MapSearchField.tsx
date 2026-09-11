@@ -14,7 +14,10 @@ const MapSearchField = ({ id, value, onChange, compact = false }: MapSearchField
     className={`shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 flex items-center rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 ${
       compact ? 'h-10 gap-2 px-3' : 'h-11 gap-2.5 px-3.5'
     }`}
-    onSubmit={event => event.preventDefault()}
+    onSubmit={event => {
+      event.preventDefault();
+      (event.currentTarget.querySelector('input') as HTMLInputElement | null)?.blur();
+    }}
   >
     <SearchIcon className={`${compact ? 'size-4' : 'size-[18px]'} shrink-0 text-[var(--color-brand-primary)]`} />
     <input
@@ -28,7 +31,7 @@ const MapSearchField = ({ id, value, onChange, compact = false }: MapSearchField
       spellCheck={false}
       enterKeyHint='search'
       className={`min-w-0 flex-1 bg-transparent font-medium placeholder:text-[var(--color-text-secondary)] ${
-        compact ? 'text-xs sm:text-sm' : 'text-sm'
+        compact ? 'text-base sm:text-xs' : 'text-base sm:text-sm'
       }`}
     />
     {value && (
