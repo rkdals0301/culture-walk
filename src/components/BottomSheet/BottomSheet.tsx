@@ -125,7 +125,7 @@ const BottomSheet = () => {
           />
           <motion.div
             ref={panelRef}
-            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden rounded-b-none rounded-t-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl md:inset-x-auto md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:h-[calc(100dvh-72px)] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
+            className='bottom-sheet-panel surface-panel pointer-events-auto fixed inset-x-0 bottom-0 z-50 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden rounded-b-none rounded-t-[24px] bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl md:inset-x-auto md:left-auto md:right-6 md:w-[420px] lg:h-auto min-[1280px]:left-[var(--map-sidebar-width)] min-[1280px]:right-auto min-[1280px]:top-[var(--map-header-height,64px)] min-[1280px]:h-[calc(100dvh-var(--map-header-height,64px))] min-[1280px]:w-[480px] min-[1280px]:rounded-none min-[1280px]:border-b-0 min-[1280px]:border-l-0 min-[1280px]:border-t-0 min-[1280px]:shadow-none'
             role='dialog'
             aria-hidden={isSideMenuOpen}
             aria-modal={isInteractive}

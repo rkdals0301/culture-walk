@@ -50,7 +50,11 @@ export const useMapDashboardController = ({
     cancelLocation,
     setMapListScrollTop,
   } = useCultureContext();
-  const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(false);
+  const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('list') !== 'open';
+  });
   const [isMobileSheetVisible, setIsMobileSheetVisible] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [focusCultureId, setFocusCultureId] = useState<number | null>(null);

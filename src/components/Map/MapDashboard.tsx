@@ -7,13 +7,13 @@ import MapResultSummary from '@/components/Map/MapResultSummary';
 import MapSearchField from '@/components/Map/MapSearchField';
 import { useMapDashboardController } from '@/hooks/useMapDashboardController';
 import { FormattedCulture } from '@/types/culture';
+import { CULTURE_CATEGORY_OPTIONS } from '@/utils/cultureCategory';
 
 import clsx from 'clsx';
-import { ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
-
-import ArrowBackIcon from '../../../public/assets/images/arrow-back-icon.svg';
+import { ChevronUp, List, ListFilter, MapPinned, X } from 'lucide-react';
 
 const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
+
 interface MapDashboardProps {
   listRequest?: number;
   visibleCultures: FormattedCulture[];
@@ -79,39 +79,69 @@ const MapDashboard = ({
       className='pointer-events-none absolute inset-0 scroll-mt-24 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
     >
       {!isDetailRoute && <h1 className='sr-only'>전국 문화행사 지도</h1>}
-      <aside
-        data-keeps-detail-open
-        className={clsx(
-          'pointer-events-auto absolute bottom-0 left-0 top-[72px] z-20 hidden overflow-hidden text-[var(--color-text-primary)] transition-[width] duration-[280ms]',
-          'md:flex',
-          isDesktopPanelCollapsed
-            ? 'border-r-0'
-            : 'border-r border-[var(--color-border-primary)] bg-[var(--color-surface-primary)]'
-        )}
-        style={{ width: 'var(--map-sidebar-width)' }}
-        aria-label='문화행사 탐색 패널'
-      >
-        {!isDesktopPanelCollapsed && (
-          <section className='flex h-full w-[400px] min-w-[400px] flex-col overflow-hidden'>
-            <div className='shrink-0 border-b border-[var(--color-border-primary)] px-5 pb-4 pt-5'>
-              <div className='flex items-start justify-between gap-3'>
-                <div className='min-w-0'>
-                  <h2 className='text-xl font-bold tracking-tight text-[var(--color-text-primary)]'>행사 찾기</h2>
-                  <p className='mt-1 text-xs font-medium text-[var(--color-text-secondary)]'>
-                    지도와 목록에서 원하는 행사를 찾아보세요
-                  </p>
-                </div>
-                <button
-                  type='button'
-                  onClick={() => setIsDesktopPanelCollapsed(true)}
-                  className='soft-chip flex size-10 shrink-0 items-center justify-center rounded-xl text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
-                  aria-label='행사 목록 패널 접기'
-                  title='행사 목록 접기'
-                >
-                  <ArrowBackIcon className='size-4' />
-                </button>
-              </div>
 
+      {/* ========================================================================= */}
+      {/* DESKTOP (md:): Option A - Modern Full-Screen Map with Floating Controls  */}
+      {/* ========================================================================= */}
+
+      {/* 1. Floating Slide-over List Panel (Expanded State) */}
+      {!isDetailRoute && !isDesktopPanelCollapsed && (
+        <aside
+          data-keeps-detail-open
+          className='pointer-events-auto absolute bottom-4 left-4 top-[calc(var(--map-header-height)+1rem)] z-30 hidden w-[420px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] shadow-2xl transition-all duration-300 md:flex'
+          aria-label='문화행사 탐색 패널'
+        >
+          {/* Header section with Search & Filters */}
+          <div className='shrink-0 border-b border-[var(--color-border-primary)] p-4'>
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex items-center gap-2'>
+                <h2 className='text-base font-bold tracking-tight text-[var(--color-text-primary)]'>행사 목록</h2>
+                <span className='rounded-full bg-[var(--color-surface-chip)] px-2.5 py-0.5 text-xs font-bold text-[var(--color-brand-primary)]'>
+                  {viewportCount.toLocaleString()}개
+                </span>
+              </div>
+              <button
+                type='button'
+                onClick={() => setIsDesktopPanelCollapsed(true)}
+                className='soft-chip flex size-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)] active:scale-95'
+                aria-label='목록 접고 전체 지도 보기'
+                title='목록 접고 전체 지도 보기'
+              >
+                <X className='size-4' />
+              </button>
+            </div>
+
+            <div className='mt-3'>
+              <MapSearchField id='map-search-input' value={searchQuery} onChange={setSearchQuery} />
+            </div>
+
+            <div className='mt-2.5'>
+              <MapFilterControls
+                category={mapCategory}
+                freeOnly={mapFreeOnly}
+                region={mapRegion}
+                regionOptions={regionOptions}
+                onCategoryChange={handleCategoryChange}
+                onFreeOnlyChange={handleFreeOnlyChange}
+                onRegionChange={handleRegionChange}
+              />
+            </div>
+
+            <div className='mt-2.5 flex items-center justify-between gap-2 border-t border-[var(--color-border-primary)] pt-2.5 text-xs'>
+              <div className='flex items-center gap-1.5'>
+                <MapSortControl
+                  mode={mapSortMode}
+                  hasLocation={Boolean(currentLocation)}
+                  isLocating={isLocating}
+                  onChange={handleSortChange}
+                />
+                <MapLocationControl
+                  isActive={Boolean(currentLocation)}
+                  isLocating={isLocating}
+                  onToggle={handleLocationToggle}
+                  compact
+                />
+              </div>
               <MapResultSummary
                 visibleCount={viewportCount}
                 totalCount={totalCount}
@@ -120,92 +150,144 @@ const MapDashboard = ({
                 hasActiveFilters={hasActiveFilters}
                 isLoading={isLoading}
                 onReset={resetMapFilters}
+                compact
               />
-
-              <div className='mt-3'>
-                <MapSearchField id='map-search-input' value={searchQuery} onChange={setSearchQuery} />
-              </div>
-
-              <div className='mt-3 border-t border-[var(--color-border-primary)] pt-3'>
-                <MapFilterControls
-                  category={mapCategory}
-                  freeOnly={mapFreeOnly}
-                  region={mapRegion}
-                  regionOptions={regionOptions}
-                  onCategoryChange={handleCategoryChange}
-                  onFreeOnlyChange={handleFreeOnlyChange}
-                  onRegionChange={handleRegionChange}
-                />
-              </div>
-
-              <div className='mt-3 flex items-center justify-between gap-3 border-t border-[var(--color-border-primary)] pt-3 text-xs text-[var(--color-text-secondary)]'>
-                <div className='flex min-w-0 items-center gap-2'>
-                  <span className='hidden shrink-0 text-[0.68rem] font-semibold text-[var(--color-text-secondary)] sm:inline'>
-                    정렬
-                  </span>
-                  <MapSortControl
-                    mode={mapSortMode}
-                    hasLocation={Boolean(currentLocation)}
-                    isLocating={isLocating}
-                    onChange={handleSortChange}
-                  />
-                  <MapLocationControl
-                    isActive={Boolean(currentLocation)}
-                    isLocating={isLocating}
-                    onToggle={handleLocationToggle}
-                  />
-                </div>
-                <span className='shrink-0 font-medium text-[var(--color-text-secondary)]'>지도와 동기화</span>
-              </div>
-
-              {ADSENSE_MAP_PANEL_SLOT && (
-                <div className='mt-3 border-t border-[var(--color-border-primary)] pt-3'>
-                  <GoogleAdSlot slot={ADSENSE_MAP_PANEL_SLOT} className='min-h-[88px]' />
-                </div>
-              )}
             </div>
-            <div className='min-h-0 flex-1 px-1 pb-1 pt-1'>
-              <div
-                key={filterMotionKey}
-                className='map-filter-results h-full min-h-0'
-                data-filter-pending={isFilterPending ? 'true' : undefined}
-                aria-busy={isFilterPending}
-              >
-                <MapListPanelContent
-                  cultures={visibleCultures}
-                  currentLocation={currentLocation}
-                  error={error}
-                  hasActiveFilters={hasActiveFilters}
-                  initialScrollTop={mapListScrollTop}
-                  isClustered={isClustered}
-                  isLoading={isLoading}
-                  onItemClick={handleOpenCulture}
-                  onResetFilters={resetMapFilters}
-                  onRetry={onRetry}
-                  onScrollPositionChange={setMapListScrollTop}
-                  selectedCultureId={selectedCultureId}
-                />
-              </div>
-            </div>
-          </section>
-        )}
-      </aside>
 
-      {isDesktopPanelCollapsed && !isDetailRoute && (
-        <button
-          type='button'
-          onClick={() => setIsDesktopPanelCollapsed(false)}
-          className='pointer-events-auto absolute left-0 top-1/2 z-20 hidden h-14 w-8 -translate-y-1/2 items-center justify-center rounded-r-lg border border-l-0 border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] text-[var(--color-text-primary)] shadow-[var(--color-shadow-soft)] transition hover:w-9 hover:bg-[var(--color-surface-secondary)] active:bg-[var(--color-interactive-active)] md:flex'
-          aria-label='행사 목록 패널 펼치기'
-          title='행사 목록 펼치기'
-        >
-          <ArrowBackIcon className='size-4 rotate-180' />
-          {hasActiveFilters && (
-            <span className='absolute right-1 top-1.5 size-1.5 rounded-full bg-[var(--color-accent-primary)]' />
-          )}
-        </button>
+            {ADSENSE_MAP_PANEL_SLOT && (
+              <div className='mt-2.5 border-t border-[var(--color-border-primary)] pt-2.5'>
+                <GoogleAdSlot slot={ADSENSE_MAP_PANEL_SLOT} className='min-h-[60px]' />
+              </div>
+            )}
+          </div>
+
+          {/* Scrollable Virtualized Event List */}
+          <div className='min-h-0 flex-1 px-1 py-1'>
+            <div
+              key={filterMotionKey}
+              className='map-filter-results h-full min-h-0'
+              data-filter-pending={isFilterPending ? 'true' : undefined}
+              aria-busy={isFilterPending}
+            >
+              <MapListPanelContent
+                cultures={visibleCultures}
+                currentLocation={currentLocation}
+                error={error}
+                hasActiveFilters={hasActiveFilters}
+                initialScrollTop={mapListScrollTop}
+                isClustered={isClustered}
+                isLoading={isLoading}
+                onItemClick={handleOpenCulture}
+                onResetFilters={resetMapFilters}
+                onRetry={onRetry}
+                onScrollPositionChange={setMapListScrollTop}
+                selectedCultureId={selectedCultureId}
+              />
+            </div>
+          </div>
+        </aside>
       )}
 
+      {/* 2. Compact Floating Search & Filter Pill Card (Collapsed State) */}
+      {!isDetailRoute && isDesktopPanelCollapsed && (
+        <aside
+          data-keeps-detail-open
+          className='pointer-events-auto absolute left-4 top-[calc(var(--map-header-height)+1rem)] z-30 hidden w-[420px] max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] p-3.5 shadow-xl transition-all duration-200 md:flex'
+          aria-label='문화행사 빠른 검색'
+        >
+          {/* Top Search bar + List expand trigger */}
+          <div className='flex items-center gap-2'>
+            <div className='min-w-0 flex-1'>
+              <MapSearchField id='map-search-input-collapsed' value={searchQuery} onChange={setSearchQuery} compact />
+            </div>
+            <button
+              type='button'
+              onClick={() => setIsDesktopPanelCollapsed(false)}
+              className='inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-[var(--color-brand-on-primary)] shadow-sm transition hover:opacity-95 active:scale-95'
+              aria-label='행사 목록 펼치기'
+              title='행사 목록 펼치기'
+            >
+              <List className='size-4' />
+              <span>목록</span>
+              <span className='rounded-full bg-white/20 px-1.5 py-0.5 text-[0.68rem] font-bold'>
+                {viewportCount.toLocaleString()}
+              </span>
+            </button>
+          </div>
+
+          {/* Category Chips */}
+          <div className='grid grid-cols-5 gap-1' role='group' aria-label='행사 분류 필터'>
+            {CULTURE_CATEGORY_OPTIONS.map(option => {
+              const isActive = mapCategory === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type='button'
+                  onClick={() => handleCategoryChange(option.key)}
+                  aria-pressed={isActive}
+                  className={clsx(
+                    'h-8 min-w-0 whitespace-nowrap rounded-lg px-1 text-[0.72rem] font-bold transition-all duration-150',
+                    isActive
+                      ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-xs'
+                      : 'border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)]'
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick controls row: Sort, Location, Free toggle, Reset */}
+          <div className='flex items-center justify-between gap-1.5 border-t border-[var(--color-border-primary)] pt-2 text-xs'>
+            <div className='flex items-center gap-1.5'>
+              <MapSortControl
+                mode={mapSortMode}
+                hasLocation={Boolean(currentLocation)}
+                isLocating={isLocating}
+                onChange={handleSortChange}
+              />
+              <MapLocationControl
+                isActive={Boolean(currentLocation)}
+                isLocating={isLocating}
+                onToggle={handleLocationToggle}
+                compact
+              />
+            </div>
+            <div className='flex items-center gap-1.5'>
+              <label
+                className={clsx(
+                  'flex h-8 shrink-0 cursor-pointer select-none items-center gap-1 rounded-lg border px-2 text-[0.72rem] font-bold transition-all',
+                  mapFreeOnly
+                    ? 'border-[var(--color-success)] bg-[var(--color-success-subtle)] text-[var(--color-success-text)]'
+                    : 'border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-chip)]'
+                )}
+              >
+                <input
+                  type='checkbox'
+                  checked={mapFreeOnly}
+                  onChange={e => handleFreeOnlyChange(e.target.checked)}
+                  className='sr-only'
+                />
+                무료만
+              </label>
+              {hasActiveFilters && (
+                <button
+                  type='button'
+                  onClick={resetMapFilters}
+                  className='text-[0.72rem] font-semibold text-[var(--color-brand-primary)] underline-offset-2 hover:underline'
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MOBILE (< md): Native Mobile Bottom Sheet Experience                     */}
+      {/* ========================================================================= */}
       <div className='pointer-events-none flex h-full w-full flex-col pt-[5.4rem] sm:pt-[6rem] md:hidden'>
         {!isDetailRoute && isMobileSheetVisible ? (
           <section

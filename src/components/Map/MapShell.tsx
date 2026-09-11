@@ -64,7 +64,7 @@ const MapShell = ({ children }: MapShellProps) => {
         />
       </div>
       <div className='map-top-scrim pointer-events-none absolute z-10 h-28 sm:h-32 lg:h-16' />
-      <div className='safe-area-map-feed-link pointer-events-none absolute z-20 flex'>
+      <div className='safe-area-map-feed-link pointer-events-none absolute z-20 flex lg:hidden'>
         <Link
           href='/'
           className='group pointer-events-auto inline-flex min-h-9 items-center gap-2 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-3.5 py-2 text-xs font-bold text-[var(--color-text-primary)] shadow-md transition-all duration-150 hover:text-[var(--color-brand-primary)] active:scale-95'
