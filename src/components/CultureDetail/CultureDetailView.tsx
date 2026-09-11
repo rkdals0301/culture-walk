@@ -277,7 +277,7 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
           </button>
 
           <div className='flex min-w-0 flex-1 items-center justify-center px-4'>
-            <span className='truncate text-xs font-semibold text-[var(--color-text-secondary)] sm:text-sm'>
+            <span className='truncate text-[0.9375rem] font-semibold text-[var(--color-text-secondary)] sm:text-sm'>
               {culture.title}
             </span>
           </div>
