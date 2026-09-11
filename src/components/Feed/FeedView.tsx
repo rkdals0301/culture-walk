@@ -11,6 +11,9 @@ import React, { useCallback, useEffect, useRef, useState, useTransition } from '
 import { useRouter } from 'next/navigation';
 
 import { CalendarX, Search } from 'lucide-react';
+import { toast } from 'react-toastify';
+
+import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 
 import FeedCultureCard from './FeedCultureCard';
 import FeedFilterRail from './FeedFilterRail';
@@ -31,7 +34,9 @@ const FeedView = () => {
     mapFreeOnly,
     setMapFreeOnly,
     mapSortMode,
+    setMapSortMode,
     currentLocation,
+    setCurrentLocation,
     requestLocation,
     cancelLocation,
     locationStatus,
@@ -152,8 +157,33 @@ const FeedView = () => {
       cancelLocation();
       return;
     }
-    await requestLocation();
-  }, [cancelLocation, locationStatus, requestLocation]);
+
+    if (currentLocation) {
+      setCurrentLocation(null);
+      if (mapSortMode === 'distance') {
+        setMapSortMode('date');
+      }
+      return;
+    }
+
+    try {
+      await requestLocation();
+    } catch (locationError) {
+      if (locationError instanceof LocationRequestError && locationError.status === 'cancelled') {
+        toast.info(getGeolocationErrorMessage(locationError));
+      } else {
+        toast.error(getGeolocationErrorMessage(locationError));
+      }
+    }
+  }, [
+    cancelLocation,
+    currentLocation,
+    locationStatus,
+    mapSortMode,
+    requestLocation,
+    setCurrentLocation,
+    setMapSortMode,
+  ]);
 
   const handleOpenCulture = useCallback(
     (culture: FormattedCulture) => {
@@ -173,7 +203,12 @@ const FeedView = () => {
     [currentLocation, mapCategory, mapFreeOnly, mapRegion, mapSortMode, router, searchQuery]
   );
 
-  const isFiltered = mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly || Boolean(searchQuery);
+  const isFiltered =
+    mapCategory !== 'all' ||
+    mapRegion !== 'all' ||
+    mapFreeOnly ||
+    Boolean(searchQuery) ||
+    Boolean(currentLocation);
   const handleClearSearch = useCallback(() => setSearchQuery(''), [setSearchQuery]);
 
   return (

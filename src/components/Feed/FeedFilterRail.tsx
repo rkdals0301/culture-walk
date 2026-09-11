@@ -113,6 +113,9 @@ const FeedFilterRail = ({
               type='button'
               onClick={onToggleLocation}
               disabled={isLocating}
+              aria-pressed={Boolean(currentLocation)}
+              aria-label={isLocating ? '위치 확인 취소' : currentLocation ? '내 주변 해제' : '내 위치'}
+              title={isLocating ? '위치 확인 취소' : currentLocation ? '내 주변 해제' : '내 위치'}
               className={`flex h-8 sm:h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition-all active:scale-[0.97] ${
                 currentLocation
                   ? 'border-[var(--color-brand-primary)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] font-bold'

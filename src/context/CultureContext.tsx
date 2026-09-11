@@ -142,7 +142,8 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapFreeOnly(false);
     setMapSortMode('date');
     setMapListScrollTopState(0);
-  }, []);
+    updateCurrentLocation(null);
+  }, [updateCurrentLocation]);
 
   const value = useMemo(
     () => ({
