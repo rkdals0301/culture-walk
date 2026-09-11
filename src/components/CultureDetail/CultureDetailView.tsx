@@ -6,7 +6,7 @@ import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import type { FormattedCulture } from '@/types/culture';
 import { getCulturePriceTone } from '@/utils/cultureUtils';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,16 +16,20 @@ import {
   Calendar,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Compass,
   Copy,
   ExternalLink,
   MapPin,
+  Maximize2,
   Navigation,
   Phone,
   Share2,
   Ticket,
   Users,
+  X,
 } from 'lucide-react';
 
 interface CultureDetailViewProps {
@@ -72,20 +76,89 @@ const PRICE_BADGE_STYLE = {
 
 const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
   const router = useRouter();
-  const [activeImage, setActiveImage] = useState<string | undefined>(culture.mainImage);
+
+  // Consolidate all available images into a unified gallery list
+  const imageList = useMemo(() => {
+    const list: string[] = [];
+    if (culture.mainImage && !culture.mainImage.includes('/assets/images/logo')) {
+      list.push(culture.mainImage);
+    }
+    (culture.additionalImages ?? []).forEach(img => {
+      if (img.url && !list.includes(img.url)) {
+        list.push(img.url);
+      }
+    });
+    return list;
+  }, [culture.additionalImages, culture.mainImage]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  const currentImageUrl = imageList[currentIndex] || culture.mainImage;
 
   const dday = useMemo(() => getDDayText(culture.startDate, culture.endDate), [culture.startDate, culture.endDate]);
   const priceTone = getCulturePriceTone(culture);
 
   const hasCultureImage =
-    typeof activeImage === 'string' &&
-    Boolean(activeImage.trim()) &&
+    typeof currentImageUrl === 'string' &&
+    Boolean(currentImageUrl.trim()) &&
     !imageFailed &&
-    !activeImage.includes('/assets/images/logo');
+    !currentImageUrl.includes('/assets/images/logo');
 
   const fullAddress = culture.place || culture.guName || '';
+
+  // Gallery Navigation Handlers
+  const handlePrevImage = useCallback(() => {
+    if (imageList.length <= 1) return;
+    setCurrentIndex(prev => (prev > 0 ? prev - 1 : imageList.length - 1));
+    setImageFailed(false);
+  }, [imageList.length]);
+
+  const handleNextImage = useCallback(() => {
+    if (imageList.length <= 1) return;
+    setCurrentIndex(prev => (prev < imageList.length - 1 ? prev + 1 : 0));
+    setImageFailed(false);
+  }, [imageList.length]);
+
+  // Touch Gesture Swipe Handlers (Non-intrusive to vertical scroll)
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Trigger only if horizontal swipe dominates vertical scroll and exceeds 35px
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 35) {
+      if (deltaX < 0) {
+        handleNextImage();
+      } else {
+        handlePrevImage();
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, [handleNextImage, handlePrevImage]);
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowLeft') handlePrevImage();
+      if (e.key === 'ArrowRight') handleNextImage();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, handleNextImage, handlePrevImage]);
 
   const handleBack = useCallback(() => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -193,29 +266,39 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
 
       {/* 2. Main Editorial Content Container */}
       <main className='mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-8 lg:px-8'>
-        <div className='lg:grid lg:grid-cols-[360px_1fr] lg:items-start lg:gap-12 xl:grid-cols-[400px_1fr]'>
+        <div className='lg:grid lg:grid-cols-[380px_1fr] lg:items-start lg:gap-12 xl:grid-cols-[420px_1fr]'>
           {/* Left Column: Poster & Media (Sticky on desktop) */}
           <div className='lg:sticky lg:top-20'>
-            {/* Clean, Frameless Poster Card with Natural Shadow */}
-            <div className='relative mx-auto aspect-[3/4] max-h-[460px] w-full max-w-[340px] overflow-hidden rounded-2xl border border-[var(--color-border-primary)]/80 bg-[var(--color-surface-secondary)] shadow-lg shadow-black/5 dark:shadow-black/20 sm:max-h-[500px] lg:max-w-none'>
+            {/* Fluid, Responsive Poster Container with Touch Swipe & Zoom */}
+            <div
+              className='group relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl border border-[var(--color-border-primary)]/80 bg-[var(--color-surface-secondary)] shadow-md select-none sm:aspect-[3/4] lg:max-w-none'
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               {hasCultureImage ? (
-                <Image
-                  src={activeImage}
-                  alt={culture.title}
-                  fill
-                  sizes='(min-width: 1024px) 400px, (min-width: 640px) 340px, 90vw'
-                  className='object-contain'
-                  priority
-                  onError={() => setImageFailed(true)}
-                />
+                <div
+                  className='relative size-full cursor-zoom-in'
+                  onClick={() => setIsLightboxOpen(true)}
+                  title='클릭하여 전체 포스터 크게 보기'
+                >
+                  <Image
+                    src={currentImageUrl}
+                    alt={culture.title}
+                    fill
+                    sizes='(min-width: 1024px) 420px, (min-width: 640px) 440px, 100vw'
+                    className='object-contain transition-opacity duration-200'
+                    priority
+                    onError={() => setImageFailed(true)}
+                  />
+                </div>
               ) : (
                 <div className='size-full'>
                   <CultureImageFallback classification={culture.classification || '문화행사'} />
                 </div>
               )}
 
-              {/* Status Badges on Poster */}
-              <div className='absolute left-3 top-3 flex flex-wrap gap-1.5'>
+              {/* Status Badges on Poster (Top-Left) */}
+              <div className='pointer-events-none absolute left-3 top-3 flex flex-wrap gap-1.5'>
                 {dday && (
                   <span
                     className={`rounded-md px-2 py-0.5 text-xs font-bold shadow-sm ${
@@ -235,28 +318,79 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
                   </span>
                 )}
               </div>
-            </div>
 
-            {/* Additional Photo Thumbnails */}
-            {(culture.additionalImages ?? []).length > 0 && (
-              <div className='mt-3 flex justify-center gap-2 overflow-x-auto pb-1 lg:justify-start' aria-label='추가 사진 목록'>
-                {(culture.additionalImages ?? []).map(img => (
+              {/* Expand / Lightbox Button (Top-Right) */}
+              {hasCultureImage && (
+                <button
+                  type='button'
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIsLightboxOpen(true);
+                  }}
+                  aria-label='포스터 전체화면 크게 보기'
+                  className='absolute right-3 top-3 inline-flex items-center gap-1 rounded-md bg-zinc-900/75 px-2 py-1 text-[11px] font-medium text-white shadow-sm backdrop-blur-sm transition hover:bg-zinc-900 active:scale-95'
+                >
+                  <Maximize2 className='size-3' />
+                  <span>크게 보기</span>
+                </button>
+              )}
+
+              {/* Image Counter Badge (Bottom-Right, when multiple images exist) */}
+              {imageList.length > 1 && (
+                <div className='pointer-events-none absolute bottom-3 right-3 rounded-md bg-zinc-900/75 px-2 py-0.5 text-xs font-semibold text-white shadow-sm backdrop-blur-sm'>
+                  {currentIndex + 1} / {imageList.length}
+                </div>
+              )}
+
+              {/* Desktop Hover Navigation Arrows */}
+              {imageList.length > 1 && (
+                <>
                   <button
                     type='button'
-                    key={img.url}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handlePrevImage();
+                    }}
+                    aria-label='이전 사진 보기'
+                    className='absolute left-2.5 top-1/2 -translate-y-1/2 flex size-8 items-center justify-center rounded-full bg-zinc-900/70 text-white opacity-0 shadow-sm backdrop-blur-sm transition hover:bg-zinc-900 group-hover:opacity-100 active:scale-95'
+                  >
+                    <ChevronLeft className='size-4' />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleNextImage();
+                    }}
+                    aria-label='다음 사진 보기'
+                    className='absolute right-2.5 top-1/2 -translate-y-1/2 flex size-8 items-center justify-center rounded-full bg-zinc-900/70 text-white opacity-0 shadow-sm backdrop-blur-sm transition hover:bg-zinc-900 group-hover:opacity-100 active:scale-95'
+                  >
+                    <ChevronRight className='size-4' />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Additional Photo Thumbnails (Synchronized with Swipe) */}
+            {imageList.length > 1 && (
+              <div className='mt-3 flex justify-center gap-2 overflow-x-auto pb-1 lg:justify-start' aria-label='추가 사진 목록'>
+                {imageList.map((imgUrl, idx) => (
+                  <button
+                    type='button'
+                    key={`${imgUrl}-${idx}`}
                     onClick={() => {
-                      setActiveImage(img.url);
+                      setCurrentIndex(idx);
                       setImageFailed(false);
                     }}
                     className={`relative size-14 shrink-0 overflow-hidden rounded-lg border transition-all active:scale-95 ${
-                      activeImage === img.url
+                      currentIndex === idx
                         ? 'border-[var(--color-brand-primary)] ring-2 ring-[var(--color-brand-primary)]/30'
                         : 'border-[var(--color-border-primary)]/80 opacity-70 hover:opacity-100'
                     }`}
-                    aria-label='사진 선택'
+                    aria-label={`사진 ${idx + 1} 선택`}
                   >
                     <Image
-                      src={img.thumbnailUrl || img.url}
+                      src={imgUrl}
                       alt=''
                       fill
                       sizes='56px'
@@ -411,13 +545,13 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
               </section>
             )}
 
-            {/* 5. Program Introduction */}
+            {/* 5. Program Introduction (Clean Editorial Typography, No AI callout box) */}
             {culture.programIntroduction && (
               <section className='mt-8 sm:mt-10'>
                 <h2 className='text-lg font-bold tracking-tight text-[var(--color-text-primary)]'>
                   주요 프로그램
                 </h2>
-                <div className='mt-3 rounded-r-xl border-l-2 border-[var(--color-brand-primary)] bg-[var(--color-surface-chip)]/40 px-4 py-3 text-sm leading-relaxed text-[var(--color-text-secondary)] sm:text-base'>
+                <div className='mt-3 text-sm leading-relaxed text-[var(--color-text-secondary)] sm:text-base'>
                   <p className='whitespace-pre-line break-words'>{culture.programIntroduction}</p>
                 </div>
               </section>
@@ -527,6 +661,89 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
           )}
         </div>
       </footer>
+
+      {/* 9. Full-Screen Uncropped Lightbox (크게 보기 모달 - 원본 비율 100% 무손실 뷰) */}
+      {isLightboxOpen && hasCultureImage && (
+        <div
+          role='dialog'
+          aria-modal='true'
+          aria-label='포스터 전체화면 크게 보기'
+          className='fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-md select-none'
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          {/* Lightbox Top Control Bar */}
+          <div
+            className='flex h-14 shrink-0 items-center justify-between px-4 text-white sm:px-6'
+            onClick={e => e.stopPropagation()}
+          >
+            <div className='flex items-center gap-2'>
+              <span className='rounded-md bg-white/10 px-2.5 py-1 text-xs font-semibold tracking-wide text-zinc-200'>
+                {imageList.length > 1 ? `${currentIndex + 1} / ${imageList.length}` : '원본 포스터'}
+              </span>
+              <span className='hidden text-xs text-zinc-400 sm:inline'>
+                클릭 또는 ESC 키로 닫기
+              </span>
+            </div>
+
+            <button
+              type='button'
+              onClick={() => setIsLightboxOpen(false)}
+              aria-label='확대 보기 닫기'
+              className='flex size-10 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white active:scale-95'
+            >
+              <X className='size-5' strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* Lightbox Center Image Viewport */}
+          <div
+            className='relative flex flex-1 items-center justify-center overflow-hidden p-4'
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onClick={e => e.stopPropagation()}
+          >
+            <Image
+              src={currentImageUrl}
+              alt={culture.title}
+              fill
+              sizes='100vw'
+              className='object-contain select-none'
+              priority
+            />
+
+            {/* Lightbox Nav Arrows (when multiple images) */}
+            {imageList.length > 1 && (
+              <>
+                <button
+                  type='button'
+                  onClick={handlePrevImage}
+                  aria-label='이전 사진'
+                  className='absolute left-3 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full bg-zinc-900/80 text-white shadow-lg backdrop-blur-sm transition hover:bg-zinc-800 active:scale-95'
+                >
+                  <ChevronLeft className='size-6' />
+                </button>
+                <button
+                  type='button'
+                  onClick={handleNextImage}
+                  aria-label='다음 사진'
+                  className='absolute right-3 top-1/2 -translate-y-1/2 flex size-11 items-center justify-center rounded-full bg-zinc-900/80 text-white shadow-lg backdrop-blur-sm transition hover:bg-zinc-800 active:scale-95'
+                >
+                  <ChevronRight className='size-6' />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Lightbox Bottom Footer Notice */}
+          <div className='pb-6 pt-2 text-center text-xs text-zinc-400'>
+            {imageList.length > 1 ? (
+              <span>좌우 스와이프 또는 키보드 방향키(←, →)로 사진을 넘길 수 있습니다</span>
+            ) : (
+              <span>화면 빈 곳을 탭하거나 닫기(X)를 누르면 상세 페이지로 돌아갑니다</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
