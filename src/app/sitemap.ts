@@ -63,16 +63,25 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
 
   const cultureEntries: MetadataRoute.Sitemap = [...snapshot.items]
     .sort((left, right) => left.id - right.id)
-    .map(row => {
-    const image = toSitemapImage(row.mainImage);
+    .flatMap(row => {
+      const image = toSitemapImage(row.mainImage);
 
-    return {
-      url: `${SITE_URL}/map/${row.id}`,
-      ...(lastModified ? { lastModified } : {}),
-      changeFrequency: 'daily',
-      priority: 0.8,
-      ...(image ? { images: [image] } : {}),
-    };
+      return [
+        {
+          url: `${SITE_URL}/cultures/${row.id}`,
+          ...(lastModified ? { lastModified } : {}),
+          changeFrequency: 'daily' as const,
+          priority: 0.8,
+          ...(image ? { images: [image] } : {}),
+        },
+        {
+          url: `${SITE_URL}/map/${row.id}`,
+          ...(lastModified ? { lastModified } : {}),
+          changeFrequency: 'daily' as const,
+          priority: 0.7,
+          ...(image ? { images: [image] } : {}),
+        },
+      ];
     });
 
   return [...STATIC_ENTRIES, ...cultureEntries];

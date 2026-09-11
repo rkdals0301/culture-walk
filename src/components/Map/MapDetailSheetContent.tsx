@@ -31,13 +31,22 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
         <div className='h-1.5 w-10 rounded-full bg-[var(--color-text-tertiary)]/35' />
       </div>
       <header className='border-b border-[var(--color-border-primary)] px-5 pb-5 pt-2 lg:pt-4'>
-        <Link
-          href='/map'
-          className='mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-primary)] transition hover:opacity-80'
-        >
-          <ArrowBackIcon className='size-3.5' />
-          지도 목록
-        </Link>
+        <div className='mb-4 flex items-center justify-between'>
+          <Link
+            href='/map'
+            className='inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-primary)] transition hover:opacity-80'
+          >
+            <ArrowBackIcon className='size-3.5' />
+            지도 목록
+          </Link>
+          <Link
+            href={`/cultures/${culture.id}`}
+            className='inline-flex items-center gap-1 text-xs font-bold text-[var(--color-brand-primary)] transition hover:opacity-80'
+          >
+            전체 상세 보기
+            <ExternalLink className='size-3' />
+          </Link>
+        </div>
         <div className='flex items-center gap-2'>
           <CultureCategoryBadge classification={culture.classification} className='px-2.5 py-0.5 text-xs' />
           {culture.guName && (
@@ -171,16 +180,25 @@ export const MapDetailSheetContent = ({
         </h1>
       </div>
 
-      <div className='flex flex-wrap items-center gap-2'>
-        <CultureCategoryBadge classification={culture.classification} className='px-3 py-1 text-xs' />
-        {culture.guName && (
-          <span className='shadow-2xs rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
-            {culture.guName}
+      <div className='flex items-center justify-between gap-2'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <CultureCategoryBadge classification={culture.classification} className='px-3 py-1 text-xs' />
+          {culture.guName && (
+            <span className='shadow-2xs rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)]'>
+              {culture.guName}
+            </span>
+          )}
+          <span className={`shadow-2xs rounded-full border px-3 py-1 text-xs font-bold ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}>
+            {culture.displayPrice}
           </span>
-        )}
-        <span className={`shadow-2xs rounded-full border px-3 py-1 text-xs font-bold ${PRICE_BADGE_CLASS_NAMES[priceTone]}`}>
-          {culture.displayPrice}
-        </span>
+        </div>
+        <Link
+          href={`/cultures/${culture.id}`}
+          className='inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-2.5 py-1 text-xs font-bold text-[var(--color-brand-primary)] shadow-2xs transition hover:bg-[var(--color-surface-chip)] active:scale-95'
+        >
+          <span>상세보기</span>
+          <ExternalLink className='size-3' />
+        </Link>
       </div>
 
       <CultureDetailPoster

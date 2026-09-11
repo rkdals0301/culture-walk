@@ -4,7 +4,6 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { FormattedCulture } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 
 import React, { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
@@ -40,6 +39,8 @@ const FeedView = () => {
     requestLocation,
     cancelLocation,
     locationStatus,
+    feedScrollTop,
+    setFeedScrollTop,
     resetMapFilters,
   } = useCultureContext();
   const {
@@ -68,8 +69,17 @@ const FeedView = () => {
   const isLocating = locationStatus === 'requesting';
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setShowScrollTop(e.currentTarget.scrollTop > 300);
-  }, []);
+    const scrollTop = e.currentTarget.scrollTop;
+    setShowScrollTop(scrollTop > 300);
+    setFeedScrollTop(scrollTop);
+  }, [setFeedScrollTop]);
+
+  // Restore feed scroll position when returning from detail page
+  useEffect(() => {
+    if (feedScrollTop > 0 && feedContentRef.current && cultures.length > 0) {
+      feedContentRef.current.scrollTop = feedScrollTop;
+    }
+  }, [cultures.length, feedScrollTop]);
 
   const handleScrollToTop = useCallback(() => {
     if (feedContentRef.current) {
@@ -187,20 +197,12 @@ const FeedView = () => {
 
   const handleOpenCulture = useCallback(
     (culture: FormattedCulture) => {
-      const serializedSearch = serializeMapExploreStateToSearch({
-        searchQuery,
-        mapCategory,
-        mapRegion,
-        mapFreeOnly,
-        sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
-        mapListScrollTop: 0,
-        listOpen: false,
-      });
-
-      const detailUrl = serializedSearch ? `/map/${culture.id}?${serializedSearch}` : `/map/${culture.id}`;
-      router.push(detailUrl);
+      if (feedContentRef.current) {
+        setFeedScrollTop(feedContentRef.current.scrollTop);
+      }
+      router.push(`/cultures/${culture.id}`);
     },
-    [currentLocation, mapCategory, mapFreeOnly, mapRegion, mapSortMode, router, searchQuery]
+    [router, setFeedScrollTop]
   );
 
   const isFiltered =

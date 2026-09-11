@@ -16,6 +16,11 @@ const Header = () => {
   const { openSideMenu } = useSideMenu();
   const pathname = usePathname();
 
+  // The culture detail view (/cultures/[id]) has its own dedicated sticky header
+  if (pathname.startsWith('/cultures/')) {
+    return null;
+  }
+
   const handleOpenSideMenu = () => {
     openSideMenu();
   };

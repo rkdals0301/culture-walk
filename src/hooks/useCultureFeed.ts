@@ -24,8 +24,42 @@ const isRequestAborted = (error: unknown) =>
 
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
 
+interface FeedCacheEntry {
+  cultures: FormattedCulture[];
+  totalCount: number;
+  freeCount: number;
+  regionOptions: string[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  timestamp: number;
+}
+
+const feedMemoryCache = new Map<string, FeedCacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+const getFeedCacheKey = (filters: CultureFeedFilters) =>
+  `${filters.searchQuery}|${filters.category}|${filters.region}|${filters.freeOnly ? '1' : '0'}`;
+
 export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseCultureFeedOptions) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => searchQuery.trim());
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearchQuery(searchQuery.trim()), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const filters = useMemo<CultureFeedFilters>(
+    () => ({
+      searchQuery: debouncedSearchQuery,
+      category,
+      region,
+      freeOnly,
+    }),
+    [category, debouncedSearchQuery, freeOnly, region]
+  );
+
+  const filterKey = useMemo(() => getFeedCacheKey(filters), [filters]);
+
   const [cultures, setCultures] = useState<FormattedCulture[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [freeCount, setFreeCount] = useState(0);
@@ -42,20 +76,6 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
   const nextCursorRef = useRef<string | null>(null);
   const hasMoreRef = useRef(true);
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedSearchQuery(searchQuery.trim()), SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(timeout);
-  }, [searchQuery]);
-
-  const filters = useMemo<CultureFeedFilters>(
-    () => ({
-      searchQuery: debouncedSearchQuery,
-      category,
-      region,
-      freeOnly,
-    }),
-    [category, debouncedSearchQuery, freeOnly, region]
-  );
   const fetchPage = useCallback(
     async (cursor: string | null, append: boolean, version: number, controller: AbortController) => {
       const params: Record<string, string | number> = {
@@ -77,23 +97,29 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
       const page = response.data;
       const nextItems = formatCultureData(page.items ?? []);
 
-      if (append) {
-        startTransition(() => {
-          setCultures(current => {
-            // The request may finish just as a filter change starts. Keep a
-            // stale page from being appended after the new first page reset.
-            if (version !== requestVersionRef.current) {
-              return current;
-            }
+      setCultures(current => {
+        if (version !== requestVersionRef.current) return current;
 
-            const existingIds = new Set(current.map(item => item.id));
-            const uniqueItems = nextItems.filter(item => !existingIds.has(item.id));
-            return uniqueItems.length > 0 ? [...current, ...uniqueItems] : current;
-          });
+        const resolvedCultures = (() => {
+          if (!append) return nextItems;
+          const existingIds = new Set(current.map(item => item.id));
+          const uniqueItems = nextItems.filter(item => !existingIds.has(item.id));
+          return uniqueItems.length > 0 ? [...current, ...uniqueItems] : current;
+        })();
+
+        feedMemoryCache.set(filterKey, {
+          cultures: resolvedCultures,
+          totalCount: page.totalCount,
+          freeCount: page.freeCount,
+          regionOptions: page.regionOptions ?? [],
+          nextCursor: page.nextCursor,
+          hasMore: page.hasMore,
+          timestamp: Date.now(),
         });
-      } else {
-        setCultures(nextItems);
-      }
+
+        return resolvedCultures;
+      });
+
       setTotalCount(page.totalCount);
       setFreeCount(page.freeCount);
       setRegionOptions(current => {
@@ -108,10 +134,27 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
       hasMoreRef.current = page.hasMore;
       setError(null);
     },
-    [filters]
+    [filterKey, filters]
   );
 
   useEffect(() => {
+    const cachedEntry = feedMemoryCache.get(filterKey);
+    const isValid = cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS;
+
+    if (isValid && retryNonce === 0) {
+      setCultures(cachedEntry.cultures);
+      setTotalCount(cachedEntry.totalCount);
+      setFreeCount(cachedEntry.freeCount);
+      setRegionOptions(cachedEntry.regionOptions);
+      setHasMore(cachedEntry.hasMore);
+      nextCursorRef.current = cachedEntry.nextCursor;
+      hasMoreRef.current = cachedEntry.hasMore;
+      setIsInitialLoading(false);
+      setIsLoadingMore(false);
+      setError(null);
+      return;
+    }
+
     const version = requestVersionRef.current + 1;
     requestVersionRef.current = version;
     abortControllerRef.current?.abort();
@@ -148,7 +191,7 @@ export const useCultureFeed = ({ searchQuery, category, region, freeOnly }: UseC
         inFlightRef.current = null;
       }
     };
-  }, [fetchPage, retryNonce]);
+  }, [fetchPage, filterKey, retryNonce]);
 
   const loadMore = useCallback(async (options?: { retry?: boolean }) => {
     const cursor = nextCursorRef.current;

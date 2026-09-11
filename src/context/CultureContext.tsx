@@ -21,6 +21,7 @@ interface CultureContextValue {
   locationStatus: LocationStatus;
   locationError: LocationRequestError | null;
   mapListScrollTop: number;
+  feedScrollTop: number;
   mapCamera: MapCameraState | null;
   setSearchQuery: (query: string) => void;
   setMapCategory: (category: CultureCategoryKey) => void;
@@ -31,6 +32,7 @@ interface CultureContextValue {
   requestLocation: () => Promise<GeoPoint | null>;
   cancelLocation: () => void;
   setMapListScrollTop: (scrollTop: number) => void;
+  setFeedScrollTop: (scrollTop: number) => void;
   setMapCamera: (camera: MapCameraState | null) => void;
   resetMapFilters: () => void;
 }
@@ -47,6 +49,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
   const [locationError, setLocationError] = useState<LocationRequestError | null>(null);
   const [mapListScrollTop, setMapListScrollTopState] = useState(0);
+  const [feedScrollTop, setFeedScrollTopState] = useState(0);
   const [mapCamera, setMapCameraState] = useState<MapCameraState | null>(null);
 
   const locationRequestRef = useRef<{
@@ -121,6 +124,10 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapListScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
   }, []);
 
+  const setFeedScrollTop = useCallback((scrollTop: number) => {
+    setFeedScrollTopState(Number.isFinite(scrollTop) ? Math.max(0, scrollTop) : 0);
+  }, []);
+
   const setMapCamera = useCallback((camera: MapCameraState | null) => {
     const normalized = normalizeMapCameraState(camera);
     setMapCameraState(current => {
@@ -142,6 +149,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     setMapFreeOnly(false);
     setMapSortMode('date');
     setMapListScrollTopState(0);
+    setFeedScrollTopState(0);
     updateCurrentLocation(null);
   }, [updateCurrentLocation]);
 
@@ -156,6 +164,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
+      feedScrollTop,
       mapCamera,
       setSearchQuery,
       setMapCategory,
@@ -166,6 +175,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       requestLocation,
       cancelLocation,
       setMapListScrollTop,
+      setFeedScrollTop,
       setMapCamera,
       resetMapFilters,
     }),
@@ -179,6 +189,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       locationStatus,
       locationError,
       mapListScrollTop,
+      feedScrollTop,
       mapCamera,
       setSearchQuery,
       updateCurrentLocation,
@@ -186,6 +197,7 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
       requestLocation,
       cancelLocation,
       setMapListScrollTop,
+      setFeedScrollTop,
       setMapCamera,
       resetMapFilters,
     ]
