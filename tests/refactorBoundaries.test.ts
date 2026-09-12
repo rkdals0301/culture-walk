@@ -22,6 +22,18 @@ test('MapDashboard keeps navigation and exploration side effects in its controll
   assert.doesNotMatch(source, /useCultureContext|useMapExploreUrlSync|usePathname|useRouter|LocationRequestError|toast\./);
 });
 
+test('MapDashboard delegates desktop panel presentation to a dedicated component', async () => {
+  const [dashboard, desktop] = await Promise.all([
+    readProjectFile('../src/components/Map/MapDashboard.tsx'),
+    readProjectFile('../src/components/Map/MapDesktopDashboard.tsx'),
+  ]);
+
+  assert.match(dashboard, /MapDesktopDashboard/);
+  assert.doesNotMatch(dashboard, /문화행사 빠른 검색|목록 접고 전체 지도 보기/);
+  assert.match(desktop, /문화행사 빠른 검색/);
+  assert.match(desktop, /목록 접고 전체 지도 보기/);
+});
+
 test('feed and map navigation memory stays outside the global reactive culture context', async () => {
   const [context, feed, mapView] = await Promise.all([
     readProjectFile('../src/context/CultureContext.tsx'),

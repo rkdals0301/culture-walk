@@ -1,6 +1,5 @@
 'use client';
 
-import GoogleAdSlot from '@/components/Ads/GoogleAdSlot';
 import {
   CategoryChips,
   FreeOnlyToggle,
@@ -8,6 +7,7 @@ import {
   RegionSelect,
   ResetFiltersButton,
 } from '@/components/Common/FilterControls';
+import MapDesktopDashboard from '@/components/Map/MapDesktopDashboard';
 import { MapFilterControls, MapSortControl } from '@/components/Map/MapControls';
 import MapListPanelContent from '@/components/Map/MapListPanelContent';
 import MapResultSummary from '@/components/Map/MapResultSummary';
@@ -16,9 +16,7 @@ import { useMapDashboardController } from '@/hooks/useMapDashboardController';
 import { FormattedCultureListItem } from '@/types/culture';
 
 import clsx from 'clsx';
-import { ChevronUp, List, ListFilter, MapPinned, X } from 'lucide-react';
-
-const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
+import { ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
 
 interface MapDashboardProps {
   listRequest?: number;
@@ -86,189 +84,41 @@ const MapDashboard = ({
     >
       {!isDetailRoute && <h1 className='sr-only'>전국 문화행사 지도</h1>}
 
-      {/* ========================================================================= */}
-      {/* DESKTOP (md:): Option A - Modern Full-Screen Map with Floating Controls  */}
-      {/* ========================================================================= */}
-
-      {/* 1. Floating Slide-over List Panel (Expanded State) */}
-      {!isDetailRoute && !isDesktopPanelCollapsed && (
-        <aside
-          data-keeps-detail-open
-          className='pointer-events-auto absolute bottom-4 left-4 top-[calc(var(--map-header-height)+1rem)] z-30 hidden w-[420px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] shadow-2xl transition-all duration-300 md:flex'
-          aria-label='문화행사 탐색 패널'
-        >
-          {/* Header section with Search & Filters */}
-          <div className='shrink-0 border-b border-[var(--color-border-primary)] p-4'>
-            <div className='flex items-center justify-between gap-3'>
-              <div className='flex items-center gap-2'>
-                <h2 className='text-base font-bold tracking-tight text-[var(--color-text-primary)]'>행사 목록</h2>
-                <span className='rounded-full bg-[var(--color-surface-chip)] px-2.5 py-0.5 text-xs font-bold text-[var(--color-brand-primary)]'>
-                  {viewportCount.toLocaleString()}개
-                </span>
-              </div>
-              <button
-                type='button'
-                onClick={() => setIsDesktopPanelCollapsed(true)}
-                className='soft-chip flex size-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-chip)] hover:text-[var(--color-text-primary)] active:scale-95'
-                aria-label='목록 접고 전체 지도 보기'
-                title='목록 접고 전체 지도 보기'
-              >
-                <X className='size-4' />
-              </button>
-            </div>
-
-            <div className='mt-3'>
-              <MapSearchField id='map-search-input' value={searchQuery} onChange={setSearchQuery} />
-            </div>
-
-            <div className='mt-2.5'>
-              <MapFilterControls
-                category={mapCategory}
-                freeOnly={mapFreeOnly}
-                region={mapRegion}
-                regionOptions={regionOptions}
-                onCategoryChange={handleCategoryChange}
-                onFreeOnlyChange={handleFreeOnlyChange}
-                onRegionChange={handleRegionChange}
-              />
-            </div>
-
-            <div className='mt-2.5 flex items-center justify-between gap-2 border-t border-[var(--color-border-primary)] pt-2.5 text-xs'>
-              <div className='flex items-center gap-1.5'>
-                <MapSortControl
-                  mode={mapSortMode}
-                  hasLocation={Boolean(currentLocation)}
-                  isLocating={isLocating}
-                  onChange={handleSortChange}
-                />
-                <LocationToggle
-                  isActive={Boolean(currentLocation)}
-                  isLocating={isLocating}
-                  onToggle={handleLocationToggle}
-                  compact
-                  size='sm'
-                />
-              </div>
-              <MapResultSummary
-                visibleCount={viewportCount}
-                totalCount={totalCount}
-                isClustered={isClustered}
-                activeFilterLabels={activeFilterLabels}
-                hasActiveFilters={hasActiveFilters}
-                isLoading={isLoading}
-                onReset={resetMapFilters}
-                compact
-              />
-            </div>
-
-            {ADSENSE_MAP_PANEL_SLOT && (
-              <div className='mt-2.5 border-t border-[var(--color-border-primary)] pt-2.5'>
-                <GoogleAdSlot slot={ADSENSE_MAP_PANEL_SLOT} className='min-h-[60px]' />
-              </div>
-            )}
-          </div>
-
-          {/* Scrollable Virtualized Event List */}
-          <div className='min-h-0 flex-1 px-1 py-1'>
-            <div
-              key={filterMotionKey}
-              className='map-filter-results h-full min-h-0'
-              data-filter-pending={isFilterPending ? 'true' : undefined}
-              aria-busy={isFilterPending}
-            >
-              <MapListPanelContent
-                cultures={visibleCultures}
-                currentLocation={currentLocation}
-                error={error}
-                hasActiveFilters={hasActiveFilters}
-                initialScrollTop={mapListScrollTop}
-                isClustered={isClustered}
-                isLoading={isLoading}
-                onItemClick={handleOpenCulture}
-                onResetFilters={resetMapFilters}
-                onRetry={onRetry}
-                onScrollPositionChange={setMapListScrollTop}
-                selectedCultureId={selectedCultureId}
-              />
-            </div>
-          </div>
-        </aside>
-      )}
-
-      {/* 2. Compact Floating Search & Filter Pill Card (Collapsed State) */}
-      {!isDetailRoute && isDesktopPanelCollapsed && (
-        <aside
-          data-keeps-detail-open
-          className='pointer-events-auto absolute left-4 top-[calc(var(--map-header-height)+1rem)] z-30 hidden w-[420px] max-w-[calc(100vw-2rem)] flex-col gap-2.5 rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] p-3.5 shadow-xl transition-all duration-200 md:flex'
-          aria-label='문화행사 빠른 검색'
-        >
-          {/* Top Search bar + List expand trigger */}
-          <div className='flex items-center gap-2'>
-            <div className='min-w-0 flex-1'>
-              <MapSearchField id='map-search-input-collapsed' value={searchQuery} onChange={setSearchQuery} compact />
-            </div>
-            <button
-              type='button'
-              onClick={() => setIsDesktopPanelCollapsed(false)}
-              className='inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-[var(--color-brand-on-primary)] shadow-sm transition hover:opacity-95 active:scale-95'
-              aria-label='행사 목록 펼치기'
-              title='행사 목록 펼치기'
-            >
-              <List className='size-4' />
-              <span>목록</span>
-              <span className='rounded-full bg-white/20 px-1.5 py-0.5 text-[0.68rem] font-bold'>
-                {viewportCount.toLocaleString()}
-              </span>
-            </button>
-          </div>
-
-          {/* Category Chips - unified rounded-full pill styling */}
-          <CategoryChips
-            selected={mapCategory}
-            onSelect={handleCategoryChange}
-            layout='grid'
-            size='sm'
-          />
-
-          {/* Quick controls row: Sort, Region, Free toggle, Location, Reset */}
-          <div className='flex flex-wrap items-center justify-between gap-1.5 border-t border-[var(--color-border-primary)] pt-2 text-xs'>
-            <div className='flex items-center gap-1.5'>
-              <RegionSelect
-                region={mapRegion}
-                regionOptions={regionOptions}
-                onChange={handleRegionChange}
-                size='sm'
-              />
-              <FreeOnlyToggle
-                isFreeOnly={mapFreeOnly}
-                onToggle={() => handleFreeOnlyChange(!mapFreeOnly)}
-                size='sm'
-              />
-              <LocationToggle
-                isActive={Boolean(currentLocation)}
-                isLocating={isLocating}
-                onToggle={handleLocationToggle}
-                size='sm'
-                compact
-              />
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <MapSortControl
-                mode={mapSortMode}
-                hasLocation={Boolean(currentLocation)}
-                isLocating={isLocating}
-                onChange={handleSortChange}
-                size='sm'
-              />
-              {hasActiveFilters && (
-                <ResetFiltersButton
-                  onReset={resetMapFilters}
-                  size='sm'
-                />
-              )}
-            </div>
-          </div>
-        </aside>
+      {!isDetailRoute && (
+        <MapDesktopDashboard
+          activeFilterLabels={activeFilterLabels}
+          currentLocation={currentLocation}
+          error={error}
+          filterMotionKey={filterMotionKey}
+          handleCategoryChange={handleCategoryChange}
+          handleFreeOnlyChange={handleFreeOnlyChange}
+          handleLocationToggle={handleLocationToggle}
+          handleOpenCulture={handleOpenCulture}
+          handleRegionChange={handleRegionChange}
+          handleSortChange={handleSortChange}
+          hasActiveFilters={hasActiveFilters}
+          isClustered={isClustered}
+          isDesktopPanelCollapsed={isDesktopPanelCollapsed}
+          isFilterPending={isFilterPending}
+          isLoading={isLoading}
+          isLocating={isLocating}
+          mapCategory={mapCategory}
+          mapFreeOnly={mapFreeOnly}
+          mapListScrollTop={mapListScrollTop}
+          mapRegion={mapRegion}
+          mapSortMode={mapSortMode}
+          onRetry={onRetry}
+          regionOptions={regionOptions}
+          resetMapFilters={resetMapFilters}
+          searchQuery={searchQuery}
+          selectedCultureId={selectedCultureId}
+          setIsDesktopPanelCollapsed={setIsDesktopPanelCollapsed}
+          setMapListScrollTop={setMapListScrollTop}
+          setSearchQuery={setSearchQuery}
+          totalCount={totalCount}
+          viewportCount={viewportCount}
+          visibleCultures={visibleCultures}
+        />
       )}
 
       {/* ========================================================================= */}
