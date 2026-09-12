@@ -34,6 +34,18 @@ test('MapDashboard delegates desktop panel presentation to a dedicated component
   assert.match(desktop, /목록 접고 전체 지도 보기/);
 });
 
+test('MapDashboard delegates mobile bottom-sheet presentation to a dedicated component', async () => {
+  const [dashboard, mobile] = await Promise.all([
+    readProjectFile('../src/components/Map/MapDashboard.tsx'),
+    readProjectFile('../src/components/Map/MapMobileDashboard.tsx'),
+  ]);
+
+  assert.match(dashboard, /MapMobileDashboard/);
+  assert.doesNotMatch(dashboard, /map-mobile-filters|행사 목록 접고 지도 보기/);
+  assert.match(mobile, /map-mobile-filters/);
+  assert.match(mobile, /행사 목록 접고 지도 보기/);
+});
+
 test('feed and map navigation memory stays outside the global reactive culture context', async () => {
   const [context, feed, mapView] = await Promise.all([
     readProjectFile('../src/context/CultureContext.tsx'),
