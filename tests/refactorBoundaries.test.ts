@@ -214,6 +214,24 @@ test('D1 culture projections and row mapping live in one repository module', asy
   assert.doesNotMatch(detailPublisher, /details\.common_json AS/);
 });
 
+test('culture service keeps TourAPI normalization separate from domain row mapping', async () => {
+  const [service, tourApiMapper, domainMapper] = await Promise.all([
+    readProjectFile('../src/services/cultureService.ts'),
+    readProjectFile('../src/services/cultureTourApiMapper.ts'),
+    readProjectFile('../src/services/cultureDomainMapper.ts'),
+  ]);
+
+  assert.match(service, /cultureTourApiMapper/);
+  assert.match(service, /cultureDomainMapper/);
+  assert.ok(service.split(/\r?\n/).length < 20);
+  assert.match(tourApiMapper, /mapTourApiFestivalToCulture/);
+  assert.match(tourApiMapper, /normalizeCultureCoordinates/);
+  assert.doesNotMatch(tourApiMapper, /mapCultureRowToCulture/);
+  assert.match(domainMapper, /mapCultureRowToCulture/);
+  assert.match(domainMapper, /mapCultureListItemToCulture/);
+  assert.doesNotMatch(domainMapper, /createTourApiSourceKey/);
+});
+
 test('culture sync repository delegates staging IO and snapshot mutation to dedicated modules', async () => {
   const [repository, staging, snapshot] = await Promise.all([
     readProjectFile('../src/services/cultureSyncRepository.ts'),
