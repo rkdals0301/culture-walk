@@ -13,6 +13,7 @@ import {
   KOREA_LNG_MIN,
 } from '@/services/cultureSyncTypes';
 import { CultureListItem } from '@/types/culture';
+import { toCultureListItem } from '@/services/cultureD1Repository';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso, toDateOrNow } from '@/utils/dateUtils';
 
@@ -110,27 +111,9 @@ const queryCultureListFromD1 = async (d1: D1Binding) => {
 
   const revisions: Record<string, string> = {};
   const items = (result.results ?? []).flatMap(row => {
-    const id = Number(row.id);
-    const lat = Number(row.lat);
-    const lng = Number(row.lng);
-    if (!Number.isInteger(id) || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
-
-    const coordinates = normalizeCultureCoordinates(lat, lng);
-    const item = {
-      id,
-      classification: normalizeCultureClassification(String(row.classification ?? '')),
-      endDate: toDateOrNow(String(row.endDate ?? row.startDate ?? '')),
-      guName: String(row.guName ?? ''),
-      isFree: String(row.isFree ?? ''),
-      lat: coordinates.lat,
-      lng: coordinates.lng,
-      mainImage: String(row.mainImage ?? '/assets/images/logo.svg'),
-      place: String(row.place ?? ''),
-      startDate: toDateOrNow(String(row.startDate ?? '')),
-      title: String(row.title ?? ''),
-      useFee: String(row.useFee ?? ''),
-    } satisfies CultureListItem;
-    revisions[String(id)] = createCultureListItemRevision(item, String(row.sourceModifiedAt ?? ''));
+    const item = toCultureListItem(row);
+    if (!item) return [];
+    revisions[String(item.id)] = createCultureListItemRevision(item, String(row.sourceModifiedAt ?? ''));
     return [item];
   });
 

@@ -88,6 +88,25 @@ test('culture list and detail presentation use distinct formatted types', async 
   assert.match(detail, /FormattedCultureDetail/);
 });
 
+test('D1 culture projections and row mapping live in one repository module', async () => {
+  const [repository, readModel, syncDetails, cultureList] = await Promise.all([
+    readProjectFile('../src/services/cultureD1Repository.ts'),
+    readProjectFile('../src/services/cultureReadModel.ts'),
+    readProjectFile('../src/services/cultureSyncDetails.ts'),
+    readProjectFile('../src/services/cultureList.ts'),
+  ]);
+
+  assert.match(repository, /CULTURE_CONTENT_SELECT/);
+  assert.match(repository, /CULTURE_DETAIL_SELECT/);
+  assert.match(repository, /toCultureTourApiDetailsRow/);
+  assert.match(repository, /toCultureListItem/);
+  assert.match(readModel, /cultureD1Repository/);
+  assert.match(syncDetails, /cultureD1Repository/);
+  assert.match(cultureList, /toCultureListItem/);
+  assert.doesNotMatch(readModel, /cultures\.homepage_detail_address AS/);
+  assert.doesNotMatch(syncDetails, /details\.common_json AS/);
+});
+
 test('detail refresh returns touched ids instead of mutating an array owned by its caller', async () => {
   const [details, worker] = await Promise.all([
     readProjectFile('../src/services/cultureSyncDetails.ts'),
