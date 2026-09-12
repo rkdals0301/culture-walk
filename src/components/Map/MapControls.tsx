@@ -3,15 +3,12 @@
 import {
   CategoryChips,
   FreeOnlyToggle,
-  LocationToggle,
   RegionSelect,
   SortControl,
   type SortControlProps,
 } from '@/components/Common/FilterControls';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import type { MapSortMode } from '@/utils/exploreState';
-import clsx from 'clsx';
-import { Calendar, Navigation } from 'lucide-react';
 
 export type { MapSortMode };
 
@@ -64,26 +61,4 @@ export type MapSortControlProps = SortControlProps;
 
 export const MapSortControl = (props: MapSortControlProps) => (
   <SortControl {...props} size={props.size ?? 'sm'} />
-);
-
-interface MapLocationControlProps {
-  isActive: boolean;
-  isLocating: boolean;
-  onToggle: () => void;
-  compact?: boolean;
-}
-
-export const MapLocationControl = ({
-  isActive,
-  isLocating,
-  onToggle,
-  compact = false,
-}: MapLocationControlProps) => (
-  <LocationToggle
-    isActive={isActive}
-    isLocating={isLocating}
-    onToggle={onToggle}
-    compact={compact}
-    size='sm'
-  />
 );

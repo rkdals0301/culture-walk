@@ -180,6 +180,16 @@ test('feed hook delegates TTL and bounded LRU behavior to a dedicated client cac
   assert.match(cache, /while \(entries\.size > maxEntries\)/);
 });
 
+test('unused theme, skeleton, and map location wrappers stay out of the production surface', async () => {
+  const [packageJson, mapControls] = await Promise.all([
+    readProjectFile('../package.json'),
+    readProjectFile('../src/components/Map/MapControls.tsx'),
+  ]);
+
+  assert.doesNotMatch(packageJson, /next-themes|react-loading-skeleton/);
+  assert.doesNotMatch(mapControls, /MapLocationControl|LocationToggle/);
+});
+
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
   const source = await readProjectFile('../src/styles/_information.scss');
 
