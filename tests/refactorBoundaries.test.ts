@@ -79,6 +79,21 @@ test('MapDetailSheetClient owns lifecycle state while detail presentation lives 
   assert.doesNotMatch(source, /GoogleAdSlot|CultureDetailFacts|next\/image|getCulturePriceTone/);
 });
 
+test('map detail sheet delegates image rail and information sections to dedicated components', async () => {
+  const [content, imageRail, sections] = await Promise.all([
+    readProjectFile('../src/components/Map/MapDetailSheetContent.tsx'),
+    readProjectFile('../src/components/Map/MapDetailImageRail.tsx'),
+    readProjectFile('../src/components/Map/MapDetailInformationSections.tsx'),
+  ]);
+
+  assert.match(content, /MapDetailImageRail/);
+  assert.match(content, /MapDetailInformationSections/);
+  assert.doesNotMatch(content, /failedAdditionalImages\[image\.url\]|<details open|이용 안내/);
+  assert.match(imageRail, /failedAdditionalImages\[image\.url\]/);
+  assert.match(sections, /<details open/);
+  assert.match(sections, /이용 안내/);
+});
+
 test('culture detail presentation delegates gallery state and shared derived fields to dedicated modules', async () => {
   const [detailView, facts, gallery, mapDetailShared, mapDetailSheet] = await Promise.all([
     readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
