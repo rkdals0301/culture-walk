@@ -135,6 +135,22 @@ test('D1 culture projections and row mapping live in one repository module', asy
   assert.doesNotMatch(syncDetails, /details\.common_json AS/);
 });
 
+test('culture sync repository delegates staging IO and snapshot mutation to dedicated modules', async () => {
+  const [repository, staging, snapshot] = await Promise.all([
+    readProjectFile('../src/services/cultureSyncRepository.ts'),
+    readProjectFile('../src/services/cultureSyncStaging.ts'),
+    readProjectFile('../src/services/cultureSyncSnapshot.ts'),
+  ]);
+
+  assert.match(repository, /stageCultureRows/);
+  assert.match(repository, /readCultureSnapshotStats/);
+  assert.match(repository, /applyCultureSnapshot/);
+  assert.doesNotMatch(repository, /INSERT INTO culture_sync_staging|UPDATE cultures AS live|DELETE FROM cultures/);
+  assert.match(staging, /retryInsertStagingStatementGroup/);
+  assert.match(snapshot, /UPDATE cultures AS live/);
+  assert.match(snapshot, /DELETE FROM cultures/);
+});
+
 test('detail refresh returns touched ids instead of mutating an array owned by its caller', async () => {
   const [details, scheduledJobs] = await Promise.all([
     readProjectFile('../src/services/cultureSyncDetails.ts'),
