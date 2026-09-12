@@ -1,6 +1,6 @@
 import { useCultureContext } from '@/context/CultureContext';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureListItem } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
 import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } from '@/utils/exploreNavigationMemory';
@@ -16,7 +16,7 @@ import { useMapPanelLayout } from './useMapPanelLayout';
 
 interface UseMapDashboardControllerOptions {
   listRequest: number;
-  viewportCultures: FormattedCulture[];
+  viewportCultures: FormattedCultureListItem[];
 }
 
 export const useMapDashboardController = ({
@@ -132,7 +132,7 @@ export const useMapDashboardController = ({
     startFilterTransition(() => setMapRegion(nextRegion));
   };
 
-  const handleOpenCulture = (culture: FormattedCulture) => {
+  const handleOpenCulture = (culture: FormattedCultureListItem) => {
     const serializedSearch = serializeMapExploreStateToSearch({
       searchQuery,
       mapCategory,

@@ -1,8 +1,8 @@
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureListItem } from '@/types/culture';
 import type { CoordinateGroup } from '@/utils/mapMarkers';
 
 interface MapDuplicateLocationSheetProps {
-  group: CoordinateGroup<FormattedCulture>;
+  group: CoordinateGroup<FormattedCultureListItem>;
   onSelectCulture: (id: number) => void;
 }
 

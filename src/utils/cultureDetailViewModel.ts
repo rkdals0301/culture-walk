@@ -1,4 +1,4 @@
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 import {
   formatCultureDetailText,
   getCulturePriceTone,
@@ -10,7 +10,7 @@ import {
   splitCultureContact,
 } from '@/utils/cultureUtils';
 
-export const getCultureDetailViewModel = (culture: FormattedCulture) => {
+export const getCultureDetailViewModel = (culture: FormattedCultureDetail) => {
   const imageList: string[] = [];
   if (culture.mainImage && !culture.mainImage.includes('/assets/images/logo')) imageList.push(culture.mainImage);
   for (const image of culture.additionalImages ?? []) {

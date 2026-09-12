@@ -1,4 +1,9 @@
-import { CultureListItem, FormattedCulture } from '@/types/culture';
+import {
+  Culture,
+  CultureDisplayFields,
+  CultureListItem,
+  FormattedCultureDetail,
+} from '@/types/culture';
 
 import { format } from 'date-fns';
 
@@ -39,7 +44,7 @@ const CULTURE_TIME_RANGE_PATTERN = /\d{1,2}:\d{2}\s*(?:~|〜|-)\s*\d{1,2}:\d{2}/
 export const isCultureTimeRange = (value?: string | null) => CULTURE_TIME_RANGE_PATTERN.test(value ?? '');
 
 export const getCultureTiming = (
-  culture: Pick<FormattedCulture, 'eventTime' | 'duration'>
+  culture: Pick<FormattedCultureDetail, 'eventTime' | 'duration'>
 ): { eventTime: string; duration: string } => {
   const eventTime = hasMeaningfulCultureValue(culture.eventTime) ? normalizeCultureContent(culture.eventTime) : '';
   const duration = hasMeaningfulCultureValue(culture.duration) ? normalizeCultureContent(culture.duration) : '';
@@ -108,7 +113,7 @@ export const splitCultureContact = (value?: string | null): CultureContactSegmen
 };
 
 export const getUniqueCultureAdditionalInformation = (
-  information: FormattedCulture['additionalInformation'],
+  information: FormattedCultureDetail['additionalInformation'],
   comparedTexts: Array<string | null | undefined> = []
 ) => {
   const seen = new Set(comparedTexts.map(normalizeCultureContent).filter(Boolean));
@@ -151,7 +156,7 @@ const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => 
 export type CulturePriceTone = 'free' | 'partial' | 'paid' | 'unknown';
 
 export const getCulturePriceTone = (
-  culture: Pick<FormattedCulture, 'isFree' | 'displayPrice'> & Partial<Pick<FormattedCulture, 'useFee'>>
+  culture: Pick<CultureListItem & CultureDisplayFields, 'isFree' | 'displayPrice'> & Partial<Pick<Culture, 'useFee'>>
 ): CulturePriceTone => {
   const value = `${culture.isFree ?? ''} ${culture.displayPrice ?? ''} ${culture.useFee ?? ''}`.toLowerCase();
 
@@ -187,12 +192,12 @@ const CULTURE_DETAIL_SIGNATURE_FIELDS = [
   'discountInformation',
   'additionalInformation',
   'additionalImages',
-] as const satisfies readonly (keyof FormattedCulture)[];
+] as const satisfies readonly (keyof FormattedCultureDetail)[];
 
-export const createCultureDetailSignature = (culture?: Partial<FormattedCulture> | null) =>
+export const createCultureDetailSignature = (culture?: Partial<FormattedCultureDetail> | null) =>
   JSON.stringify(CULTURE_DETAIL_SIGNATURE_FIELDS.map(field => culture?.[field] ?? null));
 
-export const formatCultureData = (cultures: CultureListItem[]): FormattedCulture[] => {
+export const formatCultureData = <T extends CultureListItem>(cultures: T[]): Array<T & CultureDisplayFields> => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');
     const displayPrice = (() => {

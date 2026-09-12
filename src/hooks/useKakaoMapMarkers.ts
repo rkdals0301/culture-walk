@@ -1,4 +1,4 @@
-import type { CultureMapCluster, FormattedCulture } from '@/types/culture';
+import type { CultureMapCluster, FormattedCultureListItem } from '@/types/culture';
 import type { GeoPoint } from '@/utils/geo';
 import type { CoordinateGroup } from '@/utils/mapMarkers';
 
@@ -11,14 +11,14 @@ const EMPHASIZED_MARKER_PIXEL_SIZE = 40;
 interface UseKakaoMapMarkersOptions {
   mapInstance: kakao.maps.Map | null;
   markerClustererRef: RefObject<kakao.maps.MarkerClusterer | null>;
-  markerGroups: CoordinateGroup<FormattedCulture>[];
+  markerGroups: CoordinateGroup<FormattedCultureListItem>[];
   visibleClusters: CultureMapCluster[];
   isClustered: boolean;
   selectedCultureId: number | null;
   focusedMarkerId: number | null;
   currentLocation: GeoPoint | null;
   onClusterClick: (cluster: CultureMapCluster) => void;
-  onMarkerGroupClick: (group: CoordinateGroup<FormattedCulture>) => void;
+  onMarkerGroupClick: (group: CoordinateGroup<FormattedCultureListItem>) => void;
 }
 
 export const useKakaoMapMarkers = ({

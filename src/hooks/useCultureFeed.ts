@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import type { CultureFeedFilters } from '@/services/cultureFeed';
-import type { CultureFeedPage, FormattedCulture } from '@/types/culture';
+import type { CultureFeedPage, FormattedCultureListItem } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
@@ -29,7 +29,7 @@ const isRequestAborted = (error: unknown) =>
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
 
 interface FeedCacheEntry {
-  cultures: FormattedCulture[];
+  cultures: FormattedCultureListItem[];
   totalCount: number;
   freeCount: number;
   regionOptions: string[];
@@ -74,7 +74,7 @@ export const useCultureFeed = ({
 
   const filterKey = useMemo(() => getFeedCacheKey(filters), [filters]);
 
-  const [cultures, setCultures] = useState<FormattedCulture[]>([]);
+  const [cultures, setCultures] = useState<FormattedCultureListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [freeCount, setFreeCount] = useState(0);
   const [regionOptions, setRegionOptions] = useState<string[]>([]);

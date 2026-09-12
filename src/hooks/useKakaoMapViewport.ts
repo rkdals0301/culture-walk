@@ -1,4 +1,4 @@
-import type { CultureMapViewport, FormattedCulture } from '@/types/culture';
+import type { CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
 import type { MapCameraState } from '@/utils/exploreState';
 import type { GeoPoint } from '@/utils/geo';
 
@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 interface UseKakaoMapViewportOptions {
   mapInstance: kakao.maps.Map | null;
   selectedCultureId: number | null;
-  selectedCulture: FormattedCulture | null;
+  selectedCulture: FormattedCultureListItem | null;
   currentLocation: GeoPoint | null;
   onViewportChange: (viewport: CultureMapViewport) => void;
   onCameraChange?: (camera: MapCameraState) => void;

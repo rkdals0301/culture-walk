@@ -193,9 +193,12 @@ export interface CultureMapResponse {
   regionOptions: string[];
 }
 
-export type FormattedCulture = CultureListItem &
-  Partial<Culture> & {
-    displayDate: string;
-    displayPlace: string;
-    displayPrice: string;
-  };
+export interface CultureDisplayFields {
+  displayDate: string;
+  displayPlace: string;
+  displayPrice: string;
+}
+
+export type FormattedCultureListItem = CultureListItem & CultureDisplayFields;
+
+export type FormattedCultureDetail = Culture & CultureDisplayFields;

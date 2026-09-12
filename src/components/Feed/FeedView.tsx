@@ -3,7 +3,7 @@
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
-import { FormattedCulture } from '@/types/culture';
+import { FormattedCultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { getFeedScrollTop, setFeedScrollTop } from '@/utils/exploreNavigationMemory';
 
@@ -157,7 +157,7 @@ const FeedView = () => {
   }, [mapFreeOnly, setMapFreeOnly]);
 
   const handleOpenCulture = useCallback(
-    (culture: FormattedCulture) => {
+    (culture: FormattedCultureListItem) => {
       if (feedContentRef.current) {
         setFeedScrollTop(feedContentRef.current.scrollTop);
       }

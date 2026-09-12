@@ -1,4 +1,4 @@
-import type { CultureMapBounds, CultureMapResponse, CultureMapViewport, FormattedCulture } from '@/types/culture';
+import type { CultureMapBounds, CultureMapResponse, CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
 import axiosInstance from '@/utils/axiosInstance';
 import {
   cultureMapClientCache,
@@ -174,7 +174,7 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
   }, [filterKey, mode]);
 
   return {
-    cultures: data.items as FormattedCulture[],
+    cultures: data.items as FormattedCultureListItem[],
     clusters: data.clusters,
     isClustered: data.isClustered,
     totalCount: data.totalCount,

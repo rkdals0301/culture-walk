@@ -1,12 +1,12 @@
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 import { formatCultureDetailText, hasMeaningfulCultureValue } from '@/utils/cultureUtils';
 import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 
 import Image from 'next/image';
 
 interface CultureDetailPosterProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureDetail;
   imageSrc?: string;
   imageFailed?: boolean;
   onImageError?: () => void;
@@ -56,7 +56,7 @@ export const CultureDetailPoster = ({
 };
 
 interface CultureDetailFactsProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureDetail;
   extended?: boolean;
 }
 

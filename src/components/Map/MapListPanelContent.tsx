@@ -1,19 +1,19 @@
 import CultureList from '@/components/Header/CultureList';
 import CultureListLoading from '@/components/Header/CultureListLoading';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureListItem } from '@/types/culture';
 import type { GeoPoint } from '@/utils/geo';
 
 import { AlertCircle } from 'lucide-react';
 
 interface MapListPanelContentProps {
-  cultures: FormattedCulture[];
+  cultures: FormattedCultureListItem[];
   currentLocation: GeoPoint | null;
   error: Error | null;
   hasActiveFilters: boolean;
   initialScrollTop: number;
   isClustered: boolean;
   isLoading: boolean;
-  onItemClick: (culture: FormattedCulture) => void;
+  onItemClick: (culture: FormattedCultureListItem) => void;
   onResetFilters: () => void;
   onRetry: () => void;
   onScrollPositionChange: (scrollTop: number) => void;

@@ -1,6 +1,6 @@
 import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
-import { FormattedCulture } from '@/types/culture';
+import { FormattedCultureListItem } from '@/types/culture';
 import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 
 import React, { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { Navigation } from 'lucide-react';
 
 interface CultureItemProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureListItem;
   isSelected?: boolean;
   currentLocation?: GeoPoint | null;
 }

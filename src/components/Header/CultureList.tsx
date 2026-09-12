@@ -1,5 +1,5 @@
 import CultureItem from '@/components/Header/CultureItem';
-import { FormattedCulture } from '@/types/culture';
+import { FormattedCultureListItem } from '@/types/culture';
 import { GeoPoint } from '@/utils/geo';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -9,8 +9,8 @@ import clsx from 'clsx';
 import { ArrowUp } from 'lucide-react';
 
 interface CultureListProps {
-  cultures: FormattedCulture[];
-  onItemClick: (culture: FormattedCulture) => void;
+  cultures: FormattedCultureListItem[];
+  onItemClick: (culture: FormattedCultureListItem) => void;
   selectedCultureId?: number | null;
   currentLocation?: GeoPoint | null;
   initialScrollTop?: number;

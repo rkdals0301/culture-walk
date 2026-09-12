@@ -1,7 +1,7 @@
 'use client';
 
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 
 interface CultureDetailGalleryProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureDetail;
   imageList: string[];
 }
 

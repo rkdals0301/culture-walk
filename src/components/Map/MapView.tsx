@@ -10,7 +10,7 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useKakaoMapInstance } from '@/hooks/useKakaoMapInstance';
 import { useKakaoMapMarkers } from '@/hooks/useKakaoMapMarkers';
 import { useKakaoMapViewport } from '@/hooks/useKakaoMapViewport';
-import type { CultureMapCluster, CultureMapViewport, FormattedCulture } from '@/types/culture';
+import type { CultureMapCluster, CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
 import {
   getEffectiveMapSortMode,
   normalizeMapCameraState,
@@ -27,12 +27,12 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { AlertCircle } from 'lucide-react';
 
-type MarkerGroup = CoordinateGroup<FormattedCulture>;
+type MarkerGroup = CoordinateGroup<FormattedCultureListItem>;
 
 interface MapViewProps {
   visibleClusters: CultureMapCluster[];
   isClustered: boolean;
-  visibleCultures: FormattedCulture[];
+  visibleCultures: FormattedCultureListItem[];
   isLoading: boolean;
   error: Error | null;
   onViewportChange: (viewport: CultureMapViewport) => void;

@@ -1,7 +1,7 @@
 'use client';
 
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
-import { FormattedCulture } from '@/types/culture';
+import { FormattedCultureListItem } from '@/types/culture';
 import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 
 import React, { useMemo, useState } from 'react';
@@ -11,9 +11,9 @@ import Image from 'next/image';
 import { Navigation } from 'lucide-react';
 
 interface FeedCultureCardProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureListItem;
   currentLocation?: GeoPoint | null;
-  onOpenCulture: (culture: FormattedCulture) => void;
+  onOpenCulture: (culture: FormattedCultureListItem) => void;
   isAboveFold?: boolean;
 }
 

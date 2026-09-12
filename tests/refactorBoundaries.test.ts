@@ -72,6 +72,22 @@ test('culture detail presentation delegates gallery state and shared derived fie
   assert.match(mapDetailSheet, /getCultureDetailViewModel/);
 });
 
+test('culture list and detail presentation use distinct formatted types', async () => {
+  const [types, feed, detail, mapData] = await Promise.all([
+    readProjectFile('../src/types/culture.ts'),
+    readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
+    readProjectFile('../src/hooks/useCultureMapData.ts'),
+  ]);
+
+  assert.match(types, /FormattedCultureListItem = CultureListItem & CultureDisplayFields/);
+  assert.match(types, /FormattedCultureDetail = Culture & CultureDisplayFields/);
+  assert.doesNotMatch(types, /Partial<Culture>/);
+  assert.match(feed, /FormattedCultureListItem/);
+  assert.match(mapData, /FormattedCultureListItem/);
+  assert.match(detail, /FormattedCultureDetail/);
+});
+
 test('detail refresh returns touched ids instead of mutating an array owned by its caller', async () => {
   const [details, worker] = await Promise.all([
     readProjectFile('../src/services/cultureSyncDetails.ts'),

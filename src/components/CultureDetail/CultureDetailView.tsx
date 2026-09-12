@@ -2,7 +2,7 @@
 
 import CultureDetailGallery from '@/components/CultureDetail/CultureDetailGallery';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 import {
   formatCultureDetailText,
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 interface CultureDetailViewProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureDetail;
 }
 
 const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {

@@ -3,7 +3,7 @@ import Button from '@/components/Common/Button';
 import CultureCategoryBadge from '@/components/Common/CultureCategoryBadge';
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { CultureDetailFacts, CultureDetailPoster } from '@/components/Map/MapDetailShared';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
 import {
   formatCultureDetailText,
@@ -26,7 +26,7 @@ const PRICE_BADGE_CLASS_NAMES = {
   unknown: 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)]',
 } as const;
 
-export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) => {
+export const MapDetailFallback = ({ culture }: { culture: FormattedCultureDetail }) => {
   const hasExternalLinks = Boolean(culture.homepageAddress || culture.homepageDetailAddress);
 
   return (
@@ -110,7 +110,7 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCulture }) =>
 };
 
 interface MapDetailSheetFooterProps {
-  culture: FormattedCulture;
+  culture: FormattedCultureDetail;
   onOpenExternalLink: (url?: string) => void;
 }
 
@@ -147,7 +147,7 @@ export const MapDetailSheetFooter = ({ culture, onOpenExternalLink }: MapDetailS
 };
 
 interface MapDetailSheetContentProps {
-  culture: FormattedCulture | null;
+  culture: FormattedCultureDetail | null;
   imageSrc?: string;
   imageFailed: boolean;
   failedAdditionalImages: Record<string, boolean>;

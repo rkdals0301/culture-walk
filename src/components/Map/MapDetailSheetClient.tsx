@@ -6,7 +6,7 @@ import {
   MapDetailSheetFooter,
 } from '@/components/Map/MapDetailSheetContent';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import type { FormattedCulture } from '@/types/culture';
+import type { FormattedCultureDetail } from '@/types/culture';
 import { createCultureDetailSignature } from '@/utils/cultureUtils';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 interface MapDetailSheetClientProps {
-  initialCulture: FormattedCulture;
+  initialCulture: FormattedCultureDetail;
 }
 
 const MapDetailSheetClient = ({ initialCulture }: MapDetailSheetClientProps) => {

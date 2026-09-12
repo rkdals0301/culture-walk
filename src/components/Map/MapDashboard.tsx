@@ -13,7 +13,7 @@ import MapListPanelContent from '@/components/Map/MapListPanelContent';
 import MapResultSummary from '@/components/Map/MapResultSummary';
 import MapSearchField from '@/components/Map/MapSearchField';
 import { useMapDashboardController } from '@/hooks/useMapDashboardController';
-import { FormattedCulture } from '@/types/culture';
+import { FormattedCultureListItem } from '@/types/culture';
 
 import clsx from 'clsx';
 import { ChevronUp, List, ListFilter, MapPinned, X } from 'lucide-react';
@@ -22,7 +22,7 @@ const ADSENSE_MAP_PANEL_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAP_PANEL;
 
 interface MapDashboardProps {
   listRequest?: number;
-  visibleCultures: FormattedCulture[];
+  visibleCultures: FormattedCultureListItem[];
   isClustered: boolean;
   totalCount: number;
   viewportCount: number;
