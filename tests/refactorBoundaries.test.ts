@@ -143,6 +143,19 @@ test('map data hook delegates bounded client cache and viewport projection to a 
   assert.doesNotMatch(source, /new Map<string, CultureMapCacheEntry>|getBoundsArea|isBoundsWithin|isCoordinateWithinBounds/);
 });
 
+test('feed hook delegates TTL and bounded LRU behavior to a dedicated client cache', async () => {
+  const [hook, cache] = await Promise.all([
+    readProjectFile('../src/hooks/useCultureFeed.ts'),
+    readProjectFile('../src/utils/cultureFeedClientCache.ts'),
+  ]);
+
+  assert.match(hook, /cultureFeedClientCache/);
+  assert.doesNotMatch(hook, /new Map<string, FeedCacheEntry>|CACHE_TTL_MS|feedMemoryCache/);
+  assert.match(cache, /DEFAULT_MAX_ENTRIES/);
+  assert.match(cache, /entries\.delete\(key\);\s*entries\.set\(key, entry\)/);
+  assert.match(cache, /while \(entries\.size > maxEntries\)/);
+});
+
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
   const source = await readProjectFile('../src/styles/_information.scss');
 

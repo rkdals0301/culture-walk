@@ -7,6 +7,7 @@ import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
 import type { MapSortMode } from '@/utils/exploreState';
 import type { GeoPoint } from '@/utils/geo';
+import { cultureFeedClientCache } from '@/utils/cultureFeedClientCache';
 
 import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 
@@ -27,19 +28,6 @@ const isRequestAborted = (error: unknown) =>
   (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError');
 
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
-
-interface FeedCacheEntry {
-  cultures: FormattedCultureListItem[];
-  totalCount: number;
-  freeCount: number;
-  regionOptions: string[];
-  nextCursor: string | null;
-  hasMore: boolean;
-  timestamp: number;
-}
-
-const feedMemoryCache = new Map<string, FeedCacheEntry>();
-const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const getFeedCacheKey = (filters: CultureFeedFilters) =>
   `${filters.searchQuery}|${filters.category}|${filters.region}|${filters.freeOnly ? '1' : '0'}|${filters.sortMode ?? 'date'}|${filters.userLat ? filters.userLat.toFixed(4) : ''}|${filters.userLng ? filters.userLng.toFixed(4) : ''}`;
@@ -126,14 +114,13 @@ export const useCultureFeed = ({
           return uniqueItems.length > 0 ? [...current, ...uniqueItems] : current;
         })();
 
-        feedMemoryCache.set(filterKey, {
+        cultureFeedClientCache.write(filterKey, {
           cultures: resolvedCultures,
           totalCount: page.totalCount,
           freeCount: page.freeCount,
           regionOptions: page.regionOptions ?? [],
           nextCursor: page.nextCursor,
           hasMore: page.hasMore,
-          timestamp: Date.now(),
         });
 
         return resolvedCultures;
@@ -157,10 +144,9 @@ export const useCultureFeed = ({
   );
 
   useEffect(() => {
-    const cachedEntry = feedMemoryCache.get(filterKey);
-    const isValid = cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS;
+    const cachedEntry = cultureFeedClientCache.read(filterKey);
 
-    if (isValid && retryNonce === 0) {
+    if (cachedEntry) {
       setCultures(cachedEntry.cultures);
       setTotalCount(cachedEntry.totalCount);
       setFreeCount(cachedEntry.freeCount);
@@ -237,7 +223,10 @@ export const useCultureFeed = ({
     await request;
   }, [error, fetchPage]);
 
-  const retry = useCallback(() => setRetryNonce(value => value + 1), []);
+  const retry = useCallback(() => {
+    cultureFeedClientCache.invalidate(filterKey);
+    setRetryNonce(value => value + 1);
+  }, [filterKey]);
   const retryLoadMore = useCallback(() => loadMore({ retry: true }), [loadMore]);
 
   return {
