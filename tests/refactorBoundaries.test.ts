@@ -47,15 +47,31 @@ test('MapDashboard delegates mobile bottom-sheet presentation to a dedicated com
 });
 
 test('feed and map navigation memory stays outside the global reactive culture context', async () => {
-  const [context, feed, mapView] = await Promise.all([
+  const [context, feed, feedViewport, mapView] = await Promise.all([
     readProjectFile('../src/context/CultureContext.tsx'),
     readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/hooks/useFeedViewportBehavior.ts'),
     readProjectFile('../src/components/Map/MapView.tsx'),
   ]);
 
   assert.doesNotMatch(context, /useState\([^\n]*ScrollTop|useState<[^>]*MapCameraState/);
-  assert.match(feed, /exploreNavigationMemory/);
+  assert.match(feed, /useFeedViewportBehavior/);
+  assert.match(feedViewport, /exploreNavigationMemory/);
   assert.match(mapView, /exploreNavigationMemory/);
+});
+
+test('FeedView delegates scroll restoration, search focus, and infinite loading to a viewport hook', async () => {
+  const [feed, viewportHook] = await Promise.all([
+    readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/hooks/useFeedViewportBehavior.ts'),
+  ]);
+
+  assert.match(feed, /useFeedViewportBehavior/);
+  assert.doesNotMatch(feed, /IntersectionObserver|cw:focus-feed-search|getFeedScrollTop|setFeedScrollTop/);
+  assert.match(viewportHook, /IntersectionObserver/);
+  assert.match(viewportHook, /cw:focus-feed-search/);
+  assert.match(viewportHook, /getFeedScrollTop/);
+  assert.match(viewportHook, /setFeedScrollTop/);
 });
 
 test('feed and map reuse one shared location and distance-sort controller', async () => {

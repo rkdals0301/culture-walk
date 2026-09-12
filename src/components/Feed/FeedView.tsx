@@ -3,11 +3,11 @@
 import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
+import { useFeedViewportBehavior } from '@/hooks/useFeedViewportBehavior';
 import { FormattedCultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
-import { getFeedScrollTop, setFeedScrollTop } from '@/utils/exploreNavigationMemory';
 
-import React, { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import React, { useCallback, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -57,80 +57,20 @@ const FeedView = () => {
     currentLocation,
   });
   const [, startTransition] = useTransition();
-  const feedContentRef = useRef<HTMLDivElement>(null);
-  const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
-    setShowScrollTop(scrollTop > 300);
-    setFeedScrollTop(scrollTop);
-  }, []);
-
-  // Restore feed scroll position when returning from detail page
-  useEffect(() => {
-    const savedScrollTop = getFeedScrollTop();
-    if (savedScrollTop > 0 && feedContentRef.current && cultures.length > 0) {
-      feedContentRef.current.scrollTop = savedScrollTop;
-    }
-  }, [cultures.length]);
-
-  const handleScrollToTop = useCallback(() => {
-    if (feedContentRef.current) {
-      feedContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const focusSearch = () => {
-      const feedContent = feedContentRef.current;
-      if (feedContent) {
-        feedContent.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      setTimeout(() => {
-        const input = document.getElementById('feed-search-input') as HTMLInputElement | null;
-        if (input) {
-          input.focus();
-          input.select();
-        }
-      }, 100);
-    };
-
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('focus') === 'search') {
-      focusSearch();
-    }
-
-    window.addEventListener('cw:focus-feed-search', focusSearch);
-    return () => {
-      window.removeEventListener('cw:focus-feed-search', focusSearch);
-    };
-  }, []);
-
-  useEffect(() => {
-    const root = feedContentRef.current;
-    const sentinel = loadMoreSentinelRef.current;
-    if (!root || !sentinel || !hasMore || isInitialLoading || error) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          void loadMore();
-        }
-      },
-      { root, rootMargin: '720px 0px', threshold: 0 }
-    );
-    observer.observe(sentinel);
-
-    return () => observer.disconnect();
-  }, [error, hasMore, isInitialLoading, loadMore]);
+  const {
+    feedContentRef,
+    loadMoreSentinelRef,
+    showScrollTop,
+    handleScroll,
+    handleScrollToTop,
+    rememberScrollPosition,
+  } = useFeedViewportBehavior({
+    cultureCount: cultures.length,
+    hasMore,
+    isInitialLoading,
+    error,
+    loadMore,
+  });
 
   const handleSelectCategory = useCallback(
     (category: CultureCategoryKey) => {
@@ -158,12 +98,10 @@ const FeedView = () => {
 
   const handleOpenCulture = useCallback(
     (culture: FormattedCultureListItem) => {
-      if (feedContentRef.current) {
-        setFeedScrollTop(feedContentRef.current.scrollTop);
-      }
+      rememberScrollPosition();
       router.push(`/cultures/${culture.id}`);
     },
-    [router]
+    [rememberScrollPosition, router]
   );
 
   const isFiltered =
