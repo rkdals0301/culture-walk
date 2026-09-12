@@ -297,6 +297,21 @@ test('feed hook delegates TTL and bounded LRU behavior to a dedicated client cac
   assert.match(cache, /while \(entries\.size > maxEntries\)/);
 });
 
+test('feed hook delegates request params, cache keys, and page merging to pure client helpers', async () => {
+  const [hook, requestHelpers] = await Promise.all([
+    readProjectFile('../src/hooks/useCultureFeed.ts'),
+    readProjectFile('../src/utils/cultureFeedClientRequest.ts'),
+  ]);
+
+  assert.match(hook, /createCultureFeedRequestParams/);
+  assert.match(hook, /createCultureFeedClientCacheKey/);
+  assert.match(hook, /mergeCultureFeedItems/);
+  assert.doesNotMatch(hook, /existingIds|params: Record<string, string \| number>|toFixed\(4\)/);
+  assert.match(requestHelpers, /createCultureFeedClientFilters/);
+  assert.match(requestHelpers, /createCultureFeedRequestParams/);
+  assert.match(requestHelpers, /mergeCultureFeedItems/);
+});
+
 test('unused theme, skeleton, and map location wrappers stay out of the production surface', async () => {
   const [packageJson, mapControls] = await Promise.all([
     readProjectFile('../package.json'),

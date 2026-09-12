@@ -8,10 +8,15 @@ import { formatCultureData } from '@/utils/cultureUtils';
 import type { MapSortMode } from '@/utils/exploreState';
 import type { GeoPoint } from '@/utils/geo';
 import { cultureFeedClientCache } from '@/utils/cultureFeedClientCache';
+import {
+  createCultureFeedClientCacheKey,
+  createCultureFeedClientFilters,
+  createCultureFeedRequestParams,
+  mergeCultureFeedItems,
+} from '@/utils/cultureFeedClientRequest';
 
 import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 
-const FEED_PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 250;
 
 interface UseCultureFeedOptions {
@@ -29,9 +34,6 @@ const isRequestAborted = (error: unknown) =>
 
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
 
-const getFeedCacheKey = (filters: CultureFeedFilters) =>
-  `${filters.searchQuery}|${filters.category}|${filters.region}|${filters.freeOnly ? '1' : '0'}|${filters.sortMode ?? 'date'}|${filters.userLat ? filters.userLat.toFixed(4) : ''}|${filters.userLng ? filters.userLng.toFixed(4) : ''}`;
-
 export const useCultureFeed = ({
   searchQuery,
   category,
@@ -48,19 +50,19 @@ export const useCultureFeed = ({
   }, [searchQuery]);
 
   const filters = useMemo<CultureFeedFilters>(
-    () => ({
-      searchQuery: debouncedSearchQuery,
-      category,
-      region,
-      freeOnly,
-      sortMode: sortMode === 'distance' && currentLocation ? 'distance' : 'date',
-      userLat: sortMode === 'distance' && currentLocation ? currentLocation.lat : null,
-      userLng: sortMode === 'distance' && currentLocation ? currentLocation.lng : null,
-    }),
+    () =>
+      createCultureFeedClientFilters({
+        searchQuery: debouncedSearchQuery,
+        category,
+        region,
+        freeOnly,
+        sortMode,
+        currentLocation,
+      }),
     [category, currentLocation, debouncedSearchQuery, freeOnly, region, sortMode]
   );
 
-  const filterKey = useMemo(() => getFeedCacheKey(filters), [filters]);
+  const filterKey = useMemo(() => createCultureFeedClientCacheKey(filters), [filters]);
 
   const [cultures, setCultures] = useState<FormattedCultureListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -80,22 +82,8 @@ export const useCultureFeed = ({
 
   const fetchPage = useCallback(
     async (cursor: string | null, append: boolean, version: number, controller: AbortController) => {
-      const params: Record<string, string | number> = {
-        limit: FEED_PAGE_SIZE,
-        category: filters.category,
-        region: filters.region,
-        free: filters.freeOnly ? '1' : '0',
-      };
-      if (filters.searchQuery) params.q = filters.searchQuery;
-      if (filters.sortMode) params.sort = filters.sortMode;
-      if (filters.userLat != null && filters.userLng != null) {
-        params.lat = filters.userLat;
-        params.lng = filters.userLng;
-      }
-      if (cursor) params.cursor = cursor;
-
       const response = await axiosInstance.get<CultureFeedPage>('/api/cultures/feed', {
-        params,
+        params: createCultureFeedRequestParams(filters, cursor),
         signal: controller.signal,
       });
 
@@ -107,12 +95,7 @@ export const useCultureFeed = ({
       setCultures(current => {
         if (version !== requestVersionRef.current) return current;
 
-        const resolvedCultures = (() => {
-          if (!append) return nextItems;
-          const existingIds = new Set(current.map(item => item.id));
-          const uniqueItems = nextItems.filter(item => !existingIds.has(item.id));
-          return uniqueItems.length > 0 ? [...current, ...uniqueItems] : current;
-        })();
+        const resolvedCultures = mergeCultureFeedItems(current, nextItems, append);
 
         cultureFeedClientCache.write(filterKey, {
           cultures: resolvedCultures,
