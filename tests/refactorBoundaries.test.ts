@@ -157,6 +157,25 @@ test('culture detail presentation delegates gallery state and shared derived fie
   assert.match(mapDetailSheet, /getCultureDetailViewModel/);
 });
 
+test('culture detail view delegates header, actions, and content sections to dedicated components', async () => {
+  const [detailView, header, actions, sections] = await Promise.all([
+    readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailHeader.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailActions.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailSections.tsx'),
+  ]);
+
+  assert.match(detailView, /CultureDetailHeader/);
+  assert.match(detailView, /CultureDetailDesktopActions/);
+  assert.match(detailView, /CultureDetailMobileActions/);
+  assert.match(detailView, /CultureDetailSections/);
+  assert.doesNotMatch(detailView, /navigator\.share|router\.back|map\.kakao\.com|map\.naver\.com|<details open/);
+  assert.match(header, /navigator\.share/);
+  assert.match(actions, /createCultureMapExploreUrl/);
+  assert.match(sections, /map\.kakao\.com/);
+  assert.match(sections, /<details open/);
+});
+
 test('culture list and detail presentation use distinct formatted types', async () => {
   const [types, feed, detail, mapData] = await Promise.all([
     readProjectFile('../src/types/culture.ts'),
