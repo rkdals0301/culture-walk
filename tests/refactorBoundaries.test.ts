@@ -108,14 +108,30 @@ test('D1 culture projections and row mapping live in one repository module', asy
 });
 
 test('detail refresh returns touched ids instead of mutating an array owned by its caller', async () => {
-  const [details, worker] = await Promise.all([
+  const [details, scheduledJobs] = await Promise.all([
     readProjectFile('../src/services/cultureSyncDetails.ts'),
-    readProjectFile('../worker.js'),
+    readProjectFile('../src/server/cultureScheduledJobs.ts'),
   ]);
 
   assert.doesNotMatch(details, /refreshedCultureIds\?:\s*number\[\]/);
   assert.match(details, /return \{ refreshed, refreshedCultureIds \};/);
-  assert.match(worker, /const \{ refreshed, refreshedCultureIds \} = await refreshStaleCachedTourApiDetails/);
+  assert.match(scheduledJobs, /const \{ refreshed, refreshedCultureIds \} = await refreshStaleCachedTourApiDetails/);
+});
+
+test('worker entrypoint delegates scheduled and edge-cache behavior to typed server modules', async () => {
+  const [worker, edgeCache, scheduledJobs] = await Promise.all([
+    readProjectFile('../worker.js'),
+    readProjectFile('../src/server/cultureEdgeCache.ts'),
+    readProjectFile('../src/server/cultureScheduledJobs.ts'),
+  ]);
+
+  assert.match(worker, /runCultureScheduledEvent/);
+  assert.match(worker, /purgeCultureEdgeCache/);
+  assert.match(worker, /withSitemapEdgeCache/);
+  assert.doesNotMatch(worker, /refreshStaleCachedTourApiDetails|acquireInitializeLock|hasD1DailyRowWriteLimitError/);
+  assert.match(edgeCache, /ctx\.cache\.purge/);
+  assert.match(scheduledJobs, /refreshStaleCachedTourApiDetails/);
+  assert.ok(worker.split(/\r?\n/).length < 60);
 });
 
 test('map data hook delegates bounded client cache and viewport projection to a pure utility', async () => {

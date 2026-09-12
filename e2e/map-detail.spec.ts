@@ -19,6 +19,10 @@ test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를
   if (isMobile) {
     await expect(openListButton).toBeVisible();
     await openListButton.click();
+  } else {
+    const expandListButton = page.getByRole('button', { name: '행사 목록 펼치기', exact: true });
+    await expect(expandListButton).toBeVisible();
+    await expandListButton.click();
   }
 
   await expect(page.getByRole('button', { name: /문화산책 테스트 공연,/ }).first()).toBeVisible();

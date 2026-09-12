@@ -38,9 +38,11 @@ test('non-success responses explicitly bypass browser and Workers Cache storage'
 });
 
 test('Workers Cache is version isolated and culture routes opt into edge-only cache directives', async () => {
-  const [wrangler, worker, feed, viewport, detail, list] = await Promise.all([
+  const [wrangler, worker, edgeCache, scheduledJobs, feed, viewport, detail, list] = await Promise.all([
     readProjectFile('../wrangler.jsonc'),
     readProjectFile('../worker.js'),
+    readProjectFile('../src/server/cultureEdgeCache.ts'),
+    readProjectFile('../src/server/cultureScheduledJobs.ts'),
     readProjectFile('../src/app/api/cultures/feed/route.ts'),
     readProjectFile('../src/app/api/cultures/viewport/route.ts'),
     readProjectFile('../src/app/api/cultures/[id]/route.ts'),
@@ -57,8 +59,9 @@ test('Workers Cache is version isolated and culture routes opt into edge-only ca
   }
 
   assert.match(worker, /withSitemapEdgeCache/);
-  assert.match(worker, /ctx\.cache\.purge/);
-  assert.match(worker, /snapshot-\$\{trigger\}/);
-  assert.match(worker, /detail-refresh/);
   assert.match(worker, /manual-sync/);
+  assert.match(edgeCache, /ctx\.cache\.purge/);
+  assert.match(edgeCache, /Cloudflare-CDN-Cache-Control/);
+  assert.match(scheduledJobs, /snapshot-\$\{trigger\}/);
+  assert.match(scheduledJobs, /detail-refresh/);
 });

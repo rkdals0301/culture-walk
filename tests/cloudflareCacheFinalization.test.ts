@@ -122,12 +122,15 @@ test('detail refresh reports only successfully refreshed culture ids for precise
 });
 
 test('detail cron uses per-culture tags instead of broad public cache purge', async () => {
-  const worker = await readFile(fileURLToPath(new URL('../worker.js', import.meta.url)), 'utf8');
+  const scheduledJobs = await readFile(
+    fileURLToPath(new URL('../src/server/cultureScheduledJobs.ts', import.meta.url)),
+    'utf8'
+  );
 
-  assert.match(worker, /refreshedCultureIds/);
-  assert.match(worker, /map\(getCultureDetailEdgeCacheTag\)/);
+  assert.match(scheduledJobs, /refreshedCultureIds/);
+  assert.match(scheduledJobs, /map\(getCultureDetailEdgeCacheTag\)/);
   assert.doesNotMatch(
-    worker,
+    scheduledJobs,
     /purgeCultureEdgeCache\(ctx, \[CULTURE_EDGE_CACHE_TAGS\.all, CULTURE_EDGE_CACHE_TAGS\.detail\], 'detail-refresh'\)/
   );
 });
