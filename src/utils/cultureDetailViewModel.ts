@@ -51,3 +51,5 @@ export const getCultureDetailViewModel = (culture: FormattedCultureDetail) => {
     ]),
   };
 };
+
+export type CultureDetailViewModel = ReturnType<typeof getCultureDetailViewModel>;

@@ -80,16 +80,20 @@ test('MapDetailSheetClient owns lifecycle state while detail presentation lives 
 });
 
 test('culture detail presentation delegates gallery state and shared derived fields to dedicated modules', async () => {
-  const [detailView, gallery, mapDetailShared, mapDetailSheet] = await Promise.all([
+  const [detailView, facts, gallery, mapDetailShared, mapDetailSheet] = await Promise.all([
     readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailFacts.tsx'),
     readProjectFile('../src/components/CultureDetail/CultureDetailGallery.tsx'),
     readProjectFile('../src/components/Map/MapDetailShared.tsx'),
     readProjectFile('../src/components/Map/MapDetailSheetContent.tsx'),
   ]);
 
   assert.match(detailView, /CultureDetailGallery/);
+  assert.match(detailView, /CultureDetailFacts/);
   assert.match(detailView, /getCultureDetailViewModel/);
-  assert.doesNotMatch(detailView, /handlePrevImage|handleNextImage|isLightboxOpen/);
+  assert.doesNotMatch(detailView, /handlePrevImage|handleNextImage|isLightboxOpen|copiedAddress|handleCopyAddress/);
+  assert.match(facts, /handleCopyAddress/);
+  assert.match(facts, /contactSegments/);
   assert.match(gallery, /handlePrevImage/);
   assert.match(gallery, /isLightboxOpen/);
   assert.match(mapDetailShared, /getCultureDetailViewModel/);

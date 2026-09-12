@@ -1,15 +1,12 @@
 'use client';
 
 import CultureDetailGallery from '@/components/CultureDetail/CultureDetailGallery';
+import CultureDetailFacts from '@/components/CultureDetail/CultureDetailFacts';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import type { FormattedCultureDetail } from '@/types/culture';
 import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
-import {
-  formatCultureDetailText,
-  hasMeaningfulCultureValue,
-} from '@/utils/cultureUtils';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import Link from 'next/link';
@@ -17,13 +14,10 @@ import { useRouter } from 'next/navigation';
 
 import {
   ArrowLeft,
-  Check,
   ChevronDown,
   Compass,
-  Copy,
   ExternalLink,
   Navigation,
-  Phone,
   Share2,
 } from 'lucide-react';
 
@@ -67,17 +61,11 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
 
   const detail = useMemo(() => getCultureDetailViewModel(culture), [culture]);
   const { imageList } = detail;
-  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const dday = useMemo(() => getDDayText(culture.startDate, culture.endDate), [culture.startDate, culture.endDate]);
-  const { eventTime: displayEventTime, duration: displayDuration } = detail;
-  const hasTarget = hasMeaningfulCultureValue(culture.useTarget);
-  const hasOrganization = hasMeaningfulCultureValue(culture.organizationName);
-  const hasContact = hasMeaningfulCultureValue(culture.contact);
-  const hasFestivalGrade = hasMeaningfulCultureValue(culture.festivalGrade);
-  const { contactSegments, hasOverview, hasProgram, visibleAdditionalInformation } = detail;
+  const { hasOverview, hasProgram, visibleAdditionalInformation } = detail;
 
-  const { address, displayFee, fullAddress, hasSeparateAddress, venueName } = detail;
+  const { fullAddress } = detail;
 
   const handleBack = useCallback(() => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -86,18 +74,6 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
       router.push('/');
     }
   }, [router]);
-
-  const handleCopyAddress = useCallback(async () => {
-    if (!fullAddress) return;
-    try {
-      await navigator.clipboard.writeText(fullAddress);
-      setCopiedAddress(true);
-      toast.success('주소가 복사되었습니다.');
-      setTimeout(() => setCopiedAddress(false), 2000);
-    } catch {
-      toast.error('주소 복사에 실패했습니다.');
-    }
-  }, [fullAddress]);
 
   const handleShare = useCallback(async () => {
     const shareData = {
@@ -248,162 +224,7 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
               {culture.title}
             </h1>
 
-            <section className='mt-8 border-t border-[var(--color-detail-divider)] text-sm'>
-              <dl>
-                <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                  <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>일정</dt>
-                  <dd className='min-w-0 font-medium text-[var(--color-text-primary)]'>{culture.displayDate}</dd>
-                </div>
-
-                {displayEventTime && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>운영 시간</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {formatCultureDetailText(displayEventTime)}
-                    </dd>
-                  </div>
-                )}
-
-                <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                  <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>장소</dt>
-                  <dd className='flex min-w-0 flex-wrap items-start justify-between gap-2 font-medium text-[var(--color-text-primary)]'>
-                    <span className='min-w-0 break-words'>{venueName || '장소 정보 없음'}</span>
-                    {fullAddress && !hasSeparateAddress && (
-                      <button
-                        type='button'
-                        onClick={handleCopyAddress}
-                        className='inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-[var(--color-brand-primary)] transition hover:bg-[var(--color-brand-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95'
-                        title='주소 복사'
-                        aria-live='polite'
-                      >
-                        {copiedAddress ? (
-                          <Check className='size-3.5' strokeWidth={1.8} />
-                        ) : (
-                          <Copy className='size-3.5' strokeWidth={1.8} />
-                        )}
-                        <span>{copiedAddress ? '복사됨' : '주소 복사'}</span>
-                      </button>
-                    )}
-                  </dd>
-                </div>
-
-                {hasSeparateAddress && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>주소</dt>
-                    <dd className='flex min-w-0 flex-wrap items-start justify-between gap-2 font-medium text-[var(--color-text-primary)]'>
-                      <span className='min-w-0 break-words'>{address}</span>
-                      <button
-                        type='button'
-                        onClick={handleCopyAddress}
-                        className='inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-[var(--color-brand-primary)] transition hover:bg-[var(--color-brand-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95'
-                        title='주소 복사'
-                        aria-live='polite'
-                      >
-                        {copiedAddress ? (
-                          <Check className='size-3.5' strokeWidth={1.8} />
-                        ) : (
-                          <Copy className='size-3.5' strokeWidth={1.8} />
-                        )}
-                        <span>{copiedAddress ? '복사됨' : '주소 복사'}</span>
-                      </button>
-                    </dd>
-                  </div>
-                )}
-
-                {hasMeaningfulCultureValue(culture.placeInformation) && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>장소 안내</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {culture.placeInformation}
-                    </dd>
-                  </div>
-                )}
-
-                <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                  <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>관람료</dt>
-                  <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                    {displayFee}
-                  </dd>
-                </div>
-
-                {displayDuration && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>소요 시간</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {formatCultureDetailText(displayDuration)}
-                    </dd>
-                  </div>
-                )}
-
-                {hasMeaningfulCultureValue(culture.bookingPlace) && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>예매처</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {formatCultureDetailText(culture.bookingPlace)}
-                    </dd>
-                  </div>
-                )}
-
-                {hasMeaningfulCultureValue(culture.discountInformation) && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>할인</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {formatCultureDetailText(culture.discountInformation)}
-                    </dd>
-                  </div>
-                )}
-
-                {hasTarget && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>대상</dt>
-                    <dd className='min-w-0 font-medium text-[var(--color-text-primary)]'>{culture.useTarget}</dd>
-                  </div>
-                )}
-
-                {hasFestivalGrade && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>축제 등급</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {culture.festivalGrade}
-                    </dd>
-                  </div>
-                )}
-
-                {hasOrganization && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>주최·주관</dt>
-                    <dd className='min-w-0 whitespace-pre-line break-words font-medium text-[var(--color-text-primary)]'>
-                      {culture.organizationName}
-                    </dd>
-                  </div>
-                )}
-
-                {hasContact && (
-                  <div className='grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]'>
-                    <dt className='pt-0.5 text-xs font-medium text-[var(--color-text-tertiary)]'>문의</dt>
-                    <dd className='flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 font-medium text-[var(--color-text-primary)]'>
-                      {contactSegments.map((segment, index) =>
-                        segment.type === 'phone' ? (
-                          <a
-                            key={`${segment.type}-${segment.value}-${index}`}
-                            href={`tel:${segment.value.replace(/[^0-9+]/g, '')}`}
-                            aria-label={`${segment.value} 전화 걸기`}
-                            className='inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-brand-primary)] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
-                          >
-                            <Phone className='size-3.5' strokeWidth={1.8} />
-                            <span>{segment.value}</span>
-                          </a>
-                        ) : (
-                          <span key={`${segment.type}-${index}`} className='whitespace-pre-line break-words'>
-                            {segment.value}
-                          </span>
-                        )
-                      )}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </section>
+            <CultureDetailFacts culture={culture} detail={detail} />
 
             {(hasOverview || hasProgram) && (
               <section className='mt-12 border-t border-[var(--color-detail-divider)] pt-7 sm:mt-14 sm:pt-8'>
