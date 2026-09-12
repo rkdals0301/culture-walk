@@ -74,6 +74,20 @@ test('FeedView delegates scroll restoration, search focus, and infinite loading 
   assert.match(viewportHook, /setFeedScrollTop/);
 });
 
+test('FeedView delegates loading, empty, error, and result-grid presentation to FeedResults', async () => {
+  const [feed, results] = await Promise.all([
+    readProjectFile('../src/components/Feed/FeedView.tsx'),
+    readProjectFile('../src/components/Feed/FeedResults.tsx'),
+  ]);
+
+  assert.match(feed, /FeedResults/);
+  assert.doesNotMatch(feed, /CalendarX|조건에 맞는 행사가 없습니다|FeedCultureCard|FeedSkeleton/);
+  assert.match(results, /CalendarX/);
+  assert.match(results, /조건에 맞는 행사가 없습니다/);
+  assert.match(results, /FeedCultureCard/);
+  assert.match(results, /FeedSkeleton/);
+});
+
 test('feed and map reuse one shared location and distance-sort controller', async () => {
   const [feed, mapController, mapLocationControl] = await Promise.all([
     readProjectFile('../src/components/Feed/FeedView.tsx'),
