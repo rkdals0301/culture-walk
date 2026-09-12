@@ -88,6 +88,18 @@ test('FeedView delegates loading, empty, error, and result-grid presentation to 
   assert.match(results, /FeedSkeleton/);
 });
 
+test('feed cards and detail view share one culture timing status helper', async () => {
+  const [card, detail] = await Promise.all([
+    readProjectFile('../src/components/Feed/FeedCultureCard.tsx'),
+    readProjectFile('../src/components/CultureDetail/CultureDetailView.tsx'),
+  ]);
+
+  assert.match(card, /getCultureTimingStatus/);
+  assert.match(detail, /getCultureTimingStatus/);
+  assert.doesNotMatch(card, /const getDDayText/);
+  assert.doesNotMatch(detail, /const getDDayText/);
+});
+
 test('feed and map reuse one shared location and distance-sort controller', async () => {
   const [feed, mapController, mapLocationControl] = await Promise.all([
     readProjectFile('../src/components/Feed/FeedView.tsx'),

@@ -5,6 +5,7 @@ import CultureDetailFacts from '@/components/CultureDetail/CultureDetailFacts';
 import ThemeToggleButton from '@/components/Theme/ThemeToggleButton';
 import type { FormattedCultureDetail } from '@/types/culture';
 import { getCultureDetailViewModel } from '@/utils/cultureDetailViewModel';
+import { getCultureTimingStatus } from '@/utils/cultureTimingStatus';
 
 import React, { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
@@ -25,44 +26,16 @@ interface CultureDetailViewProps {
   culture: FormattedCultureDetail;
 }
 
-const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
-  if (!endDate) return null;
-
-  const now = new Date();
-  const start = startDate ? new Date(startDate) : null;
-  const end = new Date(endDate);
-
-  now.setHours(0, 0, 0, 0);
-  if (start) start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  const diffTimeToEnd = end.getTime() - now.getTime();
-  const diffDaysToEnd = Math.ceil(diffTimeToEnd / (1000 * 60 * 60 * 24));
-
-  if (diffDaysToEnd < 0) {
-    return { text: '종료된 행사', variant: 'ended' as const };
-  }
-  if (diffDaysToEnd === 0) {
-    return { text: '오늘 마감', variant: 'urgent' as const };
-  }
-  if (diffDaysToEnd <= 3) {
-    return { text: `D-${diffDaysToEnd} 마감임박`, variant: 'urgent' as const };
-  }
-  if (start && start > now) {
-    const diffDaysToStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return { text: `D-${diffDaysToStart} 오픈예정`, variant: 'upcoming' as const };
-  }
-
-  return { text: '진행중', variant: 'ongoing' as const };
-};
-
 const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
   const router = useRouter();
 
   const detail = useMemo(() => getCultureDetailViewModel(culture), [culture]);
   const { imageList } = detail;
 
-  const dday = useMemo(() => getDDayText(culture.startDate, culture.endDate), [culture.startDate, culture.endDate]);
+  const dday = useMemo(
+    () => getCultureTimingStatus(culture.startDate, culture.endDate),
+    [culture.startDate, culture.endDate]
+  );
   const { hasOverview, hasProgram, visibleAdditionalInformation } = detail;
 
   const { fullAddress } = detail;

@@ -3,6 +3,7 @@
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { FormattedCultureListItem } from '@/types/culture';
 import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
+import { getCultureTimingStatus } from '@/utils/cultureTimingStatus';
 
 import React, { useMemo, useState } from 'react';
 
@@ -16,40 +17,6 @@ interface FeedCultureCardProps {
   onOpenCulture: (culture: FormattedCultureListItem) => void;
   isAboveFold?: boolean;
 }
-
-const getDDayText = (startDate?: Date | null, endDate?: Date | null) => {
-  if (!endDate) {
-    return null;
-  }
-
-  const now = new Date();
-  const start = startDate ? new Date(startDate) : null;
-  const end = new Date(endDate);
-
-  // Normalize to start of day in Korea time
-  now.setHours(0, 0, 0, 0);
-  if (start) start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-
-  const diffTimeToEnd = end.getTime() - now.getTime();
-  const diffDaysToEnd = Math.ceil(diffTimeToEnd / (1000 * 60 * 60 * 24));
-
-  if (diffDaysToEnd < 0) {
-    return { text: '종료', variant: 'ended' as const };
-  }
-  if (diffDaysToEnd === 0) {
-    return { text: '오늘 마감', variant: 'urgent' as const };
-  }
-  if (diffDaysToEnd <= 3) {
-    return { text: `D-${diffDaysToEnd} 마감임박`, variant: 'urgent' as const };
-  }
-  if (start && start > now) {
-    const diffDaysToStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return { text: `D-${diffDaysToStart} 오픈예정`, variant: 'upcoming' as const };
-  }
-
-  return { text: '진행중', variant: 'ongoing' as const };
-};
 
 const FeedCultureCard = ({
   culture,
@@ -69,7 +36,10 @@ const FeedCultureCard = ({
       : null;
   }, [currentLocation, culture.lat, culture.lng]);
 
-  const dDay = useMemo(() => getDDayText(culture.startDate, culture.endDate), [culture.startDate, culture.endDate]);
+  const dDay = useMemo(
+    () => getCultureTimingStatus(culture.startDate, culture.endDate),
+    [culture.startDate, culture.endDate]
+  );
   const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
 
   return (
