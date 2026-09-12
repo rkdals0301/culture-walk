@@ -117,10 +117,11 @@ test('culture list and detail presentation use distinct formatted types', async 
 });
 
 test('D1 culture projections and row mapping live in one repository module', async () => {
-  const [repository, readModel, syncDetails, cultureList] = await Promise.all([
+  const [repository, readModel, syncDetailRepository, detailPublisher, cultureList] = await Promise.all([
     readProjectFile('../src/services/cultureD1Repository.ts'),
     readProjectFile('../src/services/cultureReadModel.ts'),
-    readProjectFile('../src/services/cultureSyncDetails.ts'),
+    readProjectFile('../src/services/cultureSyncDetailRepository.ts'),
+    readProjectFile('../src/services/cultureDetailReadModelPublisher.ts'),
     readProjectFile('../src/services/cultureList.ts'),
   ]);
 
@@ -129,10 +130,12 @@ test('D1 culture projections and row mapping live in one repository module', asy
   assert.match(repository, /toCultureTourApiDetailsRow/);
   assert.match(repository, /toCultureListItem/);
   assert.match(readModel, /cultureD1Repository/);
-  assert.match(syncDetails, /cultureD1Repository/);
+  assert.match(syncDetailRepository, /cultureD1Repository/);
+  assert.match(detailPublisher, /cultureD1Repository/);
   assert.match(cultureList, /toCultureListItem/);
   assert.doesNotMatch(readModel, /cultures\.homepage_detail_address AS/);
-  assert.doesNotMatch(syncDetails, /details\.common_json AS/);
+  assert.doesNotMatch(syncDetailRepository, /cultures\.homepage_detail_address AS/);
+  assert.doesNotMatch(detailPublisher, /details\.common_json AS/);
 });
 
 test('culture sync repository delegates staging IO and snapshot mutation to dedicated modules', async () => {
@@ -160,6 +163,24 @@ test('detail refresh returns touched ids instead of mutating an array owned by i
   assert.doesNotMatch(details, /refreshedCultureIds\?:\s*number\[\]/);
   assert.match(details, /return \{ refreshed, refreshedCultureIds \};/);
   assert.match(scheduledJobs, /const \{ refreshed, refreshedCultureIds \} = await refreshStaleCachedTourApiDetails/);
+});
+
+test('culture detail sync delegates D1 persistence and read-model publishing to dedicated modules', async () => {
+  const [syncDetails, repository, publisher] = await Promise.all([
+    readProjectFile('../src/services/cultureSyncDetails.ts'),
+    readProjectFile('../src/services/cultureSyncDetailRepository.ts'),
+    readProjectFile('../src/services/cultureDetailReadModelPublisher.ts'),
+  ]);
+
+  assert.match(syncDetails, /readStaleCultureDetailRows/);
+  assert.match(syncDetails, /persistCultureDetailRefreshSuccess/);
+  assert.match(syncDetails, /persistCultureDetailRefreshFailure/);
+  assert.match(syncDetails, /publishCurrentCultureDetailReadModels/);
+  assert.doesNotMatch(syncDetails, /INSERT INTO culture_tour_api_details|UPDATE cultures SET\s*homepage_detail_address|SELECT .*CULTURE_DETAIL_SELECT/);
+  assert.match(repository, /INSERT INTO culture_tour_api_details/);
+  assert.match(repository, /detail_sync_fail_count = \?/);
+  assert.match(publisher, /CULTURE_DETAIL_SELECT/);
+  assert.match(publisher, /writeCultureDetailCache/);
 });
 
 test('worker entrypoint delegates scheduled and edge-cache behavior to typed server modules', async () => {
