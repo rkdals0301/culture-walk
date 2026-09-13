@@ -361,6 +361,16 @@ test('feed hook delegates request params, cache keys, and page merging to pure c
   assert.match(requestHelpers, /mergeCultureFeedItems/);
 });
 
+test('feed cache restoration starts a fresh request session before reading cached data', async () => {
+  const hook = await readProjectFile('../src/hooks/useCultureFeed.ts');
+
+  assert.match(hook, /startCultureFeedRequestSession/);
+  const sessionIndex = hook.indexOf('startCultureFeedRequestSession(');
+  const cacheReadIndex = hook.indexOf('cultureFeedClientCache.read(filterKey)');
+  assert.ok(sessionIndex >= 0 && cacheReadIndex >= 0 && sessionIndex < cacheReadIndex);
+  assert.match(hook, /if \(cachedEntry\)[\s\S]*?controller\.abort\(\)/);
+});
+
 test('map navigation uses one URL builder for root and detail exploration routes', async () => {
   const [routeUtils, mapView, controller, floatingButton] = await Promise.all([
     readProjectFile('../src/utils/mapRoute.ts'),

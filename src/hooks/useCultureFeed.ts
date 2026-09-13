@@ -14,6 +14,7 @@ import {
   createCultureFeedRequestParams,
   mergeCultureFeedItems,
 } from '@/utils/cultureFeedClientRequest';
+import { startCultureFeedRequestSession } from '@/utils/cultureFeedRequestLifecycle';
 
 import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 
@@ -127,6 +128,14 @@ export const useCultureFeed = ({
   );
 
   useEffect(() => {
+    const { version, controller } = startCultureFeedRequestSession(
+      requestVersionRef.current,
+      abortControllerRef.current
+    );
+    requestVersionRef.current = version;
+    abortControllerRef.current = controller;
+    inFlightRef.current = null;
+
     const cachedEntry = cultureFeedClientCache.read(filterKey);
 
     if (cachedEntry) {
@@ -140,18 +149,16 @@ export const useCultureFeed = ({
       setIsInitialLoading(false);
       setIsLoadingMore(false);
       setError(null);
-      return;
+      return () => {
+        controller.abort();
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+      };
     }
 
-    const version = requestVersionRef.current + 1;
-    requestVersionRef.current = version;
-    abortControllerRef.current?.abort();
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
     nextCursorRef.current = null;
     hasMoreRef.current = true;
-    inFlightRef.current = null;
     setCultures([]);
     setTotalCount(0);
     setFreeCount(0);
@@ -177,6 +184,9 @@ export const useCultureFeed = ({
       controller.abort();
       if (inFlightRef.current === request) {
         inFlightRef.current = null;
+      }
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
       }
     };
   }, [fetchPage, filterKey, retryNonce]);
