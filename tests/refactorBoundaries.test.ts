@@ -442,6 +442,24 @@ test('root layout delegates metadata, structured data, and theme bootstrap confi
   assert.ok(layout.split(/\r?\n/).length < 140);
 });
 
+test('culture and map detail pages share one SEO and Event JSON-LD builder', async () => {
+  const [culturePage, mapPage, seo, sitemap] = await Promise.all([
+    readProjectFile('../src/app/cultures/[id]/page.tsx'),
+    readProjectFile('../src/app/map/[id]/page.tsx'),
+    readProjectFile('../src/server/cultureDetailSeo.ts'),
+    readProjectFile('../src/app/sitemap.ts'),
+  ]);
+
+  assert.match(culturePage, /createCultureDetailMetadata/);
+  assert.match(culturePage, /createCultureEventStructuredData/);
+  assert.match(mapPage, /createCultureDetailMetadata/);
+  assert.match(mapPage, /createCultureEventStructuredData/);
+  assert.doesNotMatch(culturePage, /EventScheduled|InStock|SITE_URL/);
+  assert.doesNotMatch(mapPage, /EventCompleted|parseOfferPrice|SITE_URL/);
+  assert.match(seo, /getCultureCanonicalUrl/);
+  assert.doesNotMatch(sitemap, /`\$\{SITE_URL\}\/map\/\$\{row\.id\}`/);
+});
+
 test('filter controls facade delegates independent control groups to focused modules', async () => {
   const [facade, category, region, toggles, sort] = await Promise.all([
     readProjectFile('../src/components/Common/FilterControls.tsx'),
