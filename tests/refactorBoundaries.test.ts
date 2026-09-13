@@ -365,3 +365,18 @@ test('information styles keep the entrypoint small and delegate base/editorial l
   assert.match(source, /@include information-editorial\.styles;/);
   assert.ok(source.split(/\r?\n/).length < 20);
 });
+
+test('root layout delegates metadata, structured data, and theme bootstrap configuration', async () => {
+  const [layout, config] = await Promise.all([
+    readProjectFile('../src/app/layout.tsx'),
+    readProjectFile('../src/app/rootLayoutConfig.ts'),
+  ]);
+
+  assert.match(layout, /rootLayoutConfig/);
+  assert.doesNotMatch(layout, /GOOGLE_SITE_VERIFICATION|NAVER_SITE_VERIFICATION|BRAND_ASSET_VERSION|@graph/);
+  assert.match(config, /rootMetadata/);
+  assert.match(config, /rootViewport/);
+  assert.match(config, /WEBSITE_STRUCTURED_DATA/);
+  assert.match(config, /THEME_INITIALIZER_SCRIPT/);
+  assert.ok(layout.split(/\r?\n/).length < 140);
+});
