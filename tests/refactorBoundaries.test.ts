@@ -380,3 +380,21 @@ test('root layout delegates metadata, structured data, and theme bootstrap confi
   assert.match(config, /THEME_INITIALIZER_SCRIPT/);
   assert.ok(layout.split(/\r?\n/).length < 140);
 });
+
+test('TourAPI detail facade separates normalization from persistence serialization', async () => {
+  const [facade, normalization, storage] = await Promise.all([
+    readProjectFile('../src/services/tourApiDetails.ts'),
+    readProjectFile('../src/services/tourApiDetailNormalization.ts'),
+    readProjectFile('../src/services/tourApiDetailStorage.ts'),
+  ]);
+
+  assert.match(facade, /tourApiDetailNormalization/);
+  assert.match(facade, /tourApiDetailStorage/);
+  assert.doesNotMatch(facade, /JSON\.parse|normalizeTourApiText/);
+  assert.match(normalization, /normalizeTourApiDetails/);
+  assert.match(normalization, /createTourApiDetailSummary/);
+  assert.doesNotMatch(normalization, /CultureTourApiDetailsRow|JSON\.parse/);
+  assert.match(storage, /parseStoredTourApiDetails/);
+  assert.match(storage, /serializeTourApiDetails/);
+  assert.match(storage, /CultureTourApiDetailsRow/);
+});
