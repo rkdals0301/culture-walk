@@ -346,6 +346,24 @@ test('feed hook delegates request params, cache keys, and page merging to pure c
   assert.match(requestHelpers, /mergeCultureFeedItems/);
 });
 
+test('map navigation uses one URL builder for root and detail exploration routes', async () => {
+  const [routeUtils, mapView, controller, floatingButton] = await Promise.all([
+    readProjectFile('../src/utils/mapRoute.ts'),
+    readProjectFile('../src/components/Map/MapView.tsx'),
+    readProjectFile('../src/hooks/useMapDashboardController.ts'),
+    readProjectFile('../src/components/Feed/FloatingMapButton.tsx'),
+  ]);
+
+  assert.match(routeUtils, /createMapExploreUrl/);
+  assert.match(routeUtils, /serializeMapExploreStateToSearch/);
+  assert.match(mapView, /createMapExploreUrl/);
+  assert.match(controller, /createMapExploreUrl/);
+  assert.match(floatingButton, /createMapExploreUrl/);
+  assert.doesNotMatch(mapView, /serializeMapExploreStateToSearch/);
+  assert.doesNotMatch(controller, /serializeMapExploreStateToSearch/);
+  assert.doesNotMatch(floatingButton, /serializeMapExploreStateToSearch/);
+});
+
 test('culture utils facade separates detail-domain helpers from list display formatting', async () => {
   const [facade, detailUtils, displayUtils] = await Promise.all([
     readProjectFile('../src/utils/cultureUtils.ts'),

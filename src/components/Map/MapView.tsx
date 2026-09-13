@@ -15,11 +15,10 @@ import {
   getEffectiveMapSortMode,
   normalizeMapCameraState,
   parseMapExploreStateFromSearch,
-  serializeMapExploreStateToSearch,
 } from '@/utils/exploreState';
 import { getMapCamera, getMapListScrollTop, setMapCamera } from '@/utils/exploreNavigationMemory';
 import { type CoordinateGroup, groupItemsByCoordinate } from '@/utils/mapMarkers';
-import { getMapDetailId } from '@/utils/mapRoute';
+import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -101,7 +100,7 @@ const MapView = ({
     (id: number) => {
       setPendingDetailId(id);
       setActiveMarkerId(id);
-      const serializedSearch = serializeMapExploreStateToSearch({
+      const detailUrl = createMapExploreUrl(`/map/${id}`, {
         searchQuery,
         mapCategory,
         mapRegion,
@@ -111,13 +110,12 @@ const MapView = ({
         listOpen: false,
         mapCamera: getCurrentMapCamera(),
       });
-      const detailPath = `/map/${id}${serializedSearch ? `?${serializedSearch}` : ''}`;
       if (selectedCultureId !== null) {
-        router.replace(detailPath);
+        router.replace(detailUrl);
         return;
       }
 
-      router.push(detailPath);
+      router.push(detailUrl);
     },
     [
       currentLocation,

@@ -2,10 +2,10 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import type { FormattedCultureListItem } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
-import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getEffectiveMapSortMode } from '@/utils/exploreState';
 import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } from '@/utils/exploreNavigationMemory';
 import { calculateDistanceMeters } from '@/utils/geo';
-import { getMapDetailId } from '@/utils/mapRoute';
+import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
@@ -133,7 +133,7 @@ export const useMapDashboardController = ({
   };
 
   const handleOpenCulture = (culture: FormattedCultureListItem) => {
-    const serializedSearch = serializeMapExploreStateToSearch({
+    const detailUrl = createMapExploreUrl(`/map/${culture.id}`, {
       searchQuery,
       mapCategory,
       mapRegion,
@@ -143,8 +143,6 @@ export const useMapDashboardController = ({
       listOpen: false,
       mapCamera: getMapCamera(),
     });
-    const detailPath = `/map/${culture.id}`;
-    const detailUrl = serializedSearch ? `${detailPath}?${serializedSearch}` : detailPath;
 
     if (isDetailRoute) {
       router.replace(detailUrl);

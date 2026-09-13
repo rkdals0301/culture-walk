@@ -1,7 +1,8 @@
 'use client';
 
 import { useCultureContext } from '@/context/CultureContext';
-import { getEffectiveMapSortMode, serializeMapExploreStateToSearch } from '@/utils/exploreState';
+import { getEffectiveMapSortMode } from '@/utils/exploreState';
+import { createMapExploreUrl } from '@/utils/mapRoute';
 
 import React from 'react';
 
@@ -21,7 +22,7 @@ const FloatingMapButton = () => {
   } = useCultureContext();
 
   const handleNavigateToMap = () => {
-    const serializedSearch = serializeMapExploreStateToSearch({
+    const targetUrl = createMapExploreUrl('/map', {
       searchQuery,
       mapCategory,
       mapRegion,
@@ -30,8 +31,6 @@ const FloatingMapButton = () => {
       mapListScrollTop: 0,
       listOpen: false,
     });
-
-    const targetUrl = serializedSearch ? `/map?${serializedSearch}` : '/map';
     router.push(targetUrl);
   };
 
