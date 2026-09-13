@@ -346,6 +346,24 @@ test('feed hook delegates request params, cache keys, and page merging to pure c
   assert.match(requestHelpers, /mergeCultureFeedItems/);
 });
 
+test('culture utils facade separates detail-domain helpers from list display formatting', async () => {
+  const [facade, detailUtils, displayUtils] = await Promise.all([
+    readProjectFile('../src/utils/cultureUtils.ts'),
+    readProjectFile('../src/utils/cultureDetailUtils.ts'),
+    readProjectFile('../src/utils/cultureDisplayUtils.ts'),
+  ]);
+
+  assert.ok(facade.split(/\r?\n/).length < 10);
+  assert.match(facade, /cultureDetailUtils/);
+  assert.match(facade, /cultureDisplayUtils/);
+  assert.match(detailUtils, /splitCultureContact/);
+  assert.match(detailUtils, /createCultureDetailSignature/);
+  assert.doesNotMatch(detailUtils, /formatCultureData/);
+  assert.match(displayUtils, /formatCultureData/);
+  assert.match(displayUtils, /getCulturePriceTone/);
+  assert.doesNotMatch(displayUtils, /splitCultureContact|createCultureDetailSignature/);
+});
+
 test('unused theme, skeleton, and map location wrappers stay out of the production surface', async () => {
   const [packageJson, mapControls] = await Promise.all([
     readProjectFile('../package.json'),
