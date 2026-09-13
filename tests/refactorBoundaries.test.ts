@@ -192,13 +192,14 @@ test('culture list and detail presentation use distinct formatted types', async 
   assert.match(detail, /FormattedCultureDetail/);
 });
 
-test('D1 culture projections and row mapping live in one repository module', async () => {
-  const [repository, readModel, syncDetailRepository, detailPublisher, cultureList] = await Promise.all([
+test('D1 culture projections and row mapping live in repository modules', async () => {
+  const [repository, readModel, syncDetailRepository, detailPublisher, cultureList, cultureListRepository] = await Promise.all([
     readProjectFile('../src/services/cultureD1Repository.ts'),
     readProjectFile('../src/services/cultureReadModel.ts'),
     readProjectFile('../src/services/cultureSyncDetailRepository.ts'),
     readProjectFile('../src/services/cultureDetailReadModelPublisher.ts'),
     readProjectFile('../src/services/cultureList.ts'),
+    readProjectFile('../src/services/cultureListRepository.ts'),
   ]);
 
   assert.match(repository, /CULTURE_CONTENT_SELECT/);
@@ -208,7 +209,8 @@ test('D1 culture projections and row mapping live in one repository module', asy
   assert.match(readModel, /cultureD1Repository/);
   assert.match(syncDetailRepository, /cultureD1Repository/);
   assert.match(detailPublisher, /cultureD1Repository/);
-  assert.match(cultureList, /toCultureListItem/);
+  assert.match(cultureList, /queryCultureListFromD1/);
+  assert.match(cultureListRepository, /toCultureListItem/);
   assert.doesNotMatch(readModel, /cultures\.homepage_detail_address AS/);
   assert.doesNotMatch(syncDetailRepository, /cultures\.homepage_detail_address AS/);
   assert.doesNotMatch(detailPublisher, /details\.common_json AS/);
@@ -230,6 +232,20 @@ test('culture service keeps TourAPI normalization separate from domain row mappi
   assert.match(domainMapper, /mapCultureRowToCulture/);
   assert.match(domainMapper, /mapCultureListItemToCulture/);
   assert.doesNotMatch(domainMapper, /createTourApiSourceKey/);
+});
+
+test('culture list service delegates D1 querying and revision hashing to a repository', async () => {
+  const [service, repository] = await Promise.all([
+    readProjectFile('../src/services/cultureList.ts'),
+    readProjectFile('../src/services/cultureListRepository.ts'),
+  ]);
+
+  assert.match(service, /queryCultureListFromD1/);
+  assert.match(service, /cultureListRepository/);
+  assert.doesNotMatch(service, /SELECT id, classification|Math\.imul/);
+  assert.match(repository, /SELECT id, classification/);
+  assert.match(repository, /Math\.imul/);
+  assert.match(repository, /createCultureListItemRevision/);
 });
 
 test('culture sync repository delegates staging IO and snapshot mutation to dedicated modules', async () => {
