@@ -272,7 +272,22 @@ test('detail refresh returns touched ids instead of mutating an array owned by i
 
   assert.doesNotMatch(details, /refreshedCultureIds\?:\s*number\[\]/);
   assert.match(details, /return \{ refreshed, refreshedCultureIds \};/);
-  assert.match(scheduledJobs, /const \{ refreshed, refreshedCultureIds \} = await refreshStaleCachedTourApiDetails/);
+  assert.match(scheduledJobs, /const result = await refreshStaleCachedTourApiDetails/);
+  assert.match(scheduledJobs, /result\.refreshedCultureIds/);
+});
+
+test('manual and scheduled sync paths share one initialize-lock lifecycle helper', async () => {
+  const [lock, initializeRoute, scheduledJobs] = await Promise.all([
+    readProjectFile('../src/services/cultureSyncLock.ts'),
+    readProjectFile('../src/app/api/initialize/route.ts'),
+    readProjectFile('../src/server/cultureScheduledJobs.ts'),
+  ]);
+
+  assert.match(lock, /runWithInitializeLock/);
+  assert.match(initializeRoute, /runWithInitializeLock/);
+  assert.match(scheduledJobs, /runWithInitializeLock/);
+  assert.doesNotMatch(initializeRoute, /acquireInitializeLock|startInitializeLockHeartbeat|releaseInitializeLock/);
+  assert.doesNotMatch(scheduledJobs, /acquireInitializeLock|startInitializeLockHeartbeat|releaseInitializeLock/);
 });
 
 test('culture detail sync delegates D1 persistence and read-model publishing to dedicated modules', async () => {

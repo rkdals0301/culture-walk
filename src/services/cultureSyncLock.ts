@@ -152,3 +152,41 @@ export const startInitializeLockHeartbeat = (
     },
   };
 };
+
+export interface InitializeLockLease {
+  renew: () => Promise<boolean>;
+  ensureHeld: () => Promise<void>;
+}
+
+export type InitializeLockRunResult<T> =
+  | { acquired: false; value: null }
+  | { acquired: true; value: T };
+
+export const runWithInitializeLock = async <T>(
+  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  task: (lease: InitializeLockLease) => Promise<T>
+): Promise<InitializeLockRunResult<T>> => {
+  const ownerToken = await acquireInitializeLock(env);
+  if (!ownerToken) return { acquired: false, value: null };
+
+  const heartbeat = startInitializeLockHeartbeat(env, ownerToken);
+  try {
+    await heartbeat.ensureHeld();
+    return {
+      acquired: true,
+      value: await task({ renew: heartbeat.renew, ensureHeld: heartbeat.ensureHeld }),
+    };
+  } finally {
+    try {
+      await heartbeat.stop();
+    } catch (error) {
+      console.error('동기화 락 heartbeat 종료 실패:', error);
+    }
+
+    try {
+      await releaseInitializeLock(env, ownerToken);
+    } catch (error) {
+      console.error('동기화 락 해제 실패:', error);
+    }
+  }
+};

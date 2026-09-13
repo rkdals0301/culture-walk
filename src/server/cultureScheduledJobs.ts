@@ -3,10 +3,8 @@ import { getCultureDetailEdgeCacheTag } from '@/server/httpCache';
 import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
 import {
-  acquireInitializeLock,
   getD1Binding,
-  releaseInitializeLock,
-  startInitializeLockHeartbeat,
+  runWithInitializeLock,
 } from '@/services/cultureSyncLock';
 import { getCultureScheduledJob, RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from '@/services/cultureSyncSchedule';
 import { syncCultures } from '@/services/cultureSyncService';
@@ -54,18 +52,10 @@ const runScheduledSync = async (
   if (!env.DB) throw new Error('DB binding is required for scheduled synchronization');
   if (!env.TOUR_API_KEY) throw new Error('TOUR_API_KEY is required for scheduled synchronization');
 
-  const lockOwner = await acquireInitializeLock(env);
-  if (!lockOwner) {
-    console.warn(`[cron] snapshot skipped trigger=${trigger} reason=lock-busy`);
-    return;
-  }
-
-  const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
-  try {
-    await heartbeat.ensureHeld();
+  const lockedRun = await runWithInitializeLock(env, async heartbeat => {
     const result = await syncCultures(
-      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
-      env.DB,
+      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY as string },
+      env.DB as D1Binding,
       {
         trigger,
         beforeEach: () => heartbeat.renew(),
@@ -77,9 +67,12 @@ const runScheduledSync = async (
       `[cron] snapshot completed trigger=${trigger} fetched=${result.fetched} inserted=${result.inserted} updated=${result.updated}`
     );
     await purgeCultureEdgeCache(ctx, CULTURE_PUBLIC_CACHE_TAGS, `snapshot-${trigger}`);
-  } finally {
-    await heartbeat.stop();
-    await releaseInitializeLock(env, lockOwner);
+    return result;
+  });
+
+  if (!lockedRun.acquired) {
+    console.warn(`[cron] snapshot skipped trigger=${trigger} reason=lock-busy`);
+    return;
   }
 };
 
@@ -93,31 +86,26 @@ const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureE
     return;
   }
 
-  const lockOwner = await acquireInitializeLock(env);
-  if (!lockOwner) {
-    console.info('[cron] detail refresh skipped reason=lock-busy');
-    return;
-  }
-
-  const heartbeat = startInitializeLockHeartbeat(env, lockOwner);
-  try {
-    await heartbeat.ensureHeld();
-    const { refreshed, refreshedCultureIds } = await refreshStaleCachedTourApiDetails(
-      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY },
+  const lockedRun = await runWithInitializeLock(env, async heartbeat => {
+    const result = await refreshStaleCachedTourApiDetails(
+      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY as string },
       d1,
       { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
     );
-    console.info(`[cron] detail refresh completed refreshed=${refreshed}`);
-    if (refreshedCultureIds.length > 0) {
+    console.info(`[cron] detail refresh completed refreshed=${result.refreshed}`);
+    if (result.refreshedCultureIds.length > 0) {
       await purgeCultureEdgeCache(
         ctx,
-        Array.from(new Set(refreshedCultureIds)).map(getCultureDetailEdgeCacheTag),
+        Array.from(new Set(result.refreshedCultureIds)).map(getCultureDetailEdgeCacheTag),
         'detail-refresh'
       );
     }
-  } finally {
-    await heartbeat.stop();
-    await releaseInitializeLock(env, lockOwner);
+    return result;
+  });
+
+  if (!lockedRun.acquired) {
+    console.info('[cron] detail refresh skipped reason=lock-busy');
+    return;
   }
 };
 
