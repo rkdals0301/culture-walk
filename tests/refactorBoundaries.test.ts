@@ -381,6 +381,26 @@ test('root layout delegates metadata, structured data, and theme bootstrap confi
   assert.ok(layout.split(/\r?\n/).length < 140);
 });
 
+test('filter controls facade delegates independent control groups to focused modules', async () => {
+  const [facade, category, region, toggles, sort] = await Promise.all([
+    readProjectFile('../src/components/Common/FilterControls.tsx'),
+    readProjectFile('../src/components/Common/filters/CategoryChips.tsx'),
+    readProjectFile('../src/components/Common/filters/RegionSelect.tsx'),
+    readProjectFile('../src/components/Common/filters/ToggleControls.tsx'),
+    readProjectFile('../src/components/Common/filters/SortControl.tsx'),
+  ]);
+
+  assert.ok(facade.split(/\r?\n/).length < 20);
+  assert.match(facade, /filters\/CategoryChips/);
+  assert.match(facade, /filters\/RegionSelect/);
+  assert.match(facade, /filters\/ToggleControls/);
+  assert.match(facade, /filters\/SortControl/);
+  assert.match(category, /CULTURE_CATEGORY_OPTIONS/);
+  assert.match(region, /지역 필터/);
+  assert.match(toggles, /내 주변/);
+  assert.match(sort, /거리순/);
+});
+
 test('TourAPI detail facade separates normalization from persistence serialization', async () => {
   const [facade, normalization, storage] = await Promise.all([
     readProjectFile('../src/services/tourApiDetails.ts'),
