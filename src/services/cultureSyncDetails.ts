@@ -51,7 +51,9 @@ const refreshCachedDetail = async (
 
   if (cache) {
     const culture = mapCultureRowToCulture({ ...row, updatedAt: syncedAt }, details);
-    await writeCultureDetailCache(cultureId, cacheVersion, culture, DETAIL_READ_MODEL_TTL_SECONDS, cache);
+    if (culture) {
+      await writeCultureDetailCache(cultureId, cacheVersion, culture, DETAIL_READ_MODEL_TTL_SECONDS, cache);
+    }
   }
 
   return true;

@@ -1,7 +1,14 @@
 import type { Culture, CultureDisplayFields, CultureListItem } from '@/types/culture';
+import { toDateOrNull } from '@/utils/dateUtils';
 import { format } from 'date-fns';
 
-const formatString = (object: Partial<CultureListItem>, keys: (keyof CultureListItem)[], separator = ', '): string => {
+type CultureDisplayTextField = 'classification' | 'guName' | 'place';
+
+const formatString = (
+  object: Partial<Pick<CultureListItem, CultureDisplayTextField>>,
+  keys: CultureDisplayTextField[],
+  separator = ', '
+): string => {
   return keys
     .map(key => object[key])
     .filter(val => typeof val === 'string' && val.trim().length > 0)
@@ -9,17 +16,13 @@ const formatString = (object: Partial<CultureListItem>, keys: (keyof CultureList
 };
 
 const toValidDate = (value: Date | string) => {
-  if (value instanceof Date) return value;
-
-  const parsed = new Date(value);
-  if (!Number.isNaN(parsed.getTime())) return parsed;
-
-  return new Date();
+  return toDateOrNull(value);
 };
 
 const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => {
   const safeStartDate = toValidDate(startDate);
   const safeEndDate = toValidDate(endDate);
+  if (!safeStartDate || !safeEndDate) return '날짜 확인 필요';
   const formattedStartDate = format(safeStartDate, 'yyyy-MM-dd');
   const formattedEndDate = format(safeEndDate, 'yyyy-MM-dd');
 
@@ -27,6 +30,11 @@ const formatDisplayDate = (startDate: Date | string, endDate: Date | string) => 
 };
 
 export type CulturePriceTone = 'free' | 'partial' | 'paid' | 'unknown';
+
+type CultureDisplayInput = Omit<CultureListItem, 'startDate' | 'endDate'> & {
+  startDate: Date | string;
+  endDate: Date | string;
+};
 
 export const getCulturePriceTone = (
   culture: Pick<CultureListItem & CultureDisplayFields, 'isFree' | 'displayPrice'> & Partial<Pick<Culture, 'useFee'>>
@@ -39,7 +47,7 @@ export const getCulturePriceTone = (
   return 'unknown';
 };
 
-export const formatCultureData = <T extends CultureListItem>(cultures: T[]): Array<T & CultureDisplayFields> => {
+export const formatCultureData = <T extends CultureDisplayInput>(cultures: T[]): Array<T & CultureDisplayFields> => {
   return cultures.map(culture => {
     const displayPlace = formatString(culture, ['classification', 'guName', 'place'], ' / ');
     const displayPrice = (() => {

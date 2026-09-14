@@ -1,6 +1,6 @@
 import type { CultureRow } from '@/db/schema';
 import type { Culture, CultureListItem, TourApiFestivalDetails } from '@/types/culture';
-import { toDateOrNow } from '@/utils/dateUtils';
+import { toDateOrNull } from '@/utils/dateUtils';
 
 import { classifyTourApiFee, normalizeTourApiDetails } from './tourApiDetails';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from './cultureTourApiMapper';
@@ -35,9 +35,10 @@ export type CultureContentRow = Pick<
   | 'updatedAt'
 >;
 
-export const mapCultureRowToCulture = (row: CultureContentRow, tourApiDetails?: TourApiFestivalDetails): Culture => {
-  const startDate = toDateOrNow(row.startDate);
-  const endDate = toDateOrNow(row.endDate ?? row.startDate);
+export const mapCultureRowToCulture = (row: CultureContentRow, tourApiDetails?: TourApiFestivalDetails): Culture | null => {
+  const startDate = toDateOrNull(row.startDate);
+  const endDate = toDateOrNull(row.endDate ?? row.startDate);
+  if (!startDate || !endDate) return null;
   const coordinates = normalizeCultureCoordinates(row.lat, row.lng);
   const details = tourApiDetails ? normalizeTourApiDetails(tourApiDetails) : null;
   const address = row.place ?? '';

@@ -10,6 +10,7 @@ import {
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
+import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import type { MapSortMode } from '@/utils/exploreState';
@@ -81,7 +82,7 @@ const buildPageFromSnapshot = (
   const hasMore = nextOffset < result.items.length;
 
   return {
-    items,
+    items: toCultureListItemDtos(items),
     nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
     hasMore,
     totalCount: result.items.length,

@@ -2,7 +2,7 @@ import type { CultureTourApiDetailsRow } from '@/db/schema';
 import type { CultureContentRow } from '@/services/cultureService';
 import { normalizeCultureClassification, normalizeCultureCoordinates } from '@/services/cultureService';
 import type { CultureListItem } from '@/types/culture';
-import { toDateOrNow } from '@/utils/dateUtils';
+import { toDateOrNull } from '@/utils/dateUtils';
 
 export type CultureD1Row = Record<string, unknown>;
 
@@ -67,20 +67,22 @@ export const toCultureListItem = (row: CultureD1Row): CultureListItem | null => 
   const id = Number(row.id);
   const lat = Number(row.lat);
   const lng = Number(row.lng);
-  if (!Number.isInteger(id) || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  const startDate = toDateOrNull(String(row.startDate ?? ''));
+  const endDate = toDateOrNull(String(row.endDate ?? row.startDate ?? ''));
+  if (!Number.isInteger(id) || !Number.isFinite(lat) || !Number.isFinite(lng) || !startDate || !endDate) return null;
 
   const coordinates = normalizeCultureCoordinates(lat, lng);
   return {
     id,
     classification: normalizeCultureClassification(String(row.classification ?? '')),
-    endDate: toDateOrNow(String(row.endDate ?? row.startDate ?? '')),
+    endDate,
     guName: String(row.guName ?? ''),
     isFree: String(row.isFree ?? ''),
     lat: coordinates.lat,
     lng: coordinates.lng,
     mainImage: String(row.mainImage ?? '/assets/images/logo.svg'),
     place: String(row.place ?? ''),
-    startDate: toDateOrNow(String(row.startDate ?? '')),
+    startDate,
     title: String(row.title ?? ''),
     useFee: String(row.useFee ?? ''),
   };

@@ -69,6 +69,7 @@ export const publishCurrentCultureDetailReadModels = async (
         const detailRow = toCultureTourApiDetailsRow(row);
         if (!detailRow) return 'skipped' as const;
         const culture = mapCultureRowToCulture(row, parseStoredTourApiDetails(detailRow));
+        if (!culture) return 'skipped' as const;
         const written = await writeCultureDetailCache(
           culture.id,
           cacheVersion,

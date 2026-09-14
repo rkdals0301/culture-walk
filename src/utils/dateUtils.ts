@@ -1,10 +1,10 @@
 const KOREA_TIME_OFFSET_MILLISECONDS = 9 * 60 * 60 * 1000;
 
-export const toDateOrNow = (value?: string | null) => {
-  if (!value) return new Date();
+export const toDateOrNull = (value?: Date | string | null) => {
+  if (!value) return null;
 
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  const parsed = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
 export const getKoreaDateStartIso = (now = new Date()) => {

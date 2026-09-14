@@ -82,6 +82,18 @@ test('TourAPI placeholder classifications are normalized to a user-facing catego
   assert.equal(row.classification, '기타');
 });
 
+test('TourAPI calendar dates reject impossible days instead of rolling into the next month', () => {
+  const row = mapTourApiFestivalToCulture({
+    contentid: '2786401',
+    title: '잘못된 날짜 행사',
+    eventstartdate: '20260231',
+    eventenddate: '20260301',
+  });
+
+  assert.equal(row.startDate, null);
+  assert.equal(row.endDate, '2026-03-01T00:00:00.000Z');
+});
+
 test('normalization swaps coordinates and preserves an official source key', () => {
   const rows = Array.from({ length: 5 }, (_, index) => createRow({ title: `서울 문화 행사 ${index}` }));
   rows[0].sourceKey = 'tourapi:1';

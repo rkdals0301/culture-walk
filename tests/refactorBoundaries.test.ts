@@ -184,7 +184,7 @@ test('culture list and detail presentation use distinct formatted types', async 
     readProjectFile('../src/hooks/useCultureMapData.ts'),
   ]);
 
-  assert.match(types, /FormattedCultureListItem = CultureListItem & CultureDisplayFields/);
+  assert.match(types, /FormattedCultureListItem = CultureListItemDto & CultureDisplayFields/);
   assert.match(types, /FormattedCultureDetail = Culture & CultureDisplayFields/);
   assert.doesNotMatch(types, /Partial<Culture>/);
   assert.match(feed, /FormattedCultureListItem/);

@@ -5,6 +5,7 @@ import {
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
 import { CultureListItem } from '@/types/culture';
+import { toCultureListItemDtos } from '@/services/culturePublicDto';
 
 import { NextResponse } from 'next/server';
 
@@ -16,7 +17,7 @@ const HTTP_STALE_SECONDS = 60 * 30;
 const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60 * 24;
 
 const listResponse = (data: CultureListItem[], source?: string) =>
-  NextResponse.json(data, {
+  NextResponse.json(toCultureListItemDtos(data), {
     headers: createPublicEdgeCacheHeaders({
       browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
       edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,

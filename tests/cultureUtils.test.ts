@@ -1,4 +1,4 @@
-import type { CultureListItem } from '@/types/culture';
+import type { CultureListItemDto } from '@/types/culture';
 import {
   createCultureDetailSignature,
   formatCultureData,
@@ -17,14 +17,14 @@ test('unknown list prices use a clear verification label', () => {
     {
       id: 1,
       classification: '축제',
-      endDate: new Date('2026-08-02T00:00:00.000Z'),
+      endDate: '2026-08-02T00:00:00.000Z',
       guName: '서울 중구',
       isFree: '정보 없음',
       lat: 37.5665,
       lng: 126.978,
       mainImage: '',
       place: '서울광장',
-      startDate: new Date('2026-08-01T00:00:00.000Z'),
+      startDate: '2026-08-01T00:00:00.000Z',
       title: '문화행사',
       useFee: '요금 정보 확인 필요',
     },
@@ -38,21 +38,42 @@ test('missing display fields do not create separator-only place text', () => {
     {
       id: 2,
       classification: '',
-      endDate: new Date('2026-08-02T00:00:00.000Z'),
+      endDate: '2026-08-02T00:00:00.000Z',
       guName: '',
       isFree: '',
       lat: 37.5665,
       lng: 126.978,
       mainImage: '',
       place: '',
-      startDate: new Date('2026-08-01T00:00:00.000Z'),
+      startDate: '2026-08-01T00:00:00.000Z',
       title: '정보가 일부 없는 행사',
       useFee: '',
-    } as CultureListItem,
+    } as CultureListItemDto,
   ]);
 
   assert.equal(culture?.displayPlace, '');
   assert.equal(culture?.displayPrice, '정보 없음');
+});
+
+test('invalid display dates use an explicit verification label', () => {
+  const [culture] = formatCultureData([
+    {
+      id: 4,
+      classification: '축제',
+      endDate: 'invalid-end-date',
+      guName: '서울',
+      isFree: '무료',
+      lat: 37.5,
+      lng: 127,
+      mainImage: '',
+      place: '서울광장',
+      startDate: 'invalid-start-date',
+      title: '날짜 확인 행사',
+      useFee: '무료',
+    },
+  ]);
+
+  assert.equal(culture?.displayDate, '날짜 확인 필요');
 });
 
 test('detail signature changes when asynchronous enrichment arrives', () => {

@@ -94,7 +94,8 @@ export const createCultureEventStructuredData = (culture: FormattedCultureDetail
   const eventImageUrl = getEventImageUrl(culture.mainImage);
   const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
   const offerPrice = isFree ? 0 : parseOfferPrice(culture.useFee);
-  const hasEnded = culture.endDate instanceof Date && culture.endDate.getTime() < now;
+  const endDate = toIsoDate(culture.endDate);
+  const hasEnded = endDate ? new Date(endDate).getTime() < now : false;
   const [addressRegion = '대한민국', addressLocality = ''] = culture.guName.split(/\s+/).filter(Boolean);
 
   return {
@@ -107,7 +108,7 @@ export const createCultureEventStructuredData = (culture: FormattedCultureDetail
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: hasEnded ? 'https://schema.org/EventCompleted' : 'https://schema.org/EventScheduled',
     startDate: toIsoDate(culture.startDate),
-    endDate: toIsoDate(culture.endDate),
+    endDate,
     location: {
       '@type': 'Place',
       name: culture.place || culture.displayPlace,

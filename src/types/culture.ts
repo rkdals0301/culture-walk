@@ -150,8 +150,13 @@ export type CultureListItem = Pick<
   | 'useFee'
 >;
 
+export type CultureListItemDto = Omit<CultureListItem, 'startDate' | 'endDate'> & {
+  startDate: string;
+  endDate: string;
+};
+
 export interface CultureFeedPage {
-  items: CultureListItem[];
+  items: CultureListItemDto[];
   nextCursor: string | null;
   hasMore: boolean;
   totalCount: number;
@@ -185,7 +190,7 @@ export interface CultureMapCluster {
 }
 
 export interface CultureMapResponse {
-  items: CultureListItem[];
+  items: CultureListItemDto[];
   clusters: CultureMapCluster[];
   isClustered: boolean;
   totalCount: number;
@@ -199,6 +204,6 @@ export interface CultureDisplayFields {
   displayPrice: string;
 }
 
-export type FormattedCultureListItem = CultureListItem & CultureDisplayFields;
+export type FormattedCultureListItem = CultureListItemDto & CultureDisplayFields;
 
 export type FormattedCultureDetail = Culture & CultureDisplayFields;

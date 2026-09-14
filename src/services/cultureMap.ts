@@ -5,6 +5,7 @@ import {
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
 import type { CultureListItem, CultureMapBounds, CultureMapResponse } from '@/types/culture';
+import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 import { MAP_CLUSTER_GRID_SIZE, getMapDataMode, isCoordinateWithinBounds } from '@/utils/mapViewport';
@@ -31,7 +32,7 @@ export const buildCultureMapResponseFromSnapshot = (
 
   if (mode === 'items') {
     return {
-      items: sortCulturesByRelevantDate(viewportItems, getKoreaDateStartIso()),
+      items: toCultureListItemDtos(sortCulturesByRelevantDate(viewportItems, getKoreaDateStartIso())),
       clusters: [],
       isClustered: false,
       totalCount: filteredItems.length,
