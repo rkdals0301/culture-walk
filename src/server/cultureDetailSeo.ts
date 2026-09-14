@@ -28,10 +28,30 @@ const toIsoDate = (value: Date | string | null | undefined) => {
   return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
 };
 
+const FREE_FEE_PATTERN = /무료|free/i;
+const PAID_FEE_PATTERN = /유료|입장료|관람료|\d+\s*원/i;
+const CONDITIONAL_FREE_PATTERN =
+  /부분\s*무료|일부|한함|회원|비회원|군민|시민|지역민|대상자?|장애인|국가유공자|경로|예매|현장|사전|예약|조건|증빙|할인|면제/i;
+const AMBIGUOUS_OFFER_PATTERN =
+  /무료|free|할인|면제|회원|비회원|대인|성인|청소년|어린이|아동|유아|소인|단체|개인|군민|시민|지역민|국가유공자|장애인|경로|예매|현장|사전|좌석|부터|이상|이하|별도|문의|확인|조건|증빙/i;
+
 const parseOfferPrice = (value?: string) => {
-  if (!value) return null;
-  const match = value.replaceAll(',', '').match(/\d+/);
-  return match ? Number(match[0]) : null;
+  const fee = value?.trim();
+  if (!fee || AMBIGUOUS_OFFER_PATTERN.test(fee)) return null;
+
+  const matches = Array.from(fee.replaceAll(',', '').matchAll(/(\d+)\s*원/gi), match => Number(match[1]));
+  if (matches.length !== 1 || !Number.isSafeInteger(matches[0])) return null;
+
+  return matches[0];
+};
+
+const getFeeSignals = (culture: FormattedCultureDetail) => {
+  const feeText = `${culture.isFree ?? ''} ${culture.useFee ?? ''}`.trim();
+  const hasFreeSignal = FREE_FEE_PATTERN.test(feeText);
+  const hasPaidSignal = PAID_FEE_PATTERN.test(feeText);
+  const isConditionallyFree = hasFreeSignal && CONDITIONAL_FREE_PATTERN.test(feeText);
+
+  return { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree };
 };
 
 const createCultureDescription = (culture: FormattedCultureDetail) =>
@@ -93,8 +113,9 @@ export const createCultureDetailMetadata = (culture: FormattedCultureDetail): Me
 export const createCultureEventStructuredData = (culture: FormattedCultureDetail, now = Date.now()) => {
   const eventUrl = getCultureCanonicalUrl(culture.id);
   const eventImageUrl = getEventImageUrl(culture.mainImage);
-  const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
-  const offerPrice = isFree ? 0 : parseOfferPrice(culture.useFee);
+  const { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree } = getFeeSignals(culture);
+  const isFree = hasFreeSignal && !hasPaidSignal && !isConditionallyFree;
+  const offerPrice = isFree ? 0 : hasFreeSignal ? null : parseOfferPrice(feeText);
   const endDate = toIsoDate(culture.endDate);
   const hasEnded = endDate ? new Date(endDate).getTime() < now : false;
   const [addressRegion = '대한민국', addressLocality = ''] = culture.guName.split(/\s+/).filter(Boolean);

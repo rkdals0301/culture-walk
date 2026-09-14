@@ -1,5 +1,6 @@
 import {
   buildCultureFeedResult,
+  createCultureFeedCursor,
   createCultureFeedFilterKey,
   type CultureFeedFilters,
   normalizeCultureFeedFilters,
@@ -41,8 +42,6 @@ const parsePositiveInteger = (value: string | null, fallback: number, maximum: n
 
 const parseBoolean = (value: string | null) => value === '1' || value === 'true';
 
-const encodeCursor = (cursor: CultureFeedCursor) => encodeURIComponent(JSON.stringify(cursor));
-
 const decodeCursor = (value: string | null): CultureFeedCursor | null => {
   if (!value) return null;
 
@@ -72,7 +71,6 @@ const responseHeaders = (source?: string) =>
 const buildPageFromSnapshot = (
   snapshotItems: readonly CultureListItem[],
   filters: CultureFeedFilters,
-  filterKey: string,
   cursor: CultureFeedCursor | null,
   limit: number
 ): CultureFeedPage => {
@@ -84,7 +82,7 @@ const buildPageFromSnapshot = (
 
   return {
     items: toCultureListItemDtos(items),
-    nextCursor: hasMore ? encodeCursor({ offset: nextOffset, filters: filterKey }) : null,
+    nextCursor: hasMore ? createCultureFeedCursor(nextOffset, filters) : null,
     hasMore,
     totalCount: result.items.length,
     freeCount: result.freeCount,
@@ -135,7 +133,7 @@ export async function GET(request: Request) {
 
   const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
   if (readModel) {
-    const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
+    const page = buildPageFromSnapshot(readModel.items, filters, cursor, limit);
     const headers =
       filters.sortMode === 'distance' ? NO_STORE_CACHE_HEADERS : responseHeaders(readModel.source);
     return NextResponse.json(page, { headers });

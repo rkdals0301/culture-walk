@@ -23,7 +23,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (numericId === null) return createMissingCultureMetadata(null);
 
   const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
-  return culture ? createCultureDetailMetadata(culture) : createMissingCultureMetadata(numericId);
+  if (!culture) return createMissingCultureMetadata(numericId);
+
+  return {
+    ...createCultureDetailMetadata(culture),
+    robots: { index: false, follow: true },
+  };
 }
 
 const MapDetailPage = async ({ params }: PageProps) => {

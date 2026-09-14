@@ -41,6 +41,14 @@ export const normalizeCultureFeedFilters = (filters: CultureFeedFilters): Cultur
 export const createCultureFeedFilterKey = (filters: CultureFeedFilters) =>
   JSON.stringify(normalizeCultureFeedFilters(filters));
 
+export const createCultureFeedCursor = (offset: number, filters: CultureFeedFilters) =>
+  encodeURIComponent(
+    JSON.stringify({
+      offset: Math.max(0, Math.floor(offset)),
+      filters: createCultureFeedFilterKey(filters),
+    })
+  );
+
 const matchesCultureFeedFilters = (
   culture: CultureSearchableListItem,
   filters: CultureFeedFilters,

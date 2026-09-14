@@ -4,12 +4,10 @@ import { useCultureContext } from '@/context/CultureContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import { useFeedViewportBehavior } from '@/hooks/useFeedViewportBehavior';
-import { FormattedCultureListItem } from '@/types/culture';
+import type { CultureFeedPage, FormattedCultureListItem } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
 import React, { useCallback, useTransition } from 'react';
-
-import { useRouter } from 'next/navigation';
 
 import FeedFilterRail from './FeedFilterRail';
 import FeedHeader from './FeedHeader';
@@ -17,8 +15,12 @@ import FeedResults from './FeedResults';
 import FloatingMapButton from './FloatingMapButton';
 import ScrollToTopButton from './ScrollToTopButton';
 
-const FeedView = () => {
-  const router = useRouter();
+interface FeedViewProps {
+  initialData?: CultureFeedPage;
+  initialDataFilterKey?: string;
+}
+
+const FeedView = ({ initialData, initialDataFilterKey }: FeedViewProps) => {
   const {
     searchQuery,
     setSearchQuery,
@@ -52,6 +54,8 @@ const FeedView = () => {
     freeOnly: mapFreeOnly,
     sortMode: mapSortMode,
     currentLocation,
+    initialData,
+    initialDataFilterKey,
   });
   const [, startTransition] = useTransition();
   const {
@@ -94,11 +98,8 @@ const FeedView = () => {
   }, [mapFreeOnly, setMapFreeOnly]);
 
   const handleOpenCulture = useCallback(
-    (culture: FormattedCultureListItem) => {
-      rememberScrollPosition();
-      router.push(`/cultures/${culture.id}`);
-    },
-    [rememberScrollPosition, router]
+    (_culture: FormattedCultureListItem) => rememberScrollPosition(),
+    [rememberScrollPosition]
   );
 
   const isFiltered =

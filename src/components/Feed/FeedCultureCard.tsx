@@ -2,12 +2,13 @@
 
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { FormattedCultureListItem } from '@/types/culture';
-import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 import { getCultureTimingStatus } from '@/utils/cultureTimingStatus';
+import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 
 import React, { useMemo, useState } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Navigation } from 'lucide-react';
 
@@ -43,105 +44,100 @@ const FeedCultureCard = ({
   const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
 
   return (
-    <article
-      role='button'
-      tabIndex={0}
-      onClick={() => onOpenCulture(culture)}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpenCulture(culture);
-        }
-      }}
-      aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}`}
-      className='feed-card group flex cursor-pointer flex-col rounded-xl transition-transform duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
-    >
-      {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
-      <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
-        {hasCultureImage ? (
-          <Image
-            src={imgSrc}
-            alt={culture.title}
-            fill
-            sizes='(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 50vw'
-            loading={isAboveFold ? 'eager' : 'lazy'}
-            fetchPriority={isAboveFold ? 'high' : 'auto'}
-            onError={() => setImageFailed(true)}
-            className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
-          />
-        ) : (
-          <CultureImageFallback compact classification={culture.classification} priority={isAboveFold} />
-        )}
+    <article className='feed-card flex flex-col rounded-xl'>
+      <Link
+        href={`/cultures/${culture.id}`}
+        onClick={() => onOpenCulture(culture)}
+        aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}`}
+        className='group flex cursor-pointer flex-col rounded-xl transition-transform duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
+      >
+        {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
+        <div className='relative aspect-[1/1.38] w-full overflow-hidden rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)]'>
+          {hasCultureImage ? (
+            <Image
+              src={imgSrc}
+              alt={culture.title}
+              fill
+              sizes='(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 50vw'
+              loading={isAboveFold ? 'eager' : 'lazy'}
+              fetchPriority={isAboveFold ? 'high' : 'auto'}
+              onError={() => setImageFailed(true)}
+              className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
+            />
+          ) : (
+            <CultureImageFallback compact classification={culture.classification} priority={isAboveFold} />
+          )}
 
-        {/* Minimal status badge (Only essential signal) */}
-        {(dDay || isFree) && (
-          <div className='pointer-events-none absolute left-2.5 top-2.5 flex items-center gap-1'>
-            {dDay && (
-              <span
-                className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
-                  dDay.variant === 'urgent'
-                    ? 'bg-[var(--color-error)] text-[var(--color-error-on-primary)]'
-                    : dDay.variant === 'ongoing' || dDay.variant === 'upcoming'
-                      ? 'bg-[var(--color-info)] text-[var(--color-info-on-primary)]'
-                      : 'bg-[var(--color-status-neutral)] text-[var(--color-status-neutral-on)]'
-                }`}
-              >
-                {dDay.text}
-              </span>
-            )}
-            {isFree && (
-              <span className='rounded-md bg-[var(--color-success)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
-                무료
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Editorial Content (Directly below poster, no enclosed card padding) */}
-      <div className='mt-2.5 flex flex-1 flex-col gap-1'>
-        {/* Category & Region */}
-        <div className='flex items-center gap-1 text-[0.72rem] font-medium text-[var(--color-text-tertiary)]'>
-          <span className='font-semibold text-[var(--color-brand-primary)]'>
-            {culture.classification || '문화행사'}
-          </span>
-          <span>·</span>
-          <span className='truncate'>{culture.guName || '전국'}</span>
-          {distance && (
-            <>
-              <span>·</span>
-              <span className='inline-flex items-center gap-0.5 font-semibold text-[var(--color-brand-primary)]'>
-                <Navigation className='size-2.5 fill-current' />
-                {distance}
-              </span>
-            </>
+          {/* Minimal status badge (Only essential signal) */}
+          {(dDay || isFree) && (
+            <div className='pointer-events-none absolute left-2.5 top-2.5 flex items-center gap-1'>
+              {dDay && (
+                <span
+                  className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
+                    dDay.variant === 'urgent'
+                      ? 'bg-[var(--color-error)] text-[var(--color-error-on-primary)]'
+                      : dDay.variant === 'ongoing' || dDay.variant === 'upcoming'
+                        ? 'bg-[var(--color-info)] text-[var(--color-info-on-primary)]'
+                        : 'bg-[var(--color-status-neutral)] text-[var(--color-status-neutral-on)]'
+                  }`}
+                >
+                  {dDay.text}
+                </span>
+              )}
+              {isFree && (
+                <span className='rounded-md bg-[var(--color-success)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
+                  무료
+                </span>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Title */}
-        <h3
-          className='text-sm font-semibold leading-snug tracking-tight text-[var(--color-text-primary)] transition-colors duration-150 group-hover:text-[var(--color-brand-primary)] sm:text-[0.98rem]'
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {culture.title}
-        </h3>
-
-        {/* Date & Venue & Fee (Clean typography, no icon clutter) */}
-        <div className='mt-0.5 flex flex-col gap-0.5 text-xs text-[var(--color-text-tertiary)]'>
-          <span className='truncate'>{culture.displayDate}</span>
-          <div className='flex items-center justify-between gap-1'>
-            <span className='truncate text-[var(--color-text-secondary)]'>{culture.displayPlace}</span>
-            {!isFree && culture.displayPrice && (
-              <span className='shrink-0 font-medium text-[var(--color-text-primary)]'>{culture.displayPrice}</span>
+        {/* Editorial Content (Directly below poster, no enclosed card padding) */}
+        <div className='mt-2.5 flex flex-1 flex-col gap-1'>
+          {/* Category & Region */}
+          <div className='flex items-center gap-1 text-[0.72rem] font-medium text-[var(--color-text-tertiary)]'>
+            <span className='font-semibold text-[var(--color-brand-primary)]'>
+              {culture.classification || '문화행사'}
+            </span>
+            <span>·</span>
+            <span className='truncate'>{culture.guName || '전국'}</span>
+            {distance && (
+              <>
+                <span>·</span>
+                <span className='inline-flex items-center gap-0.5 font-semibold text-[var(--color-brand-primary)]'>
+                  <Navigation className='size-2.5 fill-current' />
+                  {distance}
+                </span>
+              </>
             )}
           </div>
+
+          {/* Title */}
+          <h3
+            className='text-sm font-semibold leading-snug tracking-tight text-[var(--color-text-primary)] transition-colors duration-150 group-hover:text-[var(--color-brand-primary)] sm:text-[0.98rem]'
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {culture.title}
+          </h3>
+
+          {/* Date & Venue & Fee (Clean typography, no icon clutter) */}
+          <div className='mt-0.5 flex flex-col gap-0.5 text-xs text-[var(--color-text-tertiary)]'>
+            <span className='truncate'>{culture.displayDate}</span>
+            <div className='flex items-center justify-between gap-1'>
+              <span className='truncate text-[var(--color-text-secondary)]'>{culture.displayPlace}</span>
+              {!isFree && culture.displayPrice && (
+                <span className='shrink-0 font-medium text-[var(--color-text-primary)]'>{culture.displayPrice}</span>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      </Link>
     </article>
   );
 };

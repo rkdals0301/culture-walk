@@ -25,6 +25,8 @@ interface UseCultureFeedOptions {
   freeOnly: boolean;
   sortMode?: MapSortMode;
   currentLocation?: GeoPoint | null;
+  initialData?: CultureFeedPage;
+  initialDataFilterKey?: string;
 }
 
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
@@ -36,6 +38,8 @@ export const useCultureFeed = ({
   freeOnly,
   sortMode = 'date',
   currentLocation = null,
+  initialData,
+  initialDataFilterKey,
 }: UseCultureFeedOptions) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => searchQuery.trim());
 
@@ -59,12 +63,17 @@ export const useCultureFeed = ({
 
   const filterKey = useMemo(() => createCultureFeedClientCacheKey(filters), [filters]);
 
-  const [cultures, setCultures] = useState<FormattedCultureListItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [freeCount, setFreeCount] = useState(0);
-  const [regionOptions, setRegionOptions] = useState<string[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const initialDataRef = useRef(initialData);
+  const initialDataFilterKeyRef = useRef(initialDataFilterKey);
+  const initialDataConsumedRef = useRef(false);
+  const [cultures, setCultures] = useState<FormattedCultureListItem[]>(() =>
+    initialData ? formatCultureData(initialData.items ?? []) : []
+  );
+  const [totalCount, setTotalCount] = useState(() => initialData?.totalCount ?? 0);
+  const [freeCount, setFreeCount] = useState(() => initialData?.freeCount ?? 0);
+  const [regionOptions, setRegionOptions] = useState<string[]>(() => initialData?.regionOptions ?? []);
+  const [hasMore, setHasMore] = useState(() => initialData?.hasMore ?? true);
+  const [isInitialLoading, setIsInitialLoading] = useState(() => !initialData);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
@@ -142,6 +151,7 @@ export const useCultureFeed = ({
       setIsInitialLoading(false);
       setIsLoadingMore(false);
       setError(null);
+      initialDataConsumedRef.current = true;
       return () => {
         controller.abort();
         if (abortControllerRef.current === controller) {
@@ -149,6 +159,43 @@ export const useCultureFeed = ({
         }
       };
     }
+
+    const serverData = initialDataRef.current;
+    const canUseServerData =
+      !initialDataConsumedRef.current &&
+      serverData &&
+      (!initialDataFilterKeyRef.current || initialDataFilterKeyRef.current === filterKey);
+
+    if (canUseServerData) {
+      const serverCultures = formatCultureData(serverData.items ?? []);
+      cultureFeedClientCache.write(filterKey, {
+        cultures: serverCultures,
+        totalCount: serverData.totalCount,
+        freeCount: serverData.freeCount,
+        regionOptions: serverData.regionOptions ?? [],
+        nextCursor: serverData.nextCursor,
+        hasMore: serverData.hasMore,
+      });
+      setCultures(serverCultures);
+      setTotalCount(serverData.totalCount);
+      setFreeCount(serverData.freeCount);
+      setRegionOptions(serverData.regionOptions ?? []);
+      nextCursorRef.current = serverData.nextCursor;
+      hasMoreRef.current = serverData.hasMore;
+      setHasMore(serverData.hasMore);
+      setIsInitialLoading(false);
+      setIsLoadingMore(false);
+      setError(null);
+      initialDataConsumedRef.current = true;
+      return () => {
+        controller.abort();
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+      };
+    }
+
+    initialDataConsumedRef.current = true;
 
     nextCursorRef.current = null;
     hasMoreRef.current = true;
