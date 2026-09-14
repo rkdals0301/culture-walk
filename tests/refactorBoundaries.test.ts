@@ -248,6 +248,14 @@ test('culture list service delegates D1 querying and revision hashing to a repos
   assert.match(repository, /createCultureListItemRevision/);
 });
 
+test('local culture reads never fall through to the production public API', async () => {
+  const service = await readProjectFile('../src/services/cultureList.ts');
+
+  assert.doesNotMatch(service, /culturewalk\.gangmin\.dev\/api\/cultures/);
+  assert.doesNotMatch(service, /Local dev proxy fallback/);
+  assert.doesNotMatch(service, /fetch\(`\$\{prodUrl\}\/api\/cultures`\)/);
+});
+
 test('culture sync repository delegates staging IO and snapshot mutation to dedicated modules', async () => {
   const [repository, staging, snapshot] = await Promise.all([
     readProjectFile('../src/services/cultureSyncRepository.ts'),
