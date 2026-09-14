@@ -1,5 +1,7 @@
-import { getWorkerEnv } from '@/server/cloudflare';
+import type { CultureCacheBinding } from '@/server/runtimeTypes';
 import { Culture, CultureListItem, CultureSearchableListItem } from '@/types/culture';
+
+export type { CultureCacheBinding };
 
 const CULTURE_READ_MODEL_CACHE_KEY = 'cultures:read-model:v1';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
@@ -20,11 +22,6 @@ type StoredCultureDetail = {
   cacheVersion: string;
   culture: Culture;
 };
-export type CultureCacheBinding = {
-  get: (key: string, type?: 'json') => Promise<unknown>;
-  put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
-};
-
 type CultureReadModelMemoryEntry = {
   value: CultureReadModel;
   expiresAt: number;
@@ -53,11 +50,7 @@ const stableStringify = (value: unknown) => JSON.stringify(sortObjectKeys(value)
 
 export const createCacheKey = (namespace: string, payload: object) => `${namespace}:${stableStringify(payload)}`;
 
-const getCultureCache = async (cacheOverride?: CultureCacheBinding) => {
-  if (cacheOverride) return cacheOverride;
-  const env = await getWorkerEnv();
-  return env.CULTURE_CACHE as CultureCacheBinding | undefined;
-};
+const getCultureCache = (cache?: CultureCacheBinding) => cache;
 
 export const readKvCache = async <T>(key: string, cacheOverride?: CultureCacheBinding): Promise<T | null> => {
   const cache = await getCultureCache(cacheOverride);

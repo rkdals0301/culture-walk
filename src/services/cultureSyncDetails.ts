@@ -1,5 +1,6 @@
-import { type CultureCacheBinding, readCultureReadModelCache, writeCultureDetailCache } from '@/cache/kv';
+import { readCultureReadModelCache, writeCultureDetailCache } from '@/cache/kv';
 import { logEvent } from '@/server/structuredLog';
+import type { CultureCacheBinding } from '@/server/runtimeTypes';
 import { mapCultureRowToCulture } from '@/services/cultureService';
 
 import { DETAIL_READ_MODEL_TTL_SECONDS, publishCurrentCultureDetailReadModels } from './cultureDetailReadModelPublisher';

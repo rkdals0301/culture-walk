@@ -1,11 +1,11 @@
 import {
-  type CultureCacheBinding,
   readCultureDetailCache,
   readCultureReadModelCache,
   writeCultureDetailCache,
 } from '@/cache/kv';
 import { CULTURE_CONTENT_SELECT, CULTURE_DETAIL_SELECT, toCultureTourApiDetailsRow } from '@/services/cultureD1Repository';
 import { mapCultureRowToCulture, type CultureContentRow } from '@/services/cultureService';
+import type { CultureCacheBinding } from '@/server/runtimeTypes';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 

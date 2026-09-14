@@ -1,5 +1,3 @@
-import { getWorkerEnv } from '@/server/cloudflare';
-
 import {
   D1Binding,
   INITIALIZE_LOCK_LEASE_LOST_MESSAGE,
@@ -10,11 +8,7 @@ import {
 } from './cultureSyncTypes';
 
 export const getD1Binding = (env: WorkerEnv) => {
-  if (!env.DB) {
-    return null;
-  }
-
-  return env.DB as D1Binding;
+  return env.DB ?? null;
 };
 
 const ensureInitializeLockTable = async (d1: D1Binding) => {
@@ -30,7 +24,7 @@ const ensureInitializeLockTable = async (d1: D1Binding) => {
     .run();
 };
 
-export const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWorkerEnv>>) => {
+export const acquireInitializeLock = async (env: WorkerEnv) => {
   const d1 = getD1Binding(env);
   if (!d1) {
     return crypto.randomUUID();
@@ -62,7 +56,7 @@ export const acquireInitializeLock = async (env: Awaited<ReturnType<typeof getWo
 };
 
 export const releaseInitializeLock = async (
-  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  env: WorkerEnv,
   ownerToken: string
 ) => {
   const d1 = getD1Binding(env);
@@ -77,7 +71,7 @@ export const releaseInitializeLock = async (
 };
 
 export const renewInitializeLock = async (
-  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  env: WorkerEnv,
   ownerToken: string
 ) => {
   const d1 = getD1Binding(env);
@@ -105,7 +99,7 @@ const LOCK_HEARTBEAT_INTERVAL_MS = Math.max(
 );
 
 export const startInitializeLockHeartbeat = (
-  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  env: WorkerEnv,
   ownerToken: string,
   intervalMs = LOCK_HEARTBEAT_INTERVAL_MS
 ) => {
@@ -163,7 +157,7 @@ export type InitializeLockRunResult<T> =
   | { acquired: true; value: T };
 
 export const runWithInitializeLock = async <T>(
-  env: Awaited<ReturnType<typeof getWorkerEnv>>,
+  env: WorkerEnv,
   task: (lease: InitializeLockLease) => Promise<T>
 ): Promise<InitializeLockRunResult<T>> => {
   const ownerToken = await acquireInitializeLock(env);

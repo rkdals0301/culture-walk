@@ -1,5 +1,4 @@
-import { type CultureCacheBinding, readCultureDetailCache, writeCultureDetailCache } from '@/cache/kv';
-import { getWorkerEnv } from '@/server/cloudflare';
+import { readCultureDetailCache, writeCultureDetailCache } from '@/cache/kv';
 import {
   CULTURE_CONTENT_SELECT,
   CULTURE_DETAIL_SELECT,
@@ -12,6 +11,7 @@ import {
   mapCultureListItemToCulture,
   mapCultureRowToCulture,
 } from '@/services/cultureService';
+import type { RuntimeDeps } from '@/server/runtimeTypes';
 import type { D1Binding } from '@/services/cultureSyncTypes';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import type { Culture } from '@/types/culture';
@@ -25,10 +25,7 @@ export interface CulturePublicReadResult {
   readModelAvailable: boolean;
 }
 
-type CulturePublicReadOptions = {
-  cache?: CultureCacheBinding;
-  d1?: D1Binding;
-};
+type CulturePublicReadOptions = RuntimeDeps;
 
 const DETAIL_READ_THROUGH_TTL_SECONDS = 60 * 60 * 24 * 7;
 
@@ -72,14 +69,13 @@ const readCultureDetailFromD1 = async (d1: D1Binding, id: number) => {
  */
 export const getCulturePublicRead = async (
   id: number,
-  options?: CulturePublicReadOptions
+  options: CulturePublicReadOptions
 ): Promise<CulturePublicReadResult> => {
-  const env = options ? null : await getWorkerEnv();
-  const cache = options?.cache ?? (env?.CULTURE_CACHE as CultureCacheBinding | undefined);
-  const d1 = options?.d1 ?? (env?.DB as D1Binding | undefined);
+  const cache = options.cache;
+  const d1 = options.d1;
   const [detail, snapshot] = await Promise.all([
     readCultureDetailCache(id, cache),
-    options ? getCulturePublicListSnapshot({ cache, d1 }) : getCulturePublicListSnapshot(),
+    getCulturePublicListSnapshot(options),
   ]);
   const item = snapshot?.items.find(culture => culture.id === id) ?? null;
   const itemRevision = snapshot?.revisions[String(id)];

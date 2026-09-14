@@ -228,6 +228,7 @@ npm run dev
 
 ### 6. 수동 데이터 동기화 (`POST /api/initialize`)
 - 헤더에 `x-sync-token: <SYNC_TOKEN>`을 포함하여 호출하면 TourAPI로부터 최신 행사를 즉시 동기화합니다.
+- 프로덕션과 외부 호스트에서는 `SYNC_TOKEN`이 없으면 fail-closed로 `503`을 반환합니다. 토큰 없는 호출은 로컬 개발의 loopback 주소(`localhost`, `127.0.0.1`, `::1`)에서만 허용됩니다.
 - 분산 락에 의해 이미 동기화가 진행 중인 경우 `409 Conflict`를 반환합니다.
 
 ---
@@ -263,6 +264,20 @@ npm run dev
 ```bash
 npm run deploy
 ```
+
+GitHub Actions에서는 `main`에 대한 CI가 성공하면 `.github/workflows/cd.yml`이 다음 순서로 실행됩니다.
+
+1. `production-migrations` 환경 승인을 거친 뒤 원격 D1 마이그레이션 적용
+2. `production` 환경에서 Cloudflare Worker 배포
+3. `/api/health`, feed/detail, map, sitemap production smoke gate 실행
+
+자동 CD를 사용하려면 저장소 또는 해당 GitHub Environment에 다음 값을 설정합니다.
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN` (Workers 배포 및 D1 마이그레이션 권한)
+- `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY` (`production` 환경 secret; 빌드 시 클라이언트 번들에 주입)
+
+`production-migrations`에는 required reviewer를 설정해 스키마 변경을 별도 승인 단계로 유지하는 것을 권장합니다. `TOUR_API_KEY`와 `SYNC_TOKEN`은 배포 로그에 노출되지 않도록 기존처럼 Cloudflare Worker secret으로 관리합니다.
 
 ### 3. 백그라운드 Cron 트리거 (`wrangler.jsonc`, `worker.js`)
 Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 자동으로 수행됩니다:

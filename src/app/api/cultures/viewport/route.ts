@@ -6,6 +6,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
   });
   const level = parseMapLevel(url.searchParams.get('level'));
 
-  const readModel = await getCulturePublicListSnapshot();
+  const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
   if (readModel) {
     const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
     return NextResponse.json(result, { headers: responseHeaders(readModel.source) });

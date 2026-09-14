@@ -1,4 +1,5 @@
 import { getCulturePublicRead } from '@/services/cultureReadModel';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import {
   CULTURE_EDGE_CACHE_TAGS,
   createPublicEdgeCacheHeaders,
@@ -42,7 +43,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const result = await getCulturePublicRead(Number(id));
+  const result = await getCulturePublicRead(Number(id), await getRuntimeDeps());
   if (result.culture) {
     return NextResponse.json(result.culture, {
       headers: responseHeaders(result.source ?? 'kv-read-model', id),

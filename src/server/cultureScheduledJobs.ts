@@ -1,7 +1,7 @@
-import type { CultureCacheBinding } from '@/cache/kv';
 import { getCultureDetailEdgeCacheTag } from '@/server/httpCache';
 import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import { logEvent } from '@/server/structuredLog';
+import type { RuntimeEnv } from '@/server/runtimeTypes';
 import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
 import {
   getD1Binding,
@@ -9,7 +9,7 @@ import {
 } from '@/services/cultureSyncLock';
 import { getCultureScheduledJob, RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from '@/services/cultureSyncSchedule';
 import { syncCultures } from '@/services/cultureSyncService';
-import { type D1Binding, TOUR_API_BASE_URL } from '@/services/cultureSyncTypes';
+import { TOUR_API_BASE_URL } from '@/services/cultureSyncTypes';
 
 import {
   CULTURE_PUBLIC_CACHE_TAGS,
@@ -17,22 +17,15 @@ import {
   purgeCultureEdgeCache,
 } from './cultureEdgeCache';
 
-interface ScheduledCultureEnv {
-  DB?: D1Binding;
-  CULTURE_CACHE?: CultureCacheBinding;
-  TOUR_API_BASE_URL?: string;
-  TOUR_API_KEY?: string;
-}
-
 interface CultureScheduledEvent {
   cron: string;
   scheduledTime: number;
 }
 
-type InternalFetch = (request: Request, env: ScheduledCultureEnv, ctx: CultureEdgeCacheContext) => Promise<Response>;
+type InternalFetch = (request: Request, env: RuntimeEnv, ctx: CultureEdgeCacheContext) => Promise<Response>;
 
 const runScheduledSync = async (
-  env: ScheduledCultureEnv,
+  env: RuntimeEnv,
   ctx: CultureEdgeCacheContext,
   trigger: string,
   internalFetch: InternalFetch
@@ -51,13 +44,15 @@ const runScheduledSync = async (
     }
   }
 
-  if (!env.DB) throw new Error('DB binding is required for scheduled synchronization');
-  if (!env.TOUR_API_KEY) throw new Error('TOUR_API_KEY is required for scheduled synchronization');
+  const serviceKey = env.TOUR_API_KEY;
+  if (!serviceKey) throw new Error('TOUR_API_KEY is required for scheduled synchronization');
+  const d1 = getD1Binding(env);
+  if (!d1) throw new Error('DB binding is required for scheduled synchronization');
 
   const lockedRun = await runWithInitializeLock(env, async heartbeat => {
     const result = await syncCultures(
-      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY as string },
-      env.DB as D1Binding,
+      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey },
+      d1,
       {
         trigger,
         beforeEach: () => heartbeat.renew(),
@@ -83,8 +78,9 @@ const runScheduledSync = async (
   }
 };
 
-const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureEdgeCacheContext) => {
-  if (!env.DB || !env.TOUR_API_KEY) return;
+const runScheduledDetailRefresh = async (env: RuntimeEnv, ctx: CultureEdgeCacheContext) => {
+  const serviceKey = env.TOUR_API_KEY;
+  if (!serviceKey) return;
   const d1 = getD1Binding(env);
   if (!d1) return;
 
@@ -96,7 +92,7 @@ const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureE
   const startedAt = Date.now();
   const lockedRun = await runWithInitializeLock(env, async heartbeat => {
     const result = await refreshStaleCachedTourApiDetails(
-      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY as string },
+      { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey },
       d1,
       { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
     );
@@ -122,7 +118,7 @@ const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureE
 
 export const runCultureScheduledEvent = async (
   event: CultureScheduledEvent,
-  env: ScheduledCultureEnv,
+  env: RuntimeEnv,
   ctx: CultureEdgeCacheContext,
   internalFetch: InternalFetch
 ) => {

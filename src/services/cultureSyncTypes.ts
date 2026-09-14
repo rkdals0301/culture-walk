@@ -1,5 +1,14 @@
 import { NewCultureRow } from '@/db/schema';
-import { getWorkerEnv } from '@/server/cloudflare';
+import type { RuntimeEnv } from '@/server/runtimeTypes';
+
+export type {
+  CultureCacheBinding,
+  D1AllResult,
+  D1Binding,
+  D1Statement,
+  RuntimeDeps,
+  RuntimeEnv,
+} from '@/server/runtimeTypes';
 
 export const INITIAL_PAGE_NUMBER = 1;
 export const PAGE_SIZE = 500;
@@ -33,7 +42,7 @@ export type TourApiConfig = {
   baseUrl: string;
   serviceKey: string;
 };
-export type WorkerEnv = Awaited<ReturnType<typeof getWorkerEnv>>;
+export type WorkerEnv = RuntimeEnv;
 export type InsertStats = { inserted: number; skipped: number };
 export type SnapshotStats = {
   inserted: number;
@@ -56,17 +65,6 @@ export type SyncResult = {
   invalidCoordinates: number;
   invalidDates: number;
   missingRequiredFields: number;
-};
-
-export type D1AllResult = { results?: Array<Record<string, unknown>> };
-export type D1Statement = {
-  bind: (...values: unknown[]) => D1Statement;
-  run: () => Promise<unknown>;
-  all: () => Promise<D1AllResult>;
-};
-export type D1Binding = {
-  prepare: (query: string) => D1Statement;
-  batch: (statements: D1Statement[]) => Promise<unknown[]>;
 };
 
 export const STAGING_COLUMNS = [

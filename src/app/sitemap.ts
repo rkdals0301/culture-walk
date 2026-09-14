@@ -1,4 +1,5 @@
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import { SITE_URL } from '@/utils/siteMetadata';
 
 import type { MetadataRoute } from 'next';
@@ -57,7 +58,7 @@ const toSitemapImage = (value: string | null) => {
 };
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
-  const snapshot = await getCulturePublicListSnapshot();
+  const snapshot = await getCulturePublicListSnapshot(await getRuntimeDeps());
   if (!snapshot) return STATIC_ENTRIES;
   const lastModified = parseLastModified(snapshot.cachedAt);
 

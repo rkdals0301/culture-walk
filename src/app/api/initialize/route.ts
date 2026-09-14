@@ -1,5 +1,5 @@
-import type { CultureCacheBinding } from '@/cache/kv';
 import { getWorkerEnv } from '@/server/cloudflare';
+import { authorizeSyncRequest } from '@/server/syncAuth';
 import { hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import { logEvent } from '@/server/structuredLog';
 import {
@@ -14,8 +14,6 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
-
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
   try {
@@ -23,12 +21,17 @@ export async function POST(request: NextRequest) {
     const syncToken = env.SYNC_TOKEN;
     const requestToken = request.headers.get('x-sync-token');
 
-    if (isProductionEnvironment() && !syncToken) {
-      return NextResponse.json({ message: 'SYNC_TOKEN is required in production' }, { status: 503 });
-    }
-
-    if (syncToken && requestToken !== syncToken) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    const authorization = authorizeSyncRequest({
+      expectedToken: syncToken,
+      providedToken: requestToken,
+      hostname: request.nextUrl.hostname,
+      production: process.env.NODE_ENV === 'production',
+    });
+    if (!authorization.authorized) {
+      return NextResponse.json(
+        { message: authorization.message },
+        { status: authorization.status, headers: { 'Cache-Control': 'no-store' } }
+      );
     }
 
     const serviceKey = env.TOUR_API_KEY ?? process.env.TOUR_API_KEY;
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
           trigger,
           beforeEach: () => heartbeat.renew(),
           beforeApply: heartbeat.ensureHeld,
-          cache: env.CULTURE_CACHE as CultureCacheBinding | undefined,
+          cache: env.CULTURE_CACHE,
         }
       );
     });

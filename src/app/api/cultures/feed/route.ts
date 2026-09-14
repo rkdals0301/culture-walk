@@ -9,6 +9,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
@@ -132,7 +133,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const readModel = await getCulturePublicListSnapshot();
+  const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
   if (readModel) {
     const page = buildPageFromSnapshot(readModel.items, filters, filterKey, cursor, limit);
     const headers =

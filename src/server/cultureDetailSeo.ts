@@ -1,4 +1,5 @@
 import { getCulturePublicRead } from '@/services/cultureReadModel';
+import type { RuntimeDeps } from '@/server/runtimeTypes';
 import type { FormattedCultureDetail } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
 import { OG_IMAGE_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
@@ -9,8 +10,8 @@ import type { Metadata } from 'next';
 
 export const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 
-export const getFormattedCultureDetailById = cache(async (id: number) => {
-  const culture = (await getCulturePublicRead(id)).culture;
+export const getFormattedCultureDetailById = cache(async (id: number, deps: RuntimeDeps) => {
+  const culture = (await getCulturePublicRead(id, deps)).culture;
   if (!culture) return null;
   return formatCultureData([culture])[0] ?? null;
 });

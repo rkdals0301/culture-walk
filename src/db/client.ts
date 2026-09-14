@@ -1,14 +1,11 @@
 import { drizzle } from 'drizzle-orm/d1';
 
 import * as schema from '@/db/schema';
-import { getWorkerEnv } from '@/server/cloudflare';
 
-export async function getDb() {
-  const env = await getWorkerEnv();
+type DrizzleD1Client = Parameters<typeof drizzle>[0];
 
-  if (!env?.DB) {
-    return null;
-  }
+export function getDb(db?: DrizzleD1Client) {
+  if (!db) return null;
 
-  return drizzle(env.DB as any, { schema });
+  return drizzle(db, { schema });
 }

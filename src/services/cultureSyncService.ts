@@ -1,6 +1,6 @@
-import { type CultureCacheBinding } from '@/cache/kv';
 import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
+import type { RuntimeDeps } from '@/server/runtimeTypes';
 
 import { publishCurrentCultureDetailReadModels, refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
@@ -9,11 +9,10 @@ import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from
 import { fetchCulturesFromTourApi } from './cultureSyncSource';
 import { D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, SyncResult, TourApiConfig } from './cultureSyncTypes';
 
-type SyncCulturesOptions = {
+type SyncCulturesOptions = Pick<RuntimeDeps, 'cache'> & {
   trigger?: string;
   beforeEach?: () => Promise<boolean>;
   beforeApply?: () => Promise<void>;
-  cache?: CultureCacheBinding;
 };
 
 export const syncCultures = async (

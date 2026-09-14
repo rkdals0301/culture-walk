@@ -1,5 +1,3 @@
-import { type CultureCacheBinding } from '@/cache/kv';
-
 import { CULTURE_EDGE_CACHE_TAGS } from './httpCache';
 
 export const CULTURE_PUBLIC_CACHE_TAGS = [
@@ -55,10 +53,3 @@ export const withSitemapEdgeCache = (response: Response) => {
     headers,
   });
 };
-
-export interface CultureWorkerEnv {
-  DB?: unknown;
-  CULTURE_CACHE?: CultureCacheBinding;
-  TOUR_API_BASE_URL?: string;
-  TOUR_API_KEY?: string;
-}

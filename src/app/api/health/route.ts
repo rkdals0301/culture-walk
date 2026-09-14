@@ -1,4 +1,5 @@
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import { getRuntimeDeps } from '@/server/cloudflare';
 
 import { NextResponse } from 'next/server';
 
@@ -21,7 +22,8 @@ const getAgeHours = (value: string | null, now: Date) => {
  */
 export async function GET() {
   const now = new Date();
-  const snapshot = await readCultureReadModelSnapshot();
+  const { cache } = await getRuntimeDeps();
+  const snapshot = await readCultureReadModelSnapshot(cache);
 
   if (!snapshot?.items.length) {
     return NextResponse.json(

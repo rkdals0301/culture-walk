@@ -3,9 +3,9 @@ import {
   readCultureReadModelCache,
   writeCultureReadModelCache,
 } from '@/cache/kv';
-import { getWorkerEnv } from '@/server/cloudflare';
 import { logEvent } from '@/server/structuredLog';
 import { createCultureListItemRevision, queryCultureListFromD1 } from '@/services/cultureListRepository';
+import type { RuntimeDeps } from '@/server/runtimeTypes';
 import type { D1Binding } from '@/services/cultureSyncTypes';
 import { CultureSearchableListItem } from '@/types/culture';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -34,9 +34,9 @@ export const filterCurrentCultureListItems = (
 };
 
 export const readCultureReadModelSnapshot = async (
-  cacheOverride?: CultureCacheBinding
+  cache: CultureCacheBinding | undefined
 ): Promise<CultureListSnapshot | null> => {
-  const readModel = await readCultureReadModelCache(cacheOverride);
+  const readModel = await readCultureReadModelCache(cache);
   if (!readModel?.items.length) return null;
 
   return {
@@ -69,10 +69,7 @@ export const refreshCultureListSnapshotCache = async (options: {
   };
 };
 
-type CulturePublicListReadOptions = {
-  cache?: CultureCacheBinding;
-  d1?: D1Binding;
-};
+type CulturePublicListReadOptions = RuntimeDeps;
 
 let cultureListReadThroughPromise: Promise<CultureListSnapshot | null> | null = null;
 
@@ -102,19 +99,14 @@ const readCultureListFromD1AndWarmCache = async (
  * misses share one in-flight rebuild so a cold cache does not stampede D1.
  */
 export const getCulturePublicListSnapshot = async (
-  options?: CulturePublicListReadOptions
+  options: CulturePublicListReadOptions
 ): Promise<CultureListSnapshot | null> => {
-  const env = options ? null : await getWorkerEnv();
-  const cache = options?.cache ?? (env?.CULTURE_CACHE as CultureCacheBinding | undefined);
+  const cache = options.cache;
   const cached = await readCultureReadModelSnapshot(cache);
   if (cached) return cached;
 
-  const d1 = options?.d1 ?? (env?.DB as D1Binding | undefined);
+  const d1 = options.d1;
   if (!d1) return null;
-
-  if (options) {
-    return readCultureListFromD1AndWarmCache(d1, cache);
-  }
 
   if (!cultureListReadThroughPromise) {
     cultureListReadThroughPromise = readCultureListFromD1AndWarmCache(d1, cache).finally(() => {

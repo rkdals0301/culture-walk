@@ -7,6 +7,7 @@ import {
   getFormattedCultureDetailById,
   parseCultureId,
 } from '@/server/cultureDetailSeo';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import { serializeJsonLd } from '@/utils/jsonLd';
 
 import type { Metadata } from 'next';
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const numericId = parseCultureId(id);
   if (numericId === null) return createMissingCultureMetadata(null);
 
-  const culture = await getFormattedCultureDetailById(numericId);
+  const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
   return culture ? createCultureDetailMetadata(culture) : createMissingCultureMetadata(numericId);
 }
 
@@ -30,7 +31,7 @@ const MapDetailPage = async ({ params }: PageProps) => {
   const numericId = parseCultureId(id);
   if (numericId === null) notFound();
 
-  const culture = await getFormattedCultureDetailById(numericId);
+  const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
   if (!culture) notFound();
 
   return (
