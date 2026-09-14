@@ -22,6 +22,20 @@ test('MapDashboard keeps navigation and exploration side effects in its controll
   assert.doesNotMatch(source, /useCultureContext|useMapExploreUrlSync|usePathname|useRouter|LocationRequestError|toast\./);
 });
 
+test('map list focus restoration uses virtualized row mount signals instead of DOM polling', async () => {
+  const [controller, list] = await Promise.all([
+    readProjectFile('../src/hooks/useMapDashboardController.ts'),
+    readProjectFile('../src/components/Header/CultureList.tsx'),
+  ]);
+
+  assert.doesNotMatch(controller, /querySelector|setTimeout\(|attempts\s*>?=\s*120|cw:open-map-search/);
+  assert.match(controller, /handleFocusCultureHandled/);
+  assert.match(list, /focusCultureId/);
+  assert.match(list, /onFocusCultureHandled/);
+  assert.match(list, /scrollToIndex\(focusIndex/);
+  assert.match(list, /document\.activeElement === element/);
+});
+
 test('MapDashboard delegates desktop panel presentation to a dedicated component', async () => {
   const [dashboard, desktop] = await Promise.all([
     readProjectFile('../src/components/Map/MapDashboard.tsx'),

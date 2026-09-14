@@ -13,7 +13,9 @@ interface CultureListProps {
   onItemClick: (culture: FormattedCultureListItem) => void;
   selectedCultureId?: number | null;
   currentLocation?: GeoPoint | null;
+  focusCultureId?: number | null;
   initialScrollTop?: number;
+  onFocusCultureHandled?: () => void;
   onScrollPositionChange?: (scrollTop: number) => void;
 }
 
@@ -22,7 +24,9 @@ const CultureList = ({
   onItemClick,
   selectedCultureId = null,
   currentLocation = null,
+  focusCultureId = null,
   initialScrollTop = 0,
+  onFocusCultureHandled,
   onScrollPositionChange,
 }: CultureListProps) => {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -34,6 +38,10 @@ const CultureList = ({
     }
     return cultures.findIndex(culture => culture.id === selectedCultureId);
   }, [cultures, selectedCultureId]);
+  const focusIndex = useMemo(() => {
+    if (focusCultureId == null) return -1;
+    return cultures.findIndex(culture => culture.id === focusCultureId);
+  }, [cultures, focusCultureId]);
 
   const rowVirtualizer = useVirtualizer({
     count: itemCount,
@@ -62,6 +70,11 @@ const CultureList = ({
 
     rowVirtualizer.scrollToIndex(selectedIndex, { align: 'center' });
   }, [rowVirtualizer, selectedIndex]);
+
+  useEffect(() => {
+    if (focusIndex < 0) return;
+    rowVirtualizer.scrollToIndex(focusIndex, { align: 'center' });
+  }, [focusIndex, rowVirtualizer]);
 
   useEffect(() => {
     if (initialScrollTop <= 0) {
@@ -97,7 +110,12 @@ const CultureList = ({
               <button
                 type='button'
                 key={virtualItem.key}
-                ref={rowVirtualizer.measureElement}
+                ref={element => {
+                  rowVirtualizer.measureElement(element);
+                  if (!element || culture.id !== focusCultureId) return;
+                  element.focus({ preventScroll: true });
+                  if (document.activeElement === element) onFocusCultureHandled?.();
+                }}
                 data-index={virtualItem.index}
                 data-culture-id={culture.id}
                 className={clsx(

@@ -36,9 +36,11 @@ const MapDashboard = ({
     handleFreeOnlyChange,
     handleLocationToggle,
     handleOpenCulture,
+    handleFocusCultureHandled,
     handleRegionChange,
     handleSortChange,
     hasActiveFilters,
+    focusCultureId,
     isDesktopPanelCollapsed,
     isDetailRoute,
     isFilterPending,
@@ -81,6 +83,8 @@ const MapDashboard = ({
           handleFreeOnlyChange={handleFreeOnlyChange}
           handleLocationToggle={handleLocationToggle}
           handleOpenCulture={handleOpenCulture}
+          focusCultureId={focusCultureId}
+          onFocusCultureHandled={handleFocusCultureHandled}
           handleRegionChange={handleRegionChange}
           handleSortChange={handleSortChange}
           hasActiveFilters={hasActiveFilters}
@@ -117,6 +121,8 @@ const MapDashboard = ({
           handleFreeOnlyChange={handleFreeOnlyChange}
           handleLocationToggle={handleLocationToggle}
           handleOpenCulture={handleOpenCulture}
+          focusCultureId={focusCultureId}
+          onFocusCultureHandled={handleFocusCultureHandled}
           handleRegionChange={handleRegionChange}
           handleSortChange={handleSortChange}
           hasActiveFilters={hasActiveFilters}

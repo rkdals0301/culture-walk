@@ -9,11 +9,13 @@ interface MapListPanelContentProps {
   cultures: FormattedCultureListItem[];
   currentLocation: GeoPoint | null;
   error: Error | null;
+  focusCultureId: number | null;
   hasActiveFilters: boolean;
   initialScrollTop: number;
   isClustered: boolean;
   isLoading: boolean;
   onItemClick: (culture: FormattedCultureListItem) => void;
+  onFocusCultureHandled: () => void;
   onResetFilters: () => void;
   onRetry: () => void;
   onScrollPositionChange: (scrollTop: number) => void;
@@ -24,11 +26,13 @@ const MapListPanelContent = ({
   cultures,
   currentLocation,
   error,
+  focusCultureId,
   hasActiveFilters,
   initialScrollTop,
   isClustered,
   isLoading,
   onItemClick,
+  onFocusCultureHandled,
   onResetFilters,
   onRetry,
   onScrollPositionChange,
@@ -99,7 +103,9 @@ const MapListPanelContent = ({
   return (
     <CultureList
       cultures={cultures}
+      focusCultureId={focusCultureId}
       onItemClick={onItemClick}
+      onFocusCultureHandled={onFocusCultureHandled}
       selectedCultureId={selectedCultureId}
       currentLocation={currentLocation}
       initialScrollTop={initialScrollTop}

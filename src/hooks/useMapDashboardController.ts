@@ -7,7 +7,7 @@ import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } 
 import { calculateDistanceMeters } from '@/utils/geo';
 import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -105,21 +105,6 @@ export const useMapDashboardController = ({
 
   useMapPanelLayout(isDesktopPanelCollapsed, isDetailRoute);
 
-  useEffect(() => {
-    const handleOpenMapSearch = () => {
-      setIsMobileSheetVisible(true);
-      window.setTimeout(() => {
-        const input = (document.getElementById('map-search-input-mobile') ||
-          document.getElementById('map-search-input')) as HTMLInputElement | null;
-        input?.focus();
-        input?.select();
-      }, 150);
-    };
-
-    window.addEventListener('cw:open-map-search', handleOpenMapSearch);
-    return () => window.removeEventListener('cw:open-map-search', handleOpenMapSearch);
-  }, []);
-
   const handleCategoryChange = (nextCategory: CultureCategoryKey) => {
     startFilterTransition(() => setMapCategory(nextCategory));
   };
@@ -153,30 +138,12 @@ export const useMapDashboardController = ({
 
   useEffect(() => {
     if (isDetailRoute || pathname !== '/map' || focusCultureId === null) return;
-
     setIsMobileSheetVisible(true);
-    let attempts = 0;
-    let focusFrame = 0;
-    const focusSelectedRow = () => {
-      const selectedRow = document.querySelector<HTMLElement>(`[data-culture-id="${focusCultureId}"]`);
-      if (selectedRow) {
-        selectedRow.focus();
-        setFocusCultureId(null);
-        return;
-      }
+  }, [focusCultureId, isDetailRoute, pathname]);
 
-      if (attempts >= 120) {
-        setFocusCultureId(null);
-        return;
-      }
-
-      attempts += 1;
-      focusFrame = window.requestAnimationFrame(focusSelectedRow);
-    };
-
-    focusFrame = window.requestAnimationFrame(focusSelectedRow);
-    return () => window.cancelAnimationFrame(focusFrame);
-  }, [focusCultureId, isDetailRoute, pathname, visibleCultures.length]);
+  const handleFocusCultureHandled = useCallback(() => {
+    setFocusCultureId(null);
+  }, []);
 
   useEffect(() => {
     if (isDetailRoute) setIsMobileSheetVisible(false);
@@ -200,9 +167,11 @@ export const useMapDashboardController = ({
     handleFreeOnlyChange,
     handleLocationToggle,
     handleOpenCulture,
+    handleFocusCultureHandled,
     handleRegionChange,
     handleSortChange,
     hasActiveFilters,
+    focusCultureId,
     isDesktopPanelCollapsed,
     isDetailRoute,
     isFilterPending,

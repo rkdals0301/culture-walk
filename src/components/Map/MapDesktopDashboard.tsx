@@ -18,6 +18,7 @@ interface MapDesktopDashboardProps {
   currentLocation: GeoPoint | null;
   error: Error | null;
   filterMotionKey: string;
+  focusCultureId: number | null;
   handleCategoryChange: (category: CultureCategoryKey) => void;
   handleFreeOnlyChange: (freeOnly: boolean) => void;
   handleLocationToggle: () => void;
@@ -36,6 +37,7 @@ interface MapDesktopDashboardProps {
   mapRegion: string;
   mapSortMode: MapSortMode;
   onRetry: () => void;
+  onFocusCultureHandled: () => void;
   regionOptions: string[];
   resetMapFilters: () => void;
   searchQuery: string;
@@ -53,6 +55,7 @@ const MapDesktopDashboard = ({
   currentLocation,
   error,
   filterMotionKey,
+  focusCultureId,
   handleCategoryChange,
   handleFreeOnlyChange,
   handleLocationToggle,
@@ -71,6 +74,7 @@ const MapDesktopDashboard = ({
   mapRegion,
   mapSortMode,
   onRetry,
+  onFocusCultureHandled,
   regionOptions,
   resetMapFilters,
   searchQuery,
@@ -237,11 +241,13 @@ const MapDesktopDashboard = ({
             cultures={visibleCultures}
             currentLocation={currentLocation}
             error={error}
+            focusCultureId={focusCultureId}
             hasActiveFilters={hasActiveFilters}
             initialScrollTop={mapListScrollTop}
             isClustered={isClustered}
             isLoading={isLoading}
             onItemClick={handleOpenCulture}
+            onFocusCultureHandled={onFocusCultureHandled}
             onResetFilters={resetMapFilters}
             onRetry={onRetry}
             onScrollPositionChange={setMapListScrollTop}
