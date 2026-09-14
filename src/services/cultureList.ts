@@ -6,7 +6,7 @@ import {
 import { getWorkerEnv } from '@/server/cloudflare';
 import { createCultureListItemRevision, queryCultureListFromD1 } from '@/services/cultureListRepository';
 import type { D1Binding } from '@/services/cultureSyncTypes';
-import { CultureListItem } from '@/types/culture';
+import { CultureSearchableListItem } from '@/types/culture';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
 export { createCultureListItemRevision } from '@/services/cultureListRepository';
@@ -14,14 +14,14 @@ export { createCultureListItemRevision } from '@/services/cultureListRepository'
 export type CultureListSnapshotSource = 'kv-read-model' | 'd1-read-through';
 
 export interface CultureListSnapshot {
-  items: CultureListItem[];
+  items: CultureSearchableListItem[];
   source: CultureListSnapshotSource;
   cachedAt: string | null;
   revisions: Record<string, string>;
 }
 
 export const filterCurrentCultureListItems = (
-  items: readonly CultureListItem[],
+  items: readonly CultureSearchableListItem[],
   referenceDate: Date = new Date()
 ) => {
   const koreaToday = new Date(getKoreaDateStartIso(referenceDate)).getTime();

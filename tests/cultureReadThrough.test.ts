@@ -51,6 +51,11 @@ test('public list reads through D1 and republishes KV when the read model is mis
             startDate: '2099-09-10T00:00:00.000Z',
             title: '테스트 축제',
             useFee: '무료',
+            programIntroduction: '전통 체험 프로그램',
+            useTarget: '가족 관람객',
+            organizationName: '문화재단',
+            themeClassification: '지역축제',
+            overview: '서울광장 대표 축제 소개',
             sourceModifiedAt: '2099-09-01T00:00:00.000Z',
           },
         ]
@@ -62,6 +67,8 @@ test('public list reads through D1 and republishes KV when the read model is mis
   assert.equal(snapshot?.source, 'd1-read-through');
   assert.equal(snapshot?.items.length, 1);
   assert.equal(snapshot?.items[0].title, '테스트 축제');
+  assert.match(snapshot?.items[0].searchText ?? '', /대표 축제 소개/);
+  assert.match(snapshot?.items[0].searchText ?? '', /가족 관람객/);
   assert.ok(writes.includes('cultures:read-model:v1'));
   const warmed = store.get('cultures:read-model:v1') as { items?: unknown[]; revisions?: Record<string, string> };
   assert.equal(warmed.items?.length, 1);
@@ -87,6 +94,7 @@ test('public list stays on KV and does not touch D1 on a cache hit', async () =>
           startDate: '2099-09-10T00:00:00.000Z',
           title: '테스트 축제',
           useFee: '무료',
+          searchText: '테스트 축제\n서울 중구\n서울광장',
         },
       ],
       revisions: { '101': 'revision-101' },
@@ -122,6 +130,7 @@ test('detail cache miss reads one rich row from D1 and writes it through to KV',
           startDate: '2099-09-10T00:00:00.000Z',
           title: '테스트 축제',
           useFee: '무료',
+          searchText: '테스트 축제\n서울 중구\n서울광장',
         },
       ],
       revisions: { '101': revision },
@@ -197,6 +206,7 @@ test('matching rich detail cache stays on KV and does not touch D1', async () =>
     startDate: '2099-09-10T00:00:00.000Z',
     title: '테스트 축제',
     useFee: '무료',
+    searchText: '테스트 축제\n서울 중구\n서울광장',
   };
   const { cache } = createMemoryCache({
     'cultures:read-model:v1': {

@@ -1,5 +1,5 @@
 import { getWorkerEnv } from '@/server/cloudflare';
-import { Culture, CultureListItem } from '@/types/culture';
+import { Culture, CultureListItem, CultureSearchableListItem } from '@/types/culture';
 
 const CULTURE_READ_MODEL_CACHE_KEY = 'cultures:read-model:v1';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
@@ -13,7 +13,7 @@ export interface CultureListFallbackMetadata {
 }
 export interface CultureReadModel {
   cachedAt: string | null;
-  items: CultureListItem[];
+  items: CultureSearchableListItem[];
   revisions?: Record<string, string>;
 }
 type StoredCultureDetail = {
@@ -150,7 +150,7 @@ export const readCultureReadModelCache = async (
 };
 
 export const writeCultureReadModelCache = async (
-  cultures: CultureListItem[],
+  cultures: CultureSearchableListItem[],
   revisions: Record<string, string>,
   cacheOverride?: CultureCacheBinding
 ) => {

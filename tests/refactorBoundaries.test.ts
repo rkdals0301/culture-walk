@@ -243,7 +243,7 @@ test('culture list service delegates D1 querying and revision hashing to a repos
   assert.match(service, /queryCultureListFromD1/);
   assert.match(service, /cultureListRepository/);
   assert.doesNotMatch(service, /SELECT id, classification|Math\.imul/);
-  assert.match(repository, /SELECT id, classification/);
+  assert.match(repository, /SELECT cultures\.id AS id, cultures\.classification AS classification/);
   assert.match(repository, /Math\.imul/);
   assert.match(repository, /createCultureListItemRevision/);
 });

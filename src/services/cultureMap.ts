@@ -4,7 +4,7 @@ import {
   getCultureRegionOptions,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
-import type { CultureListItem, CultureMapBounds, CultureMapResponse } from '@/types/culture';
+import type { CultureMapBounds, CultureMapResponse, CultureSearchableListItem } from '@/types/culture';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -15,7 +15,7 @@ import { MAP_CLUSTER_GRID_SIZE, getMapDataMode, isCoordinateWithinBounds } from 
  * module pure prevents map traffic from acquiring a hidden D1 dependency.
  */
 export const buildCultureMapResponseFromSnapshot = (
-  items: readonly CultureListItem[],
+  items: readonly CultureSearchableListItem[],
   input: {
     filters: CultureFeedFilters;
     bounds: CultureMapBounds;

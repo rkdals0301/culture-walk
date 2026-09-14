@@ -1,4 +1,4 @@
-import type { CultureListItem } from '@/types/culture';
+import type { CultureSearchableListItem } from '@/types/culture';
 import {
   buildCultureFeedResult,
   createCultureFeedFilterKey,
@@ -11,7 +11,7 @@ import { filterCurrentCultureListItems } from '@/services/cultureList';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const createCulture = (overrides: Partial<CultureListItem>): CultureListItem => ({
+const createCulture = (overrides: Partial<CultureSearchableListItem>): CultureSearchableListItem => ({
   id: 1,
   classification: '공연',
   endDate: new Date('2026-09-30T00:00:00.000Z'),
@@ -24,13 +24,33 @@ const createCulture = (overrides: Partial<CultureListItem>): CultureListItem => 
   startDate: new Date('2026-09-01T00:00:00.000Z'),
   title: '가을 문화행사',
   useFee: '10,000원',
+  searchText: '가을 문화행사\n서울 중구\n서울광장',
   ...overrides,
 });
 
 const items = [
-  createCulture({ id: 1, classification: '공연', title: '서울 무료 콘서트', isFree: '무료', useFee: '무료' }),
-  createCulture({ id: 2, classification: '전시', guName: '부산 해운대구', title: '바다 전시' }),
-  createCulture({ id: 3, classification: '교육·체험', guName: '서울 마포구', title: '도예 체험' }),
+  createCulture({
+    id: 1,
+    classification: '공연',
+    title: '서울 무료 콘서트',
+    isFree: '무료',
+    useFee: '무료',
+    searchText: '서울 무료 콘서트\n서울 중구\n서울광장',
+  }),
+  createCulture({
+    id: 2,
+    classification: '전시',
+    guName: '부산 해운대구',
+    title: '바다 전시',
+    searchText: '바다 전시\n부산 해운대구\n서울광장',
+  }),
+  createCulture({
+    id: 3,
+    classification: '교육·체험',
+    guName: '서울 마포구',
+    title: '도예 체험',
+    searchText: '도예 체험\n서울 마포구\n서울광장',
+  }),
 ];
 
 test('문화 피드 필터는 카테고리·지역·검색어·무료 조건을 함께 적용한다', () => {
@@ -42,6 +62,33 @@ test('문화 피드 필터는 카테고리·지역·검색어·무료 조건을 
   });
 
   assert.deepEqual(result.map(item => item.id), [1]);
+});
+
+test('문화 피드 검색은 상세 소개와 이용 대상이 포함된 search text를 사용한다', () => {
+  const searchable = createCulture({
+    id: 4,
+    title: '가을 행사',
+    searchText: '가을 행사\n서울광장\n전통 공예를 직접 만들어보는 프로그램\n초등학생 이상',
+  });
+
+  assert.deepEqual(
+    filterCultureListItems([searchable], {
+      searchQuery: '전통 공예',
+      category: 'all',
+      region: 'all',
+      freeOnly: false,
+    }).map(item => item.id),
+    [4]
+  );
+  assert.deepEqual(
+    filterCultureListItems([searchable], {
+      searchQuery: '초등학생',
+      category: 'all',
+      region: 'all',
+      freeOnly: false,
+    }).map(item => item.id),
+    [4]
+  );
 });
 
 test('문화 피드 무료 판정은 목록 요금 필드도 확인한다', () => {

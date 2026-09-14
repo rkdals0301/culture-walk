@@ -1,7 +1,7 @@
 import { CultureCategoryKey, matchesCultureCategory } from '@/utils/cultureCategory';
 import type { MapSortMode } from '@/utils/exploreState';
 import { calculateDistanceMeters } from '@/utils/geo';
-import { CultureListItem } from '@/types/culture';
+import { CultureListItem, CultureSearchableListItem } from '@/types/culture';
 
 export interface CultureFeedFilters {
   searchQuery: string;
@@ -42,7 +42,7 @@ export const createCultureFeedFilterKey = (filters: CultureFeedFilters) =>
   JSON.stringify(normalizeCultureFeedFilters(filters));
 
 const matchesCultureFeedFilters = (
-  culture: CultureListItem,
+  culture: CultureSearchableListItem,
   filters: CultureFeedFilters,
   query: string
 ) => {
@@ -60,7 +60,7 @@ const matchesCultureFeedFilters = (
 
   if (
     query &&
-    ![culture.title, culture.guName, culture.place].some(value => normalizeText(value).includes(query))
+    !normalizeText(culture.searchText || [culture.title, culture.guName, culture.place].join(' ')).includes(query)
   ) {
     return false;
   }
@@ -69,7 +69,7 @@ const matchesCultureFeedFilters = (
 };
 
 export const buildCultureFeedResult = (
-  items: readonly CultureListItem[],
+  items: readonly CultureSearchableListItem[],
   filters: CultureFeedFilters
 ): CultureFeedResult => {
   const normalized = normalizeCultureFeedFilters(filters);
@@ -110,11 +110,11 @@ export const buildCultureFeedResult = (
   };
 };
 
-export const filterCultureListItems = (items: readonly CultureListItem[], filters: CultureFeedFilters) => {
+export const filterCultureListItems = (items: readonly CultureSearchableListItem[], filters: CultureFeedFilters) => {
   return buildCultureFeedResult(items, filters).items;
 };
 
-export const getCultureRegionOptions = (items: readonly CultureListItem[]) =>
+export const getCultureRegionOptions = (items: readonly CultureSearchableListItem[]) =>
   Array.from(new Set(items.map(culture => (culture.guName ?? '').split(/\s+/)[0]).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b, 'ko')
   );

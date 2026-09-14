@@ -9,7 +9,16 @@ const toIsoString = (value: Date | string) => {
 };
 
 export const toCultureListItemDto = (item: CultureListItem): CultureListItemDto => ({
-  ...item,
+  id: item.id,
+  classification: item.classification,
+  guName: item.guName,
+  isFree: item.isFree,
+  lat: item.lat,
+  lng: item.lng,
+  mainImage: item.mainImage,
+  place: item.place,
+  title: item.title,
+  useFee: item.useFee,
   startDate: toIsoString(item.startDate),
   endDate: toIsoString(item.endDate),
 });

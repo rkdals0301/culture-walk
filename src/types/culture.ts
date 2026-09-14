@@ -150,6 +150,10 @@ export type CultureListItem = Pick<
   | 'useFee'
 >;
 
+export type CultureSearchableListItem = CultureListItem & {
+  searchText?: string;
+};
+
 export type CultureListItemDto = Omit<CultureListItem, 'startDate' | 'endDate'> & {
   startDate: string;
   endDate: string;

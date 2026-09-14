@@ -6,7 +6,7 @@ import {
   KOREA_LNG_MAX,
   KOREA_LNG_MIN,
 } from '@/services/cultureSyncTypes';
-import type { CultureListItem } from '@/types/culture';
+import type { CultureListItem, CultureSearchableListItem } from '@/types/culture';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
 
@@ -32,6 +32,20 @@ const hashCultureListItem = (item: CultureListItem) => {
   return (hash >>> 0).toString(16).padStart(8, '0');
 };
 
+const buildCultureSearchText = (item: CultureListItem, row: Record<string, unknown>) =>
+  [
+    item.title,
+    item.guName,
+    item.place,
+    row.programIntroduction,
+    row.useTarget,
+    row.organizationName,
+    row.themeClassification,
+    row.overview,
+  ]
+    .filter(value => typeof value === 'string' && value.trim())
+    .join('\n');
+
 export const createCultureListItemRevision = (item: CultureListItem, sourceModifiedAt?: string | null) =>
   `${sourceModifiedAt ?? ''}:${hashCultureListItem(item)}`;
 
@@ -39,20 +53,28 @@ export const queryCultureListFromD1 = async (d1: D1Binding) => {
   const koreaToday = getKoreaDateStartIso();
   const result = await d1
     .prepare(
-      `SELECT id, classification, end_date AS endDate, gu_name AS guName, is_free AS isFree,
-              lat, lng, main_image AS mainImage, place, start_date AS startDate, title, use_fee AS useFee,
-              registration_date AS sourceModifiedAt
+      `SELECT cultures.id AS id, cultures.classification AS classification, cultures.end_date AS endDate,
+              cultures.gu_name AS guName, cultures.is_free AS isFree, cultures.lat AS lat, cultures.lng AS lng,
+              cultures.main_image AS mainImage, cultures.place AS place, cultures.start_date AS startDate,
+              cultures.title AS title, cultures.use_fee AS useFee, cultures.registration_date AS sourceModifiedAt,
+              cultures.program_introduction AS programIntroduction, cultures.use_target AS useTarget,
+              cultures.organization_name AS organizationName, cultures.theme_classification AS themeClassification,
+              json_extract(details.common_json, '$.overview') AS overview
        FROM cultures
-       WHERE is_active = 1
-         AND lat IS NOT NULL
-         AND lng IS NOT NULL
-         AND start_date IS NOT NULL
-         AND end_date IS NOT NULL
+       LEFT JOIN culture_tour_api_details details
+         ON details.source_key = cultures.source_key
+        AND details.is_complete = 1
+        AND details.source_modified_at IS cultures.registration_date
+       WHERE cultures.is_active = 1
+         AND cultures.lat IS NOT NULL
+         AND cultures.lng IS NOT NULL
+         AND cultures.start_date IS NOT NULL
+         AND cultures.end_date IS NOT NULL
          AND (
-           (lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?)
-           OR (lng BETWEEN ? AND ? AND lat BETWEEN ? AND ?)
+           (cultures.lat BETWEEN ? AND ? AND cultures.lng BETWEEN ? AND ?)
+           OR (cultures.lng BETWEEN ? AND ? AND cultures.lat BETWEEN ? AND ?)
          )
-         AND end_date >= ?`
+         AND cultures.end_date >= ?`
     )
     .bind(
       KOREA_LAT_MIN,
@@ -68,11 +90,11 @@ export const queryCultureListFromD1 = async (d1: D1Binding) => {
     .all();
 
   const revisions: Record<string, string> = {};
-  const items = (result.results ?? []).flatMap(row => {
+  const items = (result.results ?? []).flatMap<CultureSearchableListItem>(row => {
     const item = toCultureListItem(row);
     if (!item) return [];
     revisions[String(item.id)] = createCultureListItemRevision(item, String(row.sourceModifiedAt ?? ''));
-    return [item];
+    return [{ ...item, searchText: buildCultureSearchText(item, row) }];
   });
 
   return { items: sortCulturesByRelevantDate(items, koreaToday), revisions };

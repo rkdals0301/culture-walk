@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { buildCultureMapResponseFromSnapshot } from '@/services/cultureMap';
-import type { CultureListItem } from '@/types/culture';
+import type { CultureSearchableListItem } from '@/types/culture';
 
-const item = (overrides: Partial<CultureListItem>): CultureListItem => ({
+const item = (overrides: Partial<CultureSearchableListItem>): CultureSearchableListItem => ({
   id: 1,
   classification: '공연',
   endDate: new Date('2026-10-10T00:00:00.000Z'),
@@ -17,6 +17,7 @@ const item = (overrides: Partial<CultureListItem>): CultureListItem => ({
   startDate: new Date('2026-09-01T00:00:00.000Z'),
   title: '테스트 공연',
   useFee: '무료',
+  searchText: '테스트 공연\n서울 종로구\n광화문',
   ...overrides,
 });
 
@@ -62,9 +63,15 @@ test('KV read model 지도 cluster는 같은 grid의 행사를 하나로 묶는�
 test('KV read model 지도도 검색·지역·무료 필터를 동일하게 적용한다', () => {
   const response = buildCultureMapResponseFromSnapshot(
     [
-      item({ id: 1, title: '서울 무료 공연' }),
-      item({ id: 2, title: '서울 유료 공연', isFree: '', useFee: '10,000원' }),
-      item({ id: 3, title: '부산 무료 공연', guName: '부산 중구' }),
+      item({ id: 1, title: '서울 무료 공연', searchText: '서울 무료 공연\n서울 종로구\n광화문' }),
+      item({
+        id: 2,
+        title: '서울 유료 공연',
+        isFree: '',
+        useFee: '10,000원',
+        searchText: '서울 유료 공연\n서울 종로구\n광화문',
+      }),
+      item({ id: 3, title: '부산 무료 공연', guName: '부산 중구', searchText: '부산 무료 공연\n부산 중구\n광화문' }),
     ],
     {
       filters: { searchQuery: '무료', category: 'performance', region: '서울', freeOnly: true },
