@@ -3,91 +3,68 @@ import { MapFilterControls, MapSortControl } from '@/components/Map/MapControls'
 import MapListPanelContent from '@/components/Map/MapListPanelContent';
 import MapResultSummary from '@/components/Map/MapResultSummary';
 import MapSearchField from '@/components/Map/MapSearchField';
-import type { FormattedCultureListItem } from '@/types/culture';
-import type { CultureCategoryKey } from '@/utils/cultureCategory';
-import type { MapSortMode } from '@/utils/exploreState';
-import type { GeoPoint } from '@/utils/geo';
+import type { MapDashboardViewModel } from '@/components/Map/mapDashboardModel';
 
 import clsx from 'clsx';
 import { ChevronUp, List, ListFilter, MapPinned } from 'lucide-react';
 
 interface MapMobileDashboardProps {
-  activeFilterLabels: string[];
-  currentLocation: GeoPoint | null;
-  error: Error | null;
-  filterMotionKey: string;
-  focusCultureId: number | null;
-  handleCategoryChange: (category: CultureCategoryKey) => void;
-  handleFreeOnlyChange: (freeOnly: boolean) => void;
-  handleLocationToggle: () => void;
-  handleOpenCulture: (culture: FormattedCultureListItem) => void;
-  handleRegionChange: (region: string) => void;
-  handleSortChange: (mode: MapSortMode) => void;
-  hasActiveFilters: boolean;
-  isClustered: boolean;
-  isFilterPending: boolean;
-  isLoading: boolean;
-  isLocating: boolean;
   isMobileFiltersOpen: boolean;
   isMobileSheetVisible: boolean;
-  mapCategory: CultureCategoryKey;
-  mapFreeOnly: boolean;
-  mapListScrollTop: number;
-  mapRegion: string;
-  mapSortMode: MapSortMode;
-  onRetry: () => void;
-  onFocusCultureHandled: () => void;
-  regionOptions: string[];
-  resetMapFilters: () => void;
-  searchQuery: string;
-  selectedCultureId: number | null;
+  model: MapDashboardViewModel;
   setIsMobileFiltersOpen: (value: boolean | ((current: boolean) => boolean)) => void;
   setIsMobileSheetVisible: (visible: boolean) => void;
-  setMapListScrollTop: (scrollTop: number) => void;
-  setSearchQuery: (query: string) => void;
-  totalCount: number;
-  viewportCount: number;
-  visibleCultures: FormattedCultureListItem[];
 }
 
 const MapMobileDashboard = ({
-  activeFilterLabels,
-  currentLocation,
-  error,
-  filterMotionKey,
-  focusCultureId,
-  handleCategoryChange,
-  handleFreeOnlyChange,
-  handleLocationToggle,
-  handleOpenCulture,
-  handleRegionChange,
-  handleSortChange,
-  hasActiveFilters,
-  isClustered,
-  isFilterPending,
-  isLoading,
-  isLocating,
   isMobileFiltersOpen,
   isMobileSheetVisible,
-  mapCategory,
-  mapFreeOnly,
-  mapListScrollTop,
-  mapRegion,
-  mapSortMode,
-  onRetry,
-  onFocusCultureHandled,
-  regionOptions,
-  resetMapFilters,
-  searchQuery,
-  selectedCultureId,
+  model,
   setIsMobileFiltersOpen,
   setIsMobileSheetVisible,
-  setMapListScrollTop,
-  setSearchQuery,
-  totalCount,
-  viewportCount,
-  visibleCultures,
-}: MapMobileDashboardProps) => (
+}: MapMobileDashboardProps) => {
+  const {
+    actions: {
+      onCategoryChange: handleCategoryChange,
+      onFocusCultureHandled,
+      onFreeOnlyChange: handleFreeOnlyChange,
+      onLocationToggle: handleLocationToggle,
+      onOpenCulture: handleOpenCulture,
+      onRegionChange: handleRegionChange,
+      onResetFilters: resetMapFilters,
+      onRetry,
+      onScrollPositionChange: setMapListScrollTop,
+      onSearchChange: setSearchQuery,
+      onSortChange: handleSortChange,
+    },
+    filters: {
+      activeFilterLabels,
+      category: mapCategory,
+      currentLocation,
+      filterMotionKey,
+      freeOnly: mapFreeOnly,
+      hasActiveFilters,
+      isFilterPending,
+      isLocating,
+      region: mapRegion,
+      regionOptions,
+      searchQuery,
+      sortMode: mapSortMode,
+    },
+    list: {
+      cultures: visibleCultures,
+      error,
+      focusCultureId,
+      isClustered,
+      isLoading,
+      scrollTop: mapListScrollTop,
+      selectedCultureId,
+      totalCount,
+      viewportCount,
+    },
+  } = model;
+
+  return (
   <div className='pointer-events-none flex h-full w-full flex-col pt-[5.4rem] sm:pt-[6rem] md:hidden'>
     {isMobileSheetVisible ? (
       <section
@@ -258,7 +235,8 @@ const MapMobileDashboard = ({
         </button>
       </div>
     )}
-  </div>
-);
+    </div>
+  );
+};
 
 export default MapMobileDashboard;

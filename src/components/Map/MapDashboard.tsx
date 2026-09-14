@@ -2,6 +2,7 @@
 
 import MapDesktopDashboard from '@/components/Map/MapDesktopDashboard';
 import MapMobileDashboard from '@/components/Map/MapMobileDashboard';
+import type { MapDashboardViewModel } from '@/components/Map/mapDashboardModel';
 import { useMapDashboardController } from '@/hooks/useMapDashboardController';
 import { FormattedCultureListItem } from '@/types/culture';
 
@@ -63,6 +64,47 @@ const MapDashboard = ({
     visibleCultures,
   } = useMapDashboardController({ listRequest, viewportCultures });
 
+  const model: MapDashboardViewModel = {
+    filters: {
+      activeFilterLabels,
+      category: mapCategory,
+      currentLocation,
+      filterMotionKey,
+      freeOnly: mapFreeOnly,
+      hasActiveFilters,
+      isFilterPending,
+      isLocating,
+      region: mapRegion,
+      regionOptions,
+      searchQuery,
+      sortMode: mapSortMode,
+    },
+    list: {
+      cultures: visibleCultures,
+      error,
+      focusCultureId,
+      isClustered,
+      isLoading,
+      scrollTop: mapListScrollTop,
+      selectedCultureId,
+      totalCount,
+      viewportCount,
+    },
+    actions: {
+      onCategoryChange: handleCategoryChange,
+      onFocusCultureHandled: handleFocusCultureHandled,
+      onFreeOnlyChange: handleFreeOnlyChange,
+      onLocationToggle: handleLocationToggle,
+      onOpenCulture: handleOpenCulture,
+      onRegionChange: handleRegionChange,
+      onResetFilters: resetMapFilters,
+      onRetry,
+      onScrollPositionChange: setMapListScrollTop,
+      onSearchChange: setSearchQuery,
+      onSortChange: handleSortChange,
+    },
+  };
+
   return (
     <div
       id='culture-list'
@@ -75,80 +117,18 @@ const MapDashboard = ({
 
       {!isDetailRoute && (
         <MapDesktopDashboard
-          activeFilterLabels={activeFilterLabels}
-          currentLocation={currentLocation}
-          error={error}
-          filterMotionKey={filterMotionKey}
-          handleCategoryChange={handleCategoryChange}
-          handleFreeOnlyChange={handleFreeOnlyChange}
-          handleLocationToggle={handleLocationToggle}
-          handleOpenCulture={handleOpenCulture}
-          focusCultureId={focusCultureId}
-          onFocusCultureHandled={handleFocusCultureHandled}
-          handleRegionChange={handleRegionChange}
-          handleSortChange={handleSortChange}
-          hasActiveFilters={hasActiveFilters}
-          isClustered={isClustered}
+          model={model}
           isDesktopPanelCollapsed={isDesktopPanelCollapsed}
-          isFilterPending={isFilterPending}
-          isLoading={isLoading}
-          isLocating={isLocating}
-          mapCategory={mapCategory}
-          mapFreeOnly={mapFreeOnly}
-          mapListScrollTop={mapListScrollTop}
-          mapRegion={mapRegion}
-          mapSortMode={mapSortMode}
-          onRetry={onRetry}
-          regionOptions={regionOptions}
-          resetMapFilters={resetMapFilters}
-          searchQuery={searchQuery}
-          selectedCultureId={selectedCultureId}
           setIsDesktopPanelCollapsed={setIsDesktopPanelCollapsed}
-          setMapListScrollTop={setMapListScrollTop}
-          setSearchQuery={setSearchQuery}
-          totalCount={totalCount}
-          viewportCount={viewportCount}
-          visibleCultures={visibleCultures}
         />
       )}
       {!isDetailRoute && (
         <MapMobileDashboard
-          activeFilterLabels={activeFilterLabels}
-          currentLocation={currentLocation}
-          error={error}
-          filterMotionKey={filterMotionKey}
-          handleCategoryChange={handleCategoryChange}
-          handleFreeOnlyChange={handleFreeOnlyChange}
-          handleLocationToggle={handleLocationToggle}
-          handleOpenCulture={handleOpenCulture}
-          focusCultureId={focusCultureId}
-          onFocusCultureHandled={handleFocusCultureHandled}
-          handleRegionChange={handleRegionChange}
-          handleSortChange={handleSortChange}
-          hasActiveFilters={hasActiveFilters}
-          isClustered={isClustered}
-          isFilterPending={isFilterPending}
-          isLoading={isLoading}
-          isLocating={isLocating}
+          model={model}
           isMobileFiltersOpen={isMobileFiltersOpen}
           isMobileSheetVisible={isMobileSheetVisible}
-          mapCategory={mapCategory}
-          mapFreeOnly={mapFreeOnly}
-          mapListScrollTop={mapListScrollTop}
-          mapRegion={mapRegion}
-          mapSortMode={mapSortMode}
-          onRetry={onRetry}
-          regionOptions={regionOptions}
-          resetMapFilters={resetMapFilters}
-          searchQuery={searchQuery}
-          selectedCultureId={selectedCultureId}
           setIsMobileFiltersOpen={setIsMobileFiltersOpen}
           setIsMobileSheetVisible={setIsMobileSheetVisible}
-          setMapListScrollTop={setMapListScrollTop}
-          setSearchQuery={setSearchQuery}
-          totalCount={totalCount}
-          viewportCount={viewportCount}
-          visibleCultures={visibleCultures}
         />
       )}
     </div>

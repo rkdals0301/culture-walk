@@ -60,6 +60,24 @@ test('MapDashboard delegates mobile bottom-sheet presentation to a dedicated com
   assert.match(mobile, /행사 목록 접고 지도 보기/);
 });
 
+test('desktop and mobile map dashboards receive one grouped view model instead of duplicated prop surfaces', async () => {
+  const [dashboard, desktop, mobile, model] = await Promise.all([
+    readProjectFile('../src/components/Map/MapDashboard.tsx'),
+    readProjectFile('../src/components/Map/MapDesktopDashboard.tsx'),
+    readProjectFile('../src/components/Map/MapMobileDashboard.tsx'),
+    readProjectFile('../src/components/Map/mapDashboardModel.ts'),
+  ]);
+
+  assert.match(dashboard, /const model: MapDashboardViewModel/);
+  assert.match(dashboard, /<MapDesktopDashboard\s+model=\{model\}/);
+  assert.match(dashboard, /<MapMobileDashboard\s+model=\{model\}/);
+  assert.match(desktop, /model: MapDashboardViewModel/);
+  assert.match(mobile, /model: MapDashboardViewModel/);
+  assert.match(model, /filters:/);
+  assert.match(model, /list:/);
+  assert.match(model, /actions:/);
+});
+
 test('feed and map navigation memory stays outside the global reactive culture context', async () => {
   const [context, feed, feedViewport, mapView] = await Promise.all([
     readProjectFile('../src/context/CultureContext.tsx'),
