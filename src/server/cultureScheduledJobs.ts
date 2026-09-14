@@ -1,6 +1,7 @@
 import type { CultureCacheBinding } from '@/cache/kv';
 import { getCultureDetailEdgeCacheTag } from '@/server/httpCache';
 import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
+import { logEvent } from '@/server/structuredLog';
 import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
 import {
   getD1Binding,
@@ -36,7 +37,8 @@ const runScheduledSync = async (
   trigger: string,
   internalFetch: InternalFetch
 ) => {
-  console.info(`[cron] snapshot check started trigger=${trigger}`);
+  const startedAt = Date.now();
+  logEvent('info', 'culture.snapshot.check_started', { trigger });
   const healthResponse = await internalFetch(new Request('https://internal.culturewalk/api/health'), env, ctx);
 
   if (healthResponse.ok) {
@@ -44,7 +46,7 @@ const runScheduledSync = async (
       latestSync?: { status?: unknown; ageHours?: unknown } | null;
     };
     if (!shouldRunScheduledSync(health)) {
-      console.info(`[cron] snapshot skipped trigger=${trigger} reason=fresh-sync`);
+      logEvent('info', 'culture.snapshot.skipped', { trigger, reason: 'fresh-sync' });
       return;
     }
   }
@@ -63,15 +65,20 @@ const runScheduledSync = async (
         cache: env.CULTURE_CACHE,
       }
     );
-    console.info(
-      `[cron] snapshot completed trigger=${trigger} fetched=${result.fetched} inserted=${result.inserted} updated=${result.updated}`
-    );
+    logEvent('info', 'culture.snapshot.completed', {
+      trigger,
+      runId: result.runId,
+      fetched: result.fetched,
+      inserted: result.inserted,
+      updated: result.updated,
+      durationMs: Date.now() - startedAt,
+    });
     await purgeCultureEdgeCache(ctx, CULTURE_PUBLIC_CACHE_TAGS, `snapshot-${trigger}`);
     return result;
   });
 
   if (!lockedRun.acquired) {
-    console.warn(`[cron] snapshot skipped trigger=${trigger} reason=lock-busy`);
+    logEvent('warn', 'culture.snapshot.skipped', { trigger, reason: 'lock-busy' });
     return;
   }
 };
@@ -82,17 +89,21 @@ const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureE
   if (!d1) return;
 
   if (!(await hasStaleCachedTourApiDetails(d1))) {
-    console.info('[cron] detail refresh skipped reason=no-pending-details');
+    logEvent('info', 'culture.detail_refresh.skipped', { reason: 'no-pending-details' });
     return;
   }
 
+  const startedAt = Date.now();
   const lockedRun = await runWithInitializeLock(env, async heartbeat => {
     const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey: env.TOUR_API_KEY as string },
       d1,
       { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
     );
-    console.info(`[cron] detail refresh completed refreshed=${result.refreshed}`);
+    logEvent('info', 'culture.detail_refresh.completed', {
+      refreshed: result.refreshed,
+      durationMs: Date.now() - startedAt,
+    });
     if (result.refreshedCultureIds.length > 0) {
       await purgeCultureEdgeCache(
         ctx,
@@ -104,7 +115,7 @@ const runScheduledDetailRefresh = async (env: ScheduledCultureEnv, ctx: CultureE
   });
 
   if (!lockedRun.acquired) {
-    console.info('[cron] detail refresh skipped reason=lock-busy');
+    logEvent('info', 'culture.detail_refresh.skipped', { reason: 'lock-busy' });
     return;
   }
 };
@@ -116,7 +127,11 @@ export const runCultureScheduledEvent = async (
   internalFetch: InternalFetch
 ) => {
   const job = getCultureScheduledJob(event.cron);
-  console.info(`[cron] received job=${job} cron=${event.cron} scheduledAt=${new Date(event.scheduledTime).toISOString()}`);
+  logEvent('info', 'culture.cron.received', {
+    job,
+    cron: event.cron,
+    scheduledAt: new Date(event.scheduledTime).toISOString(),
+  });
 
   try {
     if (job === 'detail-refresh') {
@@ -124,11 +139,11 @@ export const runCultureScheduledEvent = async (
         await runScheduledDetailRefresh(env, ctx);
       } catch (error) {
         if (hasD1DailyRowReadLimitError(error)) {
-          console.warn('[cron] detail refresh skipped reason=d1-daily-row-read-limit');
+          logEvent('warn', 'culture.detail_refresh.skipped', { reason: 'd1-daily-row-read-limit' });
           return;
         }
         if (hasD1DailyRowWriteLimitError(error)) {
-          console.warn('[cron] detail refresh skipped reason=d1-daily-row-write-limit');
+          logEvent('warn', 'culture.detail_refresh.skipped', { reason: 'd1-daily-row-write-limit' });
           return;
         }
         throw error;
@@ -143,13 +158,17 @@ export const runCultureScheduledEvent = async (
       return;
     }
 
-    console.warn(`[cron] ignored unknown schedule cron=${event.cron}`);
+    logEvent('warn', 'culture.cron.ignored', { cron: event.cron, reason: 'unknown-schedule' });
   } catch (error) {
-    if (hasD1DailyRowWriteLimitError(error)) {
-      console.error(`[cron] failed job=${job} reason=d1-daily-row-write-limit`, error);
-    } else {
-      console.error(`[cron] failed job=${job}`, error);
-    }
+    logEvent(
+      'error',
+      'culture.cron.failed',
+      {
+        job,
+        reason: hasD1DailyRowWriteLimitError(error) ? 'd1-daily-row-write-limit' : 'unexpected-error',
+      },
+      error
+    );
     throw error;
   }
 };

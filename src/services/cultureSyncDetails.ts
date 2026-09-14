@@ -1,4 +1,5 @@
 import { type CultureCacheBinding, readCultureReadModelCache, writeCultureDetailCache } from '@/cache/kv';
+import { logEvent } from '@/server/structuredLog';
 import { mapCultureRowToCulture } from '@/services/cultureService';
 
 import { DETAIL_READ_MODEL_TTL_SECONDS, publishCurrentCultureDetailReadModels } from './cultureDetailReadModelPublisher';
@@ -108,7 +109,7 @@ export const refreshStaleCachedTourApiDetails = async (
       const retryAt = new Date(Date.now() + retryDelayMinutes(failCount, sourceKey) * 60 * 1000).toISOString();
       const message = error instanceof Error ? error.message : '상세 API 요청 실패';
       await persistCultureDetailRefreshFailure(d1, sourceKey, failCount, retryAt, message);
-      console.warn(`TourAPI 상세 캐시 보강을 재시도합니다. sourceKey=${sourceKey}`, error);
+      logEvent('warn', 'culture.detail_refresh.retry_scheduled', { sourceKey, failCount, retryAt }, error);
     }
   }
 

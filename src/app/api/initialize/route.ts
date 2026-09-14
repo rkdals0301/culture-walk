@@ -1,6 +1,7 @@
 import type { CultureCacheBinding } from '@/cache/kv';
 import { getWorkerEnv } from '@/server/cloudflare';
 import { hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
+import { logEvent } from '@/server/structuredLog';
 import {
   getD1Binding,
   runWithInitializeLock,
@@ -16,6 +17,7 @@ export const revalidate = 0;
 const isProductionEnvironment = () => process.env.NODE_ENV === 'production';
 
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now();
   try {
     const env = await getWorkerEnv();
     const syncToken = env.SYNC_TOKEN;
@@ -58,6 +60,15 @@ export async function POST(request: NextRequest) {
     }
     const result = lockedRun.value;
 
+    logEvent('info', 'culture.initialize.completed', {
+      trigger,
+      runId: result.runId,
+      fetched: result.fetched,
+      inserted: result.inserted,
+      updated: result.updated,
+      durationMs: Date.now() - startedAt,
+    });
+
     return NextResponse.json(
       {
         message: '데이터베이스 업데이트 성공',
@@ -76,13 +87,24 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (hasD1DailyRowWriteLimitError(error)) {
+      logEvent(
+        'warn',
+        'culture.initialize.failed',
+        { reason: 'd1-daily-row-write-limit', durationMs: Date.now() - startedAt },
+        error
+      );
       return NextResponse.json(
         { error: 'Cloudflare D1 일일 쓰기 한도에 도달해 동기화를 실행할 수 없습니다.' },
         { status: 503, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
-    console.error('데이터베이스 업데이트 실패:', error);
+    logEvent(
+      'error',
+      'culture.initialize.failed',
+      { reason: 'unexpected-error', durationMs: Date.now() - startedAt },
+      error
+    );
     return NextResponse.json({ error: '데이터베이스 업데이트 실패' }, { status: 500 });
   }
 }

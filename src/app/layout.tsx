@@ -2,7 +2,6 @@ import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
-import ServiceWorkerRegistration from '@/components/PWA/ServiceWorkerRegistration';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
 import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
@@ -72,7 +71,6 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         </noscript>
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
-        <ServiceWorkerRegistration />
         <script
           id='website-structured-data'
           type='application/ld+json'

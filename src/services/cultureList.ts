@@ -4,6 +4,7 @@ import {
   writeCultureReadModelCache,
 } from '@/cache/kv';
 import { getWorkerEnv } from '@/server/cloudflare';
+import { logEvent } from '@/server/structuredLog';
 import { createCultureListItemRevision, queryCultureListFromD1 } from '@/services/cultureListRepository';
 import type { D1Binding } from '@/services/cultureSyncTypes';
 import { CultureSearchableListItem } from '@/types/culture';
@@ -50,12 +51,16 @@ export const refreshCultureListSnapshotCache = async (options: {
   cache?: CultureCacheBinding;
   d1: D1Binding;
 }) => {
+  const startedAt = Date.now();
   const { items, revisions } = await queryCultureListFromD1(options.d1);
 
   const readModel = await writeCultureReadModelCache(items, revisions, options.cache);
-  console.info(
-    `[read-model] publish ${readModel.published ? 'completed' : 'failed'} items=${items.length} cachedAt=${readModel.cachedAt}`
-  );
+  logEvent(readModel.published ? 'info' : 'warn', 'culture.read_model.publish', {
+    published: readModel.published,
+    itemCount: items.length,
+    cachedAt: readModel.cachedAt,
+    durationMs: Date.now() - startedAt,
+  });
   return {
     items,
     cachedAt: readModel.cachedAt,
@@ -86,7 +91,7 @@ const readCultureListFromD1AndWarmCache = async (
       revisions: publication.revisions,
     };
   } catch (error) {
-    console.error('[read-model] D1 read-through failed', error);
+    logEvent('error', 'culture.read_model.read_through_failed', {}, error);
     return null;
   }
 };

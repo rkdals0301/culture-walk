@@ -473,6 +473,26 @@ test('client data loading avoids heavyweight single-purpose runtime dependencies
   assert.doesNotMatch(displayUtils, /date-fns/);
 });
 
+test('runtime security, service worker cleanup, and cron observability stay explicit', async () => {
+  const [nextConfig, layout, serviceWorker, cron, structuredLog] = await Promise.all([
+    readProjectFile('../next.config.mjs'),
+    readProjectFile('../src/app/layout.tsx'),
+    readProjectFile('../public/sw.js'),
+    readProjectFile('../src/server/cultureScheduledJobs.ts'),
+    readProjectFile('../src/server/structuredLog.ts'),
+  ]);
+
+  assert.match(nextConfig, /Strict-Transport-Security/);
+  assert.match(nextConfig, /Content-Security-Policy/);
+  assert.match(nextConfig, /frame-ancestors 'self'/);
+  assert.doesNotMatch(layout, /ServiceWorkerRegistration/);
+  assert.match(serviceWorker, /self\.registration\.unregister\(\)/);
+  assert.doesNotMatch(serviceWorker, /addEventListener\('fetch'/);
+  assert.match(cron, /culture\.snapshot\.completed/);
+  assert.match(cron, /culture\.detail_refresh\.completed/);
+  assert.match(structuredLog, /JSON\.stringify\(payload\)/);
+});
+
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
   const source = await readProjectFile('../src/styles/_information.scss');
 
