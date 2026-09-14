@@ -1,7 +1,7 @@
+import { ApiRequestError } from '@/utils/apiClient';
+
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
-
-import axios from 'axios';
 
 interface ErrorResponse {
   message?: unknown;
@@ -67,16 +67,15 @@ const useApiError = () => {
 
   const handleError = useCallback(
     (error: unknown) => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          const httpStatus = error.response.status;
-          const httpMessage = getResponseMessage(error.response.data);
-
-          // httpStatus에 따라 적절한 핸들러 호출
-          const handler = statusHandlers[httpStatus] || statusHandlers.default;
+      if (error instanceof ApiRequestError) {
+        if (error.status !== null) {
+          const httpMessage = getResponseMessage(error.data);
+          const handler = statusHandlers[error.status] || statusHandlers.default;
           handler(httpMessage);
-        } else {
+        } else if (error.isNetworkError) {
           showApiErrorToast(SERVER_CONNECTION_ERROR, 'network');
+        } else {
+          statusHandlers.default(error.message);
         }
       } else {
         showApiErrorToast(NETWORK_ERROR_MESSAGE, 'unknown');

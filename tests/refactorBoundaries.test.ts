@@ -457,6 +457,22 @@ test('unused theme, skeleton, and map location wrappers stay out of the producti
   assert.doesNotMatch(mapControls, /MapLocationControl|LocationToggle/);
 });
 
+test('client data loading avoids heavyweight single-purpose runtime dependencies', async () => {
+  const [packageJson, feed, mapData, loader, displayUtils] = await Promise.all([
+    readProjectFile('../package.json'),
+    readProjectFile('../src/hooks/useCultureFeed.ts'),
+    readProjectFile('../src/hooks/useCultureMapData.ts'),
+    readProjectFile('../src/components/Loader/Loader.tsx'),
+    readProjectFile('../src/utils/cultureDisplayUtils.ts'),
+  ]);
+
+  assert.doesNotMatch(packageJson, /"axios"|"react-spinners"|"date-fns"/);
+  assert.match(feed, /getJson/);
+  assert.match(mapData, /getJson/);
+  assert.doesNotMatch(loader, /react-spinners|ClipLoader/);
+  assert.doesNotMatch(displayUtils, /date-fns/);
+});
+
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
   const source = await readProjectFile('../src/styles/_information.scss');
 

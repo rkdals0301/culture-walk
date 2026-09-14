@@ -1,8 +1,6 @@
-import axios from 'axios';
-
 import type { CultureFeedFilters } from '@/services/cultureFeed';
 import type { CultureFeedPage, FormattedCultureListItem } from '@/types/culture';
-import axiosInstance from '@/utils/axiosInstance';
+import { getJson, isRequestAbortError } from '@/utils/apiClient';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
 import type { MapSortMode } from '@/utils/exploreState';
@@ -28,10 +26,6 @@ interface UseCultureFeedOptions {
   sortMode?: MapSortMode;
   currentLocation?: GeoPoint | null;
 }
-
-const isRequestAborted = (error: unknown) =>
-  axios.isCancel(error) ||
-  (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError');
 
 const toError = (error: unknown) => (error instanceof Error ? error : new Error('문화 목록 조회에 실패했습니다.'));
 
@@ -83,14 +77,13 @@ export const useCultureFeed = ({
 
   const fetchPage = useCallback(
     async (cursor: string | null, append: boolean, version: number, controller: AbortController) => {
-      const response = await axiosInstance.get<CultureFeedPage>('/api/cultures/feed', {
+      const page = await getJson<CultureFeedPage>('/api/cultures/feed', {
         params: createCultureFeedRequestParams(filters, cursor),
         signal: controller.signal,
       });
 
       if (version !== requestVersionRef.current) return;
 
-      const page = response.data;
       const nextItems = formatCultureData(page.items ?? []);
 
       setCultures(current => {
@@ -169,7 +162,7 @@ export const useCultureFeed = ({
 
     const request = fetchPage(null, false, version, controller)
       .catch(caughtError => {
-        if (version !== requestVersionRef.current || isRequestAborted(caughtError)) return;
+        if (version !== requestVersionRef.current || isRequestAbortError(caughtError)) return;
         setError(toError(caughtError));
       })
       .finally(() => {
@@ -203,7 +196,7 @@ export const useCultureFeed = ({
     setError(null);
     const request = fetchPage(cursor, true, version, controller)
       .catch(caughtError => {
-        if (version !== requestVersionRef.current || isRequestAborted(caughtError)) return;
+        if (version !== requestVersionRef.current || isRequestAbortError(caughtError)) return;
         setError(toError(caughtError));
       })
       .finally(() => {

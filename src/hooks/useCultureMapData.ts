@@ -1,5 +1,5 @@
 import type { CultureMapBounds, CultureMapResponse, CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
-import axiosInstance from '@/utils/axiosInstance';
+import { getJson, isRequestAbortError } from '@/utils/apiClient';
 import {
   cultureMapClientCache,
   normalizeCultureMapResponse,
@@ -15,8 +15,6 @@ import {
 } from '@/utils/mapViewport';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-import axios from 'axios';
 
 const REQUEST_DEBOUNCE_MS = 250;
 
@@ -36,10 +34,6 @@ interface UseCultureMapDataOptions {
   region: string;
   freeOnly: boolean;
 }
-
-const isRequestAborted = (error: unknown) =>
-  axios.isCancel(error) ||
-  (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError');
 
 const toError = (error: unknown) =>
   error instanceof Error ? error : new Error('현재 지도 영역 데이터를 불러오지 못했습니다.');
@@ -122,20 +116,19 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
       };
       if (normalizedSearchQuery) params.q = normalizedSearchQuery;
 
-      void axiosInstance
-        .get<Partial<CultureMapResponse>>('/api/cultures/viewport', {
+      void getJson<Partial<CultureMapResponse>>('/api/cultures/viewport', {
           params,
           signal: controller.signal,
         })
-        .then(response => {
+        .then(responseData => {
           if (version !== requestVersionRef.current) return;
 
-          const responseData = normalizeCultureMapResponse(response.data);
-          cultureMapClientCache.write(filterKey, mode, fetchBounds, responseData);
-          setData(selectCultureMapViewport(responseData, bounds));
+          const normalizedResponse = normalizeCultureMapResponse(responseData);
+          cultureMapClientCache.write(filterKey, mode, fetchBounds, normalizedResponse);
+          setData(selectCultureMapViewport(normalizedResponse, bounds));
         })
         .catch(caughtError => {
-          if (version !== requestVersionRef.current || isRequestAborted(caughtError)) return;
+          if (version !== requestVersionRef.current || isRequestAbortError(caughtError)) return;
           setError(toError(caughtError));
         })
         .finally(() => {

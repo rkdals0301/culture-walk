@@ -1,5 +1,3 @@
-import { ClipLoader } from 'react-spinners';
-
 interface LoaderProps {
   color?: string;
   size?: number;
@@ -13,7 +11,17 @@ const Loader = ({ color = 'var(--color-brand-primary)', size = 42, isFullscreen 
         isFullscreen ? 'fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-sm' : ''
       }`}
     >
-      <ClipLoader color={color} size={size} />
+      <span
+        role='status'
+        aria-label='불러오는 중'
+        className='inline-block animate-spin rounded-full border-[3px]'
+        style={{
+          width: size,
+          height: size,
+          borderColor: color,
+          borderRightColor: 'transparent',
+        }}
+      />
     </div>
   );
 };
