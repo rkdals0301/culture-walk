@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import MapResourceHints from '@/components/Map/MapResourceHints';
 import MapShell from '@/components/Map/MapShell';
 import { getWorkerEnv } from '@/server/cloudflare';
 import { createPageSocialMetadata } from '@/utils/siteMetadata';
@@ -27,7 +28,12 @@ export const dynamic = 'force-dynamic';
 
 const MapPage = async () => {
   const env = await getWorkerEnv();
-  return <MapShell kakaoMapAppKey={env.KAKAO_MAP_APP_KEY} />;
+  return (
+    <>
+      <MapResourceHints kakaoMapAppKey={env.KAKAO_MAP_APP_KEY} />
+      <MapShell kakaoMapAppKey={env.KAKAO_MAP_APP_KEY} />
+    </>
+  );
 };
 
 export default MapPage;

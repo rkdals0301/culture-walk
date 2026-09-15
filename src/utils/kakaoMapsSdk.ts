@@ -1,9 +1,16 @@
 export const KAKAO_MAPS_SCRIPT_ID = 'kakao-maps-sdk';
+export const KAKAO_MAPS_SDK_ORIGIN = 'https://dapi.kakao.com';
 
 export type KakaoMapsSdkErrorCode = 'missing-key' | 'invalid-key' | 'network' | 'timeout' | 'sdk-error';
 
 const DEFAULT_TIMEOUT_MS = 12_000;
 const APP_KEY_PATTERN = /^[a-z0-9]{32}$/i;
+
+export const isValidKakaoMapsAppKey = (appKey: string | null | undefined) =>
+  APP_KEY_PATTERN.test(appKey?.trim() ?? '');
+
+export const createKakaoMapsSdkUrl = (appKey: string) =>
+  `${KAKAO_MAPS_SDK_ORIGIN}/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey.trim())}&autoload=false&libraries=clusterer`;
 
 const ERROR_MESSAGES: Record<KakaoMapsSdkErrorCode, string> = {
   'missing-key': 'Kakao Maps 앱 키가 설정되지 않았습니다.',
@@ -96,7 +103,7 @@ const loadScript = (appKey: string, timeoutMs: number) =>
       return;
     }
 
-    const expectedSrc = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey)}&autoload=false&libraries=clusterer`;
+    const expectedSrc = createKakaoMapsSdkUrl(appKey);
     let script = document.getElementById(KAKAO_MAPS_SCRIPT_ID) as HTMLScriptElement | null;
 
     if (script && script.src !== expectedSrc) {
@@ -169,7 +176,7 @@ export const loadKakaoMapsSdk = (appKey: string | undefined | null, options: Loa
     return Promise.reject(new KakaoMapsSdkError('missing-key'));
   }
 
-  if (!APP_KEY_PATTERN.test(normalizedAppKey)) {
+  if (!isValidKakaoMapsAppKey(normalizedAppKey)) {
     return Promise.reject(new KakaoMapsSdkError('invalid-key'));
   }
 

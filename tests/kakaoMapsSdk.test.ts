@@ -1,6 +1,8 @@
 import {
   KAKAO_MAPS_SCRIPT_ID,
   KakaoMapsSdkError,
+  createKakaoMapsSdkUrl,
+  isValidKakaoMapsAppKey,
   loadKakaoMapsSdk,
   resetKakaoMapsSdk,
 } from '@/utils/kakaoMapsSdk';
@@ -83,6 +85,17 @@ test('missing and malformed app keys fail before loading a script', async () => 
   await assert.rejects(() => loadKakaoMapsSdk('not-a-kakao-key', { timeoutMs: 5 }), (error: unknown) => {
     return error instanceof KakaoMapsSdkError && error.code === 'invalid-key';
   });
+});
+
+test('SDK URL validation and construction stay aligned with the loader', () => {
+  const appKey = 'a'.repeat(32);
+
+  assert.equal(isValidKakaoMapsAppKey(`  ${appKey}  `), true);
+  assert.equal(isValidKakaoMapsAppKey('not-a-kakao-key'), false);
+  assert.equal(
+    createKakaoMapsSdkUrl(`  ${appKey}  `),
+    `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false&libraries=clusterer`
+  );
 });
 
 test('concurrent callers share one pending SDK promise', async () => {
