@@ -475,12 +475,14 @@ test('client data loading avoids heavyweight single-purpose runtime dependencies
 });
 
 test('runtime security, service worker cleanup, and cron observability stay explicit', async () => {
-  const [nextConfig, layout, serviceWorker, cron, structuredLog] = await Promise.all([
+  const [nextConfig, layout, serviceWorker, cron, structuredLog, syncAuth, initializeRoute] = await Promise.all([
     readProjectFile('../next.config.mjs'),
     readProjectFile('../src/app/layout.tsx'),
     readProjectFile('../public/sw.js'),
     readProjectFile('../src/server/cultureScheduledJobs.ts'),
     readProjectFile('../src/server/structuredLog.ts'),
+    readProjectFile('../src/server/syncAuth.ts'),
+    readProjectFile('../src/app/api/initialize/route.ts'),
   ]);
 
   assert.match(nextConfig, /Strict-Transport-Security/);
@@ -492,6 +494,9 @@ test('runtime security, service worker cleanup, and cron observability stay expl
   assert.match(cron, /culture\.snapshot\.completed/);
   assert.match(cron, /culture\.detail_refresh\.completed/);
   assert.match(structuredLog, /JSON\.stringify\(payload\)/);
+  assert.match(syncAuth, /TOKEN_ENCODER/);
+  assert.doesNotMatch(syncAuth, /providedToken === expectedToken/);
+  assert.match(initializeRoute, /NO_STORE_CACHE_HEADERS/);
 });
 
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {

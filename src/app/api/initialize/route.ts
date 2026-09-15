@@ -1,4 +1,5 @@
 import { getWorkerEnv } from '@/server/cloudflare';
+import { NO_STORE_CACHE_HEADERS } from '@/server/httpCache';
 import { authorizeSyncRequest } from '@/server/syncAuth';
 import { hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import { logEvent } from '@/server/structuredLog';
@@ -30,18 +31,24 @@ export async function POST(request: NextRequest) {
     if (!authorization.authorized) {
       return NextResponse.json(
         { message: authorization.message },
-        { status: authorization.status, headers: { 'Cache-Control': 'no-store' } }
+        { status: authorization.status, headers: NO_STORE_CACHE_HEADERS }
       );
     }
 
     const serviceKey = env.TOUR_API_KEY ?? process.env.TOUR_API_KEY;
     if (!serviceKey) {
-      return NextResponse.json({ error: 'TOUR_API_KEY가 설정되지 않았습니다.' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'TOUR_API_KEY가 설정되지 않았습니다.' },
+        { status: 500, headers: NO_STORE_CACHE_HEADERS }
+      );
     }
 
     const d1 = getD1Binding(env);
     if (!d1) {
-      return NextResponse.json({ error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.' }, { status: 503 });
+      return NextResponse.json(
+        { error: 'D1 데이터베이스 바인딩을 찾을 수 없습니다.' },
+        { status: 503, headers: NO_STORE_CACHE_HEADERS }
+      );
     }
 
     const trigger = request.headers.get('x-sync-trigger')?.trim() || 'manual';
@@ -59,7 +66,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!lockedRun.acquired) {
-      return NextResponse.json({ message: '이미 동기화 작업이 진행 중입니다.' }, { status: 409 });
+      return NextResponse.json(
+        { message: '이미 동기화 작업이 진행 중입니다.' },
+        { status: 409, headers: NO_STORE_CACHE_HEADERS }
+      );
     }
     const result = lockedRun.value;
 
@@ -86,7 +96,7 @@ export async function POST(request: NextRequest) {
         invalidDates: result.invalidDates,
         missingRequiredFields: result.missingRequiredFields,
       },
-      { status: 200 }
+      { status: 200, headers: NO_STORE_CACHE_HEADERS }
     );
   } catch (error) {
     if (hasD1DailyRowWriteLimitError(error)) {
@@ -108,6 +118,9 @@ export async function POST(request: NextRequest) {
       { reason: 'unexpected-error', durationMs: Date.now() - startedAt },
       error
     );
-    return NextResponse.json({ error: '데이터베이스 업데이트 실패' }, { status: 500 });
+    return NextResponse.json(
+      { error: '데이터베이스 업데이트 실패' },
+      { status: 500, headers: NO_STORE_CACHE_HEADERS }
+    );
   }
 }

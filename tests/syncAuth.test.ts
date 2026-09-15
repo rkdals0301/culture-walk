@@ -54,3 +54,14 @@ test('sync auth compares the configured token exactly', () => {
     message: 'Unauthorized',
   });
 });
+
+test('sync auth supports unicode tokens without falling back to string equality', () => {
+  const options = {
+    expectedToken: '문화산책-🔐-token',
+    hostname: 'culturewalk.gangmin.dev',
+    production: true,
+  };
+
+  assert.deepEqual(authorizeSyncRequest({ ...options, providedToken: options.expectedToken }), { authorized: true });
+  assert.deepEqual(authorizeSyncRequest({ ...options, providedToken: '문화산책-🔐-token-x' }).authorized, false);
+});
