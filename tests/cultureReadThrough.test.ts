@@ -333,3 +333,45 @@ test('read model에서 제거된 행사는 오래된 상세 KV cache로 되살�
   assert.equal(result.readModelAvailable, true);
   assert.equal(d1Reads, 0);
 });
+
+test('빈 published read model도 authoritative 상태로 유지해 상세 D1 read-through를 막는다', async () => {
+  let d1Reads = 0;
+  const { cache, writes } = createMemoryCache({
+    'cultures:read-model:v1': {
+      cachedAt: '2099-09-10T00:10:00.000Z',
+      items: [],
+      revisions: {},
+    },
+    'cultures:list:last:v1': [
+      {
+        id: 999,
+        classification: '축제',
+        endDate: '2099-09-12T00:00:00.000Z',
+        guName: '서울 중구',
+        isFree: '무료',
+        lat: 37.56,
+        lng: 126.98,
+        mainImage: 'https://example.com/event.jpg',
+        place: '서울광장',
+        startDate: '2099-09-10T00:00:00.000Z',
+        title: '오래된 legacy 행사',
+        useFee: '무료',
+        searchText: '오래된 legacy 행사',
+      },
+    ],
+  });
+  const d1 = createD1(() => {
+    d1Reads += 1;
+    return [];
+  });
+
+  const snapshot = await getCulturePublicListSnapshot({ cache, d1 });
+  const result = await getCulturePublicRead(999, { cache, d1 });
+
+  assert.deepEqual(snapshot?.items, []);
+  assert.equal(result.culture, null);
+  assert.equal(result.source, null);
+  assert.equal(result.readModelAvailable, true);
+  assert.equal(d1Reads, 0);
+  assert.deepEqual(writes, []);
+});

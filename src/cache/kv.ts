@@ -113,7 +113,10 @@ export const readCultureReadModelCache = async (
   }
 
   const current = await readKvCache<CultureReadModel>(CULTURE_READ_MODEL_CACHE_KEY, cache);
-  if (current?.items?.length) {
+  // An empty published read model is still authoritative. Treating it as a
+  // cache miss would fall through to a stale legacy key and make every public
+  // detail miss pay for another D1 read during an empty-event period.
+  if (current && Array.isArray(current.items)) {
     cultureReadModelMemoryCache.set(cache, {
       value: current,
       expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,

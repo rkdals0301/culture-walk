@@ -37,7 +37,7 @@ export const readCultureReadModelSnapshot = async (
   cache: CultureCacheBinding | undefined
 ): Promise<CultureListSnapshot | null> => {
   const readModel = await readCultureReadModelCache(cache);
-  if (!readModel?.items.length) return null;
+  if (!readModel) return null;
 
   return {
     items: filterCurrentCultureListItems(readModel.items),
