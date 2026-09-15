@@ -3,6 +3,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { withCulturePageEdgeCache } from '@/server/cultureEdgeCache';
 
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -35,6 +36,76 @@ test('edge cache headers keep browser and Cloudflare freshness windows separate'
 test('non-success responses explicitly bypass browser and Workers Cache storage', () => {
   assert.equal(NO_STORE_CACHE_HEADERS['Cache-Control'], 'no-store');
   assert.equal(NO_STORE_CACHE_HEADERS['Cloudflare-CDN-Cache-Control'], 'no-store');
+});
+
+test('home and map document responses use a short browser and longer edge policy', async () => {
+  for (const path of ['/', '/map']) {
+    const response = new Response('<html><body>culture walk</body></html>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+
+    const cached = withCulturePageEdgeCache(new Request(`https://culturewalk.gangmin.dev${path}`), response);
+
+    assert.notStrictEqual(cached, response);
+    assert.equal(cached.headers.get('Cache-Control'), 'public, max-age=60');
+    assert.equal(
+      cached.headers.get('Cloudflare-CDN-Cache-Control'),
+      'public, max-age=600, stale-while-revalidate=1800, stale-if-error=86400'
+    );
+    assert.equal(cached.headers.get('Cache-Tag'), 'culture-public-data,culture-list');
+    assert.equal(await cached.text(), '<html><body>culture walk</body></html>');
+  }
+});
+
+test('HTML cache wrapper leaves RSC, prefetch, API, error, and personalized responses untouched', () => {
+  const cases = [
+    { url: 'https://culturewalk.gangmin.dev/', request: { headers: { rsc: '1' } } },
+    { url: 'https://culturewalk.gangmin.dev/map?_rsc=abc', request: {} },
+    {
+      url: 'https://culturewalk.gangmin.dev/map',
+      request: { headers: { 'next-router-prefetch': '1' } },
+    },
+    { url: 'https://culturewalk.gangmin.dev/api/cultures', request: {} },
+    { url: 'https://culturewalk.gangmin.dev/', request: { method: 'POST' } },
+    { url: 'https://culturewalk.gangmin.dev/map', request: { headers: { authorization: 'Bearer token' } } },
+  ] as const;
+
+  for (const { url, request } of cases) {
+    const response = new Response('<html>not cacheable</html>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' },
+    });
+
+    assert.strictEqual(withCulturePageEdgeCache(new Request(url, request), response), response);
+  }
+
+  const nonHtmlResponse = new Response('{"ok":true}', {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+  assert.strictEqual(
+    withCulturePageEdgeCache(new Request('https://culturewalk.gangmin.dev/'), nonHtmlResponse),
+    nonHtmlResponse
+  );
+
+  const errorResponse = new Response('<html>error</html>', {
+    status: 500,
+    headers: { 'Content-Type': 'text/html' },
+  });
+  assert.strictEqual(
+    withCulturePageEdgeCache(new Request('https://culturewalk.gangmin.dev/map'), errorResponse),
+    errorResponse
+  );
+
+  const personalizedResponse = new Response('<html>private</html>', {
+    status: 200,
+    headers: { 'Content-Type': 'text/html', 'Set-Cookie': 'session=secret; HttpOnly' },
+  });
+  assert.strictEqual(
+    withCulturePageEdgeCache(new Request('https://culturewalk.gangmin.dev/map'), personalizedResponse),
+    personalizedResponse
+  );
 });
 
 test('Workers Cache is version isolated and culture routes opt into edge-only cache directives', async () => {

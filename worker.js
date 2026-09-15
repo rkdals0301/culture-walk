@@ -2,6 +2,7 @@ import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } f
 import {
   CULTURE_PUBLIC_CACHE_TAGS,
   purgeCultureEdgeCache,
+  withCulturePageEdgeCache,
   withSitemapEdgeCache,
 } from './src/server/cultureEdgeCache';
 import { runCultureScheduledEvent } from './src/server/cultureScheduledJobs';
@@ -19,7 +20,7 @@ const worker = {
       return withSitemapEdgeCache(response);
     }
 
-    return response;
+    return withCulturePageEdgeCache(request, response);
   },
   async scheduled(event, env, ctx) {
     await runCultureScheduledEvent(event, env, ctx, (request, runtimeEnv, runtimeCtx) =>
