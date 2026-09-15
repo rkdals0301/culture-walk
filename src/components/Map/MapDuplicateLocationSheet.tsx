@@ -9,7 +9,7 @@ interface MapDuplicateLocationSheetProps {
 const MapDuplicateLocationSheet = ({ group, onSelectCulture }: MapDuplicateLocationSheetProps) => (
   <div className='flex flex-col gap-4'>
     <div>
-      <p className='text-[0.68rem] font-semibold text-[var(--color-brand-primary)]'>같은 장소의 행사</p>
+      <p className='text-[0.68rem] font-semibold text-[var(--color-brand-hover)]'>같은 장소의 행사</p>
       <h3 className='mt-2 text-xl font-semibold'>같은 위치에서 여러 행사가 열리고 있습니다.</h3>
       <p className='mt-2 text-sm leading-6 text-[var(--color-text-secondary)]'>
         아래 목록에서 원하는 행사를 선택하면 상세 화면으로 이동합니다.

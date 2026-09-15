@@ -208,17 +208,12 @@ const MapMobileDashboard = ({
           type='button'
           onClick={() => setIsMobileSheetVisible(true)}
           className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
-          aria-label={
-            isClustered
-              ? '행사 밀집 지역을 확대해서 행사 목록 보기'
-              : `행사 목록 열기, 현재 영역 ${viewportCount}개 행사`
-          }
         >
           <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white'>
             <List aria-hidden='true' className='size-4' strokeWidth={2} />
           </span>
           <span className='flex min-w-0 flex-col'>
-            <span className='text-[0.68rem] font-bold text-[var(--color-brand-primary)]'>
+            <span className='text-[0.68rem] font-bold text-[var(--color-brand-hover)]'>
               {hasActiveFilters ? '필터 적용됨' : '지도 행사'}
             </span>
             <span className='whitespace-nowrap text-xs font-bold text-[var(--color-text-primary)] sm:text-sm'>

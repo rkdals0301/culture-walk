@@ -6,6 +6,7 @@ import {
   MAP_CLUSTER_GRID_SIZE,
   MAP_ITEM_REQUEST_GRID_SIZE,
   expandMapBounds,
+  getMapClusterGridSize,
   getMapDataMode,
   isBoundsWithin,
   isCoordinateWithinBounds,
@@ -41,6 +42,12 @@ test('확장 영역 안에서 이동하면 재사용할 수 있는지 판별한�
 test('축소 레벨에서는 격자 집계, 확대 레벨에서는 행사 목록 모드를 사용한다', () => {
   assert.equal(getMapDataMode(MAP_CLUSTER_LEVEL), 'clusters');
   assert.equal(getMapDataMode(MAP_CLUSTER_LEVEL - 1), 'items');
+});
+
+test('축소율이 큰 지도는 클러스터 터치 영역이 겹치지 않도록 격자를 넓힌다', () => {
+  assert.equal(getMapClusterGridSize(13), 1);
+  assert.equal(getMapClusterGridSize(12), 0.5);
+  assert.equal(getMapClusterGridSize(11), MAP_CLUSTER_GRID_SIZE);
 });
 
 test('현재 화면 안의 좌표만 표시 대상으로 선택한다', () => {

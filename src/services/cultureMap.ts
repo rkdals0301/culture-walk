@@ -8,7 +8,7 @@ import type { CultureMapBounds, CultureMapResponse, CultureSearchableListItem } 
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { sortCulturesByRelevantDate } from '@/utils/cultureSort';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
-import { MAP_CLUSTER_GRID_SIZE, getMapDataMode, isCoordinateWithinBounds } from '@/utils/mapViewport';
+import { getMapClusterGridSize, getMapDataMode, isCoordinateWithinBounds } from '@/utils/mapViewport';
 
 /**
  * Build the map payload entirely from the published KV read model. Keeping this
@@ -28,6 +28,7 @@ export const buildCultureMapResponseFromSnapshot = (
     isCoordinateWithinBounds(culture.lat, culture.lng, input.bounds)
   );
   const mode = getMapDataMode(input.level ?? 0);
+  const clusterGridSize = getMapClusterGridSize(input.level ?? 0);
   const regionOptions = getCultureRegionOptions(items);
 
   if (mode === 'items') {
@@ -47,8 +48,8 @@ export const buildCultureMapResponseFromSnapshot = (
   >();
 
   for (const culture of viewportItems) {
-    const latitudeBucket = Math.trunc(culture.lat / MAP_CLUSTER_GRID_SIZE);
-    const longitudeBucket = Math.trunc(culture.lng / MAP_CLUSTER_GRID_SIZE);
+    const latitudeBucket = Math.trunc(culture.lat / clusterGridSize);
+    const longitudeBucket = Math.trunc(culture.lng / clusterGridSize);
     const key = `${latitudeBucket}:${longitudeBucket}`;
     const existing = buckets.get(key);
 

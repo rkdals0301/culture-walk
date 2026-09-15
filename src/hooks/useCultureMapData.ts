@@ -7,9 +7,9 @@ import {
 } from '@/utils/cultureMapClientCache';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import {
-  MAP_CLUSTER_GRID_SIZE,
   MAP_ITEM_REQUEST_GRID_SIZE,
   expandMapBounds,
+  getMapClusterGridSize,
   getMapDataMode,
   snapMapBoundsOutward,
 } from '@/utils/mapViewport';
@@ -51,6 +51,7 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
   const viewportBounds = viewport?.bounds;
   const level = viewport?.level ?? 0;
   const mode = getMapDataMode(level);
+  const clusterGridSize = getMapClusterGridSize(level);
   const swLat = viewportBounds?.swLat;
   const swLng = viewportBounds?.swLng;
   const neLat = viewportBounds?.neLat;
@@ -71,14 +72,14 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
   const fetchBounds = useMemo(() => {
     if (!bounds) return null;
     const expanded = expandMapBounds(bounds);
-    const requestGridSize = mode === 'clusters' ? MAP_CLUSTER_GRID_SIZE : MAP_ITEM_REQUEST_GRID_SIZE;
+    const requestGridSize = mode === 'clusters' ? clusterGridSize : MAP_ITEM_REQUEST_GRID_SIZE;
     return snapMapBoundsOutward(expanded, requestGridSize);
-  }, [bounds, mode]);
+  }, [bounds, clusterGridSize, mode]);
   const boundsKey = hasBounds ? `${swLat},${swLng},${neLat},${neLng}` : '';
   const fetchBoundsKey = fetchBounds
     ? `${fetchBounds.swLat},${fetchBounds.swLng},${fetchBounds.neLat},${fetchBounds.neLng}`
     : '';
-  const filterKey = JSON.stringify([normalizedSearchQuery, category, normalizedRegion, freeOnly, mode]);
+  const filterKey = JSON.stringify([normalizedSearchQuery, category, normalizedRegion, freeOnly, mode, clusterGridSize]);
 
   useEffect(() => {
     const version = requestVersionRef.current + 1;

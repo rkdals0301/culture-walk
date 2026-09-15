@@ -10,10 +10,25 @@ export const MAP_CLUSTER_GRID_SIZE = 0.25;
 export const MAP_PREFETCH_PADDING_RATIO = 0.25;
 export const MAP_ITEM_REQUEST_GRID_SIZE = 0.05;
 
+const REGIONAL_CLUSTER_GRID_SIZE = 0.5;
+const COUNTRY_CLUSTER_GRID_SIZE = 1;
+
 export type MapDataMode = 'clusters' | 'items';
 
 export const getMapDataMode = (level: number): MapDataMode =>
   Number.isFinite(level) && level >= MAP_CLUSTER_LEVEL ? 'clusters' : 'items';
+
+/**
+ * Keep zoomed-out cluster controls separated enough to remain tappable. A
+ * country-wide viewport can otherwise place adjacent 0.25° cells on top of
+ * each other even though each individual control is larger than 44px.
+ */
+export const getMapClusterGridSize = (level: number) => {
+  if (!Number.isFinite(level)) return MAP_CLUSTER_GRID_SIZE;
+  if (level >= 13) return COUNTRY_CLUSTER_GRID_SIZE;
+  if (level >= 12) return REGIONAL_CLUSTER_GRID_SIZE;
+  return MAP_CLUSTER_GRID_SIZE;
+};
 
 export const expandMapBounds = (
   bounds: CultureMapBounds,

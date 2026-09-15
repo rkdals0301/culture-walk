@@ -70,7 +70,6 @@ const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
         <Link
           href='/'
           className='group pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-3.5 py-2 text-xs font-bold text-[var(--color-text-primary)] shadow-md transition-all duration-150 hover:text-[var(--color-brand-primary)] active:scale-95'
-          aria-label='문화 큐레이션 둘러보기로 이동'
         >
           <LayoutGrid className='size-3.5 text-[var(--color-brand-primary)]' strokeWidth={2.2} />
           <span className='tracking-tight'>피드로 보기</span>
