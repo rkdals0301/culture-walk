@@ -19,6 +19,10 @@ interface FeedCultureCardProps {
   isAboveFold?: boolean;
 }
 
+const FEED_IMAGE_SIZES =
+  '(min-width: 1280px) 228px, (min-width: 1024px) calc((100vw - 124px) / 4), (min-width: 768px) calc((100vw - 88px) / 3), (min-width: 640px) calc((100vw - 68px) / 2), calc((100vw - 46px) / 2)';
+const FEED_IMAGE_QUALITY = 65;
+
 const FeedCultureCard = ({
   culture,
   currentLocation = null,
@@ -58,9 +62,11 @@ const FeedCultureCard = ({
               src={imgSrc}
               alt={culture.title}
               fill
-              sizes='(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 50vw'
+              sizes={FEED_IMAGE_SIZES}
+              quality={FEED_IMAGE_QUALITY}
               loading={isAboveFold ? 'eager' : 'lazy'}
               fetchPriority={isAboveFold ? 'high' : 'auto'}
+              preload={isAboveFold}
               onError={() => setImageFailed(true)}
               className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
             />

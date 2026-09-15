@@ -3,7 +3,11 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
-import { withCulturePageEdgeCache } from '@/server/cultureEdgeCache';
+import {
+  withCulturePageEdgeCache,
+  withOptimizedImageEdgeCache,
+  withStaticAssetEdgeCache,
+} from '@/server/cultureEdgeCache';
 
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -55,6 +59,71 @@ test('home and map document responses use a short browser and longer edge policy
     );
     assert.equal(cached.headers.get('Cache-Tag'), 'culture-public-data,culture-list');
     assert.equal(await cached.text(), '<html><body>culture walk</body></html>');
+  }
+});
+
+test('hashed Next static assets use immutable browser and edge caching', async () => {
+  const response = new Response('asset', {
+    status: 200,
+    headers: { 'Content-Type': 'text/css' },
+  });
+
+  const cached = withStaticAssetEdgeCache(
+    new Request('https://culturewalk.gangmin.dev/_next/static/css/app.abc123.css'),
+    response
+  );
+
+  assert.notStrictEqual(cached, response);
+  assert.equal(cached.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
+  assert.equal(cached.headers.get('Cloudflare-CDN-Cache-Control'), 'public, max-age=31536000, immutable');
+  assert.equal(await cached.text(), 'asset');
+});
+
+test('optimized Next images use a bounded browser and stale-tolerant edge policy', async () => {
+  const response = new Response('image-bytes', {
+    status: 200,
+    headers: { 'Content-Type': 'image/avif' },
+  });
+
+  const cached = withOptimizedImageEdgeCache(
+    new Request('https://culturewalk.gangmin.dev/_next/image?url=https%3A%2F%2Fexample.com%2Fposter.jpg&w=256&q=65'),
+    response
+  );
+
+  assert.notStrictEqual(cached, response);
+  assert.equal(cached.headers.get('Cache-Control'), 'public, max-age=86400');
+  assert.equal(
+    cached.headers.get('Cloudflare-CDN-Cache-Control'),
+    'public, max-age=86400, stale-while-revalidate=604800, stale-if-error=2592000'
+  );
+  assert.equal(await cached.text(), 'image-bytes');
+});
+
+test('optimized image cache bypasses non-image and error responses', () => {
+  const response = new Response('unchanged', {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  assert.strictEqual(
+    withOptimizedImageEdgeCache(
+      new Request('https://culturewalk.gangmin.dev/_next/image?url=https%3A%2F%2Fexample.com%2Fposter.jpg&w=256&q=65'),
+      response
+    ),
+    response
+  );
+});
+
+test('static asset cache bypasses routes that are not hashed build assets', () => {
+  const response = new Response('unchanged', { status: 200 });
+
+  for (const request of [
+    new Request('https://culturewalk.gangmin.dev/'),
+    new Request('https://culturewalk.gangmin.dev/assets/images/logo.svg'),
+    new Request('https://culturewalk.gangmin.dev/_next/image?url=https%3A%2F%2Fexample.com%2Fposter.jpg&w=256&q=65'),
+    new Request('https://culturewalk.gangmin.dev/_next/static/app.js', { method: 'POST' }),
+  ]) {
+    assert.strictEqual(withStaticAssetEdgeCache(request, response), response);
   }
 });
 

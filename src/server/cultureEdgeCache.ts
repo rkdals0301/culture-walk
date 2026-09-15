@@ -32,6 +32,17 @@ const CULTURE_DOCUMENT_CACHE_HEADERS = createPublicEdgeCacheHeaders({
   tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
 });
 
+const HASHED_STATIC_ASSET_CACHE_HEADERS = {
+  'Cache-Control': 'public, max-age=31536000, immutable',
+  'Cloudflare-CDN-Cache-Control': 'public, max-age=31536000, immutable',
+} as const;
+
+const OPTIMIZED_IMAGE_CACHE_HEADERS = {
+  'Cache-Control': 'public, max-age=86400',
+  'Cloudflare-CDN-Cache-Control':
+    'public, max-age=86400, stale-while-revalidate=604800, stale-if-error=2592000',
+} as const;
+
 const isNextFlightRequest = (request: Request, url: URL) =>
   url.searchParams.has('_rsc') || NEXT_FLIGHT_REQUEST_HEADERS.some(header => request.headers.has(header));
 
@@ -88,6 +99,41 @@ export const withCulturePageEdgeCache = (request: Request, response: Response) =
   if (response.headers.has('set-cookie')) return response;
 
   return addCacheHeaders(response, CULTURE_DOCUMENT_CACHE_HEADERS);
+};
+
+/**
+ * Next's build output is content-addressed under /_next/static. Cache those
+ * assets for a year so repeat navigations do not revalidate CSS and JS on
+ * every request. New deployments produce new hashed URLs, so immutable is
+ * safe here.
+ */
+export const withStaticAssetEdgeCache = (request: Request, response: Response) => {
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET' && request.method !== 'HEAD') return response;
+  if (!url.pathname.startsWith('/_next/static/')) return response;
+  if (response.status !== 200 && response.status !== 304) return response;
+  if (response.headers.has('set-cookie')) return response;
+
+  return addCacheHeaders(response, HASHED_STATIC_ASSET_CACHE_HEADERS);
+};
+
+/**
+ * Optimized images are keyed by source URL, width, quality, and format. Keep
+ * the generated variant reusable for a day, matching the scheduled event
+ * refresh cadence while allowing a changed source URL to invalidate it.
+ */
+export const withOptimizedImageEdgeCache = (request: Request, response: Response) => {
+  const url = new URL(request.url);
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+
+  if (request.method !== 'GET' && request.method !== 'HEAD') return response;
+  if (url.pathname !== '/_next/image') return response;
+  if (response.status !== 200 && response.status !== 304) return response;
+  if (!contentType.startsWith('image/')) return response;
+  if (response.headers.has('set-cookie')) return response;
+
+  return addCacheHeaders(response, OPTIMIZED_IMAGE_CACHE_HEADERS);
 };
 
 export const withSitemapEdgeCache = (response: Response) => {

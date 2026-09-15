@@ -2,6 +2,8 @@ import openNextWorker, { BucketCachePurge, DOQueueHandler, DOShardedTagCache } f
 import {
   CULTURE_PUBLIC_CACHE_TAGS,
   purgeCultureEdgeCache,
+  withOptimizedImageEdgeCache,
+  withStaticAssetEdgeCache,
   withCulturePageEdgeCache,
   withSitemapEdgeCache,
 } from './src/server/cultureEdgeCache';
@@ -20,7 +22,8 @@ const worker = {
       return withSitemapEdgeCache(response);
     }
 
-    return withCulturePageEdgeCache(request, response);
+    const cacheableResponse = withOptimizedImageEdgeCache(request, response);
+    return withCulturePageEdgeCache(request, withStaticAssetEdgeCache(request, cacheableResponse));
   },
   async scheduled(event, env, ctx) {
     await runCultureScheduledEvent(event, env, ctx, (request, runtimeEnv, runtimeCtx) =>

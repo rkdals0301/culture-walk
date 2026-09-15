@@ -16,6 +16,10 @@ const nextConfig = {
   poweredByHeader: false,
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Feed posters are refreshed by the scheduled sync, so keep optimized
+    // variants reusable for a day without making stale images permanent.
+    minimumCacheTTL: 60 * 60 * 24,
+    qualities: [65, 75],
     remotePatterns: [
       {
         protocol: 'https',

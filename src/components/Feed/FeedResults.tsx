@@ -88,7 +88,7 @@ const FeedResults = ({
             culture={culture}
             currentLocation={currentLocation}
             onOpenCulture={onOpenCulture}
-            isAboveFold={index < 4}
+            isAboveFold={index < 2}
           />
         ))}
       </div>

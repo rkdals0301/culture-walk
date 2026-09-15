@@ -1,5 +1,6 @@
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
+import PretendardStylesheet from '@/components/Fonts/PretendardStylesheet';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
@@ -37,32 +38,13 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           strategy='beforeInteractive'
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZER_SCRIPT }}
         />
-        {/* TourAPI images */}
-        <link rel='dns-prefetch' href='https://tong.visitkorea.or.kr' />
-        <link rel='preconnect' href='https://tong.visitkorea.or.kr' crossOrigin='anonymous' />
-
-        {/* Kakao Maps */}
-        <link rel='preconnect' href='https://dapi.kakao.com' crossOrigin='anonymous' />
-        <link rel='preconnect' href='https://t1.daumcdn.net' crossOrigin='anonymous' />
-
-        {/* Google Fonts */}
-        <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
-        <link rel='preconnect' href='https://fonts.gstatic.com' crossOrigin='anonymous' />
+        {/* Pretendard is preloaded here and attached after hydration. */}
+        <link rel='preconnect' href='https://cdn.jsdelivr.net' crossOrigin='anonymous' />
 
         {/* Google Analytics */}
         <link rel='dns-prefetch' href='https://www.google-analytics.com' />
 
-        <link
-          rel='preload'
-          href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
-          as='style'
-          crossOrigin='anonymous'
-        />
-        <link
-          rel='stylesheet'
-          href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
-          crossOrigin='anonymous'
-        />
+        <PretendardStylesheet />
         <noscript>
           <link
             rel='stylesheet'
