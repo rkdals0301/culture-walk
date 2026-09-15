@@ -24,7 +24,8 @@
   "vars": {
     "APP_BASE_URL": "https://culturewalk.gangmin.dev",
     "SITE_URL": "https://culturewalk.gangmin.dev",
-    "TOUR_API_BASE_URL": "https://apis.data.go.kr/B551011/KorService2"
+    "TOUR_API_BASE_URL": "https://apis.data.go.kr/B551011/KorService2",
+    "KAKAO_MAP_APP_KEY": "73a04859e898b11fa9e2100bf34d010f"
   },
   "kv_namespaces": [
     {

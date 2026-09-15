@@ -29,6 +29,7 @@ import { AlertCircle } from 'lucide-react';
 type MarkerGroup = CoordinateGroup<FormattedCultureListItem>;
 
 interface MapViewProps {
+  kakaoMapAppKey?: string | null;
   visibleClusters: CultureMapCluster[];
   isClustered: boolean;
   visibleCultures: FormattedCultureListItem[];
@@ -39,6 +40,7 @@ interface MapViewProps {
 }
 
 const MapView = ({
+  kakaoMapAppKey,
   visibleClusters,
   isClustered,
   visibleCultures,
@@ -66,6 +68,7 @@ const MapView = ({
   );
   const { mapContainerRef, markerClustererRef, mapInstance, sdkError, isMapReady, retry } = useKakaoMapInstance({
     initialCamera,
+    kakaoMapAppKey,
   });
 
   const selectedCultureId = useMemo(() => {

@@ -29,7 +29,7 @@ const runNpmScript = (script, env = process.env) =>
 const main = async () => {
   const buildEnv = {
     ...process.env,
-    NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY || dummyKakaoMapsKey,
+    KAKAO_MAP_APP_KEY: process.env.KAKAO_MAP_APP_KEY || dummyKakaoMapsKey,
   };
 
   await runNpmScript('cf:build', buildEnv);

@@ -125,7 +125,7 @@ cp .env.example .env.local
 | :--- | :--- | :--- |
 | `TOUR_API_BASE_URL` | 한국관광공사 TourAPI 엔드포인트 | `https://apis.data.go.kr/B551011/KorService2` |
 | `TOUR_API_KEY` | 공공데이터포털 일반 인증키 (Decoding 키 권장) | `YOUR_TOUR_API_KEY` |
-| `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY` | 카카오 개발자 콘솔의 **JavaScript 키** | `YOUR_KAKAO_JAVASCRIPT_KEY` |
+| `KAKAO_MAP_APP_KEY` | 카카오 개발자 콘솔의 **JavaScript 키** | `YOUR_KAKAO_JAVASCRIPT_KEY` |
 | `SYNC_TOKEN` | 동기화 API(`/api/initialize`) 보호용 비밀 토큰 | `임의의_보안_토큰` |
 
 #### 선택 환경 변수 (SEO 및 부가 기능)
@@ -275,7 +275,7 @@ GitHub Actions에서는 `main`에 대한 CI가 성공하면 `.github/workflows/c
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN` (Workers 배포 및 D1 마이그레이션 권한)
-- `NEXT_PUBLIC_KAKAO_MAPS_APP_KEY` (`production` 환경 secret; 빌드 시 클라이언트 번들에 주입)
+- `KAKAO_MAP_APP_KEY` (`wrangler.jsonc`의 Worker 공개 변수; Kakao 개발자 콘솔에서 운영 도메인을 허용 목록으로 제한)
 
 `production-migrations`에는 required reviewer를 설정해 스키마 변경을 별도 승인 단계로 유지하는 것을 권장합니다. `TOUR_API_KEY`와 `SYNC_TOKEN`은 배포 로그에 노출되지 않도록 기존처럼 Cloudflare Worker secret으로 관리합니다.
 

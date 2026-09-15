@@ -7,7 +7,7 @@ import {
   getFormattedCultureDetailById,
   parseCultureId,
 } from '@/server/cultureDetailSeo';
-import { getRuntimeDeps } from '@/server/cloudflare';
+import { getRuntimeDeps, getWorkerEnv } from '@/server/cloudflare';
 import { serializeJsonLd } from '@/utils/jsonLd';
 
 import type { Metadata } from 'next';
@@ -16,6 +16,8 @@ import { notFound } from 'next/navigation';
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
@@ -38,6 +40,7 @@ const MapDetailPage = async ({ params }: PageProps) => {
 
   const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
   if (!culture) notFound();
+  const env = await getWorkerEnv();
 
   return (
     <>
@@ -46,7 +49,7 @@ const MapDetailPage = async ({ params }: PageProps) => {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(createCultureEventStructuredData(culture)) }}
       />
-      <MapShell>
+      <MapShell kakaoMapAppKey={env.KAKAO_MAP_APP_KEY}>
         <MapDetailSheetClient initialCulture={culture} />
       </MapShell>
     </>

@@ -59,7 +59,7 @@ const getFallbackEnv = (): RuntimeEnv => ({
   SITE_URL: process.env.SITE_URL,
   TOUR_API_BASE_URL: process.env.TOUR_API_BASE_URL,
   TOUR_API_KEY: process.env.TOUR_API_KEY,
-  NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY,
+  KAKAO_MAP_APP_KEY: process.env.KAKAO_MAP_APP_KEY,
   SYNC_TOKEN: process.env.SYNC_TOKEN,
 });
 
@@ -71,11 +71,7 @@ const parseRuntimeEnv = (value: unknown, fallbackEnv: RuntimeEnv): RuntimeEnv =>
     SITE_URL: readOptionalString(runtimeEnv, 'SITE_URL', fallbackEnv.SITE_URL),
     TOUR_API_BASE_URL: readOptionalString(runtimeEnv, 'TOUR_API_BASE_URL', fallbackEnv.TOUR_API_BASE_URL),
     TOUR_API_KEY: readOptionalString(runtimeEnv, 'TOUR_API_KEY', fallbackEnv.TOUR_API_KEY),
-    NEXT_PUBLIC_KAKAO_MAPS_APP_KEY: readOptionalString(
-      runtimeEnv,
-      'NEXT_PUBLIC_KAKAO_MAPS_APP_KEY',
-      fallbackEnv.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY
-    ),
+    KAKAO_MAP_APP_KEY: readOptionalString(runtimeEnv, 'KAKAO_MAP_APP_KEY', fallbackEnv.KAKAO_MAP_APP_KEY),
     SYNC_TOKEN: readOptionalString(runtimeEnv, 'SYNC_TOKEN', fallbackEnv.SYNC_TOKEN),
     DB: readBinding(runtimeEnv, 'DB', isD1Binding),
     CULTURE_CACHE: readBinding(runtimeEnv, 'CULTURE_CACHE', isCultureCacheBinding),

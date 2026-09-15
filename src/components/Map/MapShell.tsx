@@ -14,9 +14,10 @@ import { LayoutGrid } from 'lucide-react';
 
 interface MapShellProps {
   children?: React.ReactNode;
+  kakaoMapAppKey?: string | null;
 }
 
-const MapShell = ({ children }: MapShellProps) => {
+const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
   const { searchQuery, mapCategory, mapRegion, mapFreeOnly } = useCultureContext();
   const [listRequest, setListRequest] = useState(0);
   // Wait for Kakao Maps' first idle event so the initial request includes the
@@ -54,6 +55,7 @@ const MapShell = ({ children }: MapShellProps) => {
     <div className='relative h-full overflow-hidden'>
       <div className='map-viewport absolute z-0' data-keeps-detail-open>
         <MapViewClientOnly
+          kakaoMapAppKey={kakaoMapAppKey}
           visibleClusters={mapData.clusters}
           isClustered={mapData.isClustered}
           visibleCultures={mapData.cultures}

@@ -11,6 +11,7 @@ const MapViewNoSsr = dynamic(() => import('@/components/Map/MapView'), {
 });
 
 interface MapViewClientOnlyProps {
+  kakaoMapAppKey?: string | null;
   visibleClusters: CultureMapCluster[];
   isClustered: boolean;
   visibleCultures: FormattedCultureListItem[];
@@ -21,6 +22,7 @@ interface MapViewClientOnlyProps {
 }
 
 const MapViewClientOnly = ({
+  kakaoMapAppKey,
   visibleClusters,
   isClustered,
   visibleCultures,
@@ -31,6 +33,7 @@ const MapViewClientOnly = ({
 }: MapViewClientOnlyProps) => {
   return (
     <MapViewNoSsr
+      kakaoMapAppKey={kakaoMapAppKey}
       visibleClusters={visibleClusters}
       isClustered={isClustered}
       visibleCultures={visibleCultures}

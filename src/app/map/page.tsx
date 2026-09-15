@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import MapShell from '@/components/Map/MapShell';
+import { getWorkerEnv } from '@/server/cloudflare';
 import { createPageSocialMetadata } from '@/utils/siteMetadata';
 
 const TITLE = '전국 문화행사 지도 | 문화산책';
@@ -22,6 +23,11 @@ export const metadata: Metadata = {
   }),
 };
 
-const MapPage = () => <MapShell />;
+export const dynamic = 'force-dynamic';
+
+const MapPage = async () => {
+  const env = await getWorkerEnv();
+  return <MapShell kakaoMapAppKey={env.KAKAO_MAP_APP_KEY} />;
+};
 
 export default MapPage;

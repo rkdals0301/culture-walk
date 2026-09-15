@@ -28,7 +28,7 @@ export interface RuntimeEnv {
   SITE_URL?: string;
   TOUR_API_BASE_URL?: string;
   TOUR_API_KEY?: string;
-  NEXT_PUBLIC_KAKAO_MAPS_APP_KEY?: string;
+  KAKAO_MAP_APP_KEY?: string;
   SYNC_TOKEN?: string;
   DB?: D1Binding;
   CULTURE_CACHE?: CultureCacheBinding;
