@@ -15,12 +15,12 @@ test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를
   await expect(mapCanvas).toHaveAttribute('data-e2e-map-lng', '126.977');
 
   const isMobile = (page.viewportSize()?.width ?? 0) < 768;
-  const openListButton = page.getByRole('button', { name: /행사 목록 열기, 현재 영역 2개 행사/ });
+  const openListButton = page.getByRole('button', { name: /현재 영역 2개 보기/ });
   if (isMobile) {
     await expect(openListButton).toBeVisible();
     await openListButton.click();
   } else {
-    const expandListButton = page.getByRole('button', { name: '행사 목록 펼치기', exact: true });
+    const expandListButton = page.getByRole('button', { name: /^목록 \d+$/ });
     await expect(expandListButton).toBeVisible();
     await expandListButton.click();
   }

@@ -32,3 +32,14 @@ test('종료일이 없거나 유효하지 않으면 행사 상태를 만들지 �
   assert.equal(getCultureTimingStatus('2026-09-01', null, referenceDate), null);
   assert.equal(getCultureTimingStatus('2026-09-01', 'invalid-date', referenceDate), null);
 });
+
+test('한국 날짜 기준 상태는 서버와 브라우저 시간대가 달라도 동일하다', () => {
+  const utcLateNight = new Date('2026-09-15T16:30:00.000Z');
+  const koreaEarlyMorning = new Date('2026-09-16T01:30:00.000+09:00');
+
+  const utcResult = getCultureTimingStatus('2099-09-01', '2099-09-30', utcLateNight);
+  const koreaResult = getCultureTimingStatus('2099-09-01', '2099-09-30', koreaEarlyMorning);
+
+  assert.deepEqual(utcResult, koreaResult);
+  assert.deepEqual(utcResult, { text: 'D-26648 오픈예정', variant: 'upcoming' });
+});

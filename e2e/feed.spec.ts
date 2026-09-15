@@ -6,7 +6,7 @@ test('피드 필터와 검색 상태가 지도 URL과 화면에 그대로 이어
   await expect(page.getByRole('heading', { name: '전국 문화행사 둘러보기' })).toBeVisible();
   await expect(page.getByRole('link', { name: /문화산책 테스트 공연,/ })).toBeVisible();
 
-  await page.getByRole('tab', { name: '공연' }).click();
+  await page.getByRole('group', { name: '문화행사 카테고리' }).getByRole('button', { name: '공연', exact: true }).click();
   await page.getByLabel('지역 필터').selectOption('서울');
   await page.getByRole('button', { name: '무료만' }).click();
   await page.getByLabel('문화행사 검색').fill('문화산책');

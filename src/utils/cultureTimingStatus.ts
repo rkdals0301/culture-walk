@@ -1,3 +1,5 @@
+import { DAY_MILLISECONDS, getKoreaDayTimestamp, getUtcDayTimestamp, toDateOrNull } from '@/utils/dateUtils';
+
 export type CultureTimingStatusVariant = 'ended' | 'urgent' | 'upcoming' | 'ongoing';
 
 export interface CultureTimingStatus {
@@ -12,24 +14,26 @@ export const getCultureTimingStatus = (
 ): CultureTimingStatus | null => {
   if (!endDate) return null;
 
-  const now = new Date(referenceDate);
-  const start = startDate ? new Date(startDate) : null;
-  const end = new Date(endDate);
+  const now = toDateOrNull(referenceDate);
+  const hasStartDate = Boolean(startDate);
+  const start = hasStartDate ? toDateOrNull(startDate) : null;
+  const end = toDateOrNull(endDate);
 
-  if (Number.isNaN(end.getTime()) || (start && Number.isNaN(start.getTime()))) return null;
+  if (!now || !end || (hasStartDate && !start)) return null;
 
-  now.setHours(0, 0, 0, 0);
-  if (start) start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
+  const nowDay = getKoreaDayTimestamp(now);
+  const startDay = start ? getUtcDayTimestamp(start) : null;
+  const endDay = getUtcDayTimestamp(end);
+  if (nowDay === null || endDay === null || (start && startDay === null)) return null;
 
-  const diffDaysToEnd = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDaysToEnd = (endDay - nowDay) / DAY_MILLISECONDS;
 
   if (diffDaysToEnd < 0) return { text: '종료', variant: 'ended' };
   if (diffDaysToEnd === 0) return { text: '오늘 마감', variant: 'urgent' };
   if (diffDaysToEnd <= 3) return { text: `D-${diffDaysToEnd} 마감임박`, variant: 'urgent' };
 
-  if (start && start > now) {
-    const diffDaysToStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (start && startDay !== null && startDay > nowDay) {
+    const diffDaysToStart = (startDay - nowDay) / DAY_MILLISECONDS;
     return { text: `D-${diffDaysToStart} 오픈예정`, variant: 'upcoming' };
   }
 
