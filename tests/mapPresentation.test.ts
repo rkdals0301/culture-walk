@@ -62,7 +62,7 @@ test('지도 모바일 컨트롤은 보이는 문구를 그대로 접근성 이�
   assert.doesNotMatch(shell, /aria-label='문화 큐레이션 둘러보기로 이동'/);
   assert.match(
     desktopDashboard,
-    /aria-label=\{'목록 ' \+ viewportCount\.toLocaleString\(\) \+ '개 행사 목록 펼치기'\}/
+    /aria-label=\{'목록 ' \+ viewportCount\.toLocaleString\(\)\}/
   );
   assert.doesNotMatch(mobileDashboard, /aria-label=\{\s*isClustered/);
 });

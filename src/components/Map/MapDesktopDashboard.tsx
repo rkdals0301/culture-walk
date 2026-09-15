@@ -76,7 +76,7 @@ const MapDesktopDashboard = ({
             type='button'
             onClick={() => setIsDesktopPanelCollapsed(false)}
             className='inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-[var(--color-brand-on-primary)] shadow-sm transition hover:opacity-95 active:scale-95'
-            aria-label={'목록 ' + viewportCount.toLocaleString() + '개 행사 목록 펼치기'}
+            aria-label={'목록 ' + viewportCount.toLocaleString()}
             title='행사 목록 펼치기'
           >
             <List aria-hidden='true' className='size-4' />
