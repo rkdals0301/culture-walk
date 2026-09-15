@@ -10,8 +10,13 @@ import {
 import {
   INITIAL_PAGE_NUMBER,
   PAGE_SIZE,
+  SOURCE_DETAIL_DEADLINE_MS,
   SOURCE_PAGE_CONCURRENCY,
+  SOURCE_REQUEST_TIMEOUT_MS,
+  SOURCE_RETRY_BACKOFF_BASE_MS,
   SOURCE_REQUEST_RETRY_LIMIT,
+  SOURCE_SNAPSHOT_DEADLINE_MS,
+  TourApiRequestOptions,
   TourApiConfig,
 } from './cultureSyncTypes';
 
@@ -35,6 +40,82 @@ type TourApiPage<T> = {
 
 const wait = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
 
+export class TourApiDeadlineExceededError extends Error {
+  constructor(operation: string) {
+    super(`TourAPI ${operation} deadline을 초과했습니다.`);
+    this.name = 'TourApiDeadlineExceededError';
+  }
+}
+
+class TourApiRequestTimeoutError extends Error {
+  constructor(path: string, timeoutMs: number) {
+    super(`TourAPI 요청 시간이 초과되었습니다. path=${path}, timeoutMs=${timeoutMs}`);
+    this.name = 'TourApiRequestTimeoutError';
+  }
+}
+
+export const isTourApiDeadlineExceededError = (error: unknown): error is TourApiDeadlineExceededError =>
+  error instanceof TourApiDeadlineExceededError ||
+  (error instanceof Error && error.name === 'TourApiDeadlineExceededError');
+
+const resolveDeadlineAt = (deadlineAt: number | undefined, defaultDurationMs: number) =>
+  Number.isFinite(deadlineAt) ? Number(deadlineAt) : Date.now() + defaultDurationMs;
+
+const ensureDeadline = (deadlineAt: number, operation: string) => {
+  if (Date.now() >= deadlineAt) {
+    throw new TourApiDeadlineExceededError(operation);
+  }
+};
+
+const waitBeforeRetry = async (milliseconds: number, deadlineAt: number, operation: string) => {
+  ensureDeadline(deadlineAt, operation);
+  if (Date.now() + milliseconds >= deadlineAt) {
+    throw new TourApiDeadlineExceededError(operation);
+  }
+  await wait(milliseconds);
+  ensureDeadline(deadlineAt, operation);
+};
+
+const fetchWithTimeout = async <T>(
+  url: URL,
+  path: string,
+  deadlineAt: number,
+  requestTimeoutMs: number,
+  readResponse: (response: Response) => Promise<T>
+): Promise<T> => {
+  ensureDeadline(deadlineAt, path);
+
+  const remainingMs = deadlineAt - Date.now();
+  const timeoutMs = Math.max(1, Math.min(requestTimeoutMs, remainingMs));
+  const controller = new AbortController();
+  let timedOut = false;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+      reject(new Error('TourAPI request timeout'));
+    }, timeoutMs);
+  });
+
+  try {
+    const responsePromise = Promise.resolve()
+      .then(() => fetch(url, { cache: 'no-store', signal: controller.signal }))
+      .then(readResponse);
+    return await Promise.race([responsePromise, timeoutPromise]);
+  } catch (error) {
+    if (timedOut) {
+      if (Date.now() >= deadlineAt) {
+        throw new TourApiDeadlineExceededError(path);
+      }
+      throw new TourApiRequestTimeoutError(path, timeoutMs);
+    }
+    throw error;
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
+};
+
 const asArray = <T>(value?: T[] | T) => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
@@ -47,12 +128,18 @@ const fetchTourApiPage = async <T>(
   config: TourApiConfig,
   path: string,
   params: Record<string, string | number | undefined>,
-  retries = SOURCE_REQUEST_RETRY_LIMIT
+  retries = SOURCE_REQUEST_RETRY_LIMIT,
+  options: TourApiRequestOptions = {},
 ): Promise<TourApiPage<T>> => {
+  const deadlineAt = resolveDeadlineAt(options.deadlineAt, SOURCE_SNAPSHOT_DEADLINE_MS);
+  const requestTimeoutMs = Number.isFinite(options.requestTimeoutMs)
+    ? Math.max(1, Number(options.requestTimeoutMs))
+    : SOURCE_REQUEST_TIMEOUT_MS;
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
+      ensureDeadline(deadlineAt, path);
       const url = new URL(`${config.baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`);
       url.searchParams.set('serviceKey', config.serviceKey);
       url.searchParams.set('MobileOS', 'ETC');
@@ -65,12 +152,19 @@ const fetchTourApiPage = async <T>(
         }
       }
 
-      const response = await fetch(url, { cache: 'no-store' });
+      const result = await fetchWithTimeout(url, path, deadlineAt, requestTimeoutMs, async response => {
+        if (!response.ok) return { response, payload: null };
+        return { response, payload: (await response.json()) as TourApiResponse<T> };
+      });
+      const response = result.response;
       if (!response.ok) {
         throw new Error(`TourAPI 요청 실패: HTTP ${response.status}`);
       }
 
-      const payload = (await response.json()) as TourApiResponse<T>;
+      if (!result.payload) {
+        throw new Error('TourAPI 응답 본문이 없습니다.');
+      }
+      const payload = result.payload;
       const resultCode = payload.response?.header?.resultCode;
       if (resultCode !== '0000' && resultCode !== '0') {
         throw new Error(
@@ -85,11 +179,15 @@ const fetchTourApiPage = async <T>(
         throw new Error('TourAPI가 유효한 전체 건수를 반환하지 않았습니다.');
       }
 
+      ensureDeadline(deadlineAt, path);
       return { items: asArray(item), totalCount };
     } catch (error) {
       lastError = error;
+      if (isTourApiDeadlineExceededError(error)) {
+        throw error;
+      }
       if (attempt < retries) {
-        await wait(250 * 2 ** attempt);
+        await waitBeforeRetry(SOURCE_RETRY_BACKOFF_BASE_MS * 2 ** attempt, deadlineAt, path);
       }
     }
   }
@@ -100,29 +198,51 @@ const fetchTourApiPage = async <T>(
 export const fetchTourApiFestivalDetails = async (
   config: TourApiConfig,
   contentId: string,
-  contentTypeId = '15'
+  contentTypeIdOrOptions: string | TourApiRequestOptions = '15',
+  options: TourApiRequestOptions = {}
 ): Promise<TourApiFestivalDetails> => {
+  const contentTypeId = typeof contentTypeIdOrOptions === 'string' ? contentTypeIdOrOptions : '15';
+  const configuredOptions = typeof contentTypeIdOrOptions === 'string' ? options : contentTypeIdOrOptions;
+  const deadlineAt = resolveDeadlineAt(configuredOptions.deadlineAt, SOURCE_DETAIL_DEADLINE_MS);
+  const requestOptions = { ...configuredOptions, deadlineAt };
   const requests = await Promise.allSettled([
-    fetchTourApiPage<TourApiFestivalCommon>(config, 'detailCommon2', { contentId, pageNo: 1, numOfRows: 1 }, 1),
+    fetchTourApiPage<TourApiFestivalCommon>(
+      config,
+      'detailCommon2',
+      { contentId, pageNo: 1, numOfRows: 1 },
+      1,
+      requestOptions
+    ),
     fetchTourApiPage<TourApiFestivalIntro>(
       config,
       'detailIntro2',
       { contentId, contentTypeId, pageNo: 1, numOfRows: 1 },
-      1
+      1,
+      requestOptions
     ),
     fetchTourApiPage<TourApiFestivalInfo>(
       config,
       'detailInfo2',
       { contentId, contentTypeId, pageNo: 1, numOfRows: 100 },
-      1
+      1,
+      requestOptions
     ),
     fetchTourApiPage<TourApiFestivalImage>(
       config,
       'detailImage2',
       { contentId, pageNo: 1, numOfRows: 100, imageYN: 'Y' },
-      1
+      1,
+      requestOptions
     ),
   ]);
+
+  const deadlineFailure = requests.find(
+    result => result.status === 'rejected' && isTourApiDeadlineExceededError(result.reason)
+  );
+  if (deadlineFailure?.status === 'rejected') {
+    throw deadlineFailure.reason;
+  }
+  ensureDeadline(deadlineAt, 'detail');
 
   const failedCount = requests.filter(result => result.status === 'rejected').length;
   if (failedCount === requests.length) {
@@ -147,16 +267,25 @@ export const fetchTourApiFestivalDetails = async (
   };
 };
 
-export const fetchCulturesFromTourApi = async (config: TourApiConfig, now = new Date()) => {
+export const fetchCulturesFromTourApi = async (
+  config: TourApiConfig,
+  now = new Date(),
+  options: TourApiRequestOptions = {}
+) => {
+  const deadlineAt = resolveDeadlineAt(options.deadlineAt, SOURCE_SNAPSHOT_DEADLINE_MS);
+  const requestOptions = { ...options, deadlineAt };
   const commonParams = {
     numOfRows: PAGE_SIZE,
     arrange: 'A',
     eventStartDate: getKoreaApiDate(now),
   };
-  const firstPage = await fetchTourApiPage<TourApiFestival>(config, 'searchFestival2', {
-    ...commonParams,
-    pageNo: INITIAL_PAGE_NUMBER,
-  });
+  const firstPage = await fetchTourApiPage<TourApiFestival>(
+    config,
+    'searchFestival2',
+    { ...commonParams, pageNo: INITIAL_PAGE_NUMBER },
+    SOURCE_REQUEST_RETRY_LIMIT,
+    requestOptions
+  );
 
   if (firstPage.totalCount <= 0 || firstPage.items.length === 0) {
     throw new Error('TourAPI에서 현재 또는 예정된 행사 데이터를 가져오지 못했습니다.');
@@ -170,10 +299,17 @@ export const fetchCulturesFromTourApi = async (config: TourApiConfig, now = new 
   }
 
   for (let index = 0; index < pageNumbers.length; index += SOURCE_PAGE_CONCURRENCY) {
+    ensureDeadline(deadlineAt, 'snapshot');
     const chunk = pageNumbers.slice(index, index + SOURCE_PAGE_CONCURRENCY);
     const pages = await Promise.all(
       chunk.map(pageNo =>
-        fetchTourApiPage<TourApiFestival>(config, 'searchFestival2', { ...commonParams, pageNo })
+        fetchTourApiPage<TourApiFestival>(
+          config,
+          'searchFestival2',
+          { ...commonParams, pageNo },
+          SOURCE_REQUEST_RETRY_LIMIT,
+          requestOptions
+        )
       )
     );
 

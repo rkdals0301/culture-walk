@@ -1,7 +1,34 @@
-import { fetchCulturesFromTourApi, fetchTourApiFestivalDetails } from '@/services/cultureSyncSource';
+import {
+  fetchCulturesFromTourApi,
+  fetchTourApiFestivalDetails,
+  TourApiDeadlineExceededError,
+} from '@/services/cultureSyncSource';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
+const createSearchResponse = () =>
+  Response.json({
+    response: {
+      header: { resultCode: '0000', resultMsg: 'OK' },
+      body: {
+        items: {
+          item: [
+            {
+              contentid: '2786391',
+              contenttypeid: '15',
+              title: '전국 문화행사',
+              eventstartdate: '20260715',
+              eventenddate: '20260731',
+              mapx: '129.1186',
+              mapy: '35.1532',
+            },
+          ],
+        },
+        totalCount: 1,
+      },
+    },
+  });
 
 test('TourAPI snapshot uses the Korea date without per-event detail fanout', async () => {
   const originalFetch = globalThis.fetch;
@@ -107,6 +134,155 @@ test('TourAPI detail lookup combines common, intro, repeated info, and images', 
     assert.equal(imageUrl.searchParams.get('contentTypeId'), null);
     assert.equal(imageUrl.searchParams.get('imageYN'), 'Y');
     assert.equal(imageUrl.searchParams.get('subImageYN'), null);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('TourAPI request timeout aborts a hanging request and retries within the shared deadline', async () => {
+  const originalFetch = globalThis.fetch;
+  let attempts = 0;
+  let aborted = 0;
+
+  globalThis.fetch = (async (_input, init) => {
+    attempts += 1;
+    if (attempts === 1) {
+      return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          'abort',
+          () => {
+            aborted += 1;
+            reject(new Error('aborted by test timeout'));
+          },
+          { once: true }
+        );
+      });
+    }
+    return createSearchResponse();
+  }) as typeof fetch;
+
+  try {
+    const rows = await fetchCulturesFromTourApi(
+      { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
+      new Date('2026-07-14T15:30:00.000Z'),
+      { requestTimeoutMs: 5, deadlineAt: Date.now() + 1_000 }
+    );
+
+    assert.equal(rows.length, 1);
+    assert.equal(attempts, 2);
+    assert.equal(aborted, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('TourAPI deadline stops retry backoff before issuing another request', async () => {
+  const originalFetch = globalThis.fetch;
+  let attempts = 0;
+  let aborted = 0;
+
+  globalThis.fetch = (async (_input, init) => {
+    attempts += 1;
+    return new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener(
+        'abort',
+        () => {
+          aborted += 1;
+          reject(new Error('aborted by test timeout'));
+        },
+        { once: true }
+      );
+    });
+  }) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () =>
+        fetchCulturesFromTourApi(
+          { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
+          new Date('2026-07-14T15:30:00.000Z'),
+          { requestTimeoutMs: 5, deadlineAt: Date.now() + 100 }
+        ),
+      error => error instanceof TourApiDeadlineExceededError
+    );
+    assert.equal(attempts, 1);
+    assert.equal(aborted, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('TourAPI request timeout also bounds a response body that never finishes', async () => {
+  const originalFetch = globalThis.fetch;
+  let aborted = 0;
+
+  globalThis.fetch = (async (_input, init) => {
+    init?.signal?.addEventListener(
+      'abort',
+      () => {
+        aborted += 1;
+      },
+      { once: true }
+    );
+    const response = new Response('{}');
+    Object.defineProperty(response, 'json', {
+      configurable: true,
+      value: async () =>
+        new Promise<never>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted body')), { once: true });
+        }),
+    });
+    return response;
+  }) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () =>
+        fetchCulturesFromTourApi(
+          { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
+          new Date('2026-07-14T15:30:00.000Z'),
+          { requestTimeoutMs: 5, deadlineAt: Date.now() + 100 }
+        ),
+      error => error instanceof TourApiDeadlineExceededError
+    );
+    assert.equal(aborted, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('TourAPI detail requests share one deadline across all four endpoints', async () => {
+  const originalFetch = globalThis.fetch;
+  let attempts = 0;
+  let aborted = 0;
+
+  globalThis.fetch = (async (_input, init) => {
+    attempts += 1;
+    return new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener(
+        'abort',
+        () => {
+          aborted += 1;
+          reject(new Error('aborted by test timeout'));
+        },
+        { once: true }
+      );
+    });
+  }) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () =>
+        fetchTourApiFestivalDetails(
+          { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
+          '2786391',
+          '15',
+          { requestTimeoutMs: 5, deadlineAt: Date.now() + 100 }
+        ),
+      error => error instanceof TourApiDeadlineExceededError
+    );
+    assert.equal(attempts, 4);
+    assert.equal(aborted, 4);
   } finally {
     globalThis.fetch = originalFetch;
   }

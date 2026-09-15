@@ -17,6 +17,11 @@ export const STAGING_STATEMENTS_PER_BATCH = 10;
 export const RETRY_LIMIT = 3;
 export const SOURCE_REQUEST_RETRY_LIMIT = 2;
 export const SOURCE_PAGE_CONCURRENCY = 3;
+export const SOURCE_REQUEST_TIMEOUT_MS = 8_000;
+export const SOURCE_RETRY_BACKOFF_BASE_MS = 250;
+export const SOURCE_SNAPSHOT_DEADLINE_MS = 60_000;
+export const SOURCE_DETAIL_DEADLINE_MS = 20_000;
+export const SOURCE_DETAIL_REFRESH_DEADLINE_MS = 60_000;
 export const INITIALIZE_LOCK_TABLE = 'initialize_sync_locks';
 export const INITIALIZE_LOCK_NAME = 'initialize-sync-lock';
 export const INITIALIZE_LOCK_TTL_MINUTES = 30;
@@ -41,6 +46,10 @@ export const toCount = (value: unknown) => {
 export type TourApiConfig = {
   baseUrl: string;
   serviceKey: string;
+};
+export type TourApiRequestOptions = {
+  deadlineAt?: number;
+  requestTimeoutMs?: number;
 };
 export type WorkerEnv = RuntimeEnv;
 export type InsertStats = { inserted: number; skipped: number };

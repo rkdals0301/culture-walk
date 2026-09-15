@@ -13,8 +13,18 @@ import {
   requestCultureDetailRefresh,
   type StaleDetailRow,
 } from './cultureSyncDetailRepository';
-import { fetchTourApiFestivalDetails } from './cultureSyncSource';
-import { type D1Binding, INITIALIZE_LOCK_LEASE_LOST_MESSAGE, type TourApiConfig } from './cultureSyncTypes';
+import {
+  fetchTourApiFestivalDetails,
+  isTourApiDeadlineExceededError,
+  TourApiDeadlineExceededError,
+} from './cultureSyncSource';
+import {
+  type D1Binding,
+  INITIALIZE_LOCK_LEASE_LOST_MESSAGE,
+  SOURCE_DETAIL_REFRESH_DEADLINE_MS,
+  type TourApiConfig,
+  type TourApiRequestOptions,
+} from './cultureSyncTypes';
 
 export { hasStaleCachedTourApiDetails, publishCurrentCultureDetailReadModels, requestCultureDetailRefresh };
 
@@ -32,6 +42,7 @@ const refreshCachedDetail = async (
   beforeWrite?: () => Promise<boolean>,
   cache?: CultureCacheBinding,
   cacheVersion = 'detail-refresh',
+  requestOptions: TourApiRequestOptions = {},
 ) => {
   const cultureId = Number(row.id);
   const sourceKey = row.sourceKey;
@@ -39,7 +50,10 @@ const refreshCachedDetail = async (
 
   if (!Number.isInteger(cultureId) || !sourceKey || !contentId) return false;
 
-  const details = await fetchTourApiFestivalDetails(config, contentId);
+  const details = await fetchTourApiFestivalDetails(config, contentId, '15', requestOptions);
+  if (requestOptions.deadlineAt !== undefined && Date.now() >= requestOptions.deadlineAt) {
+    throw new TourApiDeadlineExceededError('detail refresh');
+  }
   if (!details.complete) {
     throw new Error(`TourAPI 상세정보 일부 조회로 저장하지 않습니다. sourceKey=${sourceKey}`);
   }
@@ -68,8 +82,18 @@ export const refreshStaleCachedTourApiDetails = async (
     beforeEach?: () => Promise<boolean>;
     cache?: CultureCacheBinding;
     readModelRevisions?: Record<string, string>;
+    deadlineAt?: number;
+    requestTimeoutMs?: number;
   } = {}
 ) => {
+  const deadlineAt = Number.isFinite(options.deadlineAt)
+    ? Number(options.deadlineAt)
+    : Date.now() + SOURCE_DETAIL_REFRESH_DEADLINE_MS;
+  const requestOptions: TourApiRequestOptions = { deadlineAt, requestTimeoutMs: options.requestTimeoutMs };
+  if (Date.now() >= deadlineAt) {
+    return { refreshed: 0, refreshedCultureIds: [] };
+  }
+
   const rows = await readStaleCultureDetailRows(d1);
   const readModel = options.readModelRevisions
     ? null
@@ -81,6 +105,7 @@ export const refreshStaleCachedTourApiDetails = async (
   const refreshedCultureIds: number[] = [];
 
   for (const row of rows) {
+    if (Date.now() >= deadlineAt) break;
     if (options.beforeEach && !(await options.beforeEach())) {
       throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
     }
@@ -92,7 +117,8 @@ export const refreshStaleCachedTourApiDetails = async (
         row,
         options.beforeEach,
         options.cache,
-        readModelRevisions[String(row.id)] ?? 'legacy-read-model'
+        readModelRevisions[String(row.id)] ?? 'legacy-read-model',
+        requestOptions
       );
       if (didRefresh) {
         refreshed += 1;
@@ -100,6 +126,7 @@ export const refreshStaleCachedTourApiDetails = async (
       }
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) throw error;
+      if (isTourApiDeadlineExceededError(error)) break;
 
       if (options.beforeEach && !(await options.beforeEach())) {
         throw new Error(INITIALIZE_LOCK_LEASE_LOST_MESSAGE);
