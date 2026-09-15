@@ -31,3 +31,9 @@ test('Cloudflare Images binding is enabled for OpenNext image optimization', asy
 
   assert.match(wrangler, /"images"\s*:\s*\{[\s\S]*?"binding"\s*:\s*"IMAGES"/);
 });
+
+test('Next static assets run through the worker for immutable cache headers', async () => {
+  const wrangler = await readProjectFile('../wrangler.jsonc');
+
+  assert.match(wrangler, /"run_worker_first"\s*:\s*\[\s*"\/_next\/static\/\*"\s*\]/);
+});

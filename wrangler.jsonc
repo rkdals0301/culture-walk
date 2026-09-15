@@ -16,7 +16,10 @@
   },
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Let the custom worker apply immutable headers to Next's content-addressed assets.
+    // OpenNext then serves the matching file through the ASSETS binding.
+    "run_worker_first": ["/_next/static/*"]
   },
   "images": {
     "binding": "IMAGES"
