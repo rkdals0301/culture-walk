@@ -35,7 +35,7 @@ export const CultureDetailDesktopActions = ({ culture }: CultureDetailActionsPro
           href={primary.url}
           target='_blank'
           rel='noreferrer'
-          className='flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--color-brand-primary)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.99]'
+          className='flex h-11 items-center justify-center gap-2 rounded-lg bg-[var(--color-brand-primary)] px-5 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.99]'
         >
           <span>{primary.label}</span>
           <ExternalLink className='size-3.5' strokeWidth={1.8} />
@@ -73,7 +73,7 @@ export const CultureDetailMobileActions = ({ culture }: CultureDetailActionsProp
             href={primary.url}
             target='_blank'
             rel='noreferrer'
-            className='flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
+            className='flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-3 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
           >
             <span>{primary.label}</span>
             <ExternalLink className='size-3.5 shrink-0' strokeWidth={1.8} />
@@ -81,7 +81,7 @@ export const CultureDetailMobileActions = ({ culture }: CultureDetailActionsProp
         ) : (
           <Link
             href={mapExploreUrl}
-            className='flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
+            className='flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-brand-primary)] px-3 text-sm font-semibold text-[var(--color-brand-on-primary)] transition hover:bg-[var(--color-brand-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
           >
             <Compass className='size-4 shrink-0' strokeWidth={1.8} />
             <span>지도에서 위치 확인하기</span>

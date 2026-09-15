@@ -1,7 +1,7 @@
 @layer base {
   :root {
     --map-header-height: 64px;
-    --map-sidebar-width: 400px;
+    --map-sidebar-width: 0px;
     --map-detail-width: 0px;
     color-scheme: light;
 
@@ -72,7 +72,7 @@
     --color-detail-divider: #e5e8eb;
 
     /* Semantic: brand (Toss Signature Blue & Coral) */
-    --color-brand-primary: #3182f6;
+    --color-brand-primary: #0b63ce;
     --color-brand-hover: #1b64da;
     --color-brand-active: #1957c2;
     --color-brand-subtle: #e8f3ff;
@@ -193,11 +193,11 @@
     --color-divider: #282833;
     --color-detail-divider: #1d1d22;
 
-    --color-brand-primary: #3182f6;
-    --color-brand-hover: #5299f7;
-    --color-brand-active: #1b64da;
+    --color-brand-primary: #5299f7;
+    --color-brand-hover: #6aa5fa;
+    --color-brand-active: #408cf2;
     --color-brand-subtle: #192a4a;
-    --color-brand-on-primary: #ffffff;
+    --color-brand-on-primary: #101012;
     --color-accent-primary: #f04452;
     --color-accent-hover: #fa616d;
     --color-accent-active: #d92d3a;

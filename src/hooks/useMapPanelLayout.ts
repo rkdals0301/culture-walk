@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 const DESKTOP_PANEL_WIDTH = 400;
 const DESKTOP_DETAIL_PANEL_WIDTH = 480;
+const getIsWideDesktop = () =>
+  typeof window !== 'undefined' && window.matchMedia('(min-width: 1280px)').matches;
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export const useMapPanelLayout = (isDesktopPanelCollapsed: boolean, isDetailRoute: boolean) => {
-  const [isWideDesktop, setIsWideDesktop] = useState(false);
+  const [isWideDesktop, setIsWideDesktop] = useState(getIsWideDesktop);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1280px)');
@@ -15,7 +18,7 @@ export const useMapPanelLayout = (isDesktopPanelCollapsed: boolean, isDetailRout
     return () => mediaQuery.removeEventListener('change', updateViewport);
   }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const root = document.documentElement;
     const listPanelWidth = isDesktopPanelCollapsed ? 0 : DESKTOP_PANEL_WIDTH;
     const detailPanelWidth = isDetailRoute && isWideDesktop ? DESKTOP_DETAIL_PANEL_WIDTH : 0;

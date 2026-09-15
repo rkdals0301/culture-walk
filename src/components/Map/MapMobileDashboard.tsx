@@ -209,7 +209,7 @@ const MapMobileDashboard = ({
           onClick={() => setIsMobileSheetVisible(true)}
           className='group inline-flex min-h-12 items-center gap-3 rounded-full border border-[var(--color-border-primary)] bg-[var(--color-surface-elevated)] px-4 py-2 text-left text-sm font-semibold text-[var(--color-text-primary)] shadow-lg transition-all duration-150 active:scale-[0.98]'
         >
-          <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-white'>
+          <span className='shadow-xs flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)]'>
             <List aria-hidden='true' className='size-4' strokeWidth={2} />
           </span>
           <span className='flex min-w-0 flex-col'>

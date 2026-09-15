@@ -58,6 +58,24 @@ test('disabled text remains readable against disabled surfaces in both themes', 
   );
 });
 
+test('brand text and controls meet AA contrast in both themes', async () => {
+  const source = await readThemeStyles();
+  const lightTheme = source.slice(source.indexOf(':root {'), source.indexOf('\n  .dark {'));
+  const darkTheme = source.slice(source.indexOf('.dark {'));
+
+  for (const theme of [lightTheme, darkTheme]) {
+    assert.ok(
+      contrastRatio(readToken(theme, '--color-brand-on-primary'), readToken(theme, '--color-brand-primary')) >= 4.5
+    );
+    assert.ok(
+      contrastRatio(readToken(theme, '--color-brand-primary'), readToken(theme, '--color-brand-subtle')) >= 4.5
+    );
+    assert.ok(
+      contrastRatio(readToken(theme, '--color-brand-primary'), readToken(theme, '--color-surface-chip')) >= 4.5
+    );
+  }
+});
+
 test('dark mode tones down only the map canvas', async () => {
   const [styles, mapView] = await Promise.all([readThemeStyles(), readFile(mapViewPath, 'utf8')]);
 

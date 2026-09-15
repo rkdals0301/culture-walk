@@ -92,7 +92,7 @@ export const MapDetailFallback = ({ culture }: { culture: FormattedCultureDetail
                 href={culture.homepageDetailAddress}
                 target='_blank'
                 rel='noreferrer'
-                className='flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-white shadow-xs transition hover:bg-[var(--color-brand-hover)]'
+                className='flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-primary)] px-3 text-xs font-bold text-[var(--color-brand-on-primary)] shadow-xs transition hover:bg-[var(--color-brand-hover)]'
               >
                 <span>예약 / 상세</span>
                 <ExternalLink aria-hidden='true' className='size-3.5' strokeWidth={2} />

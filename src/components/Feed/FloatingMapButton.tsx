@@ -42,7 +42,7 @@ const FloatingMapButton = () => {
       <button
         type='button'
         onClick={handleNavigateToMap}
-        className='pointer-events-auto flex items-center gap-2 rounded-full bg-[var(--color-brand-primary)] px-5 py-3 text-xs font-bold text-white shadow-md transition-all duration-200 hover:bg-[var(--color-brand-hover)] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
+        className='pointer-events-auto flex items-center gap-2 rounded-full bg-[var(--color-brand-primary)] px-5 py-3 text-xs font-bold text-[var(--color-brand-on-primary)] shadow-md transition-all duration-200 hover:bg-[var(--color-brand-hover)] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]'
         aria-label='지도에서 보기'
       >
         <MapIcon className='size-3.5' strokeWidth={2.2} />

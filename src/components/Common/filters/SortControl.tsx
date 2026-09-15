@@ -26,7 +26,7 @@ export const SortControl = ({ mode, hasLocation, isLocating, onChange, size = 'm
         'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg font-bold transition-all duration-150 active:scale-95',
         size === 'sm' ? 'min-h-11 h-7 px-2 text-[0.72rem]' : 'min-h-11 h-7 sm:h-8 px-2.5 text-xs',
         mode === 'date'
-          ? 'bg-[var(--color-brand-primary)] text-white shadow-xs'
+          ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-xs'
           : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
       )}
     >
@@ -44,7 +44,7 @@ export const SortControl = ({ mode, hasLocation, isLocating, onChange, size = 'm
         'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg font-bold transition-all duration-150 active:scale-95',
         size === 'sm' ? 'min-h-11 h-7 px-2 text-[0.72rem]' : 'min-h-11 h-7 sm:h-8 px-2.5 text-xs',
         mode === 'distance'
-          ? 'bg-[var(--color-brand-primary)] text-white shadow-xs'
+          ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-xs'
           : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]'
       )}
     >

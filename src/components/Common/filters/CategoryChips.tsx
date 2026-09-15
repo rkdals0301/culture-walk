@@ -32,7 +32,7 @@ export const CategoryChips = ({ selected, onSelect, layout = 'scroll', size = 'm
               ? 'h-8 px-1.5 text-[0.72rem]'
               : 'h-8.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm',
             isSelected
-              ? 'bg-[var(--color-brand-primary)] text-white shadow-xs'
+              ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-xs'
               : 'border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'
           )}
         >

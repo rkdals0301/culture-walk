@@ -4,7 +4,10 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const shellPath = fileURLToPath(new URL('../src/components/Map/MapShell.tsx', import.meta.url));
+const desktopDashboardPath = fileURLToPath(new URL('../src/components/Map/MapDesktopDashboard.tsx', import.meta.url));
 const mobileDashboardPath = fileURLToPath(new URL('../src/components/Map/MapMobileDashboard.tsx', import.meta.url));
+const panelLayoutPath = fileURLToPath(new URL('../src/hooks/useMapPanelLayout.ts', import.meta.url));
+const foundationStylesPath = fileURLToPath(new URL('../src/styles/_foundation.scss', import.meta.url));
 const viewPath = fileURLToPath(new URL('../src/components/Map/MapView.tsx', import.meta.url));
 const layoutPath = fileURLToPath(new URL('../src/app/layout.tsx', import.meta.url));
 const contextPath = fileURLToPath(new URL('../src/context/CultureContext.tsx', import.meta.url));
@@ -50,13 +53,29 @@ test('지도 API 인라인 오류는 피드 링크 아래의 별도 레인에 �
 });
 
 test('지도 모바일 컨트롤은 보이는 문구를 그대로 접근성 이름으로 사용한다', async () => {
-  const [shell, mobileDashboard] = await Promise.all([
+  const [shell, desktopDashboard, mobileDashboard] = await Promise.all([
     readFile(shellPath, 'utf8'),
+    readFile(desktopDashboardPath, 'utf8'),
     readFile(mobileDashboardPath, 'utf8'),
   ]);
 
   assert.doesNotMatch(shell, /aria-label='문화 큐레이션 둘러보기로 이동'/);
+  assert.match(
+    desktopDashboard,
+    /aria-label=\{'목록 ' \+ viewportCount\.toLocaleString\(\) \+ '개 행사 목록 펼치기'\}/
+  );
   assert.doesNotMatch(mobileDashboard, /aria-label=\{\s*isClustered/);
+});
+
+test('지도 기본 패널 레이아웃은 첫 페인트에서 지도 폭을 바꾸지 않는다', async () => {
+  const [foundation, panelLayout] = await Promise.all([
+    readFile(foundationStylesPath, 'utf8'),
+    readFile(panelLayoutPath, 'utf8'),
+  ]);
+
+  assert.match(foundation, /--map-sidebar-width:\s*0px;/);
+  assert.match(panelLayout, /const useIsomorphicLayoutEffect =/);
+  assert.match(panelLayout, /useState\(getIsWideDesktop\)/);
 });
 
 test('전역 컨텍스트는 전체 문화 목록을 직접 로드하지 않는다', async () => {

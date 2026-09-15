@@ -112,7 +112,7 @@ const SideMenu = () => {
                       className={clsx(
                         'flex size-8 shrink-0 items-center justify-center rounded-lg transition-all duration-150',
                         isActive
-                          ? 'bg-[var(--color-brand-primary)] text-white shadow-2xs'
+                          ? 'bg-[var(--color-brand-primary)] text-[var(--color-brand-on-primary)] shadow-2xs'
                           : 'bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] group-hover:bg-[var(--color-brand-subtle)] group-hover:text-[var(--color-brand-primary)] group-hover:shadow-xs group-hover:scale-105'
                       )}
                     >
