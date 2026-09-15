@@ -16,7 +16,7 @@ const CopyAddressButton = ({ copied, onCopy }: { copied: boolean; onCopy: () => 
   <button
     type='button'
     onClick={onCopy}
-    className='inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-[var(--color-brand-primary)] transition hover:bg-[var(--color-brand-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95'
+    className='inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium text-[var(--color-brand-primary)] transition hover:bg-[var(--color-brand-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-95'
     title='주소 복사'
     aria-live='polite'
   >

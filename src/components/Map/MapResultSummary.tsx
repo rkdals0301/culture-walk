@@ -66,7 +66,7 @@ const MapResultSummary = ({
           <button
             type='button'
             onClick={onReset}
-            className='inline-flex min-h-7 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-bold text-[var(--color-brand-primary)] transition-colors hover:bg-[var(--color-brand-subtle)] active:opacity-75'
+            className='inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-md px-1.5 text-xs font-bold text-[var(--color-brand-primary)] transition-colors hover:bg-[var(--color-brand-subtle)] active:opacity-75'
           >
             <RotateCcw aria-hidden='true' className='size-3' strokeWidth={2} />
             초기화

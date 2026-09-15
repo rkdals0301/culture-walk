@@ -170,7 +170,7 @@ const BottomSheet = () => {
                   type='button'
                   onClick={closeBottomSheet}
                   onPointerDown={e => e.stopPropagation()}
-                  className='soft-chip flex size-9 items-center justify-center rounded-xl text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
+                  className='soft-chip flex size-11 items-center justify-center rounded-xl text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] active:bg-[var(--color-interactive-active)]'
                   aria-label='상세 패널 닫기'
                 >
                   <CloseIcon className='size-3.5' />

@@ -24,7 +24,7 @@ export const SortControl = ({ mode, hasLocation, isLocating, onChange, size = 'm
       aria-pressed={mode === 'date'}
       className={clsx(
         'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg font-bold transition-all duration-150 active:scale-95',
-        size === 'sm' ? 'h-7 px-2 text-[0.72rem]' : 'h-7 sm:h-8 px-2.5 text-xs',
+        size === 'sm' ? 'min-h-11 h-7 px-2 text-[0.72rem]' : 'min-h-11 h-7 sm:h-8 px-2.5 text-xs',
         mode === 'date'
           ? 'bg-[var(--color-brand-primary)] text-white shadow-xs'
           : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
@@ -42,7 +42,7 @@ export const SortControl = ({ mode, hasLocation, isLocating, onChange, size = 'm
       title={hasLocation ? '거리순으로 정렬' : '현재 위치를 확인하고 거리순으로 정렬'}
       className={clsx(
         'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg font-bold transition-all duration-150 active:scale-95',
-        size === 'sm' ? 'h-7 px-2 text-[0.72rem]' : 'h-7 sm:h-8 px-2.5 text-xs',
+        size === 'sm' ? 'min-h-11 h-7 px-2 text-[0.72rem]' : 'min-h-11 h-7 sm:h-8 px-2.5 text-xs',
         mode === 'distance'
           ? 'bg-[var(--color-brand-primary)] text-white shadow-xs'
           : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]'

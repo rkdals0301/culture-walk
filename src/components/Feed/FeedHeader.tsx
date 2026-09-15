@@ -58,7 +58,7 @@ const FeedHeader = ({
         <div className='w-full sm:w-72 lg:w-80'>
           <form
             onSubmit={handleSubmit}
-            className='relative flex h-10 items-center rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] px-3 text-xs sm:text-sm transition-all duration-150 focus-within:border-[var(--color-brand-primary)] focus-within:bg-[var(--color-surface-primary)] focus-within:ring-2 focus-within:ring-[var(--color-border-brand-subtle)]'
+            className='relative flex h-11 items-center rounded-xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] px-3 text-xs sm:text-sm transition-all duration-150 focus-within:border-[var(--color-brand-primary)] focus-within:bg-[var(--color-surface-primary)] focus-within:ring-2 focus-within:ring-[var(--color-border-brand-subtle)]'
           >
             <label htmlFor='feed-search-input' className='sr-only'>
               문화행사 검색
@@ -79,7 +79,7 @@ const FeedHeader = ({
               <button
                 type='button'
                 onClick={handleClear}
-                className='flex size-5 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)] transition-colors'
+                className='flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)] transition-colors'
                 aria-label='검색어 지우기'
               >
                 <X className='size-3' />

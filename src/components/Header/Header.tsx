@@ -49,7 +49,7 @@ const Header = () => {
             ariaLabel='사이드메뉴 열기'
             onClick={handleOpenSideMenu}
             variant='secondary'
-            className='size-9 sm:size-10 rounded-lg transition-colors hover:bg-[var(--color-surface-chip)]'
+            className='size-11 rounded-lg transition-colors hover:bg-[var(--color-surface-chip)]'
           />
           <Link href='/' className='group flex min-w-0 items-center gap-2 sm:gap-2.5 transition-opacity duration-150 hover:opacity-90'>
             <Image

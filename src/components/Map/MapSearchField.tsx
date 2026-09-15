@@ -12,7 +12,7 @@ const MapSearchField = ({ id, value, onChange, compact = false }: MapSearchField
   <form
     role='search'
     className={`shadow-2xs focus-within:ring-[var(--color-brand-primary)]/20 flex items-center rounded-xl border border-[var(--color-input-border)] bg-[var(--color-input-bg)] transition-all focus-within:border-[var(--color-brand-primary)] focus-within:ring-2 ${
-      compact ? 'h-10 gap-2 px-3' : 'h-11 gap-2.5 px-3.5'
+      compact ? 'h-11 gap-2 px-3' : 'h-11 gap-2.5 px-3.5'
     }`}
     onSubmit={event => {
       event.preventDefault();
@@ -39,7 +39,7 @@ const MapSearchField = ({ id, value, onChange, compact = false }: MapSearchField
         type='button'
         onClick={() => onChange('')}
         className={`flex shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-interactive-hover)] hover:text-[var(--color-text-primary)] ${
-          compact ? 'size-7' : 'size-8'
+          compact ? 'size-11' : 'size-11'
         }`}
         aria-label='검색어 초기화'
       >

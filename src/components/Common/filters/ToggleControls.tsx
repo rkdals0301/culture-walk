@@ -17,7 +17,7 @@ export const FreeOnlyToggle = ({ isFreeOnly, onToggle, size = 'md' }: FreeOnlyTo
     aria-pressed={isFreeOnly}
     className={clsx(
       'flex shrink-0 items-center gap-1.5 rounded-xl border font-bold transition-all active:scale-95',
-      size === 'sm' ? 'h-8 px-2 text-[0.72rem]' : 'h-8 sm:h-9 px-3 text-xs',
+      size === 'sm' ? 'min-h-11 h-8 px-2 text-[0.72rem]' : 'min-h-11 h-8 sm:h-9 px-3 text-xs',
       isFreeOnly
         ? 'border-[var(--color-brand-primary)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] shadow-xs'
         : 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:text-[var(--color-text-primary)]'
@@ -61,7 +61,7 @@ export const LocationToggle = ({
       {...rest}
       className={clsx(
         'flex shrink-0 items-center justify-center rounded-xl border font-bold transition-all active:scale-95',
-        size === 'sm' ? 'h-8 px-2.5 text-[0.72rem] gap-1' : 'h-8 sm:h-9 px-3 text-xs gap-1.5',
+        size === 'sm' ? 'min-h-11 h-8 px-2.5 text-[0.72rem] gap-1' : 'min-h-11 h-8 sm:h-9 px-3 text-xs gap-1.5',
         compact && 'px-2',
         isActive
           ? 'border-[var(--color-brand-primary)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-primary)] shadow-xs'
@@ -90,7 +90,7 @@ export const ResetFiltersButton = ({ onReset, size = 'md' }: ResetFiltersButtonP
     onClick={onReset}
     className={clsx(
       'flex shrink-0 items-center gap-1 rounded-xl font-bold text-[var(--color-brand-primary)] transition-colors hover:bg-[var(--color-surface-chip)] active:scale-95',
-      size === 'sm' ? 'h-8 px-2 text-[0.72rem]' : 'h-8 sm:h-9 px-2.5 text-xs'
+      size === 'sm' ? 'min-h-11 h-8 px-2 text-[0.72rem]' : 'min-h-11 h-8 sm:h-9 px-2.5 text-xs'
     )}
     aria-label='필터 조건 초기화'
   >

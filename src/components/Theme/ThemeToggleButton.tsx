@@ -59,7 +59,7 @@ const ThemeToggle = ({ className }: ThemeToggleProps) => {
       title={isDark ? '라이트모드로 전환' : '다크모드로 전환'}
       onClick={handleClick}
       variant='secondary'
-      className={className ?? 'size-9 sm:size-10 rounded-lg transition-colors hover:bg-[var(--color-surface-chip)]'}
+      className={className ?? 'size-11 rounded-lg transition-colors hover:bg-[var(--color-surface-chip)]'}
       icon={isDark ? <LightModeIcon /> : <DarkModeIcon />}
     />
   );

@@ -71,18 +71,14 @@ const MapMobileDashboard = ({
         className='surface-panel pointer-events-auto mt-auto flex h-[calc(100dvh-6.4rem)] max-h-none min-h-[400px] w-full flex-col overflow-hidden rounded-b-none rounded-t-[28px] border-x-0 border-b-0 border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] pb-[env(safe-area-inset-bottom,0px)] text-[var(--color-text-primary)] shadow-2xl backdrop-blur-xl'
         aria-busy={isFilterPending || isLoading}
       >
-        <div
+        <button
+          type='button'
           className='flex w-full shrink-0 cursor-grab items-center justify-center pb-1 pt-2.5 active:cursor-grabbing'
           onClick={() => setIsMobileSheetVisible(false)}
-          role='button'
-          tabIndex={0}
           aria-label='행사 목록 접고 지도 보기'
-          onKeyDown={event => {
-            if (event.key === 'Enter' || event.key === ' ') setIsMobileSheetVisible(false);
-          }}
         >
           <div className='h-1.5 w-10 rounded-full bg-[var(--color-text-tertiary)]/35 transition-colors hover:bg-[var(--color-text-tertiary)]/60' />
-        </div>
+        </button>
 
         <div className='border-b border-[var(--color-border-primary)] px-4 pb-2.5 pt-1'>
           <div className='flex items-center justify-between gap-3'>
@@ -125,7 +121,7 @@ const MapMobileDashboard = ({
               aria-expanded={isMobileFiltersOpen}
               aria-controls='map-mobile-filters'
               className={clsx(
-                'flex h-9 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-bold transition-all duration-150',
+                'flex min-h-11 shrink-0 items-center gap-1 rounded-xl border px-2.5 text-xs font-bold transition-all duration-150',
                 isMobileFiltersOpen || hasActiveFilters
                   ? 'border-[var(--color-border-brand)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-hover)]'
                   : 'border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-control)] hover:bg-[var(--color-surface-secondary)] hover:text-[var(--color-text-primary)]'

@@ -15,7 +15,7 @@ export const CategoryChips = ({ selected, onSelect, layout = 'scroll', size = 'm
     className={clsx(
       layout === 'scroll' ? 'flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none' : 'grid grid-cols-5 gap-1.5'
     )}
-    role='tablist'
+    role='group'
     aria-label='문화행사 카테고리'
   >
     {CULTURE_CATEGORY_OPTIONS.map(option => {
@@ -24,8 +24,7 @@ export const CategoryChips = ({ selected, onSelect, layout = 'scroll', size = 'm
         <button
           type='button'
           key={option.key}
-          role='tab'
-          aria-selected={isSelected}
+            aria-pressed={isSelected}
           onClick={() => onSelect(option.key)}
           className={clsx(
             'flex shrink-0 items-center justify-center rounded-full font-bold transition-all duration-150 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]',

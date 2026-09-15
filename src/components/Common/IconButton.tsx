@@ -73,7 +73,9 @@ const IconButton = ({
       disabled={disabled}
       {...props}
     >
-      <span className={twMerge(clsx(iconSizeClass, iconColorClass), iconClassName)}>{icon}</span>
+      <span aria-hidden='true' className={twMerge(clsx(iconSizeClass, iconColorClass), iconClassName)}>
+        {icon}
+      </span>
       {label && <span className='text-sm font-semibold'>{label}</span>}
     </button>
   );

@@ -499,6 +499,23 @@ test('runtime security, service worker cleanup, and cron observability stay expl
   assert.match(initializeRoute, /NO_STORE_CACHE_HEADERS/);
 });
 
+test('interactive filters expose semantic toggle buttons and touch-sized controls', async () => {
+  const [category, filters, mobileDashboard, iconButton] = await Promise.all([
+    readProjectFile('../src/components/Common/filters/CategoryChips.tsx'),
+    readProjectFile('../src/components/Common/filters/ToggleControls.tsx'),
+    readProjectFile('../src/components/Map/MapMobileDashboard.tsx'),
+    readProjectFile('../src/components/Common/IconButton.tsx'),
+  ]);
+
+  assert.match(category, /role='group'/);
+  assert.match(category, /aria-pressed={isSelected}/);
+  assert.doesNotMatch(category, /role='tab'|aria-selected/);
+  assert.match(filters, /min-h-11/);
+  assert.match(mobileDashboard, /<button[\s\S]*aria-label='행사 목록 접고 지도 보기'/);
+  assert.doesNotMatch(mobileDashboard, /role='button'[\s\S]*tabIndex={0}/);
+  assert.match(iconButton, /aria-hidden='true'/);
+});
+
 test('information styles keep the entrypoint small and delegate base/editorial layers to partials', async () => {
   const source = await readProjectFile('../src/styles/_information.scss');
 
