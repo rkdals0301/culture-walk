@@ -78,6 +78,18 @@ export const getCulturePublicRead = async (
     getCulturePublicListSnapshot(options),
   ]);
   const item = snapshot?.items.find(culture => culture.id === id) ?? null;
+
+  // The published list is the source of truth for currently public events.
+  // Once it is available, an ID outside the list is a definitive miss: do not
+  // spend a paid D1 detail read (or resurrect an old detail-cache entry).
+  if (snapshot && !item) {
+    return {
+      culture: null,
+      source: null,
+      readModelAvailable: true,
+    };
+  }
+
   const itemRevision = snapshot?.revisions[String(id)];
   const detailMatchesReadModel = detail?.culture?.id === id && (!itemRevision || detail.cacheVersion === itemRevision);
   if (detailMatchesReadModel) {

@@ -220,6 +220,7 @@ npm run dev
 ### 4. 문화행사 상세 조회 (`GET /api/cultures/[id]`)
 - 특정 행사의 상세 정보(프로그램 소개, 추가 이미지, 예매처, 주최측 정보 등)를 반환합니다.
 - 풍부한 상세 KV cache가 있고 행사 revision이 일치하면 이를 사용합니다. 캐시가 없거나 오래됐으면 D1에서 해당 행사 1건과 유효한 상세 레코드를 읽고 즉시 응답한 뒤 KV에 write-through합니다.
+- 목록 read model이 사용 가능한 경우 목록에 없는 ID는 D1 상세 read-through 없이 즉시 404로 종료하여 잘못된 ID 요청의 유료 row read를 막습니다.
 - D1 read-through까지 실패한 경우에도 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다. 공개 요청은 D1 원본 데이터를 수정하지 않습니다.
 - 상세 Edge cache는 상세 동기화가 실제 데이터를 갱신했을 때 cache tag purge로 무효화합니다. 평상시 재요청은 가까운 Cloudflare Edge에서 바로 반환할 수 있습니다.
 
