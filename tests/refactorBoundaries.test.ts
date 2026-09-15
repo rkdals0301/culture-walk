@@ -238,6 +238,7 @@ test('D1 culture projections and row mapping live in repository modules', async 
   assert.match(repository, /CULTURE_DETAIL_SELECT/);
   assert.match(repository, /toCultureTourApiDetailsRow/);
   assert.match(repository, /toCultureListItem/);
+  assert.doesNotMatch(repository, /as unknown as/);
   assert.match(readModel, /cultureD1Repository/);
   assert.match(syncDetailRepository, /cultureD1Repository/);
   assert.match(detailPublisher, /cultureD1Repository/);

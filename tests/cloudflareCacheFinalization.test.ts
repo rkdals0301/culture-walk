@@ -87,6 +87,8 @@ test('detail refresh reports only successfully refreshed culture ids for precise
     id: 42,
     sourceKey: 'tourapi:123',
     registrationDate: '2026-07-01T00:00:00.000Z',
+    createdAt: '2026-06-01T00:00:00.000Z',
+    updatedAt: '2026-07-01T00:00:00.000Z',
     detailSyncFailCount: 0,
   };
 

@@ -46,7 +46,58 @@ export const CULTURE_DETAIL_SELECT = `
   details.synced_at AS "detailSyncedAt"
 `;
 
-export const toCultureContentRow = (row: CultureD1Row) => row as unknown as CultureContentRow;
+const toNullableString = (value: unknown) => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return null;
+};
+
+const toNullableNumber = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const toInteger = (value: unknown) => {
+  const parsed = toNullableNumber(value);
+  return parsed !== null && Number.isInteger(parsed) ? parsed : null;
+};
+
+export const toCultureContentRow = (row: CultureD1Row): CultureContentRow | null => {
+  const id = toInteger(row.id);
+  const createdAt = toNullableString(row.createdAt);
+  const updatedAt = toNullableString(row.updatedAt);
+  if (id === null || !createdAt || !updatedAt) return null;
+
+  return {
+    id,
+    sourceKey: toNullableString(row.sourceKey),
+    classification: toNullableString(row.classification),
+    date: toNullableString(row.date),
+    endDate: toNullableString(row.endDate),
+    etcDescription: toNullableString(row.etcDescription),
+    guName: toNullableString(row.guName),
+    homepageDetailAddress: toNullableString(row.homepageDetailAddress),
+    isFree: toNullableString(row.isFree),
+    lat: toNullableNumber(row.lat),
+    lng: toNullableNumber(row.lng),
+    mainImage: toNullableString(row.mainImage),
+    homepageAddress: toNullableString(row.homepageAddress),
+    organizationName: toNullableString(row.organizationName),
+    place: toNullableString(row.place),
+    performerInformation: toNullableString(row.performerInformation),
+    programIntroduction: toNullableString(row.programIntroduction),
+    registrationDate: toNullableString(row.registrationDate),
+    startDate: toNullableString(row.startDate),
+    themeClassification: toNullableString(row.themeClassification),
+    register: toNullableString(row.register),
+    title: toNullableString(row.title),
+    useFee: toNullableString(row.useFee),
+    useTarget: toNullableString(row.useTarget),
+    createdAt,
+    updatedAt,
+  };
+};
 
 export const toCultureTourApiDetailsRow = (row: CultureD1Row): CultureTourApiDetailsRow | undefined => {
   if (!row.detailSourceKey) return undefined;

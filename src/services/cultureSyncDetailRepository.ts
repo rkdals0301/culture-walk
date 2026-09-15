@@ -1,4 +1,4 @@
-import { CULTURE_CONTENT_SELECT } from '@/services/cultureD1Repository';
+import { CULTURE_CONTENT_SELECT, toCultureContentRow } from '@/services/cultureD1Repository';
 import type { CultureContentRow } from '@/services/cultureService';
 import { serializeTourApiDetails, createTourApiDetailSummary } from '@/services/tourApiDetails';
 import type { TourApiFestivalDetails } from '@/types/culture';
@@ -74,7 +74,13 @@ export const readStaleCultureDetailRows = async (d1: D1Binding): Promise<StaleDe
     .bind(STALE_DETAIL_REFRESH_LIMIT)
     .all();
 
-  return (result.results ?? []) as StaleDetailRow[];
+  return (result.results ?? []).flatMap(rawRow => {
+    const row = toCultureContentRow(rawRow);
+    if (!row) return [];
+
+    const detailSyncFailCount = Number(rawRow.detailSyncFailCount ?? 0);
+    return [{ ...row, detailSyncFailCount: Number.isFinite(detailSyncFailCount) ? detailSyncFailCount : 0 }];
+  });
 };
 
 export const persistCultureDetailRefreshSuccess = async (

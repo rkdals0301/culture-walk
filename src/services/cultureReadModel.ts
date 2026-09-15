@@ -50,6 +50,7 @@ const readCultureDetailFromD1 = async (d1: D1Binding, id: number) => {
   if (!row) return null;
 
   const contentRow = toCultureContentRow(row);
+  if (!contentRow) return null;
   const detailRow = toCultureTourApiDetailsRow(row);
   const culture = mapCultureRowToCulture(contentRow, detailRow ? parseStoredTourApiDetails(detailRow) : undefined);
   if (!culture) return null;

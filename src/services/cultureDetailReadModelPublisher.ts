@@ -3,8 +3,13 @@ import {
   readCultureReadModelCache,
   writeCultureDetailCache,
 } from '@/cache/kv';
-import { CULTURE_CONTENT_SELECT, CULTURE_DETAIL_SELECT, toCultureTourApiDetailsRow } from '@/services/cultureD1Repository';
-import { mapCultureRowToCulture, type CultureContentRow } from '@/services/cultureService';
+import {
+  CULTURE_CONTENT_SELECT,
+  CULTURE_DETAIL_SELECT,
+  toCultureContentRow,
+  toCultureTourApiDetailsRow,
+} from '@/services/cultureD1Repository';
+import { mapCultureRowToCulture } from '@/services/cultureService';
 import type { CultureCacheBinding } from '@/server/runtimeTypes';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import { getKoreaDateStartIso } from '@/utils/dateUtils';
@@ -13,8 +18,6 @@ import type { D1Binding } from './cultureSyncTypes';
 
 export const DETAIL_READ_MODEL_TTL_SECONDS = 60 * 60 * 24 * 7;
 const DETAIL_READ_MODEL_WRITE_BATCH_SIZE = 25;
-
-type DetailReadModelRow = CultureContentRow & Record<string, unknown>;
 
 export const publishCurrentCultureDetailReadModels = async (
   d1: D1Binding,
@@ -47,7 +50,8 @@ export const publishCurrentCultureDetailReadModels = async (
     const batch = rows.slice(index, index + DETAIL_READ_MODEL_WRITE_BATCH_SIZE);
     const results = await Promise.all(
       batch.map(async rawRow => {
-        const row = rawRow as DetailReadModelRow;
+        const row = toCultureContentRow(rawRow);
+        if (!row) return 'skipped' as const;
         const cultureId = Number(row.id);
         if (!Number.isInteger(cultureId) || cultureId < 1) return 'skipped' as const;
         const cacheVersion = revisions[String(cultureId)] ?? 'legacy-read-model';
@@ -56,7 +60,7 @@ export const publishCurrentCultureDetailReadModels = async (
         const existingUpdatedAt = existing?.culture?.updatedAt
           ? new Date(existing.culture.updatedAt).getTime()
           : Number.NaN;
-        const rowUpdatedAt = row.updatedAt ? new Date(row.updatedAt as string).getTime() : Number.NaN;
+        const rowUpdatedAt = row.updatedAt ? new Date(row.updatedAt).getTime() : Number.NaN;
         if (
           existing?.cacheVersion === cacheVersion &&
           Number.isFinite(existingUpdatedAt) &&
