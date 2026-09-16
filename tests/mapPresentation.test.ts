@@ -9,6 +9,7 @@ const mobileDashboardPath = fileURLToPath(new URL('../src/components/Map/MapMobi
 const panelLayoutPath = fileURLToPath(new URL('../src/hooks/useMapPanelLayout.ts', import.meta.url));
 const foundationStylesPath = fileURLToPath(new URL('../src/styles/_foundation.scss', import.meta.url));
 const viewPath = fileURLToPath(new URL('../src/components/Map/MapView.tsx', import.meta.url));
+const viewClientOnlyPath = fileURLToPath(new URL('../src/components/Map/MapViewClientOnly.tsx', import.meta.url));
 const layoutPath = fileURLToPath(new URL('../src/app/layout.tsx', import.meta.url));
 const contextPath = fileURLToPath(new URL('../src/context/CultureContext.tsx', import.meta.url));
 const apiErrorPath = fileURLToPath(new URL('../src/hooks/useApiError.ts', import.meta.url));
@@ -73,6 +74,13 @@ test('지도 기본 패널 레이아웃은 첫 페인트에서 지도 폭을 바
   assert.match(foundation, /--map-sidebar-width:\s*0px;/);
   assert.match(panelLayout, /const useIsomorphicLayoutEffect =/);
   assert.match(panelLayout, /useState\(getIsWideDesktop\)/);
+});
+
+test('지도 첫 화면은 MapView 청크를 늦게 발견하지 않도록 초기 client graph에 포함한다', async () => {
+  const source = await readFile(viewClientOnlyPath, 'utf8');
+
+  assert.match(source, /import MapView from '@\/components\/Map\/MapView';/);
+  assert.doesNotMatch(source, /next\/dynamic|ssr:\s*false/);
 });
 
 test('전역 컨텍스트는 전체 문화 목록을 직접 로드하지 않는다', async () => {

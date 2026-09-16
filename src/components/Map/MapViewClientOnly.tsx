@@ -1,14 +1,7 @@
 'use client';
 
-import Loader from '@/components/Loader/Loader';
+import MapView from '@/components/Map/MapView';
 import type { CultureMapCluster, CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
-
-import dynamic from 'next/dynamic';
-
-const MapViewNoSsr = dynamic(() => import('@/components/Map/MapView'), {
-  ssr: false,
-  loading: () => <Loader />,
-});
 
 interface MapViewClientOnlyProps {
   kakaoMapAppKey?: string | null;
@@ -32,7 +25,7 @@ const MapViewClientOnly = ({
   onContinueWithList,
 }: MapViewClientOnlyProps) => {
   return (
-    <MapViewNoSsr
+    <MapView
       kakaoMapAppKey={kakaoMapAppKey}
       visibleClusters={visibleClusters}
       isClustered={isClustered}
