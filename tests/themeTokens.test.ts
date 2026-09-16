@@ -58,6 +58,31 @@ test('disabled text remains readable against disabled surfaces in both themes', 
   );
 });
 
+test('tertiary text remains readable against the page surfaces in both themes', async () => {
+  const source = await readThemeStyles();
+  const lightTheme = source.slice(source.indexOf(':root {'), source.indexOf('\n  .dark {'));
+  const darkTheme = source.slice(source.indexOf('.dark {'));
+
+  assert.ok(
+    contrastRatio(readToken(lightTheme, '--color-text-tertiary'), readToken(lightTheme, '--color-bg-primary')) >= 4.5
+  );
+  assert.ok(
+    contrastRatio(
+      readToken(lightTheme, '--color-text-tertiary'),
+      readToken(lightTheme, '--color-surface-primary')
+    ) >= 4.5
+  );
+  assert.ok(
+    contrastRatio(readToken(darkTheme, '--color-text-tertiary'), readToken(darkTheme, '--color-bg-primary')) >= 4.5
+  );
+  assert.ok(
+    contrastRatio(
+      readToken(darkTheme, '--color-text-tertiary'),
+      readToken(darkTheme, '--color-surface-primary')
+    ) >= 4.5
+  );
+});
+
 test('brand text and controls meet AA contrast in both themes', async () => {
   const source = await readThemeStyles();
   const lightTheme = source.slice(source.indexOf(':root {'), source.indexOf('\n  .dark {'));
