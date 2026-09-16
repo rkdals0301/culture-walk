@@ -46,7 +46,7 @@ const FloatingMapButton = () => {
         aria-label='지도에서 보기'
       >
         <MapIcon className='size-3.5' strokeWidth={2.2} />
-        <span className='tracking-tight'>지도 보기</span>
+        <span className='tracking-tight'>지도에서 보기</span>
       </button>
     </aside>
   );

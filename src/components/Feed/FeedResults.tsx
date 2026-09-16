@@ -39,7 +39,13 @@ const FeedResults = ({
   onRetry,
   onRetryLoadMore,
 }: FeedResultsProps) => (
-  <main className='mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 sm:py-6 sm:pb-32 lg:px-8'>
+  <section
+    className='mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 sm:py-6 sm:pb-32 lg:px-8'
+    aria-labelledby='feed-results-title'
+  >
+    <h2 id='feed-results-title' className='sr-only'>
+      행사 목록
+    </h2>
     <div className='mb-4 flex items-center justify-between text-xs font-semibold text-[var(--color-text-tertiary)]'>
       <span>행사 {totalCount.toLocaleString('ko-KR')}개</span>
     </div>
@@ -112,7 +118,7 @@ const FeedResults = ({
         {isLoadingMore && <FeedSkeleton count={20} />}
       </div>
     )}
-  </main>
+  </section>
 );
 
 export default FeedResults;

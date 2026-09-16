@@ -54,10 +54,9 @@ const Header = () => {
           <Link href='/' className='group flex min-w-0 items-center gap-2 sm:gap-2.5 transition-opacity duration-150 hover:opacity-90'>
             <Image
               src='/assets/images/brand-logo.svg'
-              alt='문화산책'
+              alt=''
               width={32}
               height={32}
-              priority
               className='size-7 sm:size-8 transition-transform duration-150 group-hover:scale-105'
             />
             <div className='min-w-0'>

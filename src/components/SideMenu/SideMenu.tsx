@@ -66,7 +66,7 @@ const SideMenu = () => {
           <Link href='/' className='flex min-w-0 items-center gap-3' onClick={closeSideMenu}>
             <Image
               src='/assets/images/brand-logo.svg'
-              alt='문화산책'
+              alt=''
               width={40}
               height={40}
               className='size-10 transition-transform duration-150 hover:scale-105'

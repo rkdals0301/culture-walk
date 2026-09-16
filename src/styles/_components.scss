@@ -133,6 +133,10 @@
   contain-intrinsic-size: auto 28rem;
 }
 
+.feed-card-above-fold {
+  content-visibility: visible;
+}
+
 @keyframes map-marker-selection-pulse {
   0% {
     opacity: 0.84;

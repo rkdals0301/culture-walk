@@ -6,6 +6,7 @@ interface CultureImageFallbackProps {
   compact?: boolean;
   classification?: string;
   priority?: boolean;
+  decorative?: boolean;
 }
 
 const FALLBACK_ART_BY_TONE = {
@@ -24,7 +25,12 @@ const FALLBACK_LABEL_BY_TONE = {
   other: '문화행사',
 } as const;
 
-const CultureImageFallback = ({ compact = false, classification, priority = false }: CultureImageFallbackProps) => {
+const CultureImageFallback = ({
+  compact = false,
+  classification,
+  priority = false,
+  decorative = false,
+}: CultureImageFallbackProps) => {
   const tone = getCultureTone(classification);
   const fallbackLabel = FALLBACK_LABEL_BY_TONE[tone];
   const fallbackArt = FALLBACK_ART_BY_TONE[tone];
@@ -32,8 +38,9 @@ const CultureImageFallback = ({ compact = false, classification, priority = fals
   return (
     <div
       className='relative size-full overflow-hidden bg-[var(--color-image-fallback-surface)] text-white'
-      role='img'
-      aria-label={`${classification || '문화행사'} 대표 이미지 없음`}
+      role={decorative ? undefined : 'img'}
+      aria-label={decorative ? undefined : `${classification || '문화행사'} 대표 이미지 없음`}
+      aria-hidden={decorative ? true : undefined}
     >
       <Image
         src={fallbackArt}

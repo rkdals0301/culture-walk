@@ -46,13 +46,29 @@ const FeedCultureCard = ({
     [culture.startDate, culture.endDate]
   );
   const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
+  const accessibleLabel = [
+    dDay?.text,
+    isFree ? '무료' : null,
+    !hasCultureImage ? culture.classification || '문화행사' : null,
+    culture.classification || '문화행사',
+    '·',
+    culture.guName || '전국',
+    distance ? '·' : null,
+    distance,
+    culture.title,
+    culture.displayDate,
+    culture.displayPlace,
+    !isFree ? culture.displayPrice : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <article className='feed-card flex flex-col rounded-xl'>
+    <article className={`feed-card flex flex-col rounded-xl ${isAboveFold ? 'feed-card-above-fold' : ''}`}>
       <Link
         href={`/cultures/${culture.id}`}
         onClick={() => onOpenCulture(culture)}
-        aria-label={`${culture.title}, ${culture.displayDate}, ${culture.displayPlace}`}
+        aria-label={!hasCultureImage ? accessibleLabel : undefined}
         className='group flex cursor-pointer flex-col rounded-xl transition-transform duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)] active:scale-[0.98]'
       >
         {/* Poster Artwork Container (Clean hairline border, no arbitrary gradient overlay) */}
@@ -60,18 +76,23 @@ const FeedCultureCard = ({
           {hasCultureImage ? (
             <Image
               src={imgSrc}
-              alt={culture.title}
+              alt=''
+              aria-hidden='true'
               fill
               sizes={FEED_IMAGE_SIZES}
               quality={FEED_IMAGE_QUALITY}
               loading={isAboveFold ? 'eager' : 'lazy'}
               fetchPriority={isAboveFold ? 'high' : 'auto'}
-              preload={isAboveFold}
               onError={() => setImageFailed(true)}
               className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
             />
           ) : (
-            <CultureImageFallback compact classification={culture.classification} priority={isAboveFold} />
+            <CultureImageFallback
+              compact
+              classification={culture.classification}
+              priority={isAboveFold}
+              decorative
+            />
           )}
 
           {/* Minimal status badge (Only essential signal) */}
@@ -81,9 +102,9 @@ const FeedCultureCard = ({
                 <span
                   className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
                     dDay.variant === 'urgent'
-                      ? 'bg-[var(--color-error)] text-[var(--color-error-on-primary)]'
+                      ? 'bg-[var(--color-status-error-solid)] text-[var(--color-error-on-primary)]'
                       : dDay.variant === 'ongoing' || dDay.variant === 'upcoming'
-                        ? 'bg-[var(--color-info)] text-[var(--color-info-on-primary)]'
+                        ? 'bg-[var(--color-status-info-solid)] text-[var(--color-info-on-primary)]'
                         : 'bg-[var(--color-status-neutral)] text-[var(--color-status-neutral-on)]'
                   }`}
                 >
@@ -91,7 +112,7 @@ const FeedCultureCard = ({
                 </span>
               )}
               {isFree && (
-                <span className='rounded-md bg-[var(--color-success)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
+                <span className='rounded-md bg-[var(--color-status-success-solid)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
                   무료
                 </span>
               )}
