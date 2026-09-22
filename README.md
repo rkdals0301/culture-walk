@@ -108,6 +108,7 @@ culture-walk/
 ### 1. 요구 사항
 - **Node.js**: `v20.0.0` 이상
 - **npm**: `v10.0.0` 이상
+- **Windows 개발자**: 일반 Next.js 개발/테스트는 Windows에서 지원합니다. OpenNext의 Cloudflare 번들링은 네이티브 Windows에서 best-effort이므로, 운영과 동일한 로컬 검증이 필요하면 WSL2를 사용합니다. 실제 CI/CD 빌드와 배포는 Ubuntu runner가 기준입니다.
 
 ### 2. 의존성 설치
 ```bash
@@ -193,9 +194,9 @@ npm run dev
 | `npm run db:seed:local` | 저장된 로컬 샘플 스냅샷을 운영 접근 없이 로컬 D1에 적용 |
 | `npm run db:seed:local:from-production` | 운영 D1에서 샘플과 상세 데이터를 추출해 로컬 스냅샷 갱신 |
 | `npm run db:migrate:remote` | 원격 Cloudflare D1 프로덕션 DB에 마이그레이션 적용 |
-| `npm run cf:build` | OpenNext를 이용한 Cloudflare Workers 빌드 |
+| `npm run cf:build` | 플랫폼 preflight 후 OpenNext를 이용한 Cloudflare Workers 빌드 |
 | `npm run preview` | OpenNext 빌드 후 Wrangler 로컬 에뮬레이터 실행 |
-| `npm run deploy` | OpenNext 빌드 후 Cloudflare Workers 프로덕션 배포 |
+| `npm run deploy` | 플랫폼 preflight 후 OpenNext 빌드 및 Cloudflare Workers 프로덕션 배포 |
 | `npm run cf:typegen` | Cloudflare Worker 환경변수/바인딩 타입 정의 갱신 |
 
 새 D1 마이그레이션은 기존 마지막 번호 다음의 4자리 번호를 사용합니다. 과거에 이미
