@@ -37,8 +37,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           strategy='beforeInteractive'
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZER_SCRIPT }}
         />
-        {/* Google Analytics */}
-        <link rel='dns-prefetch' href='https://www.google-analytics.com' />
+        {GA_MEASUREMENT_ID && <link rel='dns-prefetch' href='https://www.google-analytics.com' />}
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
         <script
