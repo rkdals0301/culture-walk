@@ -1,4 +1,5 @@
 import { CULTURE_EDGE_CACHE_TAGS, createPublicEdgeCacheHeaders } from './httpCache';
+import { CULTURE_CACHE_POLICY } from './cultureCachePolicy';
 
 export const CULTURE_PUBLIC_CACHE_TAGS = [
   CULTURE_EDGE_CACHE_TAGS.all,
@@ -25,10 +26,7 @@ const NEXT_FLIGHT_REQUEST_HEADERS = [
 ] as const;
 
 const CULTURE_DOCUMENT_CACHE_HEADERS = createPublicEdgeCacheHeaders({
-  browserMaxAgeSeconds: 60,
-  edgeMaxAgeSeconds: 60 * 10,
-  staleWhileRevalidateSeconds: 60 * 30,
-  staleIfErrorSeconds: 60 * 60 * 24,
+  ...CULTURE_CACHE_POLICY.document,
   tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
 });
 

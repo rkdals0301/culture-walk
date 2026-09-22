@@ -4,6 +4,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
 import { CultureListItem } from '@/types/culture';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
@@ -12,18 +13,10 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const HTTP_CACHE_SECONDS = 60;
-const EDGE_CACHE_SECONDS = 60 * 10;
-const HTTP_STALE_SECONDS = 60 * 30;
-const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60 * 24;
-
 const listResponse = (data: CultureListItem[], source?: string) =>
   NextResponse.json(toCultureListItemDtos(data), {
     headers: createPublicEdgeCacheHeaders({
-      browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
-      edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
-      staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
-      staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+      ...CULTURE_CACHE_POLICY.list,
       source,
       tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
     }),

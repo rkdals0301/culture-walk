@@ -10,6 +10,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
@@ -23,10 +24,6 @@ export const dynamic = 'force-dynamic';
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 20;
-const HTTP_CACHE_SECONDS = 30;
-const EDGE_CACHE_SECONDS = 60 * 10;
-const HTTP_STALE_SECONDS = 60 * 30;
-const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60 * 24;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 interface CultureFeedCursor {
@@ -60,10 +57,7 @@ const decodeCursor = (value: string | null): CultureFeedCursor | null => {
 
 const responseHeaders = (source?: string) =>
   createPublicEdgeCacheHeaders({
-    browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
-    edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
-    staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
-    staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+    ...CULTURE_CACHE_POLICY.feed,
     source,
     tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
   });

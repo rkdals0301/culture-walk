@@ -6,22 +6,15 @@ import {
   getCultureDetailEdgeCacheTag,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const HTTP_CACHE_SECONDS = 60;
-const EDGE_CACHE_SECONDS = 60 * 10;
-const HTTP_STALE_SECONDS = 60 * 60;
-const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60 * 24;
-
 const responseHeaders = (source: string, id: string) =>
   createPublicEdgeCacheHeaders({
-    browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
-    edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
-    staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
-    staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+    ...CULTURE_CACHE_POLICY.detail,
     source,
     tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.detail, getCultureDetailEdgeCacheTag(id)],
   });

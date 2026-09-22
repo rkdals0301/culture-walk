@@ -3,6 +3,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import {
   withCulturePageEdgeCache,
   withOptimizedImageEdgeCache,
@@ -55,11 +56,20 @@ test('home and map document responses use a short browser and longer edge policy
     assert.equal(cached.headers.get('Cache-Control'), 'public, max-age=60');
     assert.equal(
       cached.headers.get('Cloudflare-CDN-Cache-Control'),
-      'public, max-age=600, stale-while-revalidate=1800, stale-if-error=86400'
+      'public, max-age=3600, stale-while-revalidate=21600, stale-if-error=86400'
     );
     assert.equal(cached.headers.get('Cache-Tag'), 'culture-public-data,culture-list');
     assert.equal(await cached.text(), '<html><body>culture walk</body></html>');
   }
+});
+
+test('public culture cache policy keeps expensive KV-backed routes warm at the edge', () => {
+  assert.equal(CULTURE_CACHE_POLICY.list.edgeMaxAgeSeconds, 3600);
+  assert.equal(CULTURE_CACHE_POLICY.feed.edgeMaxAgeSeconds, 3600);
+  assert.equal(CULTURE_CACHE_POLICY.detail.edgeMaxAgeSeconds, 3600);
+  assert.equal(CULTURE_CACHE_POLICY.viewport.edgeMaxAgeSeconds, 1800);
+  assert.ok(CULTURE_CACHE_POLICY.feed.edgeMaxAgeSeconds > CULTURE_CACHE_POLICY.feed.browserMaxAgeSeconds);
+  assert.ok(CULTURE_CACHE_POLICY.detail.edgeMaxAgeSeconds > CULTURE_CACHE_POLICY.detail.browserMaxAgeSeconds);
 });
 
 test('hashed Next static assets use immutable browser and edge caching', async () => {

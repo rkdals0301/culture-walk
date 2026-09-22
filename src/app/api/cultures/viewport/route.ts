@@ -6,6 +6,7 @@ import {
   createPublicEdgeCacheHeaders,
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
+import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -14,10 +15,6 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const HTTP_CACHE_SECONDS = 30;
-const EDGE_CACHE_SECONDS = 300;
-const HTTP_STALE_SECONDS = 600;
-const HTTP_STALE_IF_ERROR_SECONDS = 60 * 60;
 const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition', 'performance', 'festival'];
 
 const parseFiniteNumber = (value: string | null) => {
@@ -49,10 +46,7 @@ const parseMapLevel = (value: string | null) => {
 
 const responseHeaders = (source = 'kv-read-model') =>
   createPublicEdgeCacheHeaders({
-    browserMaxAgeSeconds: HTTP_CACHE_SECONDS,
-    edgeMaxAgeSeconds: EDGE_CACHE_SECONDS,
-    staleWhileRevalidateSeconds: HTTP_STALE_SECONDS,
-    staleIfErrorSeconds: HTTP_STALE_IF_ERROR_SECONDS,
+    ...CULTURE_CACHE_POLICY.viewport,
     source,
     tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
   });
