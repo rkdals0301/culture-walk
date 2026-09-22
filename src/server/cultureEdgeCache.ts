@@ -1,4 +1,8 @@
-import { CULTURE_EDGE_CACHE_TAGS, createPublicEdgeCacheHeaders } from './httpCache';
+import {
+  CULTURE_EDGE_CACHE_TAGS,
+  createPublicEdgeCacheHeaders,
+  getCultureDetailEdgeCacheTag,
+} from './httpCache';
 import { CULTURE_CACHE_POLICY } from './cultureCachePolicy';
 
 export const CULTURE_PUBLIC_CACHE_TAGS = [
@@ -16,6 +20,7 @@ export interface CultureEdgeCacheContext {
 }
 
 const CULTURE_DOCUMENT_PATHS = new Set(['/', '/map']);
+const CULTURE_DETAIL_DOCUMENT_PATTERN = /^\/(?:cultures|map)\/([1-9]\d*)$/;
 const CULTURE_DOCUMENT_METHODS = new Set(['GET', 'HEAD']);
 const NEXT_FLIGHT_REQUEST_HEADERS = [
   'rsc',
@@ -25,10 +30,26 @@ const NEXT_FLIGHT_REQUEST_HEADERS = [
   'next-hmr-refresh',
 ] as const;
 
-const CULTURE_DOCUMENT_CACHE_HEADERS = createPublicEdgeCacheHeaders({
-  ...CULTURE_CACHE_POLICY.document,
-  tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
-});
+const getCultureDocumentCacheHeaders = (pathname: string) => {
+  const detailMatch = CULTURE_DETAIL_DOCUMENT_PATTERN.exec(pathname);
+  if (detailMatch) {
+    return createPublicEdgeCacheHeaders({
+      ...CULTURE_CACHE_POLICY.document,
+      tags: [
+        CULTURE_EDGE_CACHE_TAGS.all,
+        CULTURE_EDGE_CACHE_TAGS.detail,
+        getCultureDetailEdgeCacheTag(detailMatch[1]),
+      ],
+    });
+  }
+
+  if (!CULTURE_DOCUMENT_PATHS.has(pathname)) return null;
+
+  return createPublicEdgeCacheHeaders({
+    ...CULTURE_CACHE_POLICY.document,
+    tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.list],
+  });
+};
 
 const HASHED_STATIC_ASSET_CACHE_HEADERS = {
   'Cache-Control': 'public, max-age=31536000, immutable',
@@ -90,13 +111,14 @@ export const withCulturePageEdgeCache = (request: Request, response: Response) =
   const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
 
   if (!CULTURE_DOCUMENT_METHODS.has(request.method)) return response;
-  if (!CULTURE_DOCUMENT_PATHS.has(url.pathname)) return response;
+  const cacheHeaders = getCultureDocumentCacheHeaders(url.pathname);
+  if (!cacheHeaders) return response;
   if (isNextFlightRequest(request, url)) return response;
   if (request.headers.has('authorization')) return response;
   if (response.status !== 200 || !contentType.startsWith('text/html')) return response;
   if (response.headers.has('set-cookie')) return response;
 
-  return addCacheHeaders(response, CULTURE_DOCUMENT_CACHE_HEADERS);
+  return addCacheHeaders(response, cacheHeaders);
 };
 
 /**

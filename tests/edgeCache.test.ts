@@ -63,6 +63,27 @@ test('home and map document responses use a short browser and longer edge policy
   }
 });
 
+test('culture and map detail documents use per-culture cache tags', async () => {
+  for (const path of ['/cultures/123', '/map/123']) {
+    const response = new Response('<html><body>detail</body></html>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+
+    const cached = withCulturePageEdgeCache(new Request(`https://culturewalk.gangmin.dev${path}`), response);
+
+    assert.notStrictEqual(cached, response);
+    assert.equal(
+      cached.headers.get('Cache-Tag'),
+      'culture-public-data,culture-detail,culture-detail-123'
+    );
+    assert.equal(
+      cached.headers.get('Cloudflare-CDN-Cache-Control'),
+      'public, max-age=3600, stale-while-revalidate=21600, stale-if-error=86400'
+    );
+  }
+});
+
 test('public culture cache policy keeps expensive KV-backed routes warm at the edge', () => {
   assert.equal(CULTURE_CACHE_POLICY.list.edgeMaxAgeSeconds, 3600);
   assert.equal(CULTURE_CACHE_POLICY.feed.edgeMaxAgeSeconds, 3600);
@@ -146,6 +167,7 @@ test('HTML cache wrapper leaves RSC, prefetch, API, error, and personalized resp
       request: { headers: { 'next-router-prefetch': '1' } },
     },
     { url: 'https://culturewalk.gangmin.dev/api/cultures', request: {} },
+    { url: 'https://culturewalk.gangmin.dev/cultures/not-a-number', request: {} },
     { url: 'https://culturewalk.gangmin.dev/', request: { method: 'POST' } },
     { url: 'https://culturewalk.gangmin.dev/map', request: { headers: { authorization: 'Bearer token' } } },
   ] as const;
