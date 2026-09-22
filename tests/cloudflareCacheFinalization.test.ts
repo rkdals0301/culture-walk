@@ -1,4 +1,5 @@
 import {
+  getSerializedUtf8ByteLength,
   readCultureReadModelCache,
   type CultureCacheBinding,
   writeCultureReadModelCache,
@@ -10,6 +11,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+
+test('read model byte telemetry measures UTF-8 payload size', () => {
+  const value = { title: '문화산책', items: [1, 2, 3] };
+
+  assert.equal(getSerializedUtf8ByteLength(value), Buffer.byteLength(JSON.stringify(value), 'utf8'));
+});
 
 const makeListItem = (title: string) => ({
   id: 101,
@@ -76,6 +83,7 @@ test('publishing a new read model immediately replaces isolate memory for that b
 
   assert.equal(before?.items[0].title, '이전 행사');
   assert.equal(publication.published, true);
+  assert.ok(publication.serializedBytes > 0);
   assert.equal(after?.items[0].title, '새 행사');
   assert.equal(after?.revisions?.['101'], 'new-revision');
   assert.equal(reads, 1);

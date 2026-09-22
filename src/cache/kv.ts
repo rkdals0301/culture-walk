@@ -9,6 +9,7 @@ const CULTURE_LIST_FALLBACK_METADATA_KEY = 'cultures:list:last-meta:v1';
 const CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:last:v1';
 const CULTURE_READ_MODEL_TTL_SECONDS = 60 * 60 * 24 * 14;
 const CULTURE_READ_MODEL_MEMORY_TTL_MS = 60 * 1000;
+const UTF8_ENCODER = new TextEncoder();
 export interface CultureListFallbackMetadata {
   cachedAt: string;
   itemCount: number;
@@ -49,6 +50,8 @@ const sortObjectKeys = (value: unknown): unknown => {
 const stableStringify = (value: unknown) => JSON.stringify(sortObjectKeys(value));
 
 export const createCacheKey = (namespace: string, payload: object) => `${namespace}:${stableStringify(payload)}`;
+
+export const getSerializedUtf8ByteLength = (value: unknown) => UTF8_ENCODER.encode(JSON.stringify(value)).byteLength;
 
 const getCultureCache = (cache?: CultureCacheBinding) => cache;
 
@@ -155,8 +158,9 @@ export const writeCultureReadModelCache = async (
     items: cultures,
     revisions,
   };
+  const serializedBytes = getSerializedUtf8ByteLength(readModel);
   const cache = await getCultureCache(cacheOverride);
-  if (!cache) return { ...readModel, published: false };
+  if (!cache) return { ...readModel, published: false, serializedBytes };
 
   const published = await writeKvCache(
     CULTURE_READ_MODEL_CACHE_KEY,
@@ -170,5 +174,5 @@ export const writeCultureReadModelCache = async (
       expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
     });
   }
-  return { ...readModel, published };
+  return { ...readModel, published, serializedBytes };
 };

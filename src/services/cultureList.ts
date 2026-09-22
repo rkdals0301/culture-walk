@@ -53,12 +53,19 @@ export const refreshCultureListSnapshotCache = async (options: {
 }) => {
   const startedAt = Date.now();
   const { items, revisions } = await queryCultureListFromD1(options.d1);
+  const queryDurationMs = Date.now() - startedAt;
 
+  const publishStartedAt = Date.now();
   const readModel = await writeCultureReadModelCache(items, revisions, options.cache);
+  const publishDurationMs = Date.now() - publishStartedAt;
   logEvent(readModel.published ? 'info' : 'warn', 'culture.read_model.publish', {
     published: readModel.published,
     itemCount: items.length,
+    serializedBytes: readModel.serializedBytes,
+    bytesPerItem: items.length > 0 ? Math.round(readModel.serializedBytes / items.length) : 0,
     cachedAt: readModel.cachedAt,
+    queryDurationMs,
+    publishDurationMs,
     durationMs: Date.now() - startedAt,
   });
   return {
