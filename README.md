@@ -27,7 +27,8 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 - **동적 메타데이터 & SNS 공유**: 각 행사별 상세 페이지(`/map/[id]`) 고유 OpenGraph 태그 및 Twitter Card 자동 생성
 - **구조화 데이터 (JSON-LD)**: 검색엔진 크롤러를 위한 Schema.org `Event`, `WebSite`, `Organization` 구조화 데이터 내장
 - **사이트맵 자동 생성**: `/sitemap.xml`을 통한 전체 행사 페이지 색인 지원
-- **다크 모드 / 라이트 모드**: `next-themes` 기반 테마 전환 지원 (지도 캔버스 명도 자동 튜닝 및 눈부심 방지)
+- **다크 모드 / 라이트 모드**: 프로젝트 전용 `ThemeProvider`가 light/dark/system 선택과 OS 테마 변경, `localStorage` 동기화를 관리합니다. 지도 캔버스는 다크 모드에서 별도 명도 보정을 적용합니다.
+- **자체 호스팅 한글 폰트**: Pretendard Variable을 `/public/assets/fonts`에서 직접 제공해 런타임 외부 CDN 의존성을 제거했습니다.
 - **접근성(A11y)**: 다이얼로그 포커스 트랩(`useDialogFocusTrap`), WAI-ARIA 속성 준수 및 키보드 네비게이션 대응
 
 ### 4. 고신뢰성 데이터 동기화 엔진
@@ -48,7 +49,7 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 | :--- | :--- |
 | **Framework** | Next.js 16 (App Router, webpack mode), React 19, TypeScript |
 | **Styling** | Tailwind CSS 3, Sass (SCSS), Framer Motion, Lucide React |
-| **Platform** | Cloudflare Workers, OpenNext (`@opennextjs/cloudflare` 1.20.4) |
+| **Platform** | Cloudflare Workers, OpenNext (`@opennextjs/cloudflare` 1.20.6) |
 | **Database** | Cloudflare D1 (Serverless SQLite), Drizzle ORM |
 | **Caching** | Cloudflare KV (`CULTURE_CACHE`), Cloudflare Workers Cache, Cloudflare Images (`IMAGES`) |
 | **External APIs** | 공공데이터포털 한국관광공사 TourAPI (KorService2), 카카오 지도 SDK |
@@ -185,6 +186,8 @@ npm run dev
 | `npm test` | 전체 테스트 스위트 실행 (`tsx --test tests/**/*.test.ts`) |
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
+| `npm run test:e2e:run` | 격리된 로컬 D1/KV와 Playwright Chromium으로 모바일/데스크톱 브라우저 회귀 테스트 실행 |
+| `npm run smoke:production` | 운영 도메인의 health/feed/detail/map/sitemap 및 Edge cache 응답 시간을 검증 |
 | `npm run db:migrate:local` | 로컬 Cloudflare D1 인스턴스에 마이그레이션 적용 |
 | `npm run db:migrations:check` | D1 마이그레이션 파일명·번호 중복·연속성을 검증 |
 | `npm run db:seed:local` | 저장된 로컬 샘플 스냅샷을 운영 접근 없이 로컬 D1에 적용 |
@@ -216,6 +219,7 @@ npm run dev
 - 전체 동기화에서 생성한 KV read model에 검색·카테고리·지역·무료 조건을 적용하고 20건 단위 커서 페이지네이션으로 반환합니다.
 - 요청별 page cache를 KV에 쓰지 않고 HTTP shared cache와 Worker 계산을 사용합니다. KV read model이 없을 때만 D1에서 현재 목록을 1회 read-through하고 KV를 다시 채우며, 동일 Worker 인스턴스의 동시 cold miss는 하나의 in-flight rebuild를 공유합니다.
 - 브라우저에는 짧은 TTL을 제공하고 Workers Cache에는 별도의 긴 Edge TTL과 `stale-while-revalidate`/`stale-if-error`를 적용합니다. snapshot 갱신 직후 관련 cache tag를 purge해 오래된 목록 응답을 즉시 제거합니다.
+- 응답의 `Server-Timing` 헤더에 read model 조회, feed 계산, 전체 처리 시간을 노출하여 cold/MISS 병목을 운영에서 구분할 수 있습니다.
 
 ### 3. 지도 뷰포트 조회 (`GET /api/cultures/viewport`)
 - KV read model에서 현재 지도 영역만 계산하며 축소 상태에서는 Worker 격자 집계, 확대 상태에서는 행사 마커 데이터를 반환합니다.
@@ -229,6 +233,7 @@ npm run dev
 - 목록 read model이 사용 가능한 경우 목록에 없는 ID는 D1 상세 read-through 없이 즉시 404로 종료하여 잘못된 ID 요청의 유료 row read를 막습니다.
 - D1 read-through까지 실패한 경우에도 목록 read model의 제목·일정·장소·이미지·요금 정보로 안전하게 fallback합니다. 공개 요청은 D1 원본 데이터를 수정하지 않습니다.
 - 상세 Edge cache는 상세 동기화가 실제 데이터를 갱신했을 때 cache tag purge로 무효화합니다. 평상시 재요청은 가까운 Cloudflare Edge에서 바로 반환할 수 있습니다.
+- 상세 API도 `Server-Timing`에 KV/D1 상세 읽기 시간을 노출하고, D1 read-through가 발생하면 구조화 로그에 query/cache-write 시간을 기록합니다.
 
 ### 5. 호환용 전체 목록 스냅샷 (`GET /api/cultures`)
 - 기존 연동 호환성을 위해 유지하는 KV read model 전체 목록 엔드포인트입니다. 앱 UI는 피드/뷰포트 API를 사용합니다.
@@ -299,7 +304,7 @@ Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 �
 
 ## 🧪 테스트 (Testing)
 
-90개 이상의 단위/통합 테스트와 Playwright 브라우저 회귀 테스트를 통해 데이터 정합성과 사용자 플로우를 검증합니다.
+220개 이상의 단위/통합/구조 회귀 테스트와 Playwright 브라우저 회귀 테스트를 통해 데이터 정합성, 캐시/보안 정책, 사용자 플로우를 검증합니다.
 
 ```bash
 npm test
@@ -310,8 +315,10 @@ npm test
 - **동기화 파이프라인 (`cultureSyncRepository.test.ts`, `cultureSyncLock.test.ts`)**: 스테이징 삽입, 변경분만 갱신, 소프트 삭제, 분산 락 획득/반환/하트비트
 - **스케줄 및 복구 (`cultureSyncSchedule.test.ts`)**: 정기 동기화 및 36시간 초과 복구 동기화 판정
 - **Kakao Maps SDK 라이프사이클 (`kakaoMapsSdk.test.ts`)**: 단일 프로미스 공유, 타임아웃, 네트워크 실패 시 리셋
+- **Kakao Maps SDK 장애 E2E (`e2e/kakao-failure.spec.ts`)**: SDK 네트워크 실패 시 오류 안내, 재시도 버튼, 지도 내 목록 계속 보기 경로 검증
 - **탐색 상태 보존 (`exploreState.test.ts`, `mapRoute.test.ts`)**: URL 직렬화/역직렬화 및 검색/필터 복원
 - **SEO & 테마 (`jsonLd.test.ts`, `themeTokens.test.ts`)**: JSON-LD 문자열 이스케이프 및 다크모드 대비율
+- **운영 캐시/관측성 (`edgeCache.test.ts`, `serverTiming.test.ts`, `readModelTelemetry.test.ts`)**: Edge cache tag, 상세 문서 캐시, read-model 용량 및 처리시간 계측 검증
 
 ---
 
