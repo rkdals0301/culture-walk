@@ -1,6 +1,5 @@
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
-import PretendardStylesheet from '@/components/Fonts/PretendardStylesheet';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
@@ -38,19 +37,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           strategy='beforeInteractive'
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZER_SCRIPT }}
         />
-        {/* Pretendard is preloaded here and attached after hydration. */}
-        <link rel='preconnect' href='https://cdn.jsdelivr.net' crossOrigin='anonymous' />
-
         {/* Google Analytics */}
         <link rel='dns-prefetch' href='https://www.google-analytics.com' />
-
-        <PretendardStylesheet />
-        <noscript>
-          <link
-            rel='stylesheet'
-            href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css'
-          />
-        </noscript>
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
         <script
