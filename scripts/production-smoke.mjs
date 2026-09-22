@@ -12,6 +12,15 @@ const baseUrl = new URL(process.env.SMOKE_BASE_URL || DEFAULT_BASE_URL);
 const outputDir = process.env.SMOKE_OUTPUT_DIR || DEFAULT_OUTPUT_DIR;
 const requireHealthy = ['1', 'true', 'yes'].includes(String(process.env.SMOKE_REQUIRE_HEALTHY || '').toLowerCase());
 
+const parsePositiveThreshold = value => {
+  if (value === undefined || value === null || String(value).trim() === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const maxRequestTtfbMs = parsePositiveThreshold(process.env.SMOKE_MAX_REQUEST_TTFB_MS);
+const maxEdgeHitTtfbMs = parsePositiveThreshold(process.env.SMOKE_MAX_EDGE_HIT_TTFB_MS);
+
 const failures = [];
 const warnings = [];
 const checks = [];
@@ -75,6 +84,9 @@ const request = async (label, pathname, { expectedStatus = 200 } = {}) => {
     if (!result.ok) {
       addFailure(`${label}: HTTP ${response.status} (expected ${expectedStatus})`);
     }
+    if (maxRequestTtfbMs !== null && result.ttfbMs > maxRequestTtfbMs) {
+      addFailure(`${label}: TTFB ${result.ttfbMs}ms가 허용 기준 ${maxRequestTtfbMs}ms를 초과했습니다.`);
+    }
 
     return { response, body, result };
   } catch (error) {
@@ -114,6 +126,25 @@ const observeCacheWarmup = (attempts, label) => {
   }
 };
 
+const validateEdgeHitLatency = (attempts, label) => {
+  if (maxEdgeHitTtfbMs === null) return;
+
+  const hitTtfbs = attempts
+    .map(attempt => attempt?.result)
+    .filter(result => result?.cacheStatus === 'HIT' && typeof result.ttfbMs === 'number')
+    .map(result => result.ttfbMs);
+
+  if (hitTtfbs.length === 0) {
+    addFailure(`${label}: 성능 기준을 확인할 Cloudflare cache HIT를 관측하지 못했습니다.`);
+    return;
+  }
+
+  const worstHitTtfb = Math.max(...hitTtfbs);
+  if (worstHitTtfb > maxEdgeHitTtfbMs) {
+    addFailure(`${label}: cache HIT TTFB ${worstHitTtfb}ms가 허용 기준 ${maxEdgeHitTtfbMs}ms를 초과했습니다.`);
+  }
+};
+
 const run = async () => {
   const health = await request('health', '/api/health');
   if (health) {
@@ -145,6 +176,7 @@ const run = async () => {
   }
   feedAttempts.forEach((attempt, index) => validatePublicDataSource(attempt?.result, `feed-${index + 1}`));
   observeCacheWarmup(feedAttempts, 'feed');
+  validateEdgeHitLatency(feedAttempts, 'feed');
 
   const feedBody = feedAttempts[0] ? parseJson(feedAttempts[0].body, 'feed') : null;
   const selectedCulture = Array.isArray(feedBody?.items) ? feedBody.items[0] : null;
@@ -160,6 +192,7 @@ const run = async () => {
     }
     detailAttempts.forEach((attempt, index) => validatePublicDataSource(attempt?.result, `detail-${index + 1}`));
     observeCacheWarmup(detailAttempts, 'detail');
+    validateEdgeHitLatency(detailAttempts, 'detail');
 
     const detailBody = detailAttempts[0] ? parseJson(detailAttempts[0].body, 'detail') : null;
     if (Number(detailBody?.id) !== Number(selectedCulture.id) || !detailBody?.title) {
@@ -179,6 +212,10 @@ const run = async () => {
     generatedAt: new Date().toISOString(),
     baseUrl: baseUrl.toString(),
     requireHealthy,
+    performanceThresholds: {
+      maxRequestTtfbMs,
+      maxEdgeHitTtfbMs,
+    },
     status: failures.length > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'healthy',
     failures,
     warnings,
@@ -208,6 +245,8 @@ const run = async () => {
     `- Base URL: ${baseUrl.toString()}`,
     `- Generated: ${report.generatedAt}`,
     `- Require healthy: ${requireHealthy}`,
+    `- Max request TTFB: ${maxRequestTtfbMs ?? 'disabled'} ms`,
+    `- Max edge HIT TTFB: ${maxEdgeHitTtfbMs ?? 'disabled'} ms`,
     '',
     '| Check | HTTP | CF Cache | Data source | Age | PoP | TTFB ms | Total ms |',
     '| --- | ---: | --- | --- | ---: | --- | ---: | ---: |',

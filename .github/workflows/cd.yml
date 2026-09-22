@@ -66,6 +66,8 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       SMOKE_BASE_URL: https://culturewalk.gangmin.dev
       SMOKE_REQUIRE_HEALTHY: 'true'
+      SMOKE_MAX_REQUEST_TTFB_MS: '3000'
+      SMOKE_MAX_EDGE_HIT_TTFB_MS: '500'
 
     steps:
       - name: Checkout verified commit
