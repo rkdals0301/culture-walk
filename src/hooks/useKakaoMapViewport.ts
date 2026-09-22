@@ -1,6 +1,7 @@
 import type { CultureMapViewport, FormattedCultureListItem } from '@/types/culture';
 import type { MapCameraState } from '@/utils/exploreState';
 import type { GeoPoint } from '@/utils/geo';
+import { getMapInteractionDelayMs } from '@/utils/mapPerformance';
 
 import { useCallback, useEffect, useRef } from 'react';
 
@@ -57,6 +58,7 @@ export const useKakaoMapViewport = ({
     if (!mapInstance || !window.kakao?.maps) return;
 
     let publishTimer: number | null = null;
+    let hasPublishedInitialBounds = false;
     const publishCamera = () => {
       const center = mapInstance.getCenter();
       const camera = {
@@ -89,7 +91,13 @@ export const useKakaoMapViewport = ({
     const handleIdle = () => {
       publishCamera();
       if (publishTimer !== null) window.clearTimeout(publishTimer);
-      publishTimer = window.setTimeout(publishBounds, 250);
+      const delayMs = getMapInteractionDelayMs(hasPublishedInitialBounds);
+      hasPublishedInitialBounds = true;
+      if (delayMs === 0) {
+        publishBounds();
+        return;
+      }
+      publishTimer = window.setTimeout(publishBounds, delayMs);
     };
 
     window.kakao.maps.event.addListener(mapInstance, 'idle', handleIdle);

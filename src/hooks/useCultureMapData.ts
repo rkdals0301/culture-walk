@@ -13,10 +13,9 @@ import {
   getMapDataMode,
   snapMapBoundsOutward,
 } from '@/utils/mapViewport';
+import { getMapInteractionDelayMs } from '@/utils/mapPerformance';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-const REQUEST_DEBOUNCE_MS = 250;
 
 const EMPTY_MAP_RESPONSE: CultureMapResponse = {
   items: [],
@@ -45,6 +44,7 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
   const [retryNonce, setRetryNonce] = useState(0);
   const requestVersionRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasIssuedInitialRequestRef = useRef(false);
 
   const normalizedSearchQuery = searchQuery.trim();
   const normalizedRegion = region.trim();
@@ -104,6 +104,8 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
       return;
     }
 
+    const requestDelayMs = getMapInteractionDelayMs(hasIssuedInitialRequestRef.current);
+    hasIssuedInitialRequestRef.current = true;
     const timeoutId = window.setTimeout(() => {
       const params: Record<string, string | number> = {
         swLat: fetchBounds.swLat,
@@ -136,7 +138,7 @@ export const useCultureMapData = ({ viewport, searchQuery, category, region, fre
           if (version !== requestVersionRef.current) return;
           setIsLoading(false);
         });
-    }, REQUEST_DEBOUNCE_MS);
+    }, requestDelayMs);
 
     return () => {
       window.clearTimeout(timeoutId);

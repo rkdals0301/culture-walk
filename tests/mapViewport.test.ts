@@ -12,6 +12,10 @@ import {
   isCoordinateWithinBounds,
   snapMapBoundsOutward,
 } from '../src/utils/mapViewport';
+import {
+  getMapInteractionDelayMs,
+  MAP_INTERACTION_DEBOUNCE_MS,
+} from '../src/utils/mapPerformance';
 
 const bounds = {
   swLat: 35,
@@ -67,4 +71,10 @@ test('지도 요청 bounds는 캐시 재사용을 위해 바깥 방향 그리드
     MAP_CLUSTER_GRID_SIZE
   );
   assert.deepEqual(snappedClusters, { swLat: 35, swLng: 126, neLat: 37.5, neLng: 129.25 });
+});
+
+test('지도 첫 로딩은 debounce 없이 시작하고 이후 상호작용만 지연한다', () => {
+  assert.equal(getMapInteractionDelayMs(false), 0);
+  assert.equal(getMapInteractionDelayMs(true), MAP_INTERACTION_DEBOUNCE_MS);
+  assert.equal(MAP_INTERACTION_DEBOUNCE_MS, 250);
 });
