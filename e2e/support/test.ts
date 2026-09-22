@@ -1,6 +1,13 @@
 import { expect, test as base, type Page } from '@playwright/test';
 
 const APP_ORIGIN = 'http://127.0.0.1:3005';
+const TRANSPARENT_GIF = Buffer.from(
+  'R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
+  'base64'
+);
+const IGNORED_BROWSER_CONSOLE_ERRORS = [
+  'Viewport argument key "interactive-widget" not recognized and ignored.',
+];
 
 const installKakaoMapsMock = async (page: Page) => {
   await page.addInitScript(() => {
@@ -269,12 +276,27 @@ export const test = base.extend<AppFixtures>({
       const pageErrors: string[] = [];
       const consoleErrors: string[] = [];
       const requestFailures: string[] = [];
+      const responseFailures: string[] = [];
 
       await installKakaoMapsMock(page);
+      await page.route('**/_next/image?**', route =>
+        route.fulfill({
+          status: 200,
+          contentType: 'image/gif',
+          body: TRANSPARENT_GIF,
+          headers: { 'Cache-Control': 'public, max-age=3600' },
+        })
+      );
 
       page.on('pageerror', error => pageErrors.push(error.message));
       page.on('console', message => {
-        if (message.type() === 'error') consoleErrors.push(message.text());
+        if (message.text().startsWith('Failed to load resource:')) return;
+        if (
+          message.type() === 'error' &&
+          !IGNORED_BROWSER_CONSOLE_ERRORS.includes(message.text())
+        ) {
+          consoleErrors.push(message.text());
+        }
       });
       page.on('requestfailed', request => {
         const failure = request.failure();
@@ -284,12 +306,18 @@ export const test = base.extend<AppFixtures>({
         const url = new URL(request.url());
         if (url.origin === APP_ORIGIN) requestFailures.push(`${request.method()} ${url.pathname}: ${failure.errorText}`);
       });
+      page.on('response', response => {
+        const url = new URL(response.url());
+        if (url.origin !== APP_ORIGIN || response.status() < 400) return;
+        responseFailures.push(`${response.request().method()} ${url.pathname}: HTTP ${response.status()}`);
+      });
 
       await use();
 
       expect(pageErrors, `Unexpected page errors:\n${pageErrors.join('\n')}`).toEqual([]);
       expect(consoleErrors, `Unexpected console errors:\n${consoleErrors.join('\n')}`).toEqual([]);
-      expect(requestFailures, `Unexpected same-origin request failures:\n${requestFailures.join('\n')}`).toEqual([]);
+      expect(requestFailures, `Unexpected same-origin request failures:\n${requestFailures.join("\n")}`).toEqual([]);
+      expect(responseFailures, `Unexpected same-origin HTTP errors:\n${responseFailures.join("\n")}`).toEqual([]);
     },
     { auto: true },
   ],

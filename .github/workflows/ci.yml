@@ -62,8 +62,8 @@ jobs:
       - name: Enforce client bundle budget
         run: npm run bundle:check
 
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Browser E2E
         run: npm run test:e2e:run

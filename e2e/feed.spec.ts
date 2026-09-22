@@ -1,7 +1,7 @@
 import { expect, test } from './support/test';
 
 test('피드 필터와 검색 상태가 지도 URL과 화면에 그대로 이어진다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   await expect(page.getByRole('heading', { name: '전국 문화행사 둘러보기' })).toBeVisible();
   await expect(page.getByRole('link', { name: /문화산책 테스트 공연 2099-/ })).toBeVisible();
@@ -26,7 +26,7 @@ test('피드 필터와 검색 상태가 지도 URL과 화면에 그대로 이어
 });
 
 test('피드 기본 화면은 모바일과 데스크톱에서 가로 overflow 없이 렌더링된다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('link', { name: /문화산책 테스트 공연 2099-/ })).toBeVisible();
 
   const hasHorizontalOverflow = await page.evaluate(

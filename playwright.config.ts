@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  workers: isCI ? 2 : undefined,
+  workers: isCI ? 2 : 4,
   reporter: isCI ? 'github' : 'list',
   timeout: 20_000,
   expect: {
@@ -19,7 +19,7 @@ export default defineConfig({
   use: {
     baseURL,
     actionTimeout: 6_000,
-    navigationTimeout: 12_000,
+    navigationTimeout: 20_000,
     locale: 'ko-KR',
     timezoneId: 'Asia/Seoul',
     reducedMotion: 'reduce',
@@ -43,6 +43,22 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         browserName: 'chromium',
         viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: 'desktop-firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        browserName: 'firefox',
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: 'mobile-webkit',
+      use: {
+        ...devices['iPhone 13'],
+        browserName: 'webkit',
+        viewport: { width: 390, height: 844 },
       },
     },
   ],

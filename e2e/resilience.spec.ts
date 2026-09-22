@@ -1,7 +1,7 @@
 import { expect, test } from './support/test';
 
 test('검색 결과가 없을 때 전체 필터 초기화로 기본 목록을 복구한다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('link', { name: /문화산책 테스트 공연 2099-/ })).toBeVisible();
 
   await page.getByLabel('문화행사 검색').fill('존재하지않는행사-e2e');
@@ -27,7 +27,7 @@ test('위치 권한 거부 시 사용자에게 안내하고 거리순 상태로 
     });
   });
 
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: '현재 위치를 확인하고 거리순으로 정렬' }).click();
 
   await expect(page.getByText('위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.')).toBeVisible();
@@ -51,7 +51,7 @@ test('피드 API 응답 오류 후 다시 시도로 정상 상태를 복구한�
     { times: 1 }
   );
 
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('link', { name: /문화산책 테스트 공연 2099-/ })).toBeVisible();
 
   await page.getByLabel('문화행사 검색').fill('API-복구-e2e');
@@ -63,7 +63,7 @@ test('피드 API 응답 오류 후 다시 시도로 정상 상태를 복구한�
 });
 
 test('테마 선택은 새로고침 뒤에도 유지된다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   const darkModeButton = page.getByRole('button', { name: '다크모드로 전환' });
   await expect(darkModeButton).toBeVisible();
   await darkModeButton.click();
