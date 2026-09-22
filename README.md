@@ -186,6 +186,7 @@ npm run dev
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
 | `npm run db:migrate:local` | 로컬 Cloudflare D1 인스턴스에 마이그레이션 적용 |
+| `npm run db:migrations:check` | D1 마이그레이션 파일명·번호 중복·연속성을 검증 |
 | `npm run db:seed:local` | 저장된 로컬 샘플 스냅샷을 운영 접근 없이 로컬 D1에 적용 |
 | `npm run db:seed:local:from-production` | 운영 D1에서 샘플과 상세 데이터를 추출해 로컬 스냅샷 갱신 |
 | `npm run db:migrate:remote` | 원격 Cloudflare D1 프로덕션 DB에 마이그레이션 적용 |
@@ -193,6 +194,11 @@ npm run dev
 | `npm run preview` | OpenNext 빌드 후 Wrangler 로컬 에뮬레이터 실행 |
 | `npm run deploy` | OpenNext 빌드 후 Cloudflare Workers 프로덕션 배포 |
 | `npm run cf:typegen` | Cloudflare Worker 환경변수/바인딩 타입 정의 갱신 |
+
+새 D1 마이그레이션은 기존 마지막 번호 다음의 4자리 번호를 사용합니다. 과거에 이미
+운영에 적용된 `0001_add_source_key_and_upsert_index.sql`과 `0001_sync_tables.sql`은
+호환성을 위해 이름을 변경하지 않으며, 이 두 파일만 역사적 중복으로 허용됩니다.
+현재 이후의 신규 마이그레이션은 번호를 재사용하거나 건너뛰지 않습니다.
 
 ---
 

@@ -53,6 +53,9 @@ jobs:
         shell: bash
         run: find scripts -type f -name '*.mjs' -print0 | xargs -0 -n1 node --check
 
+      - name: Validate migration sequence
+        run: npm run db:migrations:check
+
       - name: Build Cloudflare worker
         run: npm run cf:build
 
