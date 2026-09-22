@@ -23,6 +23,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:run": "node scripts/prepare-e2e.mjs && playwright test",
     "smoke:production": "node scripts/production-smoke.mjs",
+    "bundle:check": "node scripts/check-client-bundle-budget.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

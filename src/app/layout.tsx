@@ -1,4 +1,5 @@
 import GoogleAnalytics from '@/components/Analytics/GoogleAnalytics';
+import WebVitalsReporter from '@/components/Analytics/WebVitalsReporter';
 import BottomSheet from '@/components/BottomSheet/BottomSheetClientOnly';
 import Header from '@/components/Header/Header';
 import Main from '@/components/Main/Main';
@@ -40,6 +41,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         {GA_MEASUREMENT_ID && <link rel='dns-prefetch' href='https://www.google-analytics.com' />}
       </head>
       <body suppressHydrationWarning className='min-h-dvh font-pretendard'>
+        <WebVitalsReporter />
         <script
           id='website-structured-data'
           type='application/ld+json'
