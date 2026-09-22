@@ -1,4 +1,5 @@
 import {
+  getSerializedUtf8ByteLength,
   readCultureReadModelMetadataCache,
   writeCultureReadModelMetadataCache,
 } from '@/cache/kv';
@@ -39,18 +40,23 @@ export async function GET() {
   let serializedBytes: number | null = metadata?.serializedBytes ?? null;
   let healthSource = 'kv-read-model-metadata';
 
-  if (!metadata) {
+  if (!metadata || metadata.serializedBytes === null) {
     const snapshot = await readCultureReadModelSnapshot(cache);
-    itemCount = snapshot?.items.length ?? 0;
-    cachedAt = snapshot?.cachedAt ?? null;
-    serializedBytes = null;
-    healthSource = snapshot ? 'kv-read-model-fallback' : 'kv-read-model-missing';
+    if (!metadata) {
+      itemCount = snapshot?.items.length ?? 0;
+      cachedAt = snapshot?.cachedAt ?? null;
+      healthSource = snapshot ? 'kv-read-model-fallback' : 'kv-read-model-missing';
+    } else if (snapshot) {
+      healthSource = 'kv-read-model-metadata-repaired';
+    }
+
     if (snapshot?.cachedAt && snapshot.items.length > 0) {
+      serializedBytes = getSerializedUtf8ByteLength(snapshot);
       await writeCultureReadModelMetadataCache(
         {
           cachedAt: snapshot.cachedAt,
           itemCount: snapshot.items.length,
-          serializedBytes: null,
+          serializedBytes,
         },
         cache
       );
