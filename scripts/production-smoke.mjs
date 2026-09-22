@@ -20,6 +20,7 @@ const parsePositiveThreshold = value => {
 
 const maxRequestTtfbMs = parsePositiveThreshold(process.env.SMOKE_MAX_REQUEST_TTFB_MS);
 const maxEdgeHitTtfbMs = parsePositiveThreshold(process.env.SMOKE_MAX_EDGE_HIT_TTFB_MS);
+const maxReadModelBytes = parsePositiveThreshold(process.env.SMOKE_MAX_READ_MODEL_BYTES);
 
 const failures = [];
 const warnings = [];
@@ -153,7 +154,10 @@ const run = async () => {
     if (!cacheControl.includes('no-store')) {
       addFailure(`health: Cache-Control이 no-store가 아닙니다. (${cacheControl || 'missing'})`);
     }
-    if (health.result.cacheStatus && !['BYPASS', 'DYNAMIC'].includes(health.result.cacheStatus)) {
+    if (
+      health.result.cacheStatus &&
+      !['BYPASS', 'DYNAMIC', 'MISS', 'HIT', 'REVALIDATED', 'EXPIRED'].includes(health.result.cacheStatus)
+    ) {
       addWarning(`health: 예상과 다른 CF-Cache-Status '${health.result.cacheStatus}'`);
     }
     if (healthBody) {
@@ -165,6 +169,20 @@ const run = async () => {
         addFailure(`health: scheduled smoke는 healthy가 필요하지만 '${healthBody.status}' 입니다. reason=${healthBody.reason || 'unknown'}`);
       } else if (healthBody.status !== 'healthy') {
         addWarning(`health: 현재 상태가 '${healthBody.status}' 입니다. reason=${healthBody.reason || 'unknown'}`);
+      }
+      if (maxReadModelBytes !== null) {
+        const serializedBytes = healthBody.readModel?.serializedBytes;
+        if (typeof serializedBytes === 'number' && serializedBytes > maxReadModelBytes) {
+          addFailure(
+            'health: read model 크기 ' +
+              serializedBytes +
+              ' bytes가 허용 기준 ' +
+              maxReadModelBytes +
+              ' bytes를 초과했습니다.'
+          );
+        } else if (serializedBytes === null || serializedBytes === undefined) {
+          addWarning('health: read model 크기 telemetry를 아직 확인할 수 없습니다.');
+        }
       }
     }
   }
@@ -215,6 +233,7 @@ const run = async () => {
     performanceThresholds: {
       maxRequestTtfbMs,
       maxEdgeHitTtfbMs,
+      maxReadModelBytes,
     },
     status: failures.length > 0 ? 'failed' : warnings.length > 0 ? 'warning' : 'healthy',
     failures,
@@ -247,6 +266,7 @@ const run = async () => {
     `- Require healthy: ${requireHealthy}`,
     `- Max request TTFB: ${maxRequestTtfbMs ?? 'disabled'} ms`,
     `- Max edge HIT TTFB: ${maxEdgeHitTtfbMs ?? 'disabled'} ms`,
+    `- Max read model size: ${maxReadModelBytes ?? 'disabled'} bytes`,
     '',
     '| Check | HTTP | CF Cache | Data source | Age | PoP | TTFB ms | Total ms |',
     '| --- | ---: | --- | --- | ---: | --- | ---: | ---: |',

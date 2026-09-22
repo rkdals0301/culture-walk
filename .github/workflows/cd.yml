@@ -68,6 +68,7 @@ jobs:
       SMOKE_REQUIRE_HEALTHY: 'true'
       SMOKE_MAX_REQUEST_TTFB_MS: '3000'
       SMOKE_MAX_EDGE_HIT_TTFB_MS: '500'
+      SMOKE_MAX_READ_MODEL_BYTES: '2000000'
 
     steps:
       - name: Checkout verified commit
