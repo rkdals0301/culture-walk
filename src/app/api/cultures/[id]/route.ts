@@ -7,6 +7,7 @@ import {
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
+import { withServerTiming } from '@/server/serverTiming';
 
 import { NextResponse } from 'next/server';
 
@@ -20,6 +21,7 @@ const responseHeaders = (source: string, id: string) =>
   });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const requestStartedAt = performance.now();
   const { id } = await params;
 
   if (!id) {
@@ -36,10 +38,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     );
   }
 
+  const readStartedAt = performance.now();
   const result = await getCulturePublicRead(Number(id), await getRuntimeDeps());
+  const readDurationMs = performance.now() - readStartedAt;
   if (result.culture) {
     return NextResponse.json(result.culture, {
-      headers: responseHeaders(result.source ?? 'kv-read-model', id),
+      headers: withServerTiming(responseHeaders(result.source ?? 'kv-read-model', id), [
+        { name: 'detail-read', durationMs: readDurationMs, description: result.source ?? 'unknown' },
+        { name: 'total', durationMs: performance.now() - requestStartedAt },
+      ]),
     });
   }
 

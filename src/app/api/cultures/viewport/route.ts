@@ -8,6 +8,7 @@ import {
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
+import { withServerTiming } from '@/server/serverTiming';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 
@@ -52,6 +53,7 @@ const responseHeaders = (source = 'kv-read-model') =>
   });
 
 export async function GET(request: Request) {
+  const requestStartedAt = performance.now();
   const url = new URL(request.url);
   const bounds = parseBounds(url.searchParams);
 
@@ -74,10 +76,20 @@ export async function GET(request: Request) {
   });
   const level = parseMapLevel(url.searchParams.get('level'));
 
+  const readStartedAt = performance.now();
   const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
+  const readDurationMs = performance.now() - readStartedAt;
   if (readModel) {
+    const computeStartedAt = performance.now();
     const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
-    return NextResponse.json(result, { headers: responseHeaders(readModel.source) });
+    const computeDurationMs = performance.now() - computeStartedAt;
+    return NextResponse.json(result, {
+      headers: withServerTiming(responseHeaders(readModel.source), [
+        { name: 'read-model', durationMs: readDurationMs, description: readModel.source },
+        { name: 'viewport-compute', durationMs: computeDurationMs },
+        { name: 'total', durationMs: performance.now() - requestStartedAt },
+      ]),
+    });
   }
 
   return NextResponse.json(

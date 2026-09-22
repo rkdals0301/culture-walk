@@ -12,6 +12,7 @@ import {
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
+import { withServerTiming } from '@/server/serverTiming';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import { CultureFeedPage, type CultureListItem } from '@/types/culture';
@@ -85,6 +86,7 @@ const buildPageFromSnapshot = (
 };
 
 export async function GET(request: Request) {
+  const requestStartedAt = performance.now();
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   const categoryValue = searchParams.get('category') ?? 'all';
@@ -125,11 +127,20 @@ export async function GET(request: Request) {
     );
   }
 
+  const readStartedAt = performance.now();
   const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
+  const readDurationMs = performance.now() - readStartedAt;
   if (readModel) {
+    const computeStartedAt = performance.now();
     const page = buildPageFromSnapshot(readModel.items, filters, cursor, limit);
-    const headers =
+    const computeDurationMs = performance.now() - computeStartedAt;
+    const cacheHeaders =
       filters.sortMode === 'distance' ? NO_STORE_CACHE_HEADERS : responseHeaders(readModel.source);
+    const headers = withServerTiming(cacheHeaders, [
+      { name: 'read-model', durationMs: readDurationMs, description: readModel.source },
+      { name: 'feed-compute', durationMs: computeDurationMs },
+      { name: 'total', durationMs: performance.now() - requestStartedAt },
+    ]);
     return NextResponse.json(page, { headers });
   }
 

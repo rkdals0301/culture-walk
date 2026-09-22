@@ -12,6 +12,7 @@ import {
   mapCultureRowToCulture,
 } from '@/services/cultureService';
 import type { RuntimeDeps } from '@/server/runtimeTypes';
+import { logEvent } from '@/server/structuredLog';
 import type { D1Binding } from '@/services/cultureSyncTypes';
 import { parseStoredTourApiDetails } from '@/services/tourApiDetails';
 import type { Culture } from '@/types/culture';
@@ -109,12 +110,24 @@ export const getCulturePublicRead = async (
 
   if (d1) {
     try {
+      const readStartedAt = Date.now();
       const readThrough = await readCultureDetailFromD1(d1, id);
+      const queryDurationMs = Date.now() - readStartedAt;
       if (readThrough) {
+        let cacheWriteDurationMs = 0;
         if (cache) {
           const cacheVersion = itemRevision ?? readThrough.revision;
+          const cacheWriteStartedAt = Date.now();
           await writeCultureDetailCache(id, cacheVersion, readThrough.culture, DETAIL_READ_THROUGH_TTL_SECONDS, cache);
+          cacheWriteDurationMs = Date.now() - cacheWriteStartedAt;
         }
+
+        logEvent('info', 'culture.detail.read_through', {
+          id,
+          queryDurationMs,
+          cacheWriteDurationMs,
+          readModelAvailable: Boolean(snapshot),
+        });
 
         return {
           culture: readThrough.culture,
@@ -123,7 +136,7 @@ export const getCulturePublicRead = async (
         };
       }
     } catch (error) {
-      console.error(`[read-model] detail D1 read-through failed id=${id}`, error);
+      logEvent('error', 'culture.detail.read_through_failed', { id }, error);
     }
   }
 
