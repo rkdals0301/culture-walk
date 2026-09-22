@@ -1,6 +1,7 @@
 import {
   getSerializedUtf8ByteLength,
   readCultureReadModelCache,
+  readCultureReadModelMetadataCache,
   type CultureCacheBinding,
   writeCultureReadModelCache,
 } from '@/cache/kv';
@@ -87,6 +88,29 @@ test('publishing a new read model immediately replaces isolate memory for that b
   assert.equal(after?.items[0].title, '새 행사');
   assert.equal(after?.revisions?.['101'], 'new-revision');
   assert.equal(reads, 1);
+});
+
+test('publishing a read model stores a lightweight health metadata envelope', async () => {
+  const stored = new Map<string, unknown>();
+  const cache: CultureCacheBinding = {
+    get: async key => stored.get(key) ?? null,
+    put: async (key, value) => {
+      stored.set(key, JSON.parse(value));
+    },
+  };
+
+  const publication = await writeCultureReadModelCache(
+    [makeListItem('상태 확인 행사')],
+    { '101': 'revision-101' },
+    cache
+  );
+  const metadata = await readCultureReadModelMetadataCache(cache);
+
+  assert.equal(publication.published, true);
+  assert.equal(publication.metadataPublished, true);
+  assert.equal(metadata?.itemCount, 1);
+  assert.equal(metadata?.cachedAt, publication.cachedAt);
+  assert.equal(metadata?.serializedBytes, publication.serializedBytes);
 });
 
 test('detail refresh reports only successfully refreshed culture ids for precise edge purge', async () => {

@@ -4,6 +4,7 @@ import { Culture, CultureListItem, CultureSearchableListItem } from '@/types/cul
 export type { CultureCacheBinding };
 
 const CULTURE_READ_MODEL_CACHE_KEY = 'cultures:read-model:v1';
+const CULTURE_READ_MODEL_METADATA_KEY = 'cultures:read-model-meta:v1';
 const CULTURE_LIST_FALLBACK_CACHE_KEY = 'cultures:list:last:v1';
 const CULTURE_LIST_FALLBACK_METADATA_KEY = 'cultures:list:last-meta:v1';
 const CULTURE_DETAIL_CACHE_NAMESPACE = 'cultures:detail:last:v1';
@@ -18,6 +19,11 @@ export interface CultureReadModel {
   cachedAt: string | null;
   items: CultureSearchableListItem[];
   revisions?: Record<string, string>;
+}
+export interface CultureReadModelMetadata {
+  cachedAt: string;
+  itemCount: number;
+  serializedBytes: number | null;
 }
 type StoredCultureDetail = {
   cacheVersion: string;
@@ -148,19 +154,33 @@ export const readCultureReadModelCache = async (
   return legacyReadModel;
 };
 
+export const readCultureReadModelMetadataCache = async (cacheOverride?: CultureCacheBinding) =>
+  readKvCache<CultureReadModelMetadata>(CULTURE_READ_MODEL_METADATA_KEY, cacheOverride);
+
+export const writeCultureReadModelMetadataCache = async (
+  metadata: CultureReadModelMetadata,
+  cacheOverride?: CultureCacheBinding
+) =>
+  writeKvCache(
+    CULTURE_READ_MODEL_METADATA_KEY,
+    metadata,
+    CULTURE_READ_MODEL_TTL_SECONDS,
+    cacheOverride
+  );
+
 export const writeCultureReadModelCache = async (
   cultures: CultureSearchableListItem[],
   revisions: Record<string, string>,
   cacheOverride?: CultureCacheBinding
 ) => {
-  const readModel: CultureReadModel = {
+  const readModel = {
     cachedAt: new Date().toISOString(),
     items: cultures,
     revisions,
-  };
+  } satisfies CultureReadModel;
   const serializedBytes = getSerializedUtf8ByteLength(readModel);
   const cache = await getCultureCache(cacheOverride);
-  if (!cache) return { ...readModel, published: false, serializedBytes };
+  if (!cache) return { ...readModel, published: false, metadataPublished: false, serializedBytes };
 
   const published = await writeKvCache(
     CULTURE_READ_MODEL_CACHE_KEY,
@@ -174,5 +194,15 @@ export const writeCultureReadModelCache = async (
       expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
     });
   }
-  return { ...readModel, published, serializedBytes };
+  const metadataPublished = published
+    ? await writeCultureReadModelMetadataCache(
+        {
+          cachedAt: readModel.cachedAt,
+          itemCount: cultures.length,
+          serializedBytes,
+        },
+        cache
+      )
+    : false;
+  return { ...readModel, published, metadataPublished, serializedBytes };
 };

@@ -60,6 +60,7 @@ export const refreshCultureListSnapshotCache = async (options: {
   const publishDurationMs = Date.now() - publishStartedAt;
   logEvent(readModel.published ? 'info' : 'warn', 'culture.read_model.publish', {
     published: readModel.published,
+    metadataPublished: readModel.metadataPublished,
     itemCount: items.length,
     serializedBytes: readModel.serializedBytes,
     bytesPerItem: items.length > 0 ? Math.round(readModel.serializedBytes / items.length) : 0,

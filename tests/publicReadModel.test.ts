@@ -32,7 +32,9 @@ test('공개 상세 조회는 요청 시 D1 refresh write를 만들지 않는다
 test('공개 health는 KV read model freshness만으로 상태를 판단한다', async () => {
   const health = await readFile(publicReadPaths[6], 'utf8');
 
+  assert.match(health, /readCultureReadModelMetadataCache/);
   assert.match(health, /readCultureReadModelSnapshot/);
+  assert.match(health, /Cloudflare-CDN-Cache-Control/);
   assert.match(health, /databaseStatus:\s*'not-probed'/);
   assert.doesNotMatch(health, /COUNT\(\*\)|cultureSyncRuns|cultureTourApiDetails/);
 });

@@ -1,5 +1,11 @@
-import { readCultureReadModelSnapshot } from '@/services/cultureList';
+import {
+  readCultureReadModelMetadataCache,
+  writeCultureReadModelMetadataCache,
+} from '@/cache/kv';
 import { getRuntimeDeps } from '@/server/cloudflare';
+import { CULTURE_EDGE_CACHE_TAGS } from '@/server/httpCache';
+import { createServerTimingHeader } from '@/server/serverTiming';
+import { readCultureReadModelSnapshot } from '@/services/cultureList';
 
 import { NextResponse } from 'next/server';
 
@@ -21,11 +27,37 @@ const getAgeHours = (value: string | null, now: Date) => {
  * Deep database diagnostics belong in scheduled sync logs / Cloudflare tools.
  */
 export async function GET() {
+  const requestStartedAt = performance.now();
   const now = new Date();
   const { cache } = await getRuntimeDeps();
-  const snapshot = await readCultureReadModelSnapshot(cache);
+  const metadataReadStartedAt = performance.now();
+  const metadata = await readCultureReadModelMetadataCache(cache);
+  const metadataReadDurationMs = performance.now() - metadataReadStartedAt;
 
-  if (!snapshot?.items.length) {
+  let itemCount = metadata?.itemCount ?? 0;
+  let cachedAt: string | null = metadata?.cachedAt ?? null;
+  let serializedBytes: number | null = metadata?.serializedBytes ?? null;
+  let healthSource = 'kv-read-model-metadata';
+
+  if (!metadata) {
+    const snapshot = await readCultureReadModelSnapshot(cache);
+    itemCount = snapshot?.items.length ?? 0;
+    cachedAt = snapshot?.cachedAt ?? null;
+    serializedBytes = null;
+    healthSource = snapshot ? 'kv-read-model-fallback' : 'kv-read-model-missing';
+    if (snapshot?.cachedAt && snapshot.items.length > 0) {
+      await writeCultureReadModelMetadataCache(
+        {
+          cachedAt: snapshot.cachedAt,
+          itemCount: snapshot.items.length,
+          serializedBytes: null,
+        },
+        cache
+      );
+    }
+  }
+
+  if (itemCount === 0) {
     return NextResponse.json(
       {
         ok: false,
@@ -39,19 +71,28 @@ export async function GET() {
           itemCount: 0,
           cachedAt: null,
           ageHours: null,
+          serializedBytes: null,
         },
         latestSync: null,
       },
       {
         status: 503,
-        headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model-missing' },
+        headers: {
+          'Cache-Control': 'no-store',
+          'Cloudflare-CDN-Cache-Control': 'no-store',
+          'X-Culture-Data-Source': healthSource,
+          'Server-Timing': createServerTimingHeader([
+            { name: 'health-meta', durationMs: metadataReadDurationMs },
+            { name: 'total', durationMs: performance.now() - requestStartedAt },
+          ]),
+        },
       }
     );
   }
 
-  const ageHours = getAgeHours(snapshot.cachedAt, now);
+  const ageHours = getAgeHours(cachedAt, now);
   const fresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
-  const reason = snapshot.cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
+  const reason = cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
 
   return NextResponse.json(
     {
@@ -66,21 +107,32 @@ export async function GET() {
         : 'KV read model로 서비스를 제공 중이며 다음 snapshot 동기화를 기다리고 있습니다.',
       readModel: {
         available: true,
-        itemCount: snapshot.items.length,
-        cachedAt: snapshot.cachedAt,
+        itemCount,
+        cachedAt,
         ageHours,
+        serializedBytes,
       },
-      latestSync: snapshot.cachedAt
+      latestSync: cachedAt
         ? {
             status: 'success',
-            completedAt: snapshot.cachedAt,
+            completedAt: cachedAt,
             ageHours,
           }
         : null,
     },
     {
       status: 200,
-      headers: { 'Cache-Control': 'no-store', 'X-Culture-Data-Source': 'kv-read-model' },
+      headers: {
+        'Cache-Control': 'no-store',
+        'Cloudflare-CDN-Cache-Control':
+          'public, max-age=30, stale-while-revalidate=30, stale-if-error=60',
+        'Cache-Tag': CULTURE_EDGE_CACHE_TAGS.all + ',' + CULTURE_EDGE_CACHE_TAGS.list,
+        'X-Culture-Data-Source': healthSource,
+        'Server-Timing': createServerTimingHeader([
+          { name: 'health-meta', durationMs: metadataReadDurationMs, description: healthSource },
+          { name: 'total', durationMs: performance.now() - requestStartedAt },
+        ]),
+      },
     }
   );
 }
