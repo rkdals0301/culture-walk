@@ -565,4 +565,5 @@ playwright-report/
 
 # Local visual QA artifacts. Production assets belong under /public.
 /.audit/
+/audit/
 /*.png
