@@ -1,0 +1,55 @@
+name: Production Browser Smoke
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - CD
+    types:
+      - completed
+
+concurrency:
+  group: production-browser-smoke
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  webkit:
+    name: Verify production WebKit
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PRODUCTION_BASE_URL: https://culturewalk.gangmin.dev
+
+    steps:
+      - name: Checkout deployed revision
+        uses: actions/checkout@3d3c42e5aac5ba805825a76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+
+      - name: Run production WebKit smoke
+        run: npx playwright test --config=playwright.production.config.ts
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-webkit-${{ github.run_id }}
+          path: test-results/production-browser
+          if-no-files-found: ignore
+          retention-days: 7
