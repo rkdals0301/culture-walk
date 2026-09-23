@@ -328,7 +328,7 @@ export const waitForAppHydration = async (page: Page) => {
 };
 
 export const gotoApp = async (page: Page, url: string) => {
-  const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+  const response = await page.goto(url, { waitUntil: 'commit' });
   await waitForAppHydration(page);
   return response;
 };
