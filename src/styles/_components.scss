@@ -500,9 +500,7 @@ textarea {
   }
 
   .feed-results-enter {
-    animation-name: feed-results-enter-reduced;
-    animation-duration: 180ms !important;
-    animation-timing-function: ease-out;
+    animation: none !important;
   }
 }
 

@@ -323,4 +323,14 @@ export const test = base.extend<AppFixtures>({
   ],
 });
 
+export const waitForAppHydration = async (page: Page) => {
+  await expect(page.locator('html')).toHaveAttribute('data-app-hydrated', 'true', { timeout: 10_000 });
+};
+
+export const gotoApp = async (page: Page, url: string) => {
+  const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
+  await waitForAppHydration(page);
+  return response;
+};
+
 export { expect };

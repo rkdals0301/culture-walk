@@ -1,9 +1,9 @@
-import { expect, test } from './support/test';
+import { expect, gotoApp, test } from './support/test';
 
 const FILTERED_MAP_URL = '/map?q=문화산책&category=performance&region=서울&free=1';
 
 test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를 보존한다', async ({ page }) => {
-  await page.goto(FILTERED_MAP_URL, { waitUntil: 'domcontentloaded' });
+  await gotoApp(page, FILTERED_MAP_URL);
   await expect(page.getByRole('region', { name: '전국 문화행사 지도' })).toBeVisible();
 
   const cluster = page.getByRole('button', { name: '이 영역의 행사 2개, 확대해서 보기' });

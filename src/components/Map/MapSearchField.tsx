@@ -25,7 +25,7 @@ const MapSearchField = ({ id, value, onChange, compact = false }: MapSearchField
       type='text'
       value={value}
       onChange={event => onChange(event.target.value)}
-      placeholder='행사명 또는 장소 검색'
+      placeholder='행사명·장소·지역 검색'
       aria-label='문화행사 검색'
       autoComplete='off'
       spellCheck={false}

@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
+import { gotoApp } from './support/test';
 
 test('Kakao Maps SDK 네트워크 실패 시 오류 안내와 목록 복귀 경로를 제공한다', async ({ page }) => {
   await page.route('https://dapi.kakao.com/**', route => route.abort('failed'));
 
-  await page.goto('/map', { waitUntil: 'domcontentloaded' });
+  await gotoApp(page, '/map');
 
   const mapError = page.locator('[role="alert"][data-status="map-error"]');
   await expect(mapError).toContainText('지도를 불러오지 못했습니다.');

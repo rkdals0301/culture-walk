@@ -17,8 +17,11 @@ interface FeedResultsProps {
   hasMore: boolean;
   error: unknown;
   isFiltered: boolean;
+  hasNonSearchFilters: boolean;
+  searchQuery: string;
   loadMoreSentinelRef: RefObject<HTMLDivElement | null>;
   onOpenCulture: (culture: FormattedCultureListItem) => void;
+  onClearSearch: () => void;
   onResetFilters: () => void;
   onRetry: () => void;
   onRetryLoadMore: () => Promise<unknown> | unknown;
@@ -33,8 +36,11 @@ const FeedResults = ({
   hasMore,
   error,
   isFiltered,
+  hasNonSearchFilters,
+  searchQuery,
   loadMoreSentinelRef,
   onOpenCulture,
+  onClearSearch,
   onResetFilters,
   onRetry,
   onRetryLoadMore,
@@ -46,7 +52,11 @@ const FeedResults = ({
     <h2 id='feed-results-title' className='sr-only'>
       행사 목록
     </h2>
-    <div className='mb-4 flex items-center justify-between text-xs font-semibold text-[var(--color-text-tertiary)]'>
+    <div
+      className='mb-4 flex items-center justify-between text-xs font-semibold text-[var(--color-text-tertiary)]'
+      aria-live='polite'
+      aria-atomic='true'
+    >
       <span>행사 {totalCount.toLocaleString('ko-KR')}개</span>
     </div>
 
@@ -60,7 +70,7 @@ const FeedResults = ({
         <button
           type='button'
           onClick={onRetry}
-          className='mt-2 rounded-lg bg-[var(--color-text-primary)] px-4 py-2 text-xs font-bold text-[var(--color-text-inverse)] shadow-xs'
+          className='mt-2 inline-flex min-h-11 items-center rounded-lg bg-[var(--color-text-primary)] px-4 py-2 text-xs font-bold text-[var(--color-text-inverse)] shadow-xs'
         >
           다시 시도
         </button>
@@ -70,18 +80,35 @@ const FeedResults = ({
     {!isInitialLoading && !Boolean(error) && cultures.length === 0 && (
       <div className='flex min-h-[360px] flex-col items-center justify-center gap-3 py-12 text-center'>
         <Search className='size-10 text-[var(--color-text-tertiary)] opacity-50' />
-        <h3 className='text-base font-bold text-[var(--color-text-primary)]'>조건에 맞는 행사가 없습니다</h3>
+        <h3 className='text-base font-bold text-[var(--color-text-primary)]'>
+          {searchQuery ? '“' + searchQuery + '” 검색 결과가 없습니다' : '조건에 맞는 행사가 없습니다'}
+        </h3>
         <p className='max-w-sm text-xs text-[var(--color-text-secondary)]'>
-          선택한 카테고리나 지역에 해당하는 행사가 없습니다. 다른 조건으로 검색하거나 필터를 초기화해 보세요.
+          {searchQuery
+            ? '검색어를 조금 줄이거나 지역·분류 조건을 넓혀 다시 찾아보세요.'
+            : '선택한 카테고리나 지역에 해당하는 행사가 없습니다. 다른 조건으로 검색하거나 필터를 초기화해 보세요.'}
         </p>
         {isFiltered && (
-          <button
-            type='button'
-            onClick={onResetFilters}
-            className='mt-2 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-4 py-2 text-xs font-bold text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-border-control)]'
-          >
-            모든 필터 초기화
-          </button>
+          <div className='mt-2 flex flex-wrap justify-center gap-2'>
+            {searchQuery && (
+              <button
+                type='button'
+                onClick={onClearSearch}
+                className='inline-flex min-h-11 items-center rounded-lg bg-[var(--color-brand-primary)] px-4 py-2 text-xs font-bold text-[var(--color-brand-on-primary)] transition-colors hover:bg-[var(--color-brand-hover)]'
+              >
+                검색어만 지우기
+              </button>
+            )}
+            {(!searchQuery || hasNonSearchFilters) && (
+              <button
+                type='button'
+                onClick={onResetFilters}
+                className='inline-flex min-h-11 items-center rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-4 py-2 text-xs font-bold text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-border-control)]'
+              >
+                모든 필터 초기화
+              </button>
+            )}
+          </div>
         )}
       </div>
     )}
@@ -106,7 +133,7 @@ const FeedResults = ({
         <button
           type='button'
           onClick={() => void onRetryLoadMore()}
-          className='rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-4 py-2 text-xs font-bold text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-border-control)]'
+          className='inline-flex min-h-11 items-center rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-surface-secondary)] px-4 py-2 text-xs font-bold text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-border-control)]'
         >
           다시 불러오기
         </button>

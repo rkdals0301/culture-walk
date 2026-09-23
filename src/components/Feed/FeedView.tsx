@@ -109,6 +109,12 @@ const FeedView = ({ initialData, initialDataFilterKey }: FeedViewProps) => {
     mapSortMode !== 'date' ||
     Boolean(searchQuery) ||
     Boolean(currentLocation);
+  const hasNonSearchFilters =
+    mapCategory !== 'all' ||
+    mapRegion !== 'all' ||
+    mapFreeOnly ||
+    mapSortMode !== 'date' ||
+    Boolean(currentLocation);
   const handleClearSearch = useCallback(() => setSearchQuery(''), [setSearchQuery]);
 
   return (
@@ -155,8 +161,11 @@ const FeedView = ({ initialData, initialDataFilterKey }: FeedViewProps) => {
         hasMore={hasMore}
         error={error}
         isFiltered={isFiltered}
+        hasNonSearchFilters={hasNonSearchFilters}
+        searchQuery={searchQuery}
         loadMoreSentinelRef={loadMoreSentinelRef}
         onOpenCulture={handleOpenCulture}
+        onClearSearch={handleClearSearch}
         onResetFilters={resetMapFilters}
         onRetry={retry}
         onRetryLoadMore={retryLoadMore}
