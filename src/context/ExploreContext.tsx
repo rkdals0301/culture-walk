@@ -7,7 +7,7 @@ import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 
-interface CultureContextValue {
+interface ExploreContextValue {
   searchQuery: string;
   mapCategory: CultureCategoryKey;
   mapRegion: string;
@@ -27,9 +27,9 @@ interface CultureContextValue {
   resetMapFilters: () => void;
 }
 
-const CultureContext = createContext<CultureContextValue | undefined>(undefined);
+const ExploreContext = createContext<ExploreContextValue | undefined>(undefined);
 
-export const CultureProvider = ({ children }: { children: React.ReactNode }) => {
+export const ExploreProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchQuery, setSearchQueryState] = useState('');
   const [mapCategory, setMapCategory] = useState<CultureCategoryKey>('all');
   const [mapRegion, setMapRegion] = useState('all');
@@ -155,13 +155,13 @@ export const CultureProvider = ({ children }: { children: React.ReactNode }) => 
     ]
   );
 
-  return <CultureContext.Provider value={value}>{children}</CultureContext.Provider>;
+  return <ExploreContext.Provider value={value}>{children}</ExploreContext.Provider>;
 };
 
-export const useCultureContext = () => {
-  const context = useContext(CultureContext);
+export const useExploreContext = () => {
+  const context = useContext(ExploreContext);
   if (!context) {
-    throw new Error('useCultureContext must be used within a CultureProvider');
+    throw new Error('useExploreContext must be used within an ExploreProvider');
   }
 
   return context;

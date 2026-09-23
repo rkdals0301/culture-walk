@@ -19,7 +19,7 @@ test('MapDashboard keeps navigation and exploration side effects in its controll
   const source = await readProjectFile('../src/components/Map/MapDashboard.tsx');
 
   assert.match(source, /useMapDashboardController/);
-  assert.doesNotMatch(source, /useCultureContext|useMapExploreUrlSync|usePathname|useRouter|LocationRequestError|toast\./);
+  assert.doesNotMatch(source, /useExploreContext|useMapExploreUrlSync|usePathname|useRouter|LocationRequestError|toast\./);
 });
 
 test('map list focus restoration uses virtualized row mount signals instead of DOM polling', async () => {
@@ -78,9 +78,9 @@ test('desktop and mobile map dashboards receive one grouped view model instead o
   assert.match(model, /actions:/);
 });
 
-test('feed and map navigation memory stays outside the global reactive culture context', async () => {
+test('feed and map navigation memory stays outside the global reactive explore context', async () => {
   const [context, feed, feedViewport, mapView] = await Promise.all([
-    readProjectFile('../src/context/CultureContext.tsx'),
+    readProjectFile('../src/context/ExploreContext.tsx'),
     readProjectFile('../src/components/Feed/FeedView.tsx'),
     readProjectFile('../src/hooks/useFeedViewportBehavior.ts'),
     readProjectFile('../src/components/Map/MapView.tsx'),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import type { MapSortMode } from '@/utils/exploreState';
 import { getGeolocationErrorMessage, LocationRequestError } from '@/utils/geo';
 
@@ -24,7 +24,7 @@ export const useExploreLocationControls = () => {
     requestLocation,
     setCurrentLocation,
     setMapSortMode,
-  } = useCultureContext();
+  } = useExploreContext();
 
   const requestLocationWithFeedback = useCallback(async () => {
     try {

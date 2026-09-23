@@ -1,6 +1,6 @@
 'use client';
 
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import { getEffectiveMapSortMode } from '@/utils/exploreState';
 import { createMapExploreUrl } from '@/utils/mapRoute';
 
@@ -19,7 +19,7 @@ const FloatingMapButton = () => {
     mapFreeOnly,
     mapSortMode,
     currentLocation,
-  } = useCultureContext();
+  } = useExploreContext();
 
   const handleNavigateToMap = () => {
     const targetUrl = createMapExploreUrl('/map', {

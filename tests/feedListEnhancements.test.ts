@@ -56,9 +56,9 @@ test('FeedFilterRail은 위치 토글 버튼에 토글 상태(aria-pressed)와 �
   assert.match(feedFilterRail, /currentLocation \? '내 주변 해제' : '내 위치'/);
 });
 
-test('CultureContext resetMapFilters는 필터 초기화 시 currentLocation도 함께 초기화한다', () => {
+test('ExploreContext resetMapFilters는 필터 초기화 시 currentLocation도 함께 초기화한다', () => {
   const context = readFileSync(
-    resolve(__dirname, '../src/context/CultureContext.tsx'),
+    resolve(__dirname, '../src/context/ExploreContext.tsx'),
     'utf-8'
   );
   assert.match(

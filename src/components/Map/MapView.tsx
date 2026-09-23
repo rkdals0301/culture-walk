@@ -6,7 +6,7 @@ import MapDuplicateLocationSheet from '@/components/Map/MapDuplicateLocationShee
 import MapStatus from '@/components/Map/MapStatus';
 import MapZoomControls from '@/components/Map/MapZoomControls';
 import { useBottomSheet } from '@/context/BottomSheetContext';
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import { useKakaoMapInstance } from '@/hooks/useKakaoMapInstance';
 import { useKakaoMapMarkers } from '@/hooks/useKakaoMapMarkers';
 import { useKakaoMapViewport } from '@/hooks/useKakaoMapViewport';
@@ -60,7 +60,7 @@ const MapView = ({
     mapCategory,
     mapFreeOnly,
     mapSortMode,
-  } = useCultureContext();
+  } = useExploreContext();
   const [activeMarkerId, setActiveMarkerId] = useState<number | null>(null);
   const [pendingDetailId, setPendingDetailId] = useState<number | null>(null);
   const [initialCamera] = useState(() =>

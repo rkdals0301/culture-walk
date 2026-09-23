@@ -2,7 +2,7 @@
 
 import MapDashboard from '@/components/Map/MapDashboard';
 import MapViewClientOnly from '@/components/Map/MapViewClientOnly';
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import { useCultureMapData } from '@/hooks/useCultureMapData';
 import type { CultureMapBounds, CultureMapViewport } from '@/types/culture';
 
@@ -18,7 +18,7 @@ interface MapShellProps {
 }
 
 const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
-  const { searchQuery, mapCategory, mapRegion, mapFreeOnly } = useCultureContext();
+  const { searchQuery, mapCategory, mapRegion, mapFreeOnly } = useExploreContext();
   const [listRequest, setListRequest] = useState(0);
   // Wait for Kakao Maps' first idle event so the initial request includes the
   // actual viewport and its zoom level.

@@ -11,7 +11,7 @@ const foundationStylesPath = fileURLToPath(new URL('../src/styles/_foundation.sc
 const viewPath = fileURLToPath(new URL('../src/components/Map/MapView.tsx', import.meta.url));
 const viewClientOnlyPath = fileURLToPath(new URL('../src/components/Map/MapViewClientOnly.tsx', import.meta.url));
 const layoutPath = fileURLToPath(new URL('../src/app/layout.tsx', import.meta.url));
-const contextPath = fileURLToPath(new URL('../src/context/CultureContext.tsx', import.meta.url));
+const contextPath = fileURLToPath(new URL('../src/context/ExploreContext.tsx', import.meta.url));
 const apiErrorPath = fileURLToPath(new URL('../src/hooks/useApiError.ts', import.meta.url));
 const toastPath = fileURLToPath(new URL('../src/components/Toast/ToastContainer.tsx', import.meta.url));
 const headerPath = fileURLToPath(new URL('../src/components/Header/Header.tsx', import.meta.url));
@@ -133,11 +133,11 @@ test('초기 API 오류 알림 호스트는 지연 로딩 없이 즉시 등록�
 test('초기 API 오류보다 토스트 호스트가 먼저 마운트된다', async () => {
   const source = await readFile(layoutPath, 'utf8');
   const toastHostPosition = source.indexOf('<CustomToastContainer />');
-  const cultureProviderPosition = source.indexOf('<CultureProvider>');
+  const exploreProviderPosition = source.indexOf('<ExploreProvider>');
 
   assert.ok(toastHostPosition >= 0);
-  assert.ok(cultureProviderPosition >= 0);
-  assert.ok(toastHostPosition < cultureProviderPosition);
+  assert.ok(exploreProviderPosition >= 0);
+  assert.ok(toastHostPosition < exploreProviderPosition);
 });
 
 test('상세창이 열린 상태에서 테마 토글은 외부 클릭으로 처리되지 않는다', async () => {

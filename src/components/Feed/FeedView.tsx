@@ -1,6 +1,6 @@
 'use client';
 
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import { useCultureFeed } from '@/hooks/useCultureFeed';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import { useFeedViewportBehavior } from '@/hooks/useFeedViewportBehavior';
@@ -33,7 +33,7 @@ const FeedView = ({ initialData, initialDataFilterKey }: FeedViewProps) => {
     mapSortMode,
     currentLocation,
     resetMapFilters,
-  } = useCultureContext();
+  } = useExploreContext();
   const { changeSortMode, isLocating, toggleLocation } = useExploreLocationControls();
   const {
     cultures,

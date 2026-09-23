@@ -7,7 +7,7 @@ import Main from '@/components/Main/Main';
 import SideMenu from '@/components/SideMenu/SideMenuClientOnly';
 import CustomToastContainer from '@/components/Toast/ToastContainer';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
-import { CultureProvider } from '@/context/CultureContext';
+import { ExploreProvider } from '@/context/ExploreContext';
 import { SideMenuProvider } from '@/context/SideMenuContext';
 import ThemeProvider from '@/providers/ThemeProvider';
 import '@/styles/globals.scss';
@@ -67,7 +67,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />
         <ThemeProvider>
           <CustomToastContainer />
-          <CultureProvider>
+          <ExploreProvider>
             <BottomSheetProvider>
               <SideMenuProvider>
                 <Header />
@@ -76,7 +76,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
                 <BottomSheet />
               </SideMenuProvider>
             </BottomSheetProvider>
-          </CultureProvider>
+          </ExploreProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,4 +1,4 @@
-import { useCultureContext } from '@/context/CultureContext';
+import { useExploreContext } from '@/context/ExploreContext';
 import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import type { FormattedCultureListItem } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
@@ -38,7 +38,7 @@ export const useMapDashboardController = ({
     resetMapFilters,
     currentLocation,
     setMapSortMode,
-  } = useCultureContext();
+  } = useExploreContext();
   const { changeSortMode: handleSortChange, isLocating, toggleLocation: handleLocationToggle } = useExploreLocationControls();
   const [isDesktopPanelCollapsed, setIsDesktopPanelCollapsed] = useState(true);
 
