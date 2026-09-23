@@ -30,13 +30,18 @@ test('공개 상세 조회는 요청 시 D1 refresh write를 만들지 않는다
 });
 
 test('공개 health는 KV read model freshness만으로 상태를 판단한다', async () => {
-  const health = await readFile(publicReadPaths[6], 'utf8');
+  const healthRoute = await readFile(publicReadPaths[6], 'utf8');
+  const healthService = await readFile(
+    fileURLToPath(new URL('../src/server/publicHealth.ts', import.meta.url)),
+    'utf8'
+  );
 
-  assert.match(health, /readCultureReadModelMetadataCache/);
-  assert.match(health, /readCultureReadModelSnapshot/);
-  assert.match(health, /getSerializedUtf8ByteLength\(snapshot\)/);
-  assert.match(health, /assessCultureReadModelBudget/);
-  assert.match(health, /Cloudflare-CDN-Cache-Control/);
-  assert.match(health, /databaseStatus:\s*'not-probed'/);
-  assert.doesNotMatch(health, /COUNT\(\*\)|cultureSyncRuns|cultureTourApiDetails/);
+  assert.match(healthRoute, /getPublicHealthReport/);
+  assert.match(healthRoute, /Cloudflare-CDN-Cache-Control/);
+  assert.match(healthService, /readCultureReadModelMetadataCache/);
+  assert.match(healthService, /readCultureReadModelSnapshot/);
+  assert.match(healthService, /getSerializedUtf8ByteLength\(snapshot\)/);
+  assert.match(healthService, /assessCultureReadModelBudget/);
+  assert.match(healthService, /databaseStatus:\s*'not-probed'/);
+  assert.doesNotMatch(healthService, /COUNT\(\*\)|cultureSyncRuns|cultureTourApiDetails/);
 });
