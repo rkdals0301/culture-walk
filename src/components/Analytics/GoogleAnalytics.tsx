@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
@@ -18,10 +18,24 @@ interface GoogleAnalyticsProps {
 
 const GoogleAnalytics = ({ measurementId }: GoogleAnalyticsProps) => {
   const pathname = usePathname();
+  const initializedMeasurementIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!measurementId || typeof window.gtag !== 'function') {
+    if (!measurementId) {
       return;
+    }
+
+    window.dataLayer = window.dataLayer || [];
+    window.gtag =
+      window.gtag ||
+      ((...args: unknown[]) => {
+        window.dataLayer.push(args);
+      });
+
+    if (initializedMeasurementIdRef.current !== measurementId) {
+      window.gtag('js', new Date());
+      window.gtag('config', measurementId, { send_page_view: false });
+      initializedMeasurementIdRef.current = measurementId;
     }
 
     const query = window.location.search.replace(/^\?/, '');
@@ -38,25 +52,11 @@ const GoogleAnalytics = ({ measurementId }: GoogleAnalyticsProps) => {
   }
 
   return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy='afterInteractive'
-      />
-      <Script
-        id='google-analytics'
-        strategy='afterInteractive'
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', '${measurementId}', { send_page_view: false });
-          `,
-        }}
-      />
-    </>
+    <Script
+      id='google-analytics-loader'
+      src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+      strategy='afterInteractive'
+    />
   );
 };
 

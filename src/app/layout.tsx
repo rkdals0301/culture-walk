@@ -19,7 +19,6 @@ import {
   GA_MEASUREMENT_ID,
   rootMetadata,
   rootViewport,
-  THEME_INITIALIZER_SCRIPT,
   WEBSITE_STRUCTURED_DATA,
 } from './rootLayoutConfig';
 
@@ -43,8 +42,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
         />
         <Script
           id='theme-initializer'
+          src='/assets/scripts/theme-initializer.js'
           strategy='beforeInteractive'
-          dangerouslySetInnerHTML={{ __html: THEME_INITIALIZER_SCRIPT }}
         />
         {GA_MEASUREMENT_ID && <link rel='dns-prefetch' href='https://www.google-analytics.com' />}
       </head>

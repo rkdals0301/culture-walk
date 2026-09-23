@@ -7,6 +7,9 @@ const hasGoogleAdsense = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim
 
 const scriptSources = [
   "'self'",
+  // Next App Router still emits inline Flight/bootstrap payloads. Keeping this
+  // exception avoids forcing nonce-based dynamic rendering, while app-owned
+  // executable bootstrap code lives in same-origin external assets.
   "'unsafe-inline'",
   'https://dapi.kakao.com',
   'https://*.daumcdn.net',

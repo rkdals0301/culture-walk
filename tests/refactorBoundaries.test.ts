@@ -537,7 +537,8 @@ test('root layout delegates metadata, structured data, and theme bootstrap confi
   assert.match(config, /rootMetadata/);
   assert.match(config, /rootViewport/);
   assert.match(config, /WEBSITE_STRUCTURED_DATA/);
-  assert.match(config, /THEME_INITIALIZER_SCRIPT/);
+  assert.doesNotMatch(config, /THEME_INITIALIZER_SCRIPT/);
+  assert.match(layout, /src='\/assets\/scripts\/theme-initializer\.js'/);
   assert.ok(layout.split(/\r?\n/).length < 140);
 });
 
