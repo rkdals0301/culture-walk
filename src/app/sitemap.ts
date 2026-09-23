@@ -36,13 +36,6 @@ const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   },
 ];
 
-const parseLastModified = (value: string | null) => {
-  if (!value) return undefined;
-  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value) ? `${value.replace(' ', 'T')}Z` : value;
-  const date = new Date(normalized);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-};
-
 const toSitemapImage = (value: string | null) => {
   const imageUrl = value?.trim();
   if (!imageUrl) {
@@ -60,7 +53,6 @@ const toSitemapImage = (value: string | null) => {
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const snapshot = await getCulturePublicListSnapshot(await getRuntimeDeps());
   if (!snapshot) return STATIC_ENTRIES;
-  const lastModified = parseLastModified(snapshot.cachedAt);
 
   const cultureEntries: MetadataRoute.Sitemap = [...snapshot.items]
     .sort((left, right) => left.id - right.id)
@@ -69,7 +61,6 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
 
       return {
         url: `${SITE_URL}/cultures/${row.id}`,
-        ...(lastModified ? { lastModified } : {}),
         changeFrequency: 'daily' as const,
         priority: 0.8,
         ...(image ? { images: [image] } : {}),
