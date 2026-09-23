@@ -1,7 +1,9 @@
 import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
 import type { RuntimeDeps } from '@/server/runtimeTypes';
+import { logEvent } from '@/server/structuredLog';
 
+import { buildCultureSnapshotQualityReport } from './cultureDataQuality';
 import { publishCurrentCultureDetailReadModels, refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
@@ -38,6 +40,19 @@ export const syncCultures = async (
     const mappedRows = externalRows.map(mapTourApiFestivalToCulture);
     const normalization = normalizeAndValidateCultureRows(mappedRows);
     const deduplicatedRows = deduplicateCultureRows(normalization.rows);
+    const qualityReport = buildCultureSnapshotQualityReport({
+      fetchedCount: externalRows.length,
+      normalizedRows: normalization.rows,
+      deduplicatedRows,
+      invalidCoordinateCount: normalization.invalidCoordinateCount,
+      invalidDateCount: normalization.invalidDateCount,
+      missingRequiredFieldCount: normalization.missingRequiredFieldCount,
+    });
+    logEvent(
+      qualityReport.warnings.length > 0 ? 'warn' : 'info',
+      'culture.snapshot.quality',
+      { ...qualityReport }
+    );
 
     if (deduplicatedRows.length === 0) {
       throw new Error('검증과 중복 제거 이후 남은 문화 데이터가 없습니다.');
