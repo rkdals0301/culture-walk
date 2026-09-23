@@ -17,6 +17,7 @@
     "db:migrate:local": "wrangler d1 migrations apply culture-walk-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply culture-walk-db --remote",
     "db:migrations:check": "node scripts/check-migrations.mjs",
+    "db:migrations:changes": "node scripts/check-migration-changes.mjs",
     "db:seed:local": "node scripts/seed-local-sample.mjs",
     "db:seed:local:from-production": "node scripts/seed-local-sample.mjs --from-production --reset-local",
     "test": "tsx --test tests/**/*.test.ts",
