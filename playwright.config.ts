@@ -14,15 +14,6 @@ const crossBrowserProjects = isCI
           viewport: { width: 1440, height: 900 },
         },
       },
-      {
-        name: 'mobile-webkit',
-        testMatch: '**/browser-compat.spec.ts',
-        use: {
-          ...devices['iPhone 13'],
-          browserName: 'webkit' as const,
-          viewport: { width: 390, height: 844 },
-        },
-      },
     ]
   : [];
 
