@@ -5,6 +5,7 @@ import {
 } from '@/cache/kv';
 import { getRuntimeDeps } from '@/server/cloudflare';
 import { CULTURE_EDGE_CACHE_TAGS } from '@/server/httpCache';
+import { assessCultureReadModelBudget } from '@/server/readModelBudget';
 import { createServerTimingHeader } from '@/server/serverTiming';
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
 
@@ -64,6 +65,7 @@ export async function GET() {
   }
 
   if (itemCount === 0) {
+    const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
     return NextResponse.json(
       {
         ok: false,
@@ -78,6 +80,7 @@ export async function GET() {
           cachedAt: null,
           ageHours: null,
           serializedBytes: null,
+          budget,
         },
         latestSync: null,
       },
@@ -99,6 +102,7 @@ export async function GET() {
   const ageHours = getAgeHours(cachedAt, now);
   const fresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
   const reason = cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
+  const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
 
   return NextResponse.json(
     {
@@ -117,6 +121,7 @@ export async function GET() {
         cachedAt,
         ageHours,
         serializedBytes,
+        budget,
       },
       latestSync: cachedAt
         ? {

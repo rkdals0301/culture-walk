@@ -4,6 +4,7 @@ import {
   writeCultureReadModelCache,
 } from '@/cache/kv';
 import { logEvent } from '@/server/structuredLog';
+import { assessCultureReadModelBudget } from '@/server/readModelBudget';
 import { createCultureListItemRevision, queryCultureListFromD1 } from '@/services/cultureListRepository';
 import type { RuntimeDeps } from '@/server/runtimeTypes';
 import type { D1Binding } from '@/services/cultureSyncTypes';
@@ -58,12 +59,21 @@ export const refreshCultureListSnapshotCache = async (options: {
   const publishStartedAt = Date.now();
   const readModel = await writeCultureReadModelCache(items, revisions, options.cache);
   const publishDurationMs = Date.now() - publishStartedAt;
-  logEvent(readModel.published ? 'info' : 'warn', 'culture.read_model.publish', {
+  const budget = assessCultureReadModelBudget(readModel.serializedBytes, items.length);
+  const level =
+    !readModel.published || budget.status === 'watch' || budget.status === 'exceeded'
+      ? 'warn'
+      : 'info';
+  logEvent(level, 'culture.read_model.publish', {
     published: readModel.published,
     metadataPublished: readModel.metadataPublished,
     itemCount: items.length,
     serializedBytes: readModel.serializedBytes,
     bytesPerItem: items.length > 0 ? Math.round(readModel.serializedBytes / items.length) : 0,
+    budgetStatus: budget.status,
+    budgetUtilizationPercent: budget.utilizationPercent,
+    budgetMaxBytes: budget.maxBytes,
+    estimatedItemsAtBudget: budget.estimatedItemsAtBudget,
     cachedAt: readModel.cachedAt,
     queryDurationMs,
     publishDurationMs,

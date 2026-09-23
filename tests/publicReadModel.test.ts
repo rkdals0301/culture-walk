@@ -35,6 +35,7 @@ test('공개 health는 KV read model freshness만으로 상태를 판단한다',
   assert.match(health, /readCultureReadModelMetadataCache/);
   assert.match(health, /readCultureReadModelSnapshot/);
   assert.match(health, /getSerializedUtf8ByteLength\(snapshot\)/);
+  assert.match(health, /assessCultureReadModelBudget/);
   assert.match(health, /Cloudflare-CDN-Cache-Control/);
   assert.match(health, /databaseStatus:\s*'not-probed'/);
   assert.doesNotMatch(health, /COUNT\(\*\)|cultureSyncRuns|cultureTourApiDetails/);
