@@ -3,6 +3,26 @@ import { defineConfig, devices } from '@playwright/test';
 const PORT = 3005;
 const baseURL = `http://127.0.0.1:${PORT}`;
 const isCI = Boolean(process.env.CI);
+const crossBrowserProjects = isCI
+  ? [
+      {
+        name: 'desktop-firefox',
+        use: {
+          ...devices['Desktop Firefox'],
+          browserName: 'firefox' as const,
+          viewport: { width: 1440, height: 900 },
+        },
+      },
+      {
+        name: 'mobile-webkit',
+        use: {
+          ...devices['iPhone 13'],
+          browserName: 'webkit' as const,
+          viewport: { width: 390, height: 844 },
+        },
+      },
+    ]
+  : [];
 
 export default defineConfig({
   testDir: './e2e',
@@ -45,22 +65,7 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    {
-      name: 'desktop-firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        browserName: 'firefox',
-        viewport: { width: 1440, height: 900 },
-      },
-    },
-    {
-      name: 'mobile-webkit',
-      use: {
-        ...devices['iPhone 13'],
-        browserName: 'webkit',
-        viewport: { width: 390, height: 844 },
-      },
-    },
+    ...crossBrowserProjects,
   ],
   webServer: {
     command: `npx wrangler dev --local --persist-to .wrangler/e2e --ip 127.0.0.1 --port ${PORT} --show-interactive-dev-session=false --log-level=warn`,

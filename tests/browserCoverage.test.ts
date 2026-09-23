@@ -15,5 +15,6 @@ test('critical browser E2E covers Chromium, Firefox, and WebKit in CI', async ()
   assert.match(playwrightConfig, /browserName:\s*'chromium'/);
   assert.match(playwrightConfig, /browserName:\s*'firefox'/);
   assert.match(playwrightConfig, /browserName:\s*'webkit'/);
+  assert.match(playwrightConfig, /const crossBrowserProjects = isCI/);
   assert.match(workflow, /playwright install --with-deps chromium firefox webkit/);
 });
