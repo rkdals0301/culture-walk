@@ -19,6 +19,7 @@ const crossBrowserProjects = isCI
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: '**/production/**',
   outputDir: 'test-results/e2e',
   fullyParallel: !isCI,
   forbidOnly: isCI,
