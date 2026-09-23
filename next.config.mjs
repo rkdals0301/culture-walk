@@ -101,6 +101,16 @@ const nextConfig = {
           { key: 'Content-Security-Policy', value: BASE_CONTENT_SECURITY_POLICY },
         ],
       },
+      {
+        source: '/assets/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, stale-while-revalidate=2592000',
+          },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+        ],
+      },
     ];
   },
   webpack: config => {

@@ -34,6 +34,13 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang='ko' suppressHydrationWarning>
       <head>
+        <link
+          rel='preload'
+          href='/assets/fonts/PretendardVariable.woff2'
+          as='font'
+          type='font/woff2'
+          crossOrigin='anonymous'
+        />
         <Script
           id='theme-initializer'
           strategy='beforeInteractive'
