@@ -17,6 +17,7 @@ interface FeedCultureCardProps {
   currentLocation?: GeoPoint | null;
   onOpenCulture: (culture: FormattedCultureListItem) => void;
   isAboveFold?: boolean;
+  isLcpCandidate?: boolean;
 }
 
 const FEED_IMAGE_SIZES =
@@ -28,6 +29,7 @@ const FeedCultureCard = ({
   currentLocation = null,
   onOpenCulture,
   isAboveFold = false,
+  isLcpCandidate = false,
 }: FeedCultureCardProps) => {
   const [imgSrc, setImgSrc] = useState(culture.mainImage);
   const [imageFailed, setImageFailed] = useState(false);
@@ -82,7 +84,7 @@ const FeedCultureCard = ({
               sizes={FEED_IMAGE_SIZES}
               quality={FEED_IMAGE_QUALITY}
               loading={isAboveFold ? 'eager' : 'lazy'}
-              fetchPriority={isAboveFold ? 'high' : 'auto'}
+              fetchPriority={isLcpCandidate ? 'high' : 'auto'}
               onError={() => setImageFailed(true)}
               className='object-cover transition-transform duration-300 ease-[var(--spring-smooth)] group-hover:scale-[1.03]'
             />
@@ -90,7 +92,7 @@ const FeedCultureCard = ({
             <CultureImageFallback
               compact
               classification={culture.classification}
-              priority={isAboveFold}
+              priority={isLcpCandidate}
               decorative
             />
           )}

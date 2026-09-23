@@ -30,10 +30,6 @@ export const CultureDetailPoster = ({
     <div className='relative w-full overflow-hidden rounded-2xl border border-[var(--color-border-primary)] bg-[var(--color-surface-chip)] shadow-xs'>
       {hasCultureImage ? (
         <div className='relative flex aspect-[3/4] max-h-[380px] w-full items-center justify-center overflow-hidden bg-black/10'>
-          <div className='pointer-events-none absolute inset-0 select-none overflow-hidden' aria-hidden='true'>
-            <Image src={imageSrc} alt='' fill sizes='120px' className='scale-125 object-cover opacity-35 blur-xl' />
-            <div className='absolute inset-0 bg-black/15' />
-          </div>
           <div className='relative z-10 size-full p-2.5'>
             <Image
               src={imageSrc}
@@ -42,7 +38,7 @@ export const CultureDetailPoster = ({
               fill
               sizes='(min-width: 1024px) 520px, 100dvw'
               priority={priority}
-              className='object-contain drop-shadow-md'
+              className='object-contain'
             />
           </div>
         </div>

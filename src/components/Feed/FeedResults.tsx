@@ -122,6 +122,7 @@ const FeedResults = ({
             currentLocation={currentLocation}
             onOpenCulture={onOpenCulture}
             isAboveFold={index < 2}
+            isLcpCandidate={index === 0}
           />
         ))}
       </div>
