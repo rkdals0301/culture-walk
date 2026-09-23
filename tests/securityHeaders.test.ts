@@ -26,6 +26,14 @@ test('CSP restricts default resources while allowing required Kakao integrations
   assert.match(nextConfig, /"manifest-src 'self'"/);
 });
 
+test('webpack assets use SRI without forcing nonce-based dynamic rendering', async () => {
+  const nextConfig = await readProjectFile('../next.config.mjs');
+
+  assert.match(nextConfig, /sri:\s*\{[\s\S]*?algorithm:\s*'sha384'/);
+  assert.doesNotMatch(nextConfig, /crypto\.randomUUID\(\)/);
+  assert.doesNotMatch(nextConfig, /x-nonce/);
+});
+
 test('optional Google integrations extend CSP only when their environment flags are configured', async () => {
   const nextConfig = await readProjectFile('../next.config.mjs');
 

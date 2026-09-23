@@ -65,6 +65,14 @@ const BASE_CONTENT_SECURITY_POLICY = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  experimental: {
+    // Keep static/edge-cacheable rendering while adding browser-verifiable
+    // integrity metadata to webpack-emitted JavaScript assets. A nonce-based
+    // CSP would force dynamic rendering for every page in Next.js.
+    sri: {
+      algorithm: 'sha384',
+    },
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     // Feed posters are refreshed by the scheduled sync, so keep optimized
