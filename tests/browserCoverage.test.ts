@@ -26,7 +26,7 @@ test('critical browser E2E covers Chromium/Firefox locally and WebKit on the dep
   assert.match(compatSpec, /핵심 피드 화면/);
   assert.match(compatSpec, /핵심 지도 화면/);
   assert.match(compatSpec, /핵심 상세 화면/);
-  assert.match(workflow, /playwright install --with-deps chromium firefox webkit/);
+  assert.match(workflow, /playwright install --with-deps chromium firefox/);
 
   assert.match(productionConfig, /browserName:\s*'webkit'/);
   assert.match(productionConfig, /https:\/\/culturewalk\.gangmin\.dev/);
