@@ -83,3 +83,29 @@ test('KV read model 지도도 검색·지역·무료 필터를 동일하게 적�
   assert.deepEqual(response.items.map(culture => culture.id), [1]);
   assert.equal(response.totalCount, 1);
 });
+
+test('지도 목록 검색도 피드의 검색 관련도 순서를 유지한다', () => {
+  const response = buildCultureMapResponseFromSnapshot(
+    [
+      item({
+        id: 1,
+        title: '다른 행사',
+        startDate: new Date('2026-09-01T00:00:00.000Z'),
+        searchText: '다른 행사\n서울 종로구\n광화문\n별빛 축제 소개',
+      }),
+      item({
+        id: 2,
+        title: '별빛 축제',
+        startDate: new Date('2026-09-20T00:00:00.000Z'),
+        searchText: '별빛 축제\n서울 종로구\n광화문',
+      }),
+    ],
+    {
+      filters: { searchQuery: '별빛 축제', category: 'all', region: 'all', freeOnly: false },
+      bounds: { swLat: 37.4, swLng: 126.8, neLat: 37.8, neLng: 127.2 },
+      level: 7,
+    }
+  );
+
+  assert.deepEqual(response.items.map(culture => culture.id), [2, 1]);
+});

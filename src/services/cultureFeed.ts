@@ -23,7 +23,48 @@ const FREE_VALUE_PATTERN = /무료|free/i;
 const MAX_SEARCH_LENGTH = 100;
 const MAX_REGION_LENGTH = 40;
 
-const normalizeText = (value: string | null | undefined) => value?.trim().toLocaleLowerCase('ko-KR') ?? '';
+const normalizeText = (value: string | null | undefined) =>
+  value?.normalize('NFKC').trim().toLocaleLowerCase('ko-KR') ?? '';
+
+const tokenizeSearchQuery = (query: string) =>
+  normalizeText(query)
+    .split(/\s+/)
+    .filter(Boolean);
+
+const getCultureSearchText = (culture: CultureSearchableListItem) =>
+  normalizeText(culture.searchText || [culture.title, culture.guName, culture.place].join(' '));
+
+const getCultureSearchScore = (culture: CultureSearchableListItem, query: string, tokens: readonly string[]) => {
+  if (!query) return 0;
+
+  const title = normalizeText(culture.title);
+  const place = normalizeText(culture.place);
+  const region = normalizeText(culture.guName);
+  const searchText = getCultureSearchText(culture);
+  let score = 0;
+
+  if (title === query) score += 1_000;
+  else if (title.startsWith(query)) score += 800;
+  else if (title.includes(query)) score += 650;
+
+  if (place === query) score += 500;
+  else if (place.includes(query)) score += 350;
+
+  if (region === query) score += 450;
+  else if (region.includes(query)) score += 300;
+
+  for (const token of tokens) {
+    if (title === token) score += 120;
+    else if (title.startsWith(token)) score += 100;
+    else if (title.includes(token)) score += 80;
+
+    if (place.includes(token)) score += 35;
+    if (region.includes(token)) score += 30;
+    if (searchText.includes(token)) score += 10;
+  }
+
+  return score;
+};
 
 export const isFreeCultureListItem = (culture: Pick<CultureListItem, 'isFree' | 'useFee'>) =>
   FREE_VALUE_PATTERN.test(`${culture.isFree} ${culture.useFee}`);
@@ -52,7 +93,7 @@ export const createCultureFeedCursor = (offset: number, filters: CultureFeedFilt
 const matchesCultureFeedFilters = (
   culture: CultureSearchableListItem,
   filters: CultureFeedFilters,
-  query: string
+  queryTokens: readonly string[]
 ) => {
   if (!matchesCultureCategory(culture.classification, filters.category)) {
     return false;
@@ -66,10 +107,7 @@ const matchesCultureFeedFilters = (
     return false;
   }
 
-  if (
-    query &&
-    !normalizeText(culture.searchText || [culture.title, culture.guName, culture.place].join(' ')).includes(query)
-  ) {
+  if (queryTokens.length > 0 && !queryTokens.every(token => getCultureSearchText(culture).includes(token))) {
     return false;
   }
 
@@ -82,6 +120,7 @@ export const buildCultureFeedResult = (
 ): CultureFeedResult => {
   const normalized = normalizeCultureFeedFilters(filters);
   const query = normalizeText(normalized.searchQuery);
+  const queryTokens = tokenizeSearchQuery(query);
   const regionSet = new Set<string>();
   const filteredItems: CultureListItem[] = [];
   let freeCount = 0;
@@ -92,7 +131,7 @@ export const buildCultureFeedResult = (
       regionSet.add(region);
     }
 
-    if (!matchesCultureFeedFilters(culture, normalized, query)) {
+    if (!matchesCultureFeedFilters(culture, normalized, queryTokens)) {
       continue;
     }
 
@@ -109,6 +148,10 @@ export const buildCultureFeedResult = (
       const distB = calculateDistanceMeters(userPoint, { lat: b.lat, lng: b.lng });
       return distA - distB;
     });
+  } else if (query) {
+    filteredItems.sort(
+      (a, b) => getCultureSearchScore(b, query, queryTokens) - getCultureSearchScore(a, query, queryTokens)
+    );
   }
 
   return {

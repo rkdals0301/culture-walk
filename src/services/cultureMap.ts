@@ -32,8 +32,11 @@ export const buildCultureMapResponseFromSnapshot = (
   const regionOptions = getCultureRegionOptions(items);
 
   if (mode === 'items') {
+    const visibleItems = filters.searchQuery
+      ? viewportItems
+      : sortCulturesByRelevantDate(viewportItems, getKoreaDateStartIso());
     return {
-      items: toCultureListItemDtos(sortCulturesByRelevantDate(viewportItems, getKoreaDateStartIso())),
+      items: toCultureListItemDtos(visibleItems),
       clusters: [],
       isClustered: false,
       totalCount: filteredItems.length,

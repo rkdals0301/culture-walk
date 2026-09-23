@@ -91,6 +91,86 @@ test('문화 피드 검색은 상세 소개와 이용 대상이 포함된 search
   );
 });
 
+test('문화 피드 검색은 여러 키워드가 서로 다른 필드에 있어도 모두 매칭한다', () => {
+  const searchable = createCulture({
+    id: 5,
+    title: '가을 콘서트',
+    guName: '서울 마포구',
+    place: '월드컵공원',
+    searchText: '가을 콘서트\n서울 마포구\n월드컵공원\n야외 음악 행사',
+  });
+
+  assert.deepEqual(
+    filterCultureListItems([searchable], {
+      searchQuery: '서울 콘서트',
+      category: 'all',
+      region: 'all',
+      freeOnly: false,
+    }).map(item => item.id),
+    [5]
+  );
+});
+
+test('문화 피드 검색은 제목 정확 일치와 제목 포함을 일반 상세 텍스트 일치보다 우선한다', () => {
+  const ranked = [
+    createCulture({
+      id: 10,
+      title: '다른 행사',
+      searchText: '다른 행사\n서울\n광장\n별빛 축제를 소개하는 상세 설명',
+    }),
+    createCulture({
+      id: 11,
+      title: '서울 별빛 축제 특별전',
+      searchText: '서울 별빛 축제 특별전\n부산\n전시장',
+    }),
+    createCulture({
+      id: 12,
+      title: '별빛 축제',
+      searchText: '별빛 축제\n대구\n공원',
+    }),
+  ];
+
+  const result = filterCultureListItems(ranked, {
+    searchQuery: '별빛 축제',
+    category: 'all',
+    region: 'all',
+    freeOnly: false,
+  });
+
+  assert.deepEqual(result.map(item => item.id), [12, 11, 10]);
+});
+
+test('거리순 검색에서는 검색 관련도보다 실제 거리를 우선한다', () => {
+  const ranked = [
+    createCulture({
+      id: 20,
+      title: '별빛 축제',
+      lat: 37.7,
+      lng: 127.2,
+      searchText: '별빛 축제\n서울',
+    }),
+    createCulture({
+      id: 21,
+      title: '별빛 행사',
+      lat: 37.5001,
+      lng: 127.0001,
+      searchText: '별빛 행사\n별빛 축제 안내\n서울',
+    }),
+  ];
+
+  const result = filterCultureListItems(ranked, {
+    searchQuery: '별빛',
+    category: 'all',
+    region: 'all',
+    freeOnly: false,
+    sortMode: 'distance',
+    userLat: 37.5,
+    userLng: 127,
+  });
+
+  assert.deepEqual(result.map(item => item.id), [21, 20]);
+});
+
 test('문화 피드 무료 판정은 목록 요금 필드도 확인한다', () => {
   assert.equal(isFreeCultureListItem(createCulture({ isFree: '정보 없음', useFee: '무료 관람' })), true);
   assert.equal(isFreeCultureListItem(createCulture({ isFree: '유료', useFee: '10,000원' })), false);
