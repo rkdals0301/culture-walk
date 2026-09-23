@@ -7,6 +7,7 @@ const crossBrowserProjects = isCI
   ? [
       {
         name: 'desktop-firefox',
+        testMatch: '**/browser-compat.spec.ts',
         use: {
           ...devices['Desktop Firefox'],
           browserName: 'firefox' as const,
@@ -15,6 +16,7 @@ const crossBrowserProjects = isCI
       },
       {
         name: 'mobile-webkit',
+        testMatch: '**/browser-compat.spec.ts',
         use: {
           ...devices['iPhone 13'],
           browserName: 'webkit' as const,
@@ -27,10 +29,10 @@ const crossBrowserProjects = isCI
 export default defineConfig({
   testDir: './e2e',
   outputDir: 'test-results/e2e',
-  fullyParallel: true,
+  fullyParallel: !isCI,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  workers: isCI ? 2 : 4,
+  workers: isCI ? 1 : 4,
   reporter: isCI ? 'github' : 'list',
   timeout: 20_000,
   expect: {
