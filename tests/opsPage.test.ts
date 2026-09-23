@@ -9,7 +9,7 @@ const readProjectFile = (relativePath: string) =>
 test('ops page reuses public health logic and stays out of search indexing', async () => {
   const [page, robots] = await Promise.all([
     readProjectFile('../src/app/ops/page.tsx'),
-    readProjectFile('../src/app/robots.ts'),
+    readProjectFile('../public/robots.txt'),
   ]);
 
   assert.match(page, /getPublicHealthReport/);
@@ -18,5 +18,5 @@ test('ops page reuses public health logic and stays out of search indexing', asy
   assert.match(page, /read model 크기/);
   assert.match(page, /용량 budget/);
   assert.doesNotMatch(page, /SYNC_TOKEN|TOUR_API_KEY|process\.env/);
-  assert.match(robots, /'\/ops'/);
+  assert.match(robots, /Disallow: \/ops/);
 });

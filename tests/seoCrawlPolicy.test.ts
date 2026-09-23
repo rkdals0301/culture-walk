@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 const readProjectFile = (relativePath: string) =>
   readFile(fileURLToPath(new URL(relativePath, import.meta.url)), 'utf8');
 
-test('robots metadata advertises sitemap while keeping APIs and ops diagnostics out of crawl', async () => {
-  const robots = await readProjectFile('../src/app/robots.ts');
+test('robots file advertises sitemap while keeping APIs and ops diagnostics out of crawl', async () => {
+  const robots = await readProjectFile('../public/robots.txt');
 
-  assert.match(robots, /sitemap:\s*`\$\{SITE_URL\}\/sitemap\.xml`/);
-  assert.match(robots, /disallow:\s*\['\/api\/', '\/ops'\]/);
-  assert.match(robots, /host:\s*SITE_URL/);
+  assert.match(robots, /Disallow: \/api\//);
+  assert.match(robots, /Disallow: \/ops/);
+  assert.match(robots, /Host: https:\/\/culturewalk\.gangmin\.dev/);
+  assert.match(robots, /Sitemap: https:\/\/culturewalk\.gangmin\.dev\/sitemap\.xml/);
 });
 
 test('sitemap does not claim every culture changed whenever the snapshot cache was republished', async () => {
