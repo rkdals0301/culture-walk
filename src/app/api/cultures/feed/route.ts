@@ -12,6 +12,10 @@ import {
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
+import {
+  logPublicRequestObservation,
+  resolveRequestCorrelation,
+} from '@/server/requestTrace';
 import { withServerTiming } from '@/server/serverTiming';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
@@ -87,6 +91,7 @@ const buildPageFromSnapshot = (
 
 export async function GET(request: Request) {
   const requestStartedAt = performance.now();
+  const correlation = resolveRequestCorrelation(request);
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   const categoryValue = searchParams.get('category') ?? 'all';
@@ -141,9 +146,24 @@ export async function GET(request: Request) {
       { name: 'feed-compute', durationMs: computeDurationMs },
       { name: 'total', durationMs: performance.now() - requestStartedAt },
     ]);
+    const durationMs = performance.now() - requestStartedAt;
+    logPublicRequestObservation({
+      correlation,
+      route: 'GET /api/cultures/feed',
+      status: 200,
+      durationMs,
+      dataSource: readModel.source,
+    });
     return NextResponse.json(page, { headers });
   }
 
+  logPublicRequestObservation({
+    correlation,
+    route: 'GET /api/cultures/feed',
+    status: 503,
+    durationMs: performance.now() - requestStartedAt,
+    dataSource: 'kv-read-model-missing',
+  });
   return NextResponse.json(
     { error: '문화 목록 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
     {

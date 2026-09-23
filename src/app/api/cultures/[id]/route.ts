@@ -7,6 +7,10 @@ import {
   NO_STORE_CACHE_HEADERS,
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
+import {
+  logPublicRequestObservation,
+  resolveRequestCorrelation,
+} from '@/server/requestTrace';
 import { withServerTiming } from '@/server/serverTiming';
 
 import { NextResponse } from 'next/server';
@@ -20,8 +24,9 @@ const responseHeaders = (source: string, id: string) =>
     tags: [CULTURE_EDGE_CACHE_TAGS.all, CULTURE_EDGE_CACHE_TAGS.detail, getCultureDetailEdgeCacheTag(id)],
   });
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const requestStartedAt = performance.now();
+  const correlation = resolveRequestCorrelation(request);
   const { id } = await params;
 
   if (!id) {
@@ -42,6 +47,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const result = await getCulturePublicRead(Number(id), await getRuntimeDeps());
   const readDurationMs = performance.now() - readStartedAt;
   if (result.culture) {
+    const durationMs = performance.now() - requestStartedAt;
+    logPublicRequestObservation({
+      correlation,
+      route: 'GET /api/cultures/:id',
+      status: 200,
+      durationMs,
+      dataSource: result.source,
+    });
     return NextResponse.json(result.culture, {
       headers: withServerTiming(responseHeaders(result.source ?? 'kv-read-model', id), [
         { name: 'detail-read', durationMs: readDurationMs, description: result.source ?? 'unknown' },
@@ -51,6 +64,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 
   if (!result.readModelAvailable) {
+    logPublicRequestObservation({
+      correlation,
+      route: 'GET /api/cultures/:id',
+      status: 503,
+      durationMs: performance.now() - requestStartedAt,
+      dataSource: 'kv-read-model-missing',
+    });
     return NextResponse.json(
       { error: '문화 상세 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
       {

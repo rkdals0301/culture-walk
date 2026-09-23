@@ -8,6 +8,10 @@ import {
 } from '@/server/httpCache';
 import { CULTURE_CACHE_POLICY } from '@/server/cultureCachePolicy';
 import { getRuntimeDeps } from '@/server/cloudflare';
+import {
+  logPublicRequestObservation,
+  resolveRequestCorrelation,
+} from '@/server/requestTrace';
 import { withServerTiming } from '@/server/serverTiming';
 import type { CultureMapBounds } from '@/types/culture';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
@@ -54,6 +58,7 @@ const responseHeaders = (source = 'kv-read-model') =>
 
 export async function GET(request: Request) {
   const requestStartedAt = performance.now();
+  const correlation = resolveRequestCorrelation(request);
   const url = new URL(request.url);
   const bounds = parseBounds(url.searchParams);
 
@@ -83,6 +88,14 @@ export async function GET(request: Request) {
     const computeStartedAt = performance.now();
     const result = buildCultureMapResponseFromSnapshot(readModel.items, { filters, bounds, level });
     const computeDurationMs = performance.now() - computeStartedAt;
+    const durationMs = performance.now() - requestStartedAt;
+    logPublicRequestObservation({
+      correlation,
+      route: 'GET /api/cultures/viewport',
+      status: 200,
+      durationMs,
+      dataSource: readModel.source,
+    });
     return NextResponse.json(result, {
       headers: withServerTiming(responseHeaders(readModel.source), [
         { name: 'read-model', durationMs: readDurationMs, description: readModel.source },
@@ -92,6 +105,13 @@ export async function GET(request: Request) {
     });
   }
 
+  logPublicRequestObservation({
+    correlation,
+    route: 'GET /api/cultures/viewport',
+    status: 503,
+    durationMs: performance.now() - requestStartedAt,
+    dataSource: 'kv-read-model-missing',
+  });
   return NextResponse.json(
     { error: '지도 read model이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.' },
     {

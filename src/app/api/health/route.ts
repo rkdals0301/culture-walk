@@ -6,6 +6,10 @@ import {
 import { getRuntimeDeps } from '@/server/cloudflare';
 import { CULTURE_EDGE_CACHE_TAGS } from '@/server/httpCache';
 import { assessCultureReadModelBudget } from '@/server/readModelBudget';
+import {
+  logPublicRequestObservation,
+  resolveRequestCorrelation,
+} from '@/server/requestTrace';
 import { createServerTimingHeader } from '@/server/serverTiming';
 import { readCultureReadModelSnapshot } from '@/services/cultureList';
 
@@ -28,8 +32,9 @@ const getAgeHours = (value: string | null, now: Date) => {
  * capable of exhausting the D1 row-read budget it is supposed to observe.
  * Deep database diagnostics belong in scheduled sync logs / Cloudflare tools.
  */
-export async function GET() {
+export async function GET(request: Request) {
   const requestStartedAt = performance.now();
+  const correlation = resolveRequestCorrelation(request);
   const now = new Date();
   const { cache } = await getRuntimeDeps();
   const metadataReadStartedAt = performance.now();
@@ -66,6 +71,13 @@ export async function GET() {
 
   if (itemCount === 0) {
     const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
+    logPublicRequestObservation({
+      correlation,
+      route: 'GET /api/health',
+      status: 503,
+      durationMs: performance.now() - requestStartedAt,
+      dataSource: healthSource,
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -103,6 +115,13 @@ export async function GET() {
   const fresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
   const reason = cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
   const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
+  logPublicRequestObservation({
+    correlation,
+    route: 'GET /api/health',
+    status: 200,
+    durationMs: performance.now() - requestStartedAt,
+    dataSource: healthSource,
+  });
 
   return NextResponse.json(
     {
