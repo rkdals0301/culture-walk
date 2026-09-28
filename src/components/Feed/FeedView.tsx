@@ -110,74 +110,66 @@ const FeedView = ({ initialData, initialDataFilterKey }: FeedViewProps) => {
     Boolean(searchQuery) ||
     Boolean(currentLocation);
   const hasNonSearchFilters =
-    mapCategory !== 'all' ||
-    mapRegion !== 'all' ||
-    mapFreeOnly ||
-    mapSortMode !== 'date' ||
-    Boolean(currentLocation);
+    mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly || mapSortMode !== 'date' || Boolean(currentLocation);
   const handleClearSearch = useCallback(() => setSearchQuery(''), [setSearchQuery]);
 
   return (
-    <div
-      ref={feedContentRef}
-      id='feed-content'
-      onScroll={handleScroll}
-      className='relative h-full overflow-y-auto bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]'
-    >
-      {/* Editorial Header with Inline Search */}
-      <FeedHeader
-        totalCount={totalCount}
-        freeCount={freeCount}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onClearSearch={handleClearSearch}
-      />
+    <div className='relative flex h-full min-h-0 flex-col bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]'>
+      <div ref={feedContentRef} id='feed-content' onScroll={handleScroll} className='min-h-0 flex-1 overflow-y-auto'>
+        {/* Editorial Header with Inline Search */}
+        <FeedHeader
+          totalCount={totalCount}
+          freeCount={freeCount}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClearSearch={handleClearSearch}
+        />
 
-      {/* Sticky Interactive Filter Bar (Airbnb style) */}
-      <FeedFilterRail
-        selectedCategory={mapCategory}
-        onSelectCategory={handleSelectCategory}
-        selectedRegion={mapRegion}
-        onSelectRegion={handleSelectRegion}
-        regionOptions={regionOptions}
-        isFreeOnly={mapFreeOnly}
-        onToggleFreeOnly={handleToggleFreeOnly}
-        currentLocation={currentLocation}
-        onToggleLocation={toggleLocation}
-        isLocating={isLocating}
-        onResetFilters={resetMapFilters}
-        isFiltered={isFiltered}
-        totalCount={totalCount}
-        sortMode={mapSortMode}
-        onChangeSortMode={changeSortMode}
-      />
+        {/* Sticky Interactive Filter Bar (Airbnb style) */}
+        <FeedFilterRail
+          selectedCategory={mapCategory}
+          onSelectCategory={handleSelectCategory}
+          selectedRegion={mapRegion}
+          onSelectRegion={handleSelectRegion}
+          regionOptions={regionOptions}
+          isFreeOnly={mapFreeOnly}
+          onToggleFreeOnly={handleToggleFreeOnly}
+          currentLocation={currentLocation}
+          onToggleLocation={toggleLocation}
+          isLocating={isLocating}
+          onResetFilters={resetMapFilters}
+          isFiltered={isFiltered}
+          totalCount={totalCount}
+          sortMode={mapSortMode}
+          onChangeSortMode={changeSortMode}
+        />
 
-      <FeedResults
-        cultures={cultures}
-        totalCount={totalCount}
-        currentLocation={currentLocation}
-        isInitialLoading={isInitialLoading}
-        isLoadingMore={isLoadingMore}
-        hasMore={hasMore}
-        error={error}
-        isFiltered={isFiltered}
-        hasNonSearchFilters={hasNonSearchFilters}
-        searchQuery={searchQuery}
-        loadMoreSentinelRef={loadMoreSentinelRef}
-        onOpenCulture={handleOpenCulture}
-        onClearSearch={handleClearSearch}
-        onResetFilters={resetMapFilters}
-        onRetry={retry}
-        onRetryLoadMore={retryLoadMore}
-      />
-
-      {/* Floating Map Switcher */}
-      <FloatingMapButton />
-
-      {/* Floating Scroll to Top Button */}
-      <div className='fixed right-4 sm:right-6 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-40'>
-        <ScrollToTopButton visible={showScrollTop} onClick={handleScrollToTop} />
+        <FeedResults
+          cultures={cultures}
+          totalCount={totalCount}
+          currentLocation={currentLocation}
+          isInitialLoading={isInitialLoading}
+          isLoadingMore={isLoadingMore}
+          hasMore={hasMore}
+          error={error}
+          isFiltered={isFiltered}
+          hasNonSearchFilters={hasNonSearchFilters}
+          searchQuery={searchQuery}
+          loadMoreSentinelRef={loadMoreSentinelRef}
+          onOpenCulture={handleOpenCulture}
+          onClearSearch={handleClearSearch}
+          onResetFilters={resetMapFilters}
+          onRetry={retry}
+          onRetryLoadMore={retryLoadMore}
+        />
       </div>
+
+      <footer className='relative z-40 flex shrink-0 items-center justify-center border-t border-[var(--color-border-primary)] bg-[var(--color-surface-primary)] px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2'>
+        <FloatingMapButton />
+        <div className='absolute right-4 top-1/2 -translate-y-1/2 sm:right-6'>
+          <ScrollToTopButton visible={showScrollTop} onClick={handleScrollToTop} />
+        </div>
+      </footer>
     </div>
   );
 };

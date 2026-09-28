@@ -2,7 +2,7 @@
 
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { type LocationStatus, type MapSortMode } from '@/utils/exploreState';
-import { resetExploreNavigationMemory } from '@/utils/exploreNavigationMemory';
+import { markCurrentLocationUsed, resetExploreNavigationMemory } from '@/utils/exploreNavigationMemory';
 import { GeoPoint, LocationRequestError, requestCurrentLocation } from '@/utils/geo';
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
@@ -51,6 +51,7 @@ export const ExploreProvider = ({ children }: { children: React.ReactNode }) => 
   const updateCurrentLocation = useCallback((location: GeoPoint | null) => {
     setCurrentLocation(location);
     if (location) {
+      markCurrentLocationUsed();
       setLocationStatus('success');
       setLocationError(null);
     } else {

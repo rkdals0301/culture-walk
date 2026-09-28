@@ -16,7 +16,12 @@ import {
   normalizeMapCameraState,
   parseMapExploreStateFromSearch,
 } from '@/utils/exploreState';
-import { getMapCamera, getMapListScrollTop, setMapCamera } from '@/utils/exploreNavigationMemory';
+import {
+  getMapCamera,
+  getMapListScrollTop,
+  setMapCamera,
+  shouldHideMapCameraInUrl,
+} from '@/utils/exploreNavigationMemory';
 import { type CoordinateGroup, groupItemsByCoordinate } from '@/utils/mapMarkers';
 import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
@@ -111,7 +116,7 @@ const MapView = ({
         sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
         mapListScrollTop: getMapListScrollTop(),
         listOpen: false,
-        mapCamera: getCurrentMapCamera(),
+        mapCamera: currentLocation || shouldHideMapCameraInUrl() ? null : getCurrentMapCamera(),
       });
       if (selectedCultureId !== null) {
         router.replace(detailUrl);

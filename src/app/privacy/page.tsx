@@ -43,8 +43,10 @@ const PrivacyPage = () => {
           <article className='grid gap-3 py-6 sm:grid-cols-[12rem_1fr] sm:gap-8'>
             <h3 className='text-lg font-semibold'>위치 정보 사용</h3>
             <p className='text-sm leading-7 text-[var(--color-text-secondary)]'>
-              내 위치 기능은 사용자가 브라우저 권한을 허용한 경우에만 현재 위치를 지도 중심 이동에 사용합니다. 위치
-              정보는 서버에 저장하지 않으며, 브라우저 권한 설정에서 언제든지 차단하거나 초기화할 수 있습니다.
+              내 위치 기능은 브라우저 권한을 허용한 경우 지도 중심 이동과 거리순 정렬에 사용합니다. 거리순 정렬을
+              선택하면 가까운 행사를 계산하기 위해 위치 좌표가 서비스 서버로 전송되며, 행사 데이터베이스나 캐시에
+              저장하지 않습니다. 위치를 사용한 동안에는 지도 중심 좌표를 주소창 URL에 포함하지 않습니다. 브라우저
+              권한 설정에서 언제든지 위치 접근을 차단할 수 있습니다.
             </p>
           </article>
           <article className='grid gap-3 py-6 sm:grid-cols-[12rem_1fr] sm:gap-8'>

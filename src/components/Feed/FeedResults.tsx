@@ -45,10 +45,7 @@ const FeedResults = ({
   onRetry,
   onRetryLoadMore,
 }: FeedResultsProps) => (
-  <section
-    className='mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 sm:py-6 sm:pb-32 lg:px-8'
-    aria-labelledby='feed-results-title'
-  >
+  <section className='mx-auto max-w-7xl px-4 py-5 pb-6 sm:px-6 sm:py-6 lg:px-8' aria-labelledby='feed-results-title'>
     <h2 id='feed-results-title' className='sr-only'>
       행사 목록
     </h2>
