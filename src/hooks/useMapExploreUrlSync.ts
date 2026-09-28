@@ -6,7 +6,13 @@ import {
   parseMapExploreStateFromSearch,
   serializeMapExploreStateToSearch,
 } from '@/utils/exploreState';
-import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } from '@/utils/exploreNavigationMemory';
+import {
+  getMapCamera,
+  getMapListScrollTop,
+  setMapCamera,
+  setMapListScrollTop,
+  shouldHideMapCameraInUrl,
+} from '@/utils/exploreNavigationMemory';
 
 import { useEffect, useRef } from 'react';
 
@@ -92,6 +98,20 @@ export const useMapExploreUrlSync = ({
   ]);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !pathname?.startsWith('/map/') || !shouldHideMapCameraInUrl()) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const hasCamera = ['lat', 'lng', 'level'].some(key => params.has(key));
+    if (!hasCamera) return;
+
+    params.delete('lat');
+    params.delete('lng');
+    params.delete('level');
+    const query = params.toString();
+    router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false });
+  }, [currentLocation, pathname, router]);
+
+  useEffect(() => {
     if (pathname !== '/map' || typeof window === 'undefined') return;
 
     if (routeRestorePendingRef.current) {
@@ -107,7 +127,7 @@ export const useMapExploreUrlSync = ({
       sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop: getMapListScrollTop(),
       listOpen: isMobileSheetVisible,
-      mapCamera: getMapCamera(),
+      mapCamera: currentLocation || shouldHideMapCameraInUrl() ? null : getMapCamera(),
       focusCultureId,
       selectedCultureId: restoredSelectedCultureId,
     });

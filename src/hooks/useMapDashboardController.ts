@@ -3,7 +3,13 @@ import { useExploreLocationControls } from '@/hooks/useExploreLocationControls';
 import type { FormattedCultureListItem } from '@/types/culture';
 import { CULTURE_CATEGORY_OPTIONS, type CultureCategoryKey } from '@/utils/cultureCategory';
 import { getEffectiveMapSortMode } from '@/utils/exploreState';
-import { getMapCamera, getMapListScrollTop, setMapCamera, setMapListScrollTop } from '@/utils/exploreNavigationMemory';
+import {
+  getMapCamera,
+  getMapListScrollTop,
+  setMapCamera,
+  setMapListScrollTop,
+  shouldHideMapCameraInUrl,
+} from '@/utils/exploreNavigationMemory';
 import { calculateDistanceMeters } from '@/utils/geo';
 import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
@@ -126,7 +132,7 @@ export const useMapDashboardController = ({
       sortMode: getEffectiveMapSortMode(mapSortMode, Boolean(currentLocation)),
       mapListScrollTop: getMapListScrollTop(),
       listOpen: false,
-      mapCamera: getMapCamera(),
+      mapCamera: currentLocation || shouldHideMapCameraInUrl() ? null : getMapCamera(),
     });
 
     if (isDetailRoute) {
