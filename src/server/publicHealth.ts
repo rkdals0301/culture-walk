@@ -53,12 +53,16 @@ export const getPublicHealthReport = async (deps: RuntimeDeps, now: Date = new D
 
   const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
   const checkedAt = now.toISOString();
-  const syncAgeHours = getAgeHours(syncHealth?.completedAt ?? null, now);
+  // Older deployments have no dedicated sync-health KV record until their next
+  // scheduled sync. The published snapshot timestamp is the safe migration
+  // fallback; prefer the exact completion timestamp as soon as it exists.
+  const syncCompletedAt = syncHealth?.completedAt ?? snapshot?.cachedAt ?? null;
+  const syncAgeHours = getAgeHours(syncCompletedAt, now);
   const latestSync = syncAgeHours === null
     ? null
     : {
         status: 'success' as const,
-        completedAt: syncHealth?.completedAt ?? null,
+        completedAt: syncCompletedAt,
         ageHours: syncAgeHours,
       };
 

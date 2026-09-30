@@ -77,6 +77,24 @@ test('read model 재게시 시각을 TourAPI 동기화 성공 시각으로 오�
   assert.equal(shouldRunScheduledSync(report.body), true);
 });
 
+test('sync health metadata가 아직 없는 기존 설치는 fresh snapshot 시각으로 health를 이어간다', async () => {
+  const { cache } = createCache({
+    'cultures:read-model:v1': snapshot,
+    'cultures:read-model-meta:v1': {
+      cachedAt: snapshot.cachedAt,
+      itemCount: snapshot.items.length,
+      serializedBytes: 1024,
+    },
+  });
+
+  const report = await getPublicHealthReport({ cache }, new Date('2026-09-30T12:00:00.000Z'));
+
+  assert.equal(report.body.status, 'healthy');
+  assert.equal(report.body.reason, null);
+  assert.equal(report.body.latestSync?.completedAt, snapshot.cachedAt);
+  assert.equal(report.body.latestSync?.ageHours, 1);
+});
+
 test('성공한 TourAPI snapshot 처리 뒤에만 복구 cron용 sync freshness를 기록한다', async () => {
   const syncServicePath = fileURLToPath(new URL('../src/services/cultureSyncService.ts', import.meta.url));
   const source = await readFile(syncServicePath, 'utf8');
