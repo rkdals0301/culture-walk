@@ -35,7 +35,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <head>
         <link
           rel='preload'
-          href='/assets/fonts/PretendardVariable.woff2'
+          href='/assets/fonts/pretendard-1.3.9/woff2-dynamic-subset/PretendardVariable.subset.91.woff2'
           as='font'
           type='font/woff2'
           crossOrigin='anonymous'

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import {
   buildCultureFeedResult,
   createCultureFeedCursor,
+  createCultureFeedSnapshotRevision,
   type CultureFeedFilters,
 } from '@/services/cultureFeed';
 import { getRuntimeDeps } from '@/server/cloudflare';
@@ -62,11 +63,18 @@ const getInitialFeedData = async (): Promise<CultureFeedPage | undefined> => {
 
     const result = buildCultureFeedResult(snapshot.items, INITIAL_FEED_FILTERS);
     const items = result.items.slice(0, INITIAL_FEED_LIMIT);
+    const snapshotRevision = createCultureFeedSnapshotRevision(
+      snapshot.cachedAt,
+      snapshot.revisions,
+      snapshot.items
+    );
 
     return {
       items: toCultureListItemDtos(items),
       nextCursor:
-        items.length < result.items.length ? createCultureFeedCursor(items.length, INITIAL_FEED_FILTERS) : null,
+        items.length < result.items.length
+          ? createCultureFeedCursor(items.length, INITIAL_FEED_FILTERS, snapshotRevision)
+          : null,
       hasMore: items.length < result.items.length,
       totalCount: result.items.length,
       freeCount: result.freeCount,

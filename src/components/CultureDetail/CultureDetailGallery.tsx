@@ -1,6 +1,7 @@
 'use client';
 
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
+import { useDialogFocusTrap } from '@/hooks/useDialogFocusTrap';
 import type { FormattedCultureDetail } from '@/types/culture';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,6 +19,7 @@ const CultureDetailGallery = ({ culture, imageList }: CultureDetailGalleryProps)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const lightboxRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const currentImageUrl = imageList[currentIndex] || culture.mainImage;
@@ -26,6 +28,13 @@ const CultureDetailGallery = ({ culture, imageList }: CultureDetailGalleryProps)
     Boolean(currentImageUrl.trim()) &&
     !imageFailed &&
     !currentImageUrl.includes('/assets/images/logo');
+
+  useDialogFocusTrap(
+    isLightboxOpen,
+    lightboxRef,
+    () => setIsLightboxOpen(false),
+    '[aria-label="확대 보기 닫기"]'
+  );
 
   const handlePrevImage = useCallback(() => {
     if (imageList.length <= 1) return;
@@ -63,7 +72,6 @@ const CultureDetailGallery = ({ culture, imageList }: CultureDetailGalleryProps)
   useEffect(() => {
     if (!isLightboxOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsLightboxOpen(false);
       if (event.key === 'ArrowLeft') handlePrevImage();
       if (event.key === 'ArrowRight') handleNextImage();
     };
@@ -171,6 +179,7 @@ const CultureDetailGallery = ({ culture, imageList }: CultureDetailGalleryProps)
 
       {isLightboxOpen && hasCultureImage && (
         <div
+          ref={lightboxRef}
           role='dialog'
           aria-modal='true'
           aria-label='포스터 전체화면 크게 보기'

@@ -78,13 +78,16 @@ export const ExploreProvider = ({ children }: { children: React.ReactNode }) => 
     const promise = (async () => {
       try {
         const location = await requestCurrentLocation({ signal: controller.signal });
+        if (locationRequestRef.current?.controller !== controller) return null;
         updateCurrentLocation(location);
         return location;
       } catch (error) {
         const normalizedError =
           error instanceof LocationRequestError ? error : new LocationRequestError('unavailable', error);
-        setLocationError(normalizedError);
-        setLocationStatus(normalizedError.status);
+        if (locationRequestRef.current?.controller === controller) {
+          setLocationError(normalizedError);
+          setLocationStatus(normalizedError.status);
+        }
         throw normalizedError;
       } finally {
         if (locationRequestRef.current?.controller === controller) {
@@ -103,12 +106,17 @@ export const ExploreProvider = ({ children }: { children: React.ReactNode }) => 
       return;
     }
 
+    locationRequestRef.current = null;
     setLocationStatus('cancelled');
     setLocationError(new LocationRequestError('cancelled'));
     request.controller.abort();
   }, []);
 
   const resetMapFilters = useCallback(() => {
+    const pendingLocationRequest = locationRequestRef.current;
+    locationRequestRef.current = null;
+    pendingLocationRequest?.controller.abort();
+
     setSearchQueryState('');
     setMapCategory('all');
     setMapRegion('all');

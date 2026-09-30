@@ -1,7 +1,9 @@
 import type { CultureSearchableListItem } from '@/types/culture';
 import {
   buildCultureFeedResult,
+  createCultureFeedCursor,
   createCultureFeedFilterKey,
+  createCultureFeedSnapshotRevision,
   filterCultureListItems,
   getCultureRegionOptions,
   isFreeCultureListItem,
@@ -176,6 +178,16 @@ test('문화 피드 무료 판정은 목록 요금 필드도 확인한다', () =
   assert.equal(isFreeCultureListItem(createCulture({ isFree: '유료', useFee: '10,000원' })), false);
 });
 
+test('무료 필터는 전액 무료만 포함하고 부분 무료는 분리한다', () => {
+  const free = createCulture({ id: 31, isFree: '무료', useFee: '무료 입장' });
+  const partial = createCulture({ id: 32, isFree: '부분 무료', useFee: '성인 5,000원, 어린이 무료' });
+  const filters = { searchQuery: '', category: 'all' as const, region: 'all', freeOnly: true };
+
+  assert.equal(isFreeCultureListItem(partial), false);
+  assert.deepEqual(filterCultureListItems([free, partial], filters).map(item => item.id), [31]);
+  assert.equal(buildCultureFeedResult([free, partial], { ...filters, freeOnly: false }).freeCount, 1);
+});
+
 test('문화 피드 지역 옵션은 중복 없이 한글 순서로 정렬한다', () => {
   assert.deepEqual(getCultureRegionOptions(items), ['부산', '서울']);
 });
@@ -202,6 +214,36 @@ test('문화 피드 캐시 키는 입력 공백과 과도한 검색어를 정규
   });
 
   assert.equal(JSON.parse(key).searchQuery.length, 100);
+});
+
+test('문화 피드 cursor는 게시 snapshot과 필터를 함께 보존한다', () => {
+  const filters = { searchQuery: '전시', category: 'all' as const, region: 'all', freeOnly: false };
+  const snapshot = createCultureFeedSnapshotRevision('2026-09-30T10:00:00.000Z', {}, items);
+  const cursor = JSON.parse(decodeURIComponent(createCultureFeedCursor(20, filters, snapshot))) as {
+    offset: number;
+    filters: string;
+    snapshot: string;
+  };
+
+  assert.equal(cursor.offset, 20);
+  assert.equal(cursor.filters, createCultureFeedFilterKey(filters));
+  assert.equal(cursor.snapshot, snapshot);
+});
+
+test('문화 피드 snapshot은 게시 시각과 read-model 내용 변경을 구분한다', () => {
+  const published = createCultureFeedSnapshotRevision('2026-09-30T10:00:00.000Z', {}, items);
+  const republished = createCultureFeedSnapshotRevision('2026-09-30T10:01:00.000Z', {}, items);
+  assert.notEqual(published, republished);
+
+  const revisionBased = createCultureFeedSnapshotRevision(null, { '1': 'revision-a' }, items);
+  const revisionChanged = createCultureFeedSnapshotRevision(null, { '1': 'revision-b' }, items);
+  assert.notEqual(revisionBased, revisionChanged);
+
+  const contentBased = createCultureFeedSnapshotRevision(null, {}, [items[0]]);
+  const contentChanged = createCultureFeedSnapshotRevision(null, {}, [
+    createCulture({ ...items[0], title: '변경된 행사 제목' }),
+  ]);
+  assert.notEqual(contentBased, contentChanged);
 });
 
 test('KV read model은 오늘 이미 종료된 행사를 제외한다', () => {

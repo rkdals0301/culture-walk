@@ -1,5 +1,6 @@
 import { CultureCategoryKey, matchesCultureCategory } from '@/utils/cultureCategory';
 import type { MapSortMode } from '@/utils/exploreState';
+import { getCulturePriceTone } from '@/utils/cultureDisplayUtils';
 import { calculateDistanceMeters } from '@/utils/geo';
 import { CultureListItem, CultureSearchableListItem } from '@/types/culture';
 
@@ -19,7 +20,6 @@ export interface CultureFeedResult {
   regionOptions: string[];
 }
 
-const FREE_VALUE_PATTERN = /무료|free/i;
 const MAX_SEARCH_LENGTH = 100;
 const MAX_REGION_LENGTH = 40;
 
@@ -67,7 +67,7 @@ const getCultureSearchScore = (culture: CultureSearchableListItem, query: string
 };
 
 export const isFreeCultureListItem = (culture: Pick<CultureListItem, 'isFree' | 'useFee'>) =>
-  FREE_VALUE_PATTERN.test(`${culture.isFree} ${culture.useFee}`);
+  getCulturePriceTone(culture) === 'free';
 
 export const normalizeCultureFeedFilters = (filters: CultureFeedFilters): CultureFeedFilters => ({
   searchQuery: filters.searchQuery.trim().slice(0, MAX_SEARCH_LENGTH),
@@ -82,11 +82,54 @@ export const normalizeCultureFeedFilters = (filters: CultureFeedFilters): Cultur
 export const createCultureFeedFilterKey = (filters: CultureFeedFilters) =>
   JSON.stringify(normalizeCultureFeedFilters(filters));
 
-export const createCultureFeedCursor = (offset: number, filters: CultureFeedFilters) =>
+export const createCultureFeedSnapshotRevision = (
+  cachedAt: string | null,
+  revisions: Readonly<Record<string, string>>,
+  items: readonly CultureSearchableListItem[]
+) => {
+  if (cachedAt) return `published:${cachedAt}`;
+
+  const revisionEntries = Object.keys(revisions)
+    .sort()
+    .map(id => `${id}:${revisions[id]}`);
+  const fallbackContent =
+    revisionEntries.length > 0
+      ? revisionEntries.join('\n')
+      : items
+          .map(item =>
+            JSON.stringify([
+              item.id,
+              item.classification,
+              item.endDate,
+              item.guName,
+              item.isFree,
+              item.lat,
+              item.lng,
+              item.mainImage,
+              item.place,
+              item.searchText,
+              item.startDate,
+              item.title,
+              item.useFee,
+            ])
+          )
+          .join('\n');
+
+  let hash = 2166136261;
+  for (let index = 0; index < fallbackContent.length; index += 1) {
+    hash ^= fallbackContent.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return `content:${items.length}:${(hash >>> 0).toString(16).padStart(8, '0')}`;
+};
+
+export const createCultureFeedCursor = (offset: number, filters: CultureFeedFilters, snapshot: string) =>
   encodeURIComponent(
     JSON.stringify({
       offset: Math.max(0, Math.floor(offset)),
       filters: createCultureFeedFilterKey(filters),
+      snapshot,
     })
   );
 

@@ -1,6 +1,7 @@
 import {
   getSerializedUtf8ByteLength,
   readCultureReadModelMetadataCache,
+  readCultureSyncHealthMetadataCache,
   writeCultureReadModelMetadataCache,
 } from '@/cache/kv';
 import { assessCultureReadModelBudget } from '@/server/readModelBudget';
@@ -18,39 +19,48 @@ const getAgeHours = (value: string | null, now: Date) => {
 
 export const getPublicHealthReport = async (deps: RuntimeDeps, now: Date = new Date()) => {
   const metadataReadStartedAt = performance.now();
-  const metadata = await readCultureReadModelMetadataCache(deps.cache);
+  const metadataPromise = readCultureReadModelMetadataCache(deps.cache);
+  const snapshotPromise = readCultureReadModelSnapshot(deps.cache);
+  const syncHealthPromise = readCultureSyncHealthMetadataCache(deps.cache);
+  const metadata = await metadataPromise;
   const metadataReadDurationMs = performance.now() - metadataReadStartedAt;
+  const [snapshot, syncHealth] = await Promise.all([snapshotPromise, syncHealthPromise]);
 
-  let itemCount = metadata?.itemCount ?? 0;
-  let cachedAt: string | null = metadata?.cachedAt ?? null;
-  let serializedBytes: number | null = metadata?.serializedBytes ?? null;
-  let dataSource = 'kv-read-model-metadata';
+  const itemCount = snapshot?.items.length ?? 0;
+  const cachedAt = snapshot?.cachedAt ?? null;
+  const metadataMatchesSnapshot = Boolean(
+    snapshot && metadata?.cachedAt === snapshot.cachedAt && metadata.serializedBytes !== null
+  );
+  const serializedBytes = metadataMatchesSnapshot
+    ? metadata?.serializedBytes ?? null
+    : snapshot
+      ? getSerializedUtf8ByteLength(snapshot)
+      : null;
+  const dataSource = !snapshot
+    ? 'kv-read-model-missing'
+    : metadataMatchesSnapshot && metadata?.itemCount === itemCount
+      ? 'kv-read-model-metadata'
+      : metadata
+        ? 'kv-read-model-metadata-repaired'
+        : 'kv-read-model-fallback';
 
-  if (!metadata || metadata.serializedBytes === null) {
-    const snapshot = await readCultureReadModelSnapshot(deps.cache);
-    if (!metadata) {
-      itemCount = snapshot?.items.length ?? 0;
-      cachedAt = snapshot?.cachedAt ?? null;
-      dataSource = snapshot ? 'kv-read-model-fallback' : 'kv-read-model-missing';
-    } else if (snapshot) {
-      dataSource = 'kv-read-model-metadata-repaired';
-    }
-
-    if (snapshot?.cachedAt && snapshot.items.length > 0) {
-      serializedBytes = getSerializedUtf8ByteLength(snapshot);
-      await writeCultureReadModelMetadataCache(
-        {
-          cachedAt: snapshot.cachedAt,
-          itemCount: snapshot.items.length,
-          serializedBytes,
-        },
-        deps.cache
-      );
-    }
+  if (snapshot?.cachedAt && snapshot.items.length > 0 && dataSource !== 'kv-read-model-metadata') {
+    await writeCultureReadModelMetadataCache(
+      { cachedAt: snapshot.cachedAt, itemCount, serializedBytes },
+      deps.cache
+    );
   }
 
   const budget = assessCultureReadModelBudget(serializedBytes, itemCount);
   const checkedAt = now.toISOString();
+  const syncAgeHours = getAgeHours(syncHealth?.completedAt ?? null, now);
+  const latestSync = syncAgeHours === null
+    ? null
+    : {
+        status: 'success' as const,
+        completedAt: syncHealth?.completedAt ?? null,
+        ageHours: syncAgeHours,
+      };
 
   if (itemCount === 0) {
     return {
@@ -73,14 +83,24 @@ export const getPublicHealthReport = async (deps: RuntimeDeps, now: Date = new D
           serializedBytes: null,
           budget,
         },
-        latestSync: null,
+        latestSync,
       },
     };
   }
 
   const ageHours = getAgeHours(cachedAt, now);
-  const fresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
-  const reason = cachedAt === null ? 'read-model-age-unknown' : fresh ? null : 'read-model-stale';
+  const readModelFresh = ageHours !== null && ageHours <= MAX_SYNC_AGE_HOURS;
+  const syncFresh = syncAgeHours !== null && syncAgeHours <= MAX_SYNC_AGE_HOURS;
+  const fresh = readModelFresh && syncFresh;
+  const reason = !readModelFresh
+    ? cachedAt === null
+      ? 'read-model-age-unknown'
+      : 'read-model-stale'
+    : syncAgeHours === null
+      ? 'sync-age-unknown'
+      : !syncFresh
+        ? 'sync-stale'
+        : null;
 
   return {
     httpStatus: 200 as const,
@@ -94,8 +114,12 @@ export const getPublicHealthReport = async (deps: RuntimeDeps, now: Date = new D
       databaseStatus: 'not-probed' as const,
       reason,
       message: fresh
-        ? 'KV read model이 최신 상태입니다.'
-        : 'KV read model로 서비스를 제공 중이며 다음 snapshot 동기화를 기다리고 있습니다.',
+        ? 'KV read model과 TourAPI 동기화가 최신 상태입니다.'
+        : !readModelFresh
+          ? 'KV read model의 snapshot 동기화가 오래되었습니다.'
+          : syncAgeHours === null
+            ? 'KV read model은 제공 중이나 TourAPI 동기화 시각을 확인할 수 없습니다.'
+            : 'KV read model은 제공 중이나 TourAPI 동기화가 오래되었습니다.',
       readModel: {
         available: true as const,
         itemCount,
@@ -104,13 +128,7 @@ export const getPublicHealthReport = async (deps: RuntimeDeps, now: Date = new D
         serializedBytes,
         budget,
       },
-      latestSync: cachedAt
-        ? {
-            status: 'success' as const,
-            completedAt: cachedAt,
-            ageHours,
-          }
-        : null,
+      latestSync,
     },
   };
 };

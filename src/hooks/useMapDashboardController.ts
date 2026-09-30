@@ -161,6 +161,7 @@ export const useMapDashboardController = ({
 
   useEffect(() => {
     if (listRequest === 0) return;
+    setIsDesktopPanelCollapsed(false);
     setIsMobileSheetVisible(true);
     document.getElementById('culture-list')?.focus();
   }, [listRequest]);

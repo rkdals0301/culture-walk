@@ -25,6 +25,8 @@ test('production smoke enforces conservative request and edge-hit latency gates'
     assert.match(workflow, /SMOKE_MAX_READ_MODEL_BYTES:\s*'2000000'/);
   }
   assert.match(scheduledWorkflow, /cron:\s*'37 \* \* \* \*'/);
+  assert.match(scheduledWorkflow, /cancel-in-progress:\s*false/);
+  assert.match(scheduledWorkflow, /queue:\s*max/);
   assert.match(scheduledWorkflow, /issues:\s*write/);
   assert.match(scheduledWorkflow, /sync-production-incident\.mjs/);
 });

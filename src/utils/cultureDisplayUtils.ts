@@ -1,4 +1,4 @@
-import type { Culture, CultureDisplayFields, CultureListItem } from '@/types/culture';
+import type { CultureDisplayFields, CultureListItem } from '@/types/culture';
 import { toDateOrNull } from '@/utils/dateUtils';
 
 type CultureDisplayTextField = 'classification' | 'guName' | 'place';
@@ -42,14 +42,17 @@ type CultureDisplayInput = Omit<CultureListItem, 'startDate' | 'endDate'> & {
   endDate: Date | string;
 };
 
-export const getCulturePriceTone = (
-  culture: Pick<CultureListItem & CultureDisplayFields, 'isFree' | 'displayPrice'> & Partial<Pick<Culture, 'useFee'>>
-): CulturePriceTone => {
-  const value = `${culture.isFree ?? ''} ${culture.displayPrice ?? ''} ${culture.useFee ?? ''}`.toLowerCase();
+type CulturePriceInput = Pick<CultureListItem, 'isFree' | 'useFee'> &
+  Partial<Pick<CultureDisplayFields, 'displayPrice'>>;
 
-  if (value.includes('부분 무료')) return 'partial';
-  if (value.includes('무료') || value.includes('free')) return 'free';
-  if (value.includes('유료') || value.includes('paid')) return 'paid';
+export const getCulturePriceTone = (culture: CulturePriceInput): CulturePriceTone => {
+  const value = `${culture.isFree ?? ''} ${culture.displayPrice ?? ''} ${culture.useFee ?? ''}`.toLowerCase();
+  const hasFree = /무료|free/i.test(value);
+  const hasPaid = /유료|paid|[1-9][\d,]*\s*원/i.test(value);
+
+  if (value.includes('부분 무료') || (hasFree && hasPaid)) return 'partial';
+  if (hasFree) return 'free';
+  if (hasPaid) return 'paid';
   return 'unknown';
 };
 

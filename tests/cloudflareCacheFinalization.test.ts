@@ -1,5 +1,6 @@
 import {
   getSerializedUtf8ByteLength,
+  readCultureDetailCache,
   readCultureReadModelCache,
   readCultureReadModelMetadataCache,
   type CultureCacheBinding,
@@ -7,6 +8,7 @@ import {
 } from '@/cache/kv';
 import { refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
 import type { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
+import type { Culture } from '@/types/culture';
 
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -17,6 +19,39 @@ test('read model byte telemetry measures UTF-8 payload size', () => {
   const value = { title: '문화산책', items: [1, 2, 3] };
 
   assert.equal(getSerializedUtf8ByteLength(value), Buffer.byteLength(JSON.stringify(value), 'utf8'));
+});
+
+test('read model rejects malformed rows instead of serving or caching them', async () => {
+  const requestedKeys: string[] = [];
+  const cache: CultureCacheBinding = {
+    get: async key => {
+      requestedKeys.push(key);
+      if (key === 'cultures:read-model:v1') {
+        return {
+          cachedAt: '2099-09-10T00:10:00.000Z',
+          items: [null],
+          revisions: {},
+        };
+      }
+      if (key === 'cultures:list:last:v1') return [makeListItem('오래된 fallback 행사')];
+      return null;
+    },
+    put: async () => undefined,
+  };
+
+  const readModel = await readCultureReadModelCache(cache);
+
+  assert.equal(readModel, null);
+  assert.deepEqual(requestedKeys, ['cultures:read-model:v1']);
+});
+
+test('detail cache rejects a malformed culture payload', async () => {
+  const cache: CultureCacheBinding = {
+    get: async () => ({ cacheVersion: 'revision-101', culture: { id: 101 } }),
+    put: async () => undefined,
+  };
+
+  assert.equal(await readCultureDetailCache(101, cache), null);
 });
 
 const makeListItem = (title: string) => ({
@@ -32,6 +67,76 @@ const makeListItem = (title: string) => ({
   startDate: new Date('2099-09-10T00:00:00.000Z'),
   title,
   useFee: '무료',
+});
+
+const makeCultureWithoutAddress = () =>
+  ({
+    id: 101,
+    classification: '축제',
+    date: '2099.09.10 ~ 2099.09.12',
+    endDate: new Date('2099-09-12T00:00:00.000Z'),
+    etcDescription: '',
+    guName: '서울 중구',
+    homepageDetailAddress: '',
+    isFree: '무료',
+    lat: 37.56,
+    lng: 126.98,
+    mainImage: 'https://example.com/event.jpg',
+    homepageAddress: '',
+    organizationName: '',
+    place: '서울광장',
+    performerInformation: '',
+    programIntroduction: '',
+    registrationDate: '',
+    startDate: new Date('2099-09-10T00:00:00.000Z'),
+    themeClassification: '',
+    register: '',
+    title: '캐시 상세 행사',
+    useFee: '무료',
+    useTarget: '',
+    overview: '',
+    eventTime: '',
+    duration: '',
+    bookingPlace: '',
+    placeInformation: '',
+    contact: '',
+    festivalGrade: '',
+    discountInformation: '',
+    additionalInformation: [],
+    additionalImages: [],
+  } satisfies Omit<Culture, 'address'>);
+
+test('KV JSON read model converts serialized date strings into validated dates', async () => {
+  const item = {
+    ...makeListItem('직렬화된 read model 행사'),
+    startDate: '2099-09-10T00:00:00.000Z',
+    endDate: '2099-09-12T00:00:00.000Z',
+  };
+  const cache: CultureCacheBinding = {
+    get: async () => ({ cachedAt: '2099-09-10T00:10:00.000Z', items: [item], revisions: {} }),
+    put: async () => undefined,
+  };
+
+  const readModel = await readCultureReadModelCache(cache);
+
+  assert.ok(readModel);
+  assert.ok(readModel.items[0].startDate instanceof Date);
+  assert.ok(readModel.items[0].endDate instanceof Date);
+});
+
+test('valid serialized detail cache restores date fields and old address fallback', async () => {
+  const culture = JSON.parse(JSON.stringify(makeCultureWithoutAddress())) as unknown;
+  const cache: CultureCacheBinding = {
+    get: async () => ({ cacheVersion: 'revision-101', culture }),
+    put: async () => undefined,
+  };
+
+  const detail = await readCultureDetailCache(101, cache);
+
+  assert.ok(detail);
+  assert.ok(detail.culture.startDate instanceof Date);
+  assert.ok(detail.culture.endDate instanceof Date);
+  assert.equal(detail.culture.address, '서울광장');
 });
 
 test('read model reuses the same KV binding from isolate memory for 60 seconds', async () => {
@@ -155,16 +260,14 @@ test('detail refresh reports only successfully refreshed culture ids for precise
   }
 });
 
-test('detail cron uses per-culture tags instead of broad public cache purge', async () => {
+test('detail cron republishes the shared list and purges list plus changed detail cache tags', async () => {
   const scheduledJobs = await readFile(
     fileURLToPath(new URL('../src/server/cultureScheduledJobs.ts', import.meta.url)),
     'utf8'
   );
 
   assert.match(scheduledJobs, /refreshedCultureIds/);
+  assert.match(scheduledJobs, /refreshCulturePublicReadModelsAfterDetailRefresh/);
+  assert.match(scheduledJobs, /CULTURE_EDGE_CACHE_TAGS\.list/);
   assert.match(scheduledJobs, /map\(getCultureDetailEdgeCacheTag\)/);
-  assert.doesNotMatch(
-    scheduledJobs,
-    /purgeCultureEdgeCache\(ctx, \[CULTURE_EDGE_CACHE_TAGS\.all, CULTURE_EDGE_CACHE_TAGS\.detail\], 'detail-refresh'\)/
-  );
 });

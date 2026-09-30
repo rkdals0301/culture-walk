@@ -3,10 +3,10 @@ import {
   createCultureDetailMetadata,
   createCultureEventStructuredData,
   createMissingCultureMetadata,
-  getFormattedCultureDetailById,
+  createUnavailableCultureMetadata,
+  getFormattedCultureDetailLookupById,
   parseCultureId,
 } from '@/server/cultureDetailSeo';
-import { getRuntimeDeps } from '@/server/cloudflare';
 import { serializeJsonLd } from '@/utils/jsonLd';
 
 import type { Metadata } from 'next';
@@ -21,8 +21,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const numericId = parseCultureId(id);
   if (numericId === null) return createMissingCultureMetadata(null);
 
-  const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
-  return culture ? createCultureDetailMetadata(culture) : createMissingCultureMetadata(numericId);
+  const lookup = await getFormattedCultureDetailLookupById(numericId);
+  if (lookup.status === 'unavailable') return createUnavailableCultureMetadata(numericId);
+  return lookup.status === 'found'
+    ? createCultureDetailMetadata(lookup.culture)
+    : createMissingCultureMetadata(numericId);
 }
 
 export default async function CultureDetailPage({ params }: PageProps) {
@@ -30,8 +33,10 @@ export default async function CultureDetailPage({ params }: PageProps) {
   const numericId = parseCultureId(id);
   if (numericId === null) notFound();
 
-  const culture = await getFormattedCultureDetailById(numericId, await getRuntimeDeps());
-  if (!culture) notFound();
+  const lookup = await getFormattedCultureDetailLookupById(numericId);
+  if (lookup.status === 'unavailable') throw new Error('Culture detail is temporarily unavailable');
+  if (lookup.status === 'not-found') notFound();
+  const culture = lookup.culture;
 
   return (
     <>

@@ -5,9 +5,10 @@ import type {
   D1Binding,
   RuntimeDeps,
   RuntimeEnv,
+  TelemetryRateLimitBinding,
 } from './runtimeTypes';
 
-export type { CultureCacheBinding, D1Binding, RuntimeDeps, RuntimeEnv } from './runtimeTypes';
+export type { CultureCacheBinding, D1Binding, RuntimeDeps, RuntimeEnv, TelemetryRateLimitBinding } from './runtimeTypes';
 
 const isLocalFallbackEnvironment = () => process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
 
@@ -21,6 +22,9 @@ const isD1Binding = (value: unknown): value is D1Binding =>
 
 const isCultureCacheBinding = (value: unknown): value is CultureCacheBinding =>
   isRecord(value) && typeof value.get === 'function' && typeof value.put === 'function';
+
+const isTelemetryRateLimitBinding = (value: unknown): value is TelemetryRateLimitBinding =>
+  isRecord(value) && typeof value.limit === 'function';
 
 const readOptionalString = (runtimeEnv: Record<string, unknown>, key: string, fallback?: string) => {
   const value = runtimeEnv[key];
@@ -75,6 +79,11 @@ const parseRuntimeEnv = (value: unknown, fallbackEnv: RuntimeEnv): RuntimeEnv =>
     SYNC_TOKEN: readOptionalString(runtimeEnv, 'SYNC_TOKEN', fallbackEnv.SYNC_TOKEN),
     DB: readBinding(runtimeEnv, 'DB', isD1Binding),
     CULTURE_CACHE: readBinding(runtimeEnv, 'CULTURE_CACHE', isCultureCacheBinding),
+    CLIENT_TELEMETRY_RATE_LIMITER: readBinding(
+      runtimeEnv,
+      'CLIENT_TELEMETRY_RATE_LIMITER',
+      isTelemetryRateLimitBinding
+    ),
   };
 };
 
@@ -86,5 +95,9 @@ export async function getWorkerEnv(): Promise<RuntimeEnv> {
 
 export const getRuntimeDeps = async (): Promise<RuntimeDeps> => {
   const env = await getWorkerEnv();
-  return { d1: env.DB, cache: env.CULTURE_CACHE };
+  return {
+    d1: env.DB,
+    cache: env.CULTURE_CACHE,
+    telemetryRateLimiter: env.CLIENT_TELEMETRY_RATE_LIMITER,
+  };
 };

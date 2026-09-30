@@ -16,10 +16,15 @@ export type CultureCacheBinding = {
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
 };
 
+export type TelemetryRateLimitBinding = {
+  limit: (options: { key: string }) => Promise<{ success: boolean }>;
+};
+
 /** Dependencies that application services receive from a runtime boundary. */
 export interface RuntimeDeps {
   d1?: D1Binding;
   cache?: CultureCacheBinding;
+  telemetryRateLimiter?: TelemetryRateLimitBinding;
 }
 
 /** Validated configuration and bindings exposed by the Cloudflare runtime. */
@@ -32,4 +37,5 @@ export interface RuntimeEnv {
   SYNC_TOKEN?: string;
   DB?: D1Binding;
   CULTURE_CACHE?: CultureCacheBinding;
+  CLIENT_TELEMETRY_RATE_LIMITER?: TelemetryRateLimitBinding;
 }

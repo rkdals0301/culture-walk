@@ -46,6 +46,7 @@ const OpsPage = async () => {
     { label: '서비스 상태', value: statusLabel },
     { label: '공개 행사 수', value: `${health.readModel.itemCount.toLocaleString('ko-KR')}개` },
     { label: '마지막 snapshot', value: formatDateTime(health.readModel.cachedAt) },
+    { label: '마지막 TourAPI 동기화', value: formatDateTime(health.latestSync?.completedAt ?? null) },
     {
       label: 'snapshot 경과',
       value:
@@ -64,7 +65,7 @@ const OpsPage = async () => {
   return (
     <InfoPageShell
       title='운영 상태를 빠르게 확인합니다.'
-      description='민감한 데이터베이스 정보 없이, 실제 사용자 요청을 제공하는 KV read model의 최신성·용량·공개 행사 수만 표시합니다.'
+      description='민감한 데이터베이스 정보 없이 KV read model과 TourAPI 동기화의 최신성, 용량, 공개 행사 수를 표시합니다.'
       action={
         <Link className='info-map-action' href='/api/health'>
           원본 health JSON 보기
@@ -93,7 +94,8 @@ const OpsPage = async () => {
           <h2>D1은 이 화면에서 직접 점검하지 않습니다.</h2>
           <p>
             공개 health와 동일하게 D1 row-read quota를 소모하지 않는 진단 경로입니다. 상세 데이터베이스 오류와 동기화 실패는
-            scheduled sync 로그와 Production Smoke incident에서 확인합니다.
+            scheduled sync 로그와 Production Smoke incident에서 확인합니다. 브라우저 오류는 Cloudflare Worker 로그의
+            `client.error` 이벤트에서 경로·발생 위치·오류 종류별로 확인할 수 있으며, 메시지나 stack trace는 수집하지 않습니다.
           </p>
         </div>
       </aside>

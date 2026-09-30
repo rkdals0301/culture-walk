@@ -35,6 +35,20 @@ test('FeedView와 CultureList는 리스트 스크롤 시 탑으로 이동할 수
   assert.match(cultureList, /showScrollTop/, 'CultureList must track scroll top visibility');
 });
 
+test('보이지 않는 스크롤 탑 버튼은 키보드 탭 순서에서 제외한다', () => {
+  const scrollToTopButton = readFileSync(
+    resolve(__dirname, '../src/components/Feed/ScrollToTopButton.tsx'),
+    'utf-8'
+  );
+  const cultureList = readFileSync(
+    resolve(__dirname, '../src/components/Header/CultureList.tsx'),
+    'utf-8'
+  );
+
+  assert.match(scrollToTopButton, /tabIndex=\{visible \? 0 : -1\}/);
+  assert.match(cultureList, /tabIndex=\{showScrollTop \? 0 : -1\}/);
+});
+
 test('공통 탐색 위치 컨트롤은 활성화된 내 주변 위치를 다시 클릭했을 때 위치를 끄고 정렬을 기본값으로 복귀한다', () => {
   const locationControls = readFileSync(
     resolve(__dirname, '../src/hooks/useExploreLocationControls.ts'),

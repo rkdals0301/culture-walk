@@ -1,10 +1,15 @@
 import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 import { mapTourApiFestivalToCulture } from '@/services/cultureService';
+import { writeCultureSyncHealthMetadataCache } from '@/cache/kv';
 import type { RuntimeDeps } from '@/server/runtimeTypes';
 import { logEvent } from '@/server/structuredLog';
 
 import { buildCultureSnapshotQualityReport } from './cultureDataQuality';
-import { publishCurrentCultureDetailReadModels, refreshStaleCachedTourApiDetails } from './cultureSyncDetails';
+import {
+  publishCurrentCultureDetailReadModels,
+  refreshCulturePublicReadModelsAfterDetailRefresh,
+  refreshStaleCachedTourApiDetails,
+} from './cultureSyncDetails';
 import { deduplicateCultureRows, normalizeAndValidateCultureRows } from './cultureSyncNormalize';
 import { reconcileCulturesViaStaging } from './cultureSyncRepository';
 import { completeCultureSyncRun, createCultureSyncRun, failCultureSyncRun } from './cultureSyncRunRepository';
@@ -66,6 +71,7 @@ export const syncCultures = async (
 
     let listReadModelPublished = false;
     let listReadModelRevisions: Record<string, string> = {};
+    let detailReadModelsPublished = false;
     try {
       const publication = await refreshCultureListSnapshotCache({ d1, cache: options.cache });
       listReadModelPublished = publication.published;
@@ -77,14 +83,14 @@ export const syncCultures = async (
       console.warn('문화 목록 KV snapshot 보강을 건너뜁니다.', error);
     }
 
-    // Detail enrichment is best-effort: the core snapshot remains authoritative and must not fail because of it.
-    // It does not bump the list cache version; the list cache can expire naturally after summary updates.
+    let refreshedDetailCount = 0;
     try {
-      await refreshStaleCachedTourApiDetails(config, d1, {
+      const detailRefresh = await refreshStaleCachedTourApiDetails(config, d1, {
         beforeEach: options.beforeEach,
         cache: listReadModelPublished ? options.cache : undefined,
         readModelRevisions: listReadModelPublished ? listReadModelRevisions : undefined,
       });
+      refreshedDetailCount = detailRefresh.refreshed;
     } catch (error) {
       if (error instanceof Error && error.message === INITIALIZE_LOCK_LEASE_LOST_MESSAGE) {
         throw error;
@@ -92,8 +98,21 @@ export const syncCultures = async (
       console.warn('TourAPI 상세 캐시 보강을 건너뜁니다.', error);
     }
 
+    if (refreshedDetailCount > 0) {
+      try {
+        const publication = await refreshCulturePublicReadModelsAfterDetailRefresh(d1, options.cache);
+        if (publication.published) {
+          listReadModelPublished = true;
+          listReadModelRevisions = publication.revisions;
+          detailReadModelsPublished = true;
+        }
+      } catch (error) {
+        console.warn('상세 갱신 후 문화 목록 read model 재게시를 건너뜁니다.', error);
+      }
+    }
+
     try {
-      if (listReadModelPublished) {
+      if (listReadModelPublished && !detailReadModelsPublished) {
         await publishCurrentCultureDetailReadModels(d1, options.cache, listReadModelRevisions);
       }
     } catch (error) {
@@ -127,6 +146,15 @@ export const syncCultures = async (
       } catch (error) {
         console.error('동기화 성공 이력 저장에 실패했습니다.', error);
       }
+    }
+
+    const syncCompletedAt = new Date().toISOString();
+    const syncHealthPublished = await writeCultureSyncHealthMetadataCache(
+      { completedAt: syncCompletedAt },
+      options.cache
+    );
+    if (!syncHealthPublished) {
+      logEvent('warn', 'culture.sync_health.publish_failed', { runId, completedAt: syncCompletedAt });
     }
 
     return result;

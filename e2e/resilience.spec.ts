@@ -41,7 +41,56 @@ test('위치 권한 거부 시 사용자에게 안내하고 거리순 상태로 
     'aria-pressed',
     'false'
   );
-  await expect(page.getByRole('button', { name: '내 위치' })).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('button[aria-label="내 위치"], button[aria-label="내 주변 해제"]')).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
+});
+
+test('필터 초기화 뒤 늦게 도착한 위치 결과는 초기화 상태를 덮지 않는다', async ({ page }) => {
+  await page.addInitScript(() => {
+    let resolvePosition: PositionCallback | null = null;
+    (window as Window & { __completeLocationRequest?: () => void }).__completeLocationRequest = () => {
+      resolvePosition?.({
+        coords: {
+          latitude: 37.5665,
+          longitude: 126.978,
+          accuracy: 20,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+        },
+        timestamp: Date.now(),
+      } as GeolocationPosition);
+    };
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition(success: PositionCallback) {
+          resolvePosition = success;
+        },
+      },
+    });
+  });
+
+  await gotoApp(page, '/');
+  await page.getByLabel('문화행사 검색').fill('location-reset-race-no-match');
+  await expect(page.getByRole('heading', { name: '“location-reset-race-no-match” 검색 결과가 없습니다' })).toBeVisible();
+
+  await page.getByRole('button', { name: '내 위치' }).click();
+  await expect(page.getByRole('button', { name: '위치 확인 취소' })).toBeVisible();
+  await page.getByRole('button', { name: '필터 조건 초기화' }).click();
+  await expect(page.getByLabel('문화행사 검색')).toHaveValue('');
+
+  await page.evaluate(() =>
+    (window as Window & { __completeLocationRequest?: () => void }).__completeLocationRequest?.()
+  );
+
+  await expect(page.locator('button[aria-label="내 위치"], button[aria-label="내 주변 해제"]')).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
 });
 
 test('피드 API 응답 오류 후 다시 시도로 정상 상태를 복구한다', async ({ page }) => {

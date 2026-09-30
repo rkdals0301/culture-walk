@@ -1,6 +1,6 @@
 import type { CultureFeedFilters } from '@/services/cultureFeed';
 import type { CultureFeedPage, FormattedCultureListItem } from '@/types/culture';
-import { getJson, isRequestAbortError } from '@/utils/apiClient';
+import { ApiRequestError, getJson, isRequestAbortError } from '@/utils/apiClient';
 import { CultureCategoryKey } from '@/utils/cultureCategory';
 import { formatCultureData } from '@/utils/cultureUtils';
 import type { MapSortMode } from '@/utils/exploreState';
@@ -86,10 +86,22 @@ export const useCultureFeed = ({
 
   const fetchPage = useCallback(
     async (cursor: string | null, append: boolean, version: number, controller: AbortController) => {
-      const page = await getJson<CultureFeedPage>('/api/cultures/feed', {
-        params: createCultureFeedRequestParams(filters, cursor),
-        signal: controller.signal,
-      });
+      let page: CultureFeedPage;
+      let shouldAppend = append;
+      try {
+        page = await getJson<CultureFeedPage>('/api/cultures/feed', {
+          params: createCultureFeedRequestParams(filters, cursor),
+          signal: controller.signal,
+        });
+      } catch (error) {
+        if (!append || !(error instanceof ApiRequestError) || error.status !== 409) throw error;
+
+        page = await getJson<CultureFeedPage>('/api/cultures/feed', {
+          params: createCultureFeedRequestParams(filters, null),
+          signal: controller.signal,
+        });
+        shouldAppend = false;
+      }
 
       if (version !== requestVersionRef.current) return;
 
@@ -98,7 +110,7 @@ export const useCultureFeed = ({
       setCultures(current => {
         if (version !== requestVersionRef.current) return current;
 
-        const resolvedCultures = mergeCultureFeedItems(current, nextItems, append);
+        const resolvedCultures = mergeCultureFeedItems(current, nextItems, shouldAppend);
 
         cultureFeedClientCache.write(filterKey, {
           cultures: resolvedCultures,

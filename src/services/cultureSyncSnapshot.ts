@@ -1,4 +1,5 @@
 import { TOUR_API_SOURCE_KEY_PREFIX } from './cultureIdentity';
+import { getKoreaDateStartIso } from '@/utils/dateUtils';
 import {
   D1Binding,
   INACTIVE_RETENTION_DAYS,
@@ -28,6 +29,7 @@ export const createCultureContentDifferenceSql = (liveAlias = 'live', stagingAli
 
 export const readCultureSnapshotStats = async (d1: D1Binding, stagingRunKey: string) => {
   const contentDiffers = createCultureContentDifferenceSql();
+  const koreaToday = getKoreaDateStartIso();
   const result = await d1
     .prepare(
       `WITH scoped_staging AS (
@@ -36,7 +38,9 @@ export const readCultureSnapshotStats = async (d1: D1Binding, stagingRunKey: str
       SELECT
         (SELECT COUNT(*) FROM scoped_staging) AS staged,
         (SELECT COUNT(*) FROM cultures
-          WHERE is_active = 1 AND source_key LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%') AS current_source_active,
+          WHERE is_active = 1
+            AND source_key LIKE '${TOUR_API_SOURCE_KEY_PREFIX}%'
+            AND end_date >= ?) AS current_source_active,
         (SELECT COUNT(*) FROM scoped_staging staging
           INNER JOIN cultures live ON live.source_key = staging.source_key) AS matched,
         (SELECT COUNT(*) FROM scoped_staging staging
@@ -54,7 +58,7 @@ export const readCultureSnapshotStats = async (d1: D1Binding, stagingRunKey: str
               SELECT 1 FROM scoped_staging staging WHERE staging.source_key = live.source_key
             )) AS deactivated`
     )
-    .bind(stagingRunKey)
+    .bind(stagingRunKey, koreaToday)
     .all();
 
   const row = result.results?.[0];

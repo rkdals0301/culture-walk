@@ -17,7 +17,8 @@ on:
 
 concurrency:
   group: production-smoke
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 permissions:
   contents: read

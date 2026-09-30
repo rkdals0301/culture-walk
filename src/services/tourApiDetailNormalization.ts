@@ -4,6 +4,7 @@ import type {
   CultureDetailImage,
   TourApiFestivalDetails,
 } from '@/types/culture';
+import { getCulturePriceTone } from '@/utils/cultureDisplayUtils';
 
 const decodeHtmlEntities = (value: string) =>
   value
@@ -161,11 +162,10 @@ export const classifyTourApiFee = (useFee?: string | null) => {
   const value = normalizeTourApiText(useFee);
   if (!value) return '정보 없음';
 
-  const hasFree = value.includes('무료');
-  const hasPaid = /유료|\d[\d,]*\s*원|입장료|관람료/.test(value);
-  if (hasFree && hasPaid) return '부분 무료';
-  if (hasFree) return '무료';
-  if (hasPaid) return '유료';
+  const priceTone = getCulturePriceTone({ isFree: '', useFee: value });
+  if (priceTone === 'partial') return '부분 무료';
+  if (priceTone === 'free') return '무료';
+  if (priceTone === 'paid') return '유료';
   return '요금 확인';
 };
 

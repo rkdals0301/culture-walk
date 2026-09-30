@@ -4,8 +4,10 @@ import {
   extractTourApiUrl,
   normalizeTourApiDetails,
   normalizeTourApiText,
+  parseStoredTourApiDetails,
 } from '@/services/tourApiDetails';
-import { TourApiFestivalDetails } from '@/types/culture';
+import type { CultureTourApiDetailsRow } from '@/db/schema';
+import type { TourApiFestivalDetails } from '@/types/culture';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -64,6 +66,13 @@ test('TourAPI detail fields retain their original meaning', () => {
   assert.equal(classifyTourApiFee(normalized.useFee), '부분 무료');
 });
 
+test('fee classification distinguishes free admission, mixed prices, and paid admission', () => {
+  assert.equal(classifyTourApiFee('입장료 무료'), '무료');
+  assert.equal(classifyTourApiFee('성인 5,000원, 어린이 무료'), '부분 무료');
+  assert.equal(classifyTourApiFee('입장료 5,000원'), '유료');
+  assert.equal(classifyTourApiFee('입장료 확인 필요'), '요금 확인');
+});
+
 test('detail summary stores searchable fee and link fields on the culture row', () => {
   const summary = createTourApiDetailSummary(details);
 
@@ -87,4 +96,25 @@ test('organization names remove repeated sponsor entries while preserving co-org
   });
 
   assert.equal(normalized.organizationName, '부산광역시 · 부산광역시생활체육문화센터');
+});
+
+test('stored TourAPI JSON with invalid shapes degrades to safe detail defaults', () => {
+  const row: CultureTourApiDetailsRow = {
+    sourceKey: 'tourapi:101',
+    sourceModifiedAt: null,
+    commonJson: JSON.stringify({ overview: 42, tel: '02-1234-5678' }),
+    introJson: JSON.stringify({ eventplace: '문화광장', program: 42 }),
+    infoJson: JSON.stringify({ infoname: '배열이어야 하는 값' }),
+    imagesJson: JSON.stringify([null, 42, { imgname: '포스터', originimgurl: 42 }]),
+    isComplete: true,
+    syncedAt: '2026-09-30T00:00:00.000Z',
+  };
+
+  const parsed = parseStoredTourApiDetails(row);
+
+  assert.deepEqual(parsed.common, { tel: '02-1234-5678' });
+  assert.deepEqual(parsed.intro, { eventplace: '문화광장' });
+  assert.deepEqual(parsed.info, []);
+  assert.deepEqual(parsed.images, [{ imgname: '포스터' }]);
+  assert.doesNotThrow(() => normalizeTourApiDetails(parsed));
 });

@@ -12,6 +12,8 @@ export interface WebVitalPayload {
   pathname: string;
 }
 
+export const MAX_WEB_VITAL_BODY_BYTES = 2_048;
+
 const RATINGS = new Set<WebVitalPayload['rating']>(['good', 'needs-improvement', 'poor']);
 const NAMES = new Set<string>(WEB_VITAL_NAMES);
 

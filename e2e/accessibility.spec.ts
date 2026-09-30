@@ -44,3 +44,22 @@ test('독립 행사 상세 화면은 WCAG 2.1 A/AA 자동 검사를 통과한다
 
   await expectNoAccessibilityViolations(page);
 });
+
+test('독립 행사 상세 화면은 문서 안에 main 랜드마크를 하나만 둔다', async ({ page }) => {
+  await gotoApp(page, '/cultures/101');
+  await expect(page.locator('main')).toHaveCount(1);
+});
+
+test('404 화면은 홈 이동을 중첩 인터랙티브 요소 없는 링크로 제공한다', async ({ page }) => {
+  const notFoundPage = await page.context().newPage();
+  try {
+    for (const route of ['/cultures/999999999', '/map/999999999']) {
+      await notFoundPage.goto(route, { waitUntil: 'commit' });
+      const homeLink = notFoundPage.getByRole('link', { name: '홈으로' });
+      await expect(homeLink).toHaveAttribute('href', '/');
+      await expect(homeLink.locator('button')).toHaveCount(0);
+    }
+  } finally {
+    await notFoundPage.close();
+  }
+});

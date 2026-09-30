@@ -2,6 +2,41 @@ import { expect, gotoApp, test } from './support/test';
 
 const FILTERED_MAP_URL = '/map?q=문화산책&category=performance&region=서울&free=1';
 
+test('실제로 존재하지 않는 행사만 404 상세 상태로 보낸다', async ({ page }) => {
+  const missingCulturePage = await page.context().newPage();
+  try {
+    const apiResponse = await missingCulturePage.request.get('/api/cultures/999999999');
+    expect(apiResponse.status()).toBe(404);
+
+    const pageResponse = await missingCulturePage.goto('/cultures/999999999', { waitUntil: 'commit' });
+    expect(pageResponse?.status()).toBe(404);
+    await expect(missingCulturePage.getByRole('heading', { name: '페이지를 찾을 수 없습니다.' })).toBeVisible();
+  } finally {
+    await missingCulturePage.close();
+  }
+});
+
+test('문화 상세에서 지도 이동 시 URL의 행사 좌표와 확대 단계를 적용한다', async ({ page }) => {
+  await gotoApp(page, '/cultures/101');
+
+  await page
+    .getByRole('link', { name: /문화지도에서 위치 확인|지도에서 위치 보기/ })
+    .click();
+
+  await expect(page).toHaveURL(url => url.pathname === '/map' && url.searchParams.get('focus') === '101');
+  const mapCanvas = page.getByRole('region', { name: '전국 문화행사 지도' });
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lat', '37.5796');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-lng', '126.977');
+  await expect(mapCanvas).toHaveAttribute('data-e2e-map-level', '4');
+
+  const isMobile = (page.viewportSize()?.width ?? 0) < 768;
+  if (isMobile) {
+    await expect(page.getByRole('button', { name: '목록 접고 지도 보기', exact: true })).toBeVisible();
+  } else {
+    await expect(page.getByRole('complementary', { name: '문화행사 탐색 패널' })).toBeVisible();
+  }
+});
+
 test('지도 cluster부터 상세 확인과 목록 복귀까지 탐색 상태를 보존한다', async ({ page }) => {
   await gotoApp(page, FILTERED_MAP_URL);
   await expect(page.getByRole('region', { name: '전국 문화행사 지도' })).toBeVisible();

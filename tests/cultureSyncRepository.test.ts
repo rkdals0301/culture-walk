@@ -5,8 +5,8 @@ import { D1Binding, D1Statement } from '@/services/cultureSyncTypes';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const createRows = (): NewCultureRow[] =>
-  Array.from({ length: 5 }, (_, index) => ({
+const createRows = (count = 5): NewCultureRow[] =>
+  Array.from({ length: count }, (_, index) => ({
     sourceKey: `tourapi:${index}`,
     title: `문화 행사 ${index}`,
     startDate: '2026-07-13T00:00:00.000Z',
@@ -110,4 +110,78 @@ test('snapshot updates only changed or inactive rows and reports actual changes'
   assert.deepEqual(batchSizes, [1, 6]);
   assert.deepEqual(lifecycleEvents, ['beforeEach', 'batch', 'beforeApply', 'batch']);
   assert.ok(appliedQueries.some(query => query.includes("source_key NOT LIKE 'tourapi:%'")));
+});
+
+test('already-ended active events do not block a smaller valid seasonal snapshot', async () => {
+  const preparedQueries: string[] = [];
+  let applied = false;
+  let currentActiveDateBound: unknown;
+
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, [...values, ...nextValues]),
+    run: async () => ({}),
+    all: async () => {
+      if (query.includes('AS current_source_active')) {
+        currentActiveDateBound = values[1];
+        return {
+          results: [
+            {
+              staged: 8,
+              current_source_active: 10,
+              matched: 0,
+              updated: 0,
+              reactivated: 0,
+              deactivated: 0,
+            },
+          ],
+        };
+      }
+      return { results: [] };
+    },
+  });
+  const d1: D1Binding = {
+    prepare: query => {
+      preparedQueries.push(query);
+      return createStatement(query);
+    },
+    batch: async statements => {
+      if (statements.length === 6) applied = true;
+      return statements.map(() => ({}));
+    },
+  };
+
+  const result = await reconcileCulturesViaStaging(d1, createRows(8), 'seasonal-run');
+  const statsQuery = preparedQueries.find(query => query.includes('AS current_source_active')) ?? '';
+  const baselineQuery = statsQuery.split('AS current_source_active')[0] ?? '';
+
+  assert.match(baselineQuery, /end_date\s*>=\s*\?/);
+  assert.equal(typeof currentActiveDateBound, 'string');
+  assert.equal(result.staged, 8);
+  assert.equal(applied, true);
+});
+
+test('snapshot 보호는 현재 유효 행사의 실제 급감을 계속 차단한다', async () => {
+  let applyReached = false;
+  const createStatement = (query: string): D1Statement => ({
+    bind: () => createStatement(query),
+    run: async () => ({}),
+    all: async () => ({
+      results: query.includes('AS current_source_active')
+        ? [{ staged: 6, current_source_active: 10, matched: 0, updated: 0, reactivated: 0, deactivated: 0 }]
+        : [],
+    }),
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => {
+      if (statements.length === 6) applyReached = true;
+      return statements.map(() => ({}));
+    },
+  };
+
+  await assert.rejects(
+    reconcileCulturesViaStaging(d1, createRows(6), 'truncated-run'),
+    /스냅샷 건수가 기존 활성 데이터 대비 급감했습니다/
+  );
+  assert.equal(applyReached, false);
 });

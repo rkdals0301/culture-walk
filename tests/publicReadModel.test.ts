@@ -29,7 +29,7 @@ test('공개 상세 조회는 요청 시 D1 refresh write를 만들지 않는다
   assert.doesNotMatch(detailPage, /writeCultureDetailCache|readLegacyCultureDetailCache/);
 });
 
-test('공개 health는 KV read model freshness만으로 상태를 판단한다', async () => {
+test('공개 health는 실제 KV read model과 sync freshness를 확인하며 D1은 읽지 않는다', async () => {
   const healthRoute = await readFile(publicReadPaths[6], 'utf8');
   const healthService = await readFile(
     fileURLToPath(new URL('../src/server/publicHealth.ts', import.meta.url)),
@@ -40,6 +40,7 @@ test('공개 health는 KV read model freshness만으로 상태를 판단한다',
   assert.match(healthRoute, /Cloudflare-CDN-Cache-Control/);
   assert.match(healthService, /readCultureReadModelMetadataCache/);
   assert.match(healthService, /readCultureReadModelSnapshot/);
+  assert.match(healthService, /readCultureSyncHealthMetadataCache/);
   assert.match(healthService, /getSerializedUtf8ByteLength\(snapshot\)/);
   assert.match(healthService, /assessCultureReadModelBudget/);
   assert.match(healthService, /databaseStatus:\s*'not-probed'/);

@@ -2,6 +2,7 @@ import {
   buildCultureFeedResult,
   createCultureFeedCursor,
   createCultureFeedFilterKey,
+  createCultureFeedSnapshotRevision,
   type CultureFeedFilters,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
@@ -34,6 +35,7 @@ const VALID_CATEGORIES: CultureCategoryKey[] = ['all', 'education', 'exhibition'
 interface CultureFeedCursor {
   offset: number;
   filters: string;
+  snapshot: string;
 }
 
 const parsePositiveInteger = (value: string | null, fallback: number, maximum: number) => {
@@ -54,7 +56,11 @@ const decodeCursor = (value: string | null): CultureFeedCursor | null => {
       return null;
     }
 
-    return { offset: offset as number, filters: parsed.filters };
+    return {
+      offset: offset as number,
+      filters: parsed.filters,
+      snapshot: typeof parsed.snapshot === 'string' ? parsed.snapshot : '',
+    };
   } catch {
     return null;
   }
@@ -71,7 +77,8 @@ const buildPageFromSnapshot = (
   snapshotItems: readonly CultureListItem[],
   filters: CultureFeedFilters,
   cursor: CultureFeedCursor | null,
-  limit: number
+  limit: number,
+  snapshotRevision: string
 ): CultureFeedPage => {
   const result = buildCultureFeedResult(snapshotItems, filters);
   const offset = cursor?.offset ?? 0;
@@ -81,7 +88,7 @@ const buildPageFromSnapshot = (
 
   return {
     items: toCultureListItemDtos(items),
-    nextCursor: hasMore ? createCultureFeedCursor(nextOffset, filters) : null,
+    nextCursor: hasMore ? createCultureFeedCursor(nextOffset, filters, snapshotRevision) : null,
     hasMore,
     totalCount: result.items.length,
     freeCount: result.freeCount,
@@ -136,8 +143,20 @@ export async function GET(request: Request) {
   const readModel = await getCulturePublicListSnapshot(await getRuntimeDeps());
   const readDurationMs = performance.now() - readStartedAt;
   if (readModel) {
+    const snapshotRevision = createCultureFeedSnapshotRevision(
+      readModel.cachedAt,
+      readModel.revisions,
+      readModel.items
+    );
+    if (cursor && cursor.snapshot !== snapshotRevision) {
+      return NextResponse.json(
+        { error: '문화 목록이 업데이트되어 처음부터 다시 불러옵니다.' },
+        { status: 409, headers: NO_STORE_CACHE_HEADERS }
+      );
+    }
+
     const computeStartedAt = performance.now();
-    const page = buildPageFromSnapshot(readModel.items, filters, cursor, limit);
+    const page = buildPageFromSnapshot(readModel.items, filters, cursor, limit, snapshotRevision);
     const computeDurationMs = performance.now() - computeStartedAt;
     const cacheHeaders =
       filters.sortMode === 'distance' ? NO_STORE_CACHE_HEADERS : responseHeaders(readModel.source);

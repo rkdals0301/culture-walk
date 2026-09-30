@@ -11,6 +11,7 @@ interface MapViewClientOnlyProps {
   isLoading: boolean;
   error: Error | null;
   onViewportChange: (viewport: CultureMapViewport) => void;
+  onMapSdkError?: () => void;
   onContinueWithList?: () => void;
 }
 
@@ -22,6 +23,7 @@ const MapViewClientOnly = ({
   isLoading,
   error,
   onViewportChange,
+  onMapSdkError,
   onContinueWithList,
 }: MapViewClientOnlyProps) => {
   return (
@@ -33,6 +35,7 @@ const MapViewClientOnly = ({
       isLoading={isLoading}
       error={error}
       onViewportChange={onViewportChange}
+      onMapSdkError={onMapSdkError}
       onContinueWithList={onContinueWithList}
     />
   );

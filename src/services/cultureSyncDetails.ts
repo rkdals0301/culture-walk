@@ -2,6 +2,7 @@ import { readCultureReadModelCache, writeCultureDetailCache } from '@/cache/kv';
 import { logEvent } from '@/server/structuredLog';
 import type { CultureCacheBinding } from '@/server/runtimeTypes';
 import { mapCultureRowToCulture } from '@/services/cultureService';
+import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 
 import { DETAIL_READ_MODEL_TTL_SECONDS, publishCurrentCultureDetailReadModels } from './cultureDetailReadModelPublisher';
 import { getTourApiContentId } from './cultureIdentity';
@@ -27,6 +28,17 @@ import {
 } from './cultureSyncTypes';
 
 export { hasStaleCachedTourApiDetails, publishCurrentCultureDetailReadModels, requestCultureDetailRefresh };
+
+export const refreshCulturePublicReadModelsAfterDetailRefresh = async (
+  d1: D1Binding,
+  cache?: CultureCacheBinding
+) => {
+  const listPublication = await refreshCultureListSnapshotCache({ d1, cache });
+  if (!listPublication.published) return { ...listPublication, detailReadModel: null };
+
+  const detailReadModel = await publishCurrentCultureDetailReadModels(d1, cache, listPublication.revisions);
+  return { ...listPublication, detailReadModel };
+};
 
 const retryDelayMinutes = (failCount: number, sourceKey: string) => {
   const base = failCount <= 1 ? 10 : failCount === 2 ? 30 : Math.min(120 * 2 ** (failCount - 3), 24 * 60);

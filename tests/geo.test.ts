@@ -61,3 +61,51 @@ test('권한 거부 뒤에는 저정확도 위치 요청을 재시도하지 않�
     }
   }
 });
+
+test('취소된 위치 요청은 저정확도 위치를 다시 요청하지 않는다', async () => {
+  const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  const controller = new AbortController();
+  let calls = 0;
+  const latePositionCallback: { success?: PositionCallback } = {};
+
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      geolocation: {
+        getCurrentPosition: (success: PositionCallback) => {
+          calls += 1;
+          latePositionCallback.success = success;
+        },
+      },
+    },
+  });
+
+  try {
+    const request = requestCurrentLocation({ timeoutMs: 1000, signal: controller.signal });
+    controller.abort();
+
+    await assert.rejects(
+      request,
+      (error: unknown) => error instanceof LocationRequestError && error.status === 'cancelled'
+    );
+    latePositionCallback.success?.({
+      coords: {
+        latitude: 37.5665,
+        longitude: 126.978,
+        accuracy: 20,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
+      },
+      timestamp: Date.now(),
+    } as GeolocationPosition);
+    assert.equal(calls, 1);
+  } finally {
+    if (originalNavigator) {
+      Object.defineProperty(globalThis, 'navigator', originalNavigator);
+    } else {
+      Reflect.deleteProperty(globalThis, 'navigator');
+    }
+  }
+});

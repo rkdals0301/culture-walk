@@ -70,7 +70,7 @@ export const publishCurrentCultureDetailReadModels = async (
           return 'skipped' as const;
         }
 
-        const detailRow = toCultureTourApiDetailsRow(row);
+        const detailRow = toCultureTourApiDetailsRow(rawRow);
         if (!detailRow) return 'skipped' as const;
         const culture = mapCultureRowToCulture(row, parseStoredTourApiDetails(detailRow));
         if (!culture) return 'skipped' as const;

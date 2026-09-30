@@ -33,7 +33,7 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
     >
       <CultureDetailHeader culture={culture} />
 
-      <main className='mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-10 lg:px-8 lg:pb-20'>
+      <div className='mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-32 sm:pt-10 lg:px-8 lg:pb-20'>
         <div className='lg:grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start lg:gap-12 xl:gap-16'>
           {/* The poster is the visual anchor. Everything around it stays serviceable. */}
           <div className='lg:sticky lg:top-20'>
@@ -84,7 +84,7 @@ const CultureDetailView = ({ culture }: CultureDetailViewProps) => {
             <CultureDetailSections culture={culture} detail={detail} />
           </div>
         </div>
-      </main>
+      </div>
 
       <CultureDetailMobileActions culture={culture} />
 

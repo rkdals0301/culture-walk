@@ -1,6 +1,7 @@
 import {
   hasStaleCachedTourApiDetails,
   publishCurrentCultureDetailReadModels,
+  refreshCulturePublicReadModelsAfterDetailRefresh,
   refreshStaleCachedTourApiDetails,
   requestCultureDetailRefresh,
 } from '@/services/cultureSyncDetails';
@@ -125,7 +126,22 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
       key === 'cultures:read-model:v1'
         ? {
             cachedAt: '2026-09-10T00:10:00.000Z',
-            items: [{ id: 42 }],
+            items: [
+              {
+                id: 42,
+                classification: '축제',
+                endDate: '2026-09-12T00:00:00.000Z',
+                guName: '서울 중구',
+                isFree: '정보 없음',
+                lat: 37.56,
+                lng: 126.98,
+                mainImage: '/event.jpg',
+                place: '서울광장',
+                startDate: '2026-09-10T00:00:00.000Z',
+                title: '테스트 축제',
+                useFee: '요금 정보 확인 필요',
+              },
+            ],
             revisions: { '42': 'source-revision-42' },
           }
         : null,
@@ -196,6 +212,183 @@ test('detail read-model publisher skips unchanged entries with the same item rev
 
   assert.deepEqual(result, { attempted: 1, published: 0, skipped: 1 });
   assert.equal(writes.length, 0);
+});
+
+test('detail read-model publisher preserves joined detail fields when normalizing the content row', async () => {
+  const writes: Array<{ key: string; value: string }> = [];
+  const updatedAt = '2026-09-10T00:20:00.000Z';
+  const createStatement = (query: string, values: unknown[] = []): D1Statement => ({
+    bind: (...nextValues) => createStatement(query, nextValues),
+    run: async () => ({}),
+    all: async () => ({
+      results: query.includes('detailSourceKey')
+        ? [
+            {
+              id: 42,
+              sourceKey: 'tourapi:123',
+              classification: '축제',
+              date: '2026.09.10 ~ 2026.09.12',
+              endDate: '2026-09-12T00:00:00.000Z',
+              guName: '서울 중구',
+              isFree: '무료',
+              lat: 37.56,
+              lng: 126.98,
+              mainImage: '/event.jpg',
+              place: '서울광장',
+              registrationDate: '2026-09-01T00:00:00.000Z',
+              startDate: '2026-09-10T00:00:00.000Z',
+              title: '테스트 축제',
+              useFee: '무료',
+              createdAt: '2026-09-01T00:00:00.000Z',
+              updatedAt,
+              detailSourceKey: 'tourapi:123',
+              detailSourceModifiedAt: '2026-09-01T00:00:00.000Z',
+              detailCommonJson: JSON.stringify({ overview: '상세 설명' }),
+              detailIntroJson: '{}',
+              detailInfoJson: '[]',
+              detailImagesJson: '[]',
+              detailIsComplete: 1,
+              detailSyncedAt: updatedAt,
+            },
+          ]
+        : [],
+    }),
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+  const cache: CultureCacheBinding = {
+    get: async () => null,
+    put: async (key, value) => {
+      writes.push({ key, value });
+    },
+  };
+
+  const result = await publishCurrentCultureDetailReadModels(d1, cache, { '42': 'source-revision-42' });
+
+  assert.deepEqual(result, { attempted: 1, published: 1, skipped: 0 });
+  assert.equal(writes.length, 1);
+  const stored = JSON.parse(writes[0].value) as {
+    cacheVersion: string;
+    culture: { id: number; title: string; overview: string };
+  };
+  assert.equal(stored.cacheVersion, 'source-revision-42');
+  assert.equal(stored.culture.id, 42);
+  assert.equal(stored.culture.title, '테스트 축제');
+  assert.equal(stored.culture.overview, '상세 설명');
+});
+
+test('successful detail refresh republishes the shared list and aligns detail cache revisions', async () => {
+  const updatedAt = '2026-09-30T02:00:00.000Z';
+  const commonJson = JSON.stringify({ overview: '상세 공연 안내' });
+  const introJson = JSON.stringify({ usetimefestival: '체험비 5,000원', program: '예약 프로그램' });
+  const listRow = {
+    id: 42,
+    classification: '축제',
+    endDate: '2026-10-05T00:00:00.000Z',
+    guName: '서울 중구',
+    isFree: '부분 무료',
+    lat: 37.56,
+    lng: 126.98,
+    mainImage: '/event.jpg',
+    place: '서울광장',
+    startDate: '2026-10-01T00:00:00.000Z',
+    title: '테스트 축제',
+    useFee: '체험비 5,000원',
+    sourceModifiedAt: '2026-09-01T00:00:00.000Z',
+    programIntroduction: '예약 프로그램',
+    useTarget: '누구나',
+    organizationName: '테스트 기관',
+    themeClassification: '지역축제',
+    overview: '상세 공연 안내',
+  };
+  const detailRow = {
+    ...listRow,
+    sourceKey: 'tourapi:123',
+    date: '2026.10.01 ~ 2026.10.05',
+    etcDescription: '문의 02-0000-0000',
+    homepageDetailAddress: '',
+    homepageAddress: '',
+    registrationDate: '2026-09-01T00:00:00.000Z',
+    register: '테스트 기관',
+    performerInformation: '오전 10시~오후 6시',
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt,
+    detailSourceKey: 'tourapi:123',
+    detailSourceModifiedAt: '2026-09-01T00:00:00.000Z',
+    detailCommonJson: commonJson,
+    detailIntroJson: introJson,
+    detailInfoJson: '[]',
+    detailImagesJson: '[]',
+    detailIsComplete: 1,
+    detailSyncedAt: updatedAt,
+  };
+  const createStatement = (query: string): D1Statement => ({
+    bind: () => createStatement(query),
+    run: async () => ({}),
+    all: async () => ({
+      results: query.includes('json_extract(details.common_json')
+        ? [listRow]
+        : query.includes('detailSourceKey')
+          ? [detailRow]
+          : [],
+    }),
+  });
+  const d1: D1Binding = {
+    prepare: query => createStatement(query),
+    batch: async statements => statements.map(() => ({})),
+  };
+  const values = new Map<string, string>([
+    [
+      'cultures:read-model:v1',
+      JSON.stringify({
+        cachedAt: '2026-09-29T00:00:00.000Z',
+        items: [
+          {
+            id: 42,
+            classification: '축제',
+            endDate: '2026-10-05T00:00:00.000Z',
+            guName: '서울 중구',
+            isFree: '무료',
+            lat: 37.56,
+            lng: 126.98,
+            mainImage: '/event.jpg',
+            place: '서울광장',
+            startDate: '2026-10-01T00:00:00.000Z',
+            title: '테스트 축제',
+            useFee: '무료',
+            searchText: '오래된 프로그램',
+          },
+        ],
+        revisions: { '42': 'old-revision' },
+      }),
+    ],
+  ]);
+  const cache: CultureCacheBinding = {
+    get: async (key, type) => {
+      const value = values.get(key);
+      if (value === undefined) return null;
+      return type === 'json' ? JSON.parse(value) : value;
+    },
+    put: async (key, value) => {
+      values.set(key, value);
+    },
+  };
+
+  const publication = await refreshCulturePublicReadModelsAfterDetailRefresh(d1, cache);
+
+  assert.equal(publication.published, true);
+  assert.equal(publication.detailReadModel?.published, 1);
+  const item = publication.items.find(candidate => candidate.id === 42);
+  assert.equal(item?.isFree, '부분 무료');
+  assert.equal(item?.useFee, '체험비 5,000원');
+  assert.match(item?.searchText ?? '', /상세 공연 안내/);
+  assert.notEqual(publication.revisions['42'], 'old-revision');
+  const detailWrite = Array.from(values.entries()).find(([key]) => key.startsWith('cultures:detail:last:v1'));
+  assert.ok(detailWrite);
+  const storedDetail = JSON.parse(detailWrite[1]) as { cacheVersion: string };
+  assert.equal(storedDetail.cacheVersion, publication.revisions['42']);
 });
 
 test('detail refresh requests respect a cooldown and retry backoff', async () => {

@@ -41,7 +41,7 @@ INSERT INTO cultures (
     '무료',
     37.5796,
     126.977,
-    '/assets/images/logo.svg',
+    'https://example.com/culture/101-poster.jpg',
     'https://example.com/culture/101',
     '문화산책 테스트 운영팀',
     '문화산책 테스트홀',

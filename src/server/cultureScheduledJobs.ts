@@ -1,8 +1,12 @@
-import { getCultureDetailEdgeCacheTag } from '@/server/httpCache';
+import { CULTURE_EDGE_CACHE_TAGS, getCultureDetailEdgeCacheTag } from '@/server/httpCache';
 import { hasD1DailyRowReadLimitError, hasD1DailyRowWriteLimitError } from '@/server/sqliteError';
 import { logEvent } from '@/server/structuredLog';
 import type { RuntimeEnv } from '@/server/runtimeTypes';
-import { hasStaleCachedTourApiDetails, refreshStaleCachedTourApiDetails } from '@/services/cultureSyncDetails';
+import {
+  hasStaleCachedTourApiDetails,
+  refreshCulturePublicReadModelsAfterDetailRefresh,
+  refreshStaleCachedTourApiDetails,
+} from '@/services/cultureSyncDetails';
 import {
   getD1Binding,
   runWithInitializeLock,
@@ -101,9 +105,25 @@ const runScheduledDetailRefresh = async (env: RuntimeEnv, ctx: CultureEdgeCacheC
       durationMs: Date.now() - startedAt,
     });
     if (result.refreshedCultureIds.length > 0) {
+      try {
+        const publication = await refreshCulturePublicReadModelsAfterDetailRefresh(d1, env.CULTURE_CACHE);
+        if (!publication.published) {
+          logEvent('warn', 'culture.detail_refresh.read_model_publish_failed', {
+            refreshed: result.refreshed,
+          });
+        }
+      } catch (error) {
+        logEvent('warn', 'culture.detail_refresh.read_model_publish_failed', {
+          refreshed: result.refreshed,
+        }, error);
+      }
+
       await purgeCultureEdgeCache(
         ctx,
-        Array.from(new Set(result.refreshedCultureIds)).map(getCultureDetailEdgeCacheTag),
+        [
+          CULTURE_EDGE_CACHE_TAGS.list,
+          ...Array.from(new Set(result.refreshedCultureIds)).map(getCultureDetailEdgeCacheTag),
+        ],
         'detail-refresh'
       );
     }

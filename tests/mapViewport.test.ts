@@ -5,6 +5,7 @@ import {
   MAP_CLUSTER_LEVEL,
   MAP_CLUSTER_GRID_SIZE,
   MAP_ITEM_REQUEST_GRID_SIZE,
+  MAP_LIST_FALLBACK_VIEWPORT,
   expandMapBounds,
   getMapClusterGridSize,
   getMapDataMode,
@@ -46,6 +47,14 @@ test('확장 영역 안에서 이동하면 재사용할 수 있는지 판별한�
 test('축소 레벨에서는 격자 집계, 확대 레벨에서는 행사 목록 모드를 사용한다', () => {
   assert.equal(getMapDataMode(MAP_CLUSTER_LEVEL), 'clusters');
   assert.equal(getMapDataMode(MAP_CLUSTER_LEVEL - 1), 'items');
+});
+
+test('지도 SDK 장애 복구는 전국 범위를 항목 목록 모드로 불러온다', () => {
+  assert.deepEqual(MAP_LIST_FALLBACK_VIEWPORT, {
+    bounds: { swLat: 32.5, swLng: 123.5, neLat: 39.5, neLng: 133 },
+    level: MAP_CLUSTER_LEVEL - 1,
+  });
+  assert.equal(getMapDataMode(MAP_LIST_FALLBACK_VIEWPORT.level), 'items');
 });
 
 test('축소율이 큰 지도는 클러스터 터치 영역이 겹치지 않도록 격자를 넓힌다', () => {

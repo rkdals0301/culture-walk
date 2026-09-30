@@ -17,6 +17,9 @@ test('ops page reuses public health logic and stays out of search indexing', asy
   assert.match(page, /follow:\s*false/);
   assert.match(page, /read model 크기/);
   assert.match(page, /용량 budget/);
+  assert.match(page, /마지막 TourAPI 동기화/);
+  assert.match(page, /client\.error/);
+  assert.match(page, /stack trace는 수집하지 않습니다/);
   assert.doesNotMatch(page, /SYNC_TOKEN|TOUR_API_KEY|process\.env/);
   assert.match(robots, /Disallow: \/ops/);
 });

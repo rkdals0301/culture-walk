@@ -150,6 +150,7 @@ const CultureList = ({
       <button
         type='button'
         onClick={handleScrollToTop}
+        tabIndex={showScrollTop ? 0 : -1}
         aria-label='목록 맨 위로 스크롤'
         title='목록 맨 위로 스크롤'
         className={clsx(

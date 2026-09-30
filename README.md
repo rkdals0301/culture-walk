@@ -50,7 +50,7 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 | **Framework** | Next.js 16 (App Router, webpack mode), React 19, TypeScript |
 | **Styling** | Tailwind CSS 3, Sass (SCSS), Framer Motion, Lucide React |
 | **Platform** | Cloudflare Workers, OpenNext (`@opennextjs/cloudflare` 1.20.6) |
-| **Database** | Cloudflare D1 (Serverless SQLite), Drizzle ORM |
+| **Database** | Cloudflare D1 (Serverless SQLite), Drizzle schema and row types |
 | **Caching** | Cloudflare KV (`CULTURE_CACHE`), Cloudflare Workers Cache, Cloudflare Images (`IMAGES`) |
 | **External APIs** | 공공데이터포털 한국관광공사 TourAPI (KorService2), 카카오 지도 SDK |
 | **Virtualization** | @tanstack/react-virtual |
@@ -85,7 +85,7 @@ culture-walk/
 │   │   ├── SideMenu/           # 사이드 드로어 메뉴
 │   │   └── Toast/              # 전역 토스트 알림
 │   ├── context/                # 전역 상태 (CultureContext, BottomSheetContext 등)
-│   ├── db/                     # Drizzle ORM 스키마 정의 (`schema.ts`) 및 클라이언트
+│   ├── db/                     # D1 repository에서 사용하는 Drizzle 스키마와 row 타입
 │   ├── hooks/                  # 커스텀 훅 (API 에러, 다이얼로그 포커스 등)
 │   ├── server/                 # Cloudflare 바인딩 및 SQLite 에러 핸들러
 │   ├── services/               # 핵심 도메인 로직 (동기화, 정규화, 분산 락, TourAPI 통신)

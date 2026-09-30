@@ -1,7 +1,9 @@
 import { getCulturePublicRead } from '@/services/cultureReadModel';
+import { getRuntimeDeps } from '@/server/cloudflare';
 import type { RuntimeDeps } from '@/server/runtimeTypes';
 import type { FormattedCultureDetail } from '@/types/culture';
 import { formatCultureData } from '@/utils/cultureUtils';
+import { getCultureTimingStatus } from '@/utils/cultureTimingStatus';
 import { OG_IMAGE_URL, SITE_NAME, SITE_URL } from '@/utils/siteMetadata';
 
 import { cache } from 'react';
@@ -10,11 +12,32 @@ import type { Metadata } from 'next';
 
 export const parseCultureId = (value: string) => (/^[1-9]\d*$/.test(value) ? Number(value) : null);
 
-export const getFormattedCultureDetailById = cache(async (id: number, deps: RuntimeDeps) => {
-  const culture = (await getCulturePublicRead(id, deps)).culture;
-  if (!culture) return null;
-  return formatCultureData([culture])[0] ?? null;
-});
+export type FormattedCultureDetailLookup =
+  | { status: 'found'; culture: FormattedCultureDetail }
+  | { status: 'not-found' }
+  | { status: 'unavailable' };
+
+export const resolveFormattedCultureDetailLookupById = async (
+  id: number,
+  deps: RuntimeDeps
+): Promise<FormattedCultureDetailLookup> => {
+  const result = await getCulturePublicRead(id, deps);
+  if (!result.culture) {
+    return result.readModelAvailable ? { status: 'not-found' } : { status: 'unavailable' };
+  }
+
+  const culture = formatCultureData([result.culture])[0];
+  return culture ? { status: 'found', culture } : { status: 'not-found' };
+};
+
+type CultureDetailLookupById = (id: number) => Promise<FormattedCultureDetailLookup>;
+
+export const createCachedCultureDetailLookupById = (
+  loadDeps: () => Promise<RuntimeDeps>,
+  requestCache: (lookup: CultureDetailLookupById) => CultureDetailLookupById = cache
+) => requestCache(async id => resolveFormattedCultureDetailLookupById(id, await loadDeps()));
+
+export const getFormattedCultureDetailLookupById = createCachedCultureDetailLookupById(getRuntimeDeps);
 
 export const getCultureCanonicalUrl = (id: number) => `${SITE_URL}/cultures/${id}`;
 
@@ -26,6 +49,19 @@ const getEventImageUrl = (mainImage?: string) => {
 const toIsoDate = (value: Date | string | null | undefined) => {
   const date = value instanceof Date ? value : value ? new Date(value) : null;
   return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
+};
+
+const toEventDate = (value: Date | string | null | undefined) => {
+  const date = value instanceof Date ? value : value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return undefined;
+
+  const isCalendarDate =
+    date.getUTCHours() === 0 &&
+    date.getUTCMinutes() === 0 &&
+    date.getUTCSeconds() === 0 &&
+    date.getUTCMilliseconds() === 0;
+
+  return isCalendarDate ? date.toISOString().slice(0, 10) : date.toISOString();
 };
 
 const FREE_FEE_PATTERN = /무료|free/i;
@@ -50,8 +86,15 @@ const getFeeSignals = (culture: FormattedCultureDetail) => {
   const hasFreeSignal = FREE_FEE_PATTERN.test(feeText);
   const hasPaidSignal = PAID_FEE_PATTERN.test(feeText);
   const isConditionallyFree = hasFreeSignal && CONDITIONAL_FREE_PATTERN.test(feeText);
+  const isAccessibleForFree = hasFreeSignal
+    ? hasPaidSignal || isConditionallyFree
+      ? undefined
+      : true
+    : hasPaidSignal
+      ? false
+      : undefined;
 
-  return { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree };
+  return { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree, isAccessibleForFree };
 };
 
 const createCultureDescription = (culture: FormattedCultureDetail) =>
@@ -66,6 +109,13 @@ export const createMissingCultureMetadata = (id: number | null): Metadata => ({
   title: { absolute: `행사를 찾을 수 없습니다 | ${SITE_NAME}` },
   description: '요청한 문화행사 상세 정보를 찾을 수 없습니다.',
   robots: { index: false, follow: true },
+  ...(id ? { alternates: { canonical: getCultureCanonicalUrl(id) } } : {}),
+});
+
+export const createUnavailableCultureMetadata = (id: number | null): Metadata => ({
+  title: { absolute: `일시적으로 불러올 수 없습니다 | ${SITE_NAME}` },
+  description: '문화행사 상세 정보를 일시적으로 불러올 수 없습니다. 잠시 후 다시 시도해주세요.',
+  robots: { index: false, follow: false },
   ...(id ? { alternates: { canonical: getCultureCanonicalUrl(id) } } : {}),
 });
 
@@ -113,11 +163,11 @@ export const createCultureDetailMetadata = (culture: FormattedCultureDetail): Me
 export const createCultureEventStructuredData = (culture: FormattedCultureDetail, now = Date.now()) => {
   const eventUrl = getCultureCanonicalUrl(culture.id);
   const eventImageUrl = getEventImageUrl(culture.mainImage);
-  const { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree } = getFeeSignals(culture);
+  const { feeText, hasFreeSignal, hasPaidSignal, isConditionallyFree, isAccessibleForFree } = getFeeSignals(culture);
   const isFree = hasFreeSignal && !hasPaidSignal && !isConditionallyFree;
   const offerPrice = isFree ? 0 : hasFreeSignal ? null : parseOfferPrice(feeText);
-  const endDate = toIsoDate(culture.endDate);
-  const hasEnded = endDate ? new Date(endDate).getTime() < now : false;
+  const endDate = toEventDate(culture.endDate);
+  const hasEnded = getCultureTimingStatus(undefined, culture.endDate, new Date(now))?.variant === 'ended';
   const [addressRegion = '대한민국', addressLocality = ''] = culture.guName.split(/\s+/).filter(Boolean);
 
   return {
@@ -129,7 +179,7 @@ export const createCultureEventStructuredData = (culture: FormattedCultureDetail
     inLanguage: 'ko-KR',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     eventStatus: hasEnded ? 'https://schema.org/EventCompleted' : 'https://schema.org/EventScheduled',
-    startDate: toIsoDate(culture.startDate),
+    startDate: toEventDate(culture.startDate),
     endDate,
     location: {
       '@type': 'Place',
@@ -150,7 +200,7 @@ export const createCultureEventStructuredData = (culture: FormattedCultureDetail
       name: culture.organizationName || SITE_NAME,
       url: culture.homepageAddress || SITE_URL,
     },
-    isAccessibleForFree: isFree,
+    isAccessibleForFree,
     offers:
       offerPrice !== null
         ? {

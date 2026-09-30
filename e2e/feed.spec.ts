@@ -34,3 +34,42 @@ test('피드 기본 화면은 모바일과 데스크톱에서 가로 overflow �
   );
   expect(hasHorizontalOverflow).toBe(false);
 });
+
+test('부분 무료 행사는 전액 무료로 표시하지 않는다', async ({ page }) => {
+  await page.route('**/api/cultures/feed**', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            id: 901,
+            classification: '공연',
+            endDate: '2099-10-05T00:00:00.000Z',
+            guName: '서울 종로구',
+            isFree: '부분 무료',
+            lat: 37.5796,
+            lng: 126.977,
+            mainImage: '/assets/images/logo.svg',
+            place: '종로 문화관',
+            startDate: '2099-10-01T00:00:00.000Z',
+            title: '부분 무료 E2E 행사',
+            useFee: '성인 5,000원, 어린이 무료',
+          },
+        ],
+        nextCursor: null,
+        hasMore: false,
+        totalCount: 1,
+        freeCount: 0,
+        regionOptions: ['서울'],
+      }),
+    })
+  );
+
+  await gotoApp(page, '/');
+  await page.getByLabel('문화행사 검색').fill('부분 무료 E2E');
+
+  const card = page.locator('.feed-card').filter({ hasText: '부분 무료 E2E 행사' });
+  await expect(card.getByText('부분 무료', { exact: true })).toBeVisible();
+  await expect(card.getByText('무료', { exact: true })).toHaveCount(0);
+});

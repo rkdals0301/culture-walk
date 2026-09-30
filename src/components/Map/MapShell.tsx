@@ -9,8 +9,10 @@ import type { CultureMapBounds, CultureMapViewport } from '@/types/culture';
 import { useCallback, useState } from 'react';
 
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { LayoutGrid } from 'lucide-react';
+import { MAP_LIST_FALLBACK_VIEWPORT } from '@/utils/mapViewport';
 
 interface MapShellProps {
   children?: React.ReactNode;
@@ -19,6 +21,8 @@ interface MapShellProps {
 
 const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
   const { searchQuery, mapCategory, mapRegion, mapFreeOnly } = useExploreContext();
+  const pathname = usePathname();
+  const router = useRouter();
   const [listRequest, setListRequest] = useState(0);
   // Wait for Kakao Maps' first idle event so the initial request includes the
   // actual viewport and its zoom level.
@@ -50,6 +54,23 @@ const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
       return isSameBounds && isSameLevel ? currentViewport : { bounds: normalizedBounds, level: nextViewport.level };
     });
   }, []);
+  const handleContinueWithList = useCallback(() => {
+    if (pathname !== '/map') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('list', 'open');
+      router.replace(`/map?${params.toString()}`, { scroll: false });
+      return;
+    }
+
+    setMapViewport(MAP_LIST_FALLBACK_VIEWPORT);
+    setListRequest(request => request + 1);
+  }, [pathname, router]);
+  const handleMapSdkError = useCallback(() => {
+    if (pathname !== '/map' || new URLSearchParams(window.location.search).get('list') !== 'open') return;
+
+    setMapViewport(MAP_LIST_FALLBACK_VIEWPORT);
+    setListRequest(request => request + 1);
+  }, [pathname]);
 
   return (
     <div className='relative h-full overflow-hidden'>
@@ -62,7 +83,8 @@ const MapShell = ({ children, kakaoMapAppKey }: MapShellProps) => {
           isLoading={mapData.isLoading}
           error={mapData.error}
           onViewportChange={handleViewportChange}
-          onContinueWithList={() => setListRequest(request => request + 1)}
+          onMapSdkError={handleMapSdkError}
+          onContinueWithList={handleContinueWithList}
         />
       </div>
       <div className='map-top-scrim pointer-events-none absolute z-10 h-28 sm:h-32 lg:h-16' />

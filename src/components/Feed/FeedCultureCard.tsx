@@ -3,6 +3,7 @@
 import CultureImageFallback from '@/components/Common/CultureImageFallback';
 import { FormattedCultureListItem } from '@/types/culture';
 import { getCultureTimingStatus } from '@/utils/cultureTimingStatus';
+import { getCulturePriceTone } from '@/utils/cultureDisplayUtils';
 import { GeoPoint, calculateDistanceMeters, formatDistance } from '@/utils/geo';
 
 import React, { useMemo, useState } from 'react';
@@ -47,10 +48,12 @@ const FeedCultureCard = ({
     () => getCultureTimingStatus(culture.startDate, culture.endDate),
     [culture.startDate, culture.endDate]
   );
-  const isFree = culture.isFree.includes('무료') || culture.useFee?.includes('무료');
+  const priceTone = getCulturePriceTone(culture);
+  const priceLabel = priceTone === 'free' ? '무료' : priceTone === 'partial' ? '부분 무료' : null;
+  const shouldShowPrice = priceTone === 'paid' || priceTone === 'unknown';
   const accessibleLabel = [
     dDay?.text,
-    isFree ? '무료' : null,
+    priceLabel,
     !hasCultureImage ? culture.classification || '문화행사' : null,
     culture.classification || '문화행사',
     '·',
@@ -60,7 +63,7 @@ const FeedCultureCard = ({
     culture.title,
     culture.displayDate,
     culture.displayPlace,
-    !isFree ? culture.displayPrice : null,
+    shouldShowPrice ? culture.displayPrice : null,
   ]
     .filter(Boolean)
     .join(' ');
@@ -98,7 +101,7 @@ const FeedCultureCard = ({
           )}
 
           {/* Minimal status badge (Only essential signal) */}
-          {(dDay || isFree) && (
+          {(dDay || priceLabel) && (
             <div className='pointer-events-none absolute left-2.5 top-2.5 flex items-center gap-1'>
               {dDay && (
                 <span
@@ -113,9 +116,15 @@ const FeedCultureCard = ({
                   {dDay.text}
                 </span>
               )}
-              {isFree && (
-                <span className='rounded-md bg-[var(--color-status-success-solid)] px-2 py-0.5 text-[0.68rem] font-bold text-[var(--color-success-on-primary)] shadow-xs'>
-                  무료
+              {priceLabel && (
+                <span
+                  className={`rounded-md px-2 py-0.5 text-[0.68rem] font-bold shadow-xs ${
+                    priceTone === 'partial'
+                      ? 'bg-[var(--color-status-neutral)] text-[var(--color-status-neutral-on)]'
+                      : 'bg-[var(--color-status-success-solid)] text-[var(--color-success-on-primary)]'
+                  }`}
+                >
+                  {priceLabel}
                 </span>
               )}
             </div>
@@ -160,7 +169,7 @@ const FeedCultureCard = ({
             <span className='truncate'>{culture.displayDate}</span>
             <div className='flex items-center justify-between gap-1'>
               <span className='truncate text-[var(--color-text-secondary)]'>{culture.displayPlace}</span>
-              {!isFree && culture.displayPrice && (
+              {shouldShowPrice && culture.displayPrice && (
                 <span className='shrink-0 font-medium text-[var(--color-text-primary)]'>{culture.displayPrice}</span>
               )}
             </div>

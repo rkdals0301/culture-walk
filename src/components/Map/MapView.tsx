@@ -27,7 +27,7 @@ import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { AlertCircle } from 'lucide-react';
 
@@ -41,6 +41,7 @@ interface MapViewProps {
   isLoading: boolean;
   error: Error | null;
   onViewportChange: (viewport: CultureMapViewport) => void;
+  onMapSdkError?: () => void;
   onContinueWithList?: () => void;
 }
 
@@ -52,10 +53,13 @@ const MapView = ({
   isLoading,
   error,
   onViewportChange,
+  onMapSdkError,
   onContinueWithList,
 }: MapViewProps) => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mapSearch = searchParams.toString();
   const { openBottomSheet } = useBottomSheet();
 
   const {
@@ -75,6 +79,25 @@ const MapView = ({
     initialCamera,
     kakaoMapAppKey,
   });
+
+  useEffect(() => {
+    if (sdkError) onMapSdkError?.();
+  }, [onMapSdkError, sdkError]);
+
+  useEffect(() => {
+    const mapCamera = parseMapExploreStateFromSearch(mapSearch)?.mapCamera;
+    if (!mapCamera || !mapInstance || !window.kakao?.maps) return;
+
+    const center = mapInstance.getCenter();
+    const cameraAlreadyMatches =
+      mapInstance.getLevel() === mapCamera.level &&
+      Math.abs(center.getLat() - mapCamera.lat) < 0.000001 &&
+      Math.abs(center.getLng() - mapCamera.lng) < 0.000001;
+    if (cameraAlreadyMatches) return;
+
+    mapInstance.setLevel(mapCamera.level);
+    mapInstance.setCenter(new window.kakao.maps.LatLng(mapCamera.lat, mapCamera.lng));
+  }, [mapInstance, mapSearch]);
 
   const selectedCultureId = useMemo(() => {
     return getMapDetailId(pathname);

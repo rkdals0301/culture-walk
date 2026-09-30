@@ -48,15 +48,16 @@ test('optional Google integrations extend CSP only when their environment flags 
   assert.match(nextConfig, /https:\/\/googleads\.g\.doubleclick\.net/);
 });
 
-test('Pretendard is self-hosted without a runtime stylesheet dependency', async () => {
-  const [layout, foundation] = await Promise.all([
+test('Pretendard dynamic font subsets are self-hosted without a runtime stylesheet dependency', async () => {
+  const [layout, dynamicFontStyles] = await Promise.all([
     readProjectFile('../src/app/layout.tsx'),
-    readProjectFile('../src/styles/_foundation.scss'),
+    readProjectFile('../src/styles/_pretendard-dynamic.scss'),
   ]);
 
   assert.doesNotMatch(layout, /PretendardStylesheet|cdn\.jsdelivr\.net/);
-  assert.match(foundation, /@font-face/);
-  assert.match(foundation, /font-family: 'Pretendard Variable'/);
-  assert.match(foundation, /url\('\/assets\/fonts\/PretendardVariable\.woff2'\)/);
-  assert.match(foundation, /font-display: swap/);
+  assert.match(dynamicFontStyles, /@font-face/);
+  assert.match(dynamicFontStyles, /font-family: 'Pretendard Variable'/);
+  assert.match(dynamicFontStyles, /url\(\/assets\/fonts\/pretendard-1\.3\.9\/woff2-dynamic-subset\/PretendardVariable\.subset\.0\.woff2\)/);
+  assert.match(dynamicFontStyles, /font-display: swap/);
+  assert.doesNotMatch(dynamicFontStyles, /src:\s*url\(['"]?https?:\/\//);
 });

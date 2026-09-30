@@ -1,4 +1,4 @@
-import type { CultureMapBounds } from '@/types/culture';
+import type { CultureMapBounds, CultureMapViewport } from '@/types/culture';
 
 /**
  * Kakao map levels increase as the camera zooms out. At and above this level
@@ -9,6 +9,10 @@ export const MAP_CLUSTER_LEVEL = 10;
 export const MAP_CLUSTER_GRID_SIZE = 0.25;
 export const MAP_PREFETCH_PADDING_RATIO = 0.25;
 export const MAP_ITEM_REQUEST_GRID_SIZE = 0.05;
+export const MAP_LIST_FALLBACK_VIEWPORT: CultureMapViewport = {
+  bounds: { swLat: 32.5, swLng: 123.5, neLat: 39.5, neLng: 133 },
+  level: MAP_CLUSTER_LEVEL - 1,
+};
 
 const REGIONAL_CLUSTER_GRID_SIZE = 0.5;
 const COUNTRY_CLUSTER_GRID_SIZE = 1;

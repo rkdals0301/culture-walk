@@ -13,5 +13,20 @@ test('Kakao Maps SDK 네트워크 실패 시 오류 안내와 목록 복귀 경�
 
   await page.getByRole('button', { name: '목록으로 계속 보기' }).click();
   await expect(page).toHaveURL(/\/map\?list=open$/);
+  await expect(page.getByRole('heading', { name: '행사 목록' })).toBeVisible();
   await expect(page.locator('input[aria-label="문화행사 검색"]:visible').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /문화산책 테스트 공연, 2099-/ }).first()).toBeVisible();
+});
+
+test('지도 상세에서 SDK 실패 시 행사 목록 경로로 돌아와 목록을 표시한다', async ({ page }) => {
+  await page.route('https://dapi.kakao.com/**', route => route.abort('failed'));
+
+  await gotoApp(page, '/map/101?category=performance');
+
+  await expect(page.locator('[role="alert"][data-status="map-error"]')).toContainText('지도를 불러오지 못했습니다.');
+  await page.getByRole('button', { name: '상세 패널 닫기' }).click();
+
+  await expect(page).toHaveURL(url => url.pathname === '/map' && url.searchParams.get('category') === 'performance' && url.searchParams.get('list') === 'open');
+  await expect(page.getByRole('heading', { name: '행사 목록' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /문화산책 테스트 공연, 2099-/ }).first()).toBeVisible();
 });
