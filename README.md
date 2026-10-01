@@ -40,6 +40,7 @@ Next.js 16 App Router, Cloudflare Workers, Cloudflare D1(SQLite), Cloudflare KV�
 - **분산 락 & 하트비트**: D1 데이터베이스 기반 소유권 락(`acquireInitializeLock`)과 하트비트 갱신을 통해 동시 동기화 충돌 방지
 - **KV 우선 read model + D1 read-through 복구**: 평상시 공개 조회는 KV read model에서 처리하고 D1은 TourAPI 동기화와 영구 저장소 역할에 집중합니다. 다만 KV read model이 비어 있거나 상세 캐시가 누락·구버전이면 Paid D1을 안전한 read-through 소스로 사용하고 성공 결과를 KV에 다시 게시하여 사용자 503과 정보 누락을 줄입니다.
 - **2단계 상세 수집**: 목록 수집 시에는 기본 정보만 빠르게 적재하고, 1시간 단위 백그라운드 크론에서 `detailCommon2`, `detailIntro2`, `detailInfo2`, `detailImage2`를 점진적으로 동기화합니다. 상세 KV cache miss 시에는 해당 행사 1건만 D1에서 읽어 풍부한 상세를 즉시 제공하고 KV에 write-through합니다.
+- **원본 수집과 캐시 복구 분리**: 스케줄러는 D1 실행 이력으로 원본의 최신성을 판단합니다. DB 반영 후 KV 게시만 실패하면 D1과 공개 캐시를 비교하여 캐시만 복구하고, 누락 행사 횟수를 다시 증가시키지 않습니다. 필수 상세가 비거나 페이지 ID가 중복된 외부 응답은 정상 스냅샷으로 반영하지 않습니다.
 
 ---
 
@@ -297,7 +298,9 @@ Cloudflare Worker 진입점(`worker.js`)에 의해 다음 스케줄 작업이 �
 - **전체 스냅샷 동기화 (`10 0,1 * * *`)**:
   - UTC 00:10 (KST 09:10): Cloudflare 일일 무료 사용량 리셋 직후 정기 전체 행사 스냅샷 동기화
   - UTC 01:10 (KST 10:10): 이전 동기화가 실패했거나 누락된 경우를 위한 자동 복구(Recovery) 동기화
-- **상세 정보 점진적 갱신 (`17 * * * *`)**:
+- **시간당 복구 점검 및 상세 갱신 (`17 * * * *`)**:
+  - D1 동기화 이력이 실패했거나 성공한 원본 수집이 26시간을 넘겼으면 원본 수집을 재시도합니다. 정상 운영에서는 기존 하루 한 번 수집을 유지합니다.
+  - 원본이 최신이면 D1과 실제 공개 read model을 비교합니다. 캐시 누락·내용 불일치·동기화 시각 누락만 복구하고, 정상인 경우에는 락 쓰기와 KV 재게시를 하지 않습니다.
   - 1시간 주기 Cron으로 캐시되지 않았거나 원본 수정일이 변경된 행사의 상세 데이터(`detailCommon2` 등)를 최대 12건씩 갱신합니다. 성공한 항목은 KV 상세 read model에도 즉시 게시합니다.
   - 전체 snapshot 성공 시 현재 유효한 상세 레코드도 KV와 비교하여 누락되었거나 변경된 항목만 다시 게시하므로, 평상시 KV write 수를 낮게 유지합니다.
 
@@ -314,7 +317,8 @@ npm test
 ### 주요 테스트 범위
 - **좌표 및 정규화 (`geo.test.ts`, `cultureSyncNormalize.test.ts`)**: 위경도 역전 좌표 보정, 대한민국 영역 검증, 이상 날짜 제외
 - **동기화 파이프라인 (`cultureSyncRepository.test.ts`, `cultureSyncLock.test.ts`)**: 스테이징 삽입, 변경분만 갱신, 소프트 삭제, 분산 락 획득/반환/하트비트
-- **스케줄 및 복구 (`cultureSyncSchedule.test.ts`)**: 정기 동기화 및 36시간 초과 복구 동기화 판정
+- **스케줄 및 복구 (`cultureSyncSchedule.test.ts`, `cultureScheduledJobs.test.ts`)**: 정기 복구 2시간 기준, 시간당 복구 26시간 기준, D1 이력 기반 판단, 캐시만 복구할 때 누락 횟수 보존, 정상 점검의 쓰기·외부 호출 생략
+- **외부 응답 정합성 (`cultureSyncSource.test.ts`, `cultureSyncDetailRepository.test.ts`)**: 중복 페이지·잘린 목록·페이지별 전체 건수 변경 차단, 필수 상세 누락 시 기존 설명·요금 보존, ISO/SQLite 형식 재시도 시각의 실제 SQL 비교
 - **Kakao Maps SDK 라이프사이클 (`kakaoMapsSdk.test.ts`)**: 단일 프로미스 공유, 타임아웃, 네트워크 실패 시 리셋
 - **Kakao Maps SDK 장애 E2E (`e2e/kakao-failure.spec.ts`)**: SDK 네트워크 실패 시 오류 안내, 재시도 버튼, 지도 내 목록 계속 보기 경로 검증
 - **탐색 상태 보존 (`exploreState.test.ts`, `mapRoute.test.ts`)**: URL 직렬화/역직렬화 및 검색/필터 복원

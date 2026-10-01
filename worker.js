@@ -26,9 +26,7 @@ const worker = {
     return withCulturePageEdgeCache(request, withStaticAssetEdgeCache(request, cacheableResponse));
   },
   async scheduled(event, env, ctx) {
-    await runCultureScheduledEvent(event, env, ctx, (request, runtimeEnv, runtimeCtx) =>
-      openNextWorker.fetch(request, runtimeEnv, runtimeCtx)
-    );
+    await runCultureScheduledEvent(event, env, ctx);
   },
 };
 

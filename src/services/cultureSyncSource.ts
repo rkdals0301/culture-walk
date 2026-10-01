@@ -19,6 +19,7 @@ import {
   TourApiRequestOptions,
   TourApiConfig,
 } from './cultureSyncTypes';
+import { createTourApiSourceKey } from './cultureIdentity';
 
 type TourApiResponse<T> = {
   response?: {
@@ -175,7 +176,7 @@ const fetchTourApiPage = async <T>(
       const body = payload.response?.body;
       const item = typeof body?.items === 'object' ? body.items.item : undefined;
       const totalCount = Number(body?.totalCount ?? 0);
-      if (!Number.isFinite(totalCount) || totalCount < 0) {
+      if (!Number.isSafeInteger(totalCount) || totalCount < 0) {
         throw new Error('TourAPI가 유효한 전체 건수를 반환하지 않았습니다.');
       }
 
@@ -258,12 +259,16 @@ export const fetchTourApiFestivalDetails = async (
     return result?.status === 'fulfilled' ? (result.value.items as T[]) : [];
   };
 
+  const common = pageItems<TourApiFestivalCommon>(0)[0];
+  const intro = pageItems<TourApiFestivalIntro>(1)[0];
   return {
-    common: pageItems<TourApiFestivalCommon>(0)[0],
-    intro: pageItems<TourApiFestivalIntro>(1)[0],
+    common,
+    intro,
     info: pageItems<TourApiFestivalInfo>(2),
     images: pageItems<TourApiFestivalImage>(3),
-    complete: failedCount === 0,
+    // Empty image/info collections are valid. Missing common or intro records
+    // must not erase the last successful detail during an upstream outage.
+    complete: failedCount === 0 && common !== undefined && intro !== undefined,
   };
 };
 
@@ -291,16 +296,28 @@ export const fetchCulturesFromTourApi = async (
     throw new Error('TourAPI에서 현재 또는 예정된 행사 데이터를 가져오지 못했습니다.');
   }
 
-  const allFestivals = [...firstPage.items];
-  const pageNumbers: number[] = [];
+  const allFestivals: TourApiFestival[] = [];
+  const sourceKeys = new Set<string>();
+  const appendPage = (items: TourApiFestival[]) => {
+    for (const item of items) {
+      const sourceKey = createTourApiSourceKey(item.contentid);
+      if (sourceKeys.has(sourceKey)) {
+        throw new Error(`TourAPI contentid가 페이지 조회 중 중복되었습니다. sourceKey=${sourceKey}`);
+      }
+      sourceKeys.add(sourceKey);
+      allFestivals.push(item);
+    }
+  };
+  appendPage(firstPage.items);
   const totalPages = Math.ceil(firstPage.totalCount / PAGE_SIZE);
-  for (let pageNo = INITIAL_PAGE_NUMBER + 1; pageNo <= totalPages; pageNo += 1) {
-    pageNumbers.push(pageNo);
-  }
 
-  for (let index = 0; index < pageNumbers.length; index += SOURCE_PAGE_CONCURRENCY) {
+  for (let pageNo = INITIAL_PAGE_NUMBER + 1; pageNo <= totalPages; pageNo += SOURCE_PAGE_CONCURRENCY) {
     ensureDeadline(deadlineAt, 'snapshot');
-    const chunk = pageNumbers.slice(index, index + SOURCE_PAGE_CONCURRENCY);
+    // Keep allocation bounded even if the upstream reports an implausible total.
+    const chunk = Array.from(
+      { length: Math.min(SOURCE_PAGE_CONCURRENCY, totalPages - pageNo + 1) },
+      (_, offset) => pageNo + offset
+    );
     const pages = await Promise.all(
       chunk.map(pageNo =>
         fetchTourApiPage<TourApiFestival>(
@@ -317,7 +334,7 @@ export const fetchCulturesFromTourApi = async (
       if (page.totalCount !== firstPage.totalCount) {
         throw new Error('TourAPI 전체 건수가 페이지 조회 중 변경되었습니다.');
       }
-      allFestivals.push(...page.items);
+      appendPage(page.items);
     }
   }
 

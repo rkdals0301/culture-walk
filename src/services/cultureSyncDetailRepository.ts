@@ -19,7 +19,7 @@ export const requestCultureDetailRefresh = async (d1: D1Binding, sourceKey: stri
            updated_at = CURRENT_TIMESTAMP
        WHERE source_key = ?
          AND is_active = 1
-         AND (detail_next_retry_at IS NULL OR detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (detail_next_retry_at IS NULL OR datetime(detail_next_retry_at) <= CURRENT_TIMESTAMP)
          AND (
            detail_refresh_requested_at IS NULL
            OR datetime(detail_refresh_requested_at) <= datetime('now', '-${DETAIL_REFRESH_REQUEST_COOLDOWN_MINUTES} minutes')
@@ -37,7 +37,7 @@ export const hasStaleCachedTourApiDetails = async (d1: D1Binding) => {
        LEFT JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
        WHERE cultures.is_active = 1
          AND cultures.source_key LIKE 'tourapi:%'
-         AND (cultures.detail_next_retry_at IS NULL OR cultures.detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (cultures.detail_next_retry_at IS NULL OR datetime(cultures.detail_next_retry_at) <= CURRENT_TIMESTAMP)
          AND (
            cultures.detail_refresh_requested_at IS NOT NULL
            OR details.source_key IS NULL
@@ -59,7 +59,7 @@ export const readStaleCultureDetailRows = async (d1: D1Binding): Promise<StaleDe
        LEFT JOIN culture_tour_api_details details ON details.source_key = cultures.source_key
        WHERE cultures.is_active = 1
          AND cultures.source_key LIKE 'tourapi:%'
-         AND (cultures.detail_next_retry_at IS NULL OR cultures.detail_next_retry_at <= CURRENT_TIMESTAMP)
+         AND (cultures.detail_next_retry_at IS NULL OR datetime(cultures.detail_next_retry_at) <= CURRENT_TIMESTAMP)
          AND (
            cultures.detail_refresh_requested_at IS NOT NULL
            OR details.source_key IS NULL

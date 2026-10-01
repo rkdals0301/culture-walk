@@ -11,8 +11,16 @@ import {
   getD1Binding,
   runWithInitializeLock,
 } from '@/services/cultureSyncLock';
-import { getCultureScheduledJob, RECOVERY_SYNC_UTC_HOUR, shouldRunScheduledSync } from '@/services/cultureSyncSchedule';
+import {
+  getCultureScheduledJob,
+  MAINTENANCE_SYNC_MAX_AGE_HOURS,
+  RECOVERY_FRESHNESS_HOURS,
+  RECOVERY_SYNC_UTC_HOUR,
+  shouldRunScheduledSync,
+} from '@/services/cultureSyncSchedule';
 import { syncCultures } from '@/services/cultureSyncService';
+import { inspectCulturePublicReadModelRecovery, recoverCulturePublicReadModels } from '@/services/cultureSyncRecovery';
+import { type CultureSyncRunState, readLatestCultureSyncRun } from '@/services/cultureSyncRunRepository';
 import { TOUR_API_BASE_URL } from '@/services/cultureSyncTypes';
 
 import {
@@ -26,34 +34,53 @@ interface CultureScheduledEvent {
   scheduledTime: number;
 }
 
-type InternalFetch = (request: Request, env: RuntimeEnv, ctx: CultureEdgeCacheContext) => Promise<Response>;
+const needsSourceSync = (run: CultureSyncRunState | null, maxAgeHours: number) =>
+  shouldRunScheduledSync({
+    latestSync: run ? {
+      status: run.status,
+      ageHours: run.completedAt ? (Date.now() - Date.parse(run.completedAt)) / 3_600_000 : null,
+    } : null,
+  }, maxAgeHours);
 
 const runScheduledSync = async (
   env: RuntimeEnv,
   ctx: CultureEdgeCacheContext,
   trigger: string,
-  internalFetch: InternalFetch
+  maxAgeHours = RECOVERY_FRESHNESS_HOURS
 ) => {
   const startedAt = Date.now();
   logEvent('info', 'culture.snapshot.check_started', { trigger });
-  const healthResponse = await internalFetch(new Request('https://internal.culturewalk/api/health'), env, ctx);
+  const d1 = getD1Binding(env);
+  if (!d1) throw new Error('DB binding is required for scheduled synchronization');
 
-  if (healthResponse.ok) {
-    const health = (await healthResponse.json()) as {
-      latestSync?: { status?: unknown; ageHours?: unknown } | null;
-    };
-    if (!shouldRunScheduledSync(health)) {
-      logEvent('info', 'culture.snapshot.skipped', { trigger, reason: 'fresh-sync' });
+  // Healthy hourly maintenance is read-only. Recheck after taking the lease
+  // whenever collection or publication is actually needed.
+  const candidate = await readLatestCultureSyncRun(d1);
+  if (candidate && !needsSourceSync(candidate, maxAgeHours)) {
+    const status = await inspectCulturePublicReadModelRecovery(d1, env.CULTURE_CACHE, candidate);
+    if (!status.needsReadModelRepair && !status.needsSyncHealthRepair) {
+      logEvent('info', 'culture.snapshot.skipped', { trigger, reason: 'fresh-sync', runId: candidate.id });
       return;
     }
   }
 
-  const serviceKey = env.TOUR_API_KEY;
-  if (!serviceKey) throw new Error('TOUR_API_KEY is required for scheduled synchronization');
-  const d1 = getD1Binding(env);
-  if (!d1) throw new Error('DB binding is required for scheduled synchronization');
-
   const lockedRun = await runWithInitializeLock(env, async heartbeat => {
+    // Public health is an eventually consistent serving signal. Source-sync
+    // decisions must use D1 history, checked after acquiring the lease.
+    const latest = await readLatestCultureSyncRun(d1);
+    if (latest && !needsSourceSync(latest, maxAgeHours)) {
+      const recovery = await recoverCulturePublicReadModels(d1, env.CULTURE_CACHE, latest, heartbeat.ensureHeld);
+      if (recovery.readModelRepaired) {
+        await purgeCultureEdgeCache(ctx, CULTURE_PUBLIC_CACHE_TAGS, 'snapshot-read-model-recovery');
+      }
+      logEvent('info', 'culture.snapshot.skipped', {
+        trigger, reason: 'fresh-sync', runId: latest.id, ...recovery,
+      });
+      return null;
+    }
+
+    const serviceKey = env.TOUR_API_KEY;
+    if (!serviceKey) throw new Error('TOUR_API_KEY is required for scheduled synchronization');
     const result = await syncCultures(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey },
       d1,
@@ -139,8 +166,7 @@ const runScheduledDetailRefresh = async (env: RuntimeEnv, ctx: CultureEdgeCacheC
 export const runCultureScheduledEvent = async (
   event: CultureScheduledEvent,
   env: RuntimeEnv,
-  ctx: CultureEdgeCacheContext,
-  internalFetch: InternalFetch
+  ctx: CultureEdgeCacheContext
 ) => {
   const job = getCultureScheduledJob(event.cron);
   logEvent('info', 'culture.cron.received', {
@@ -152,6 +178,7 @@ export const runCultureScheduledEvent = async (
   try {
     if (job === 'detail-refresh') {
       try {
+        await runScheduledSync(env, ctx, 'cron-maintenance', MAINTENANCE_SYNC_MAX_AGE_HOURS);
         await runScheduledDetailRefresh(env, ctx);
       } catch (error) {
         if (hasD1DailyRowReadLimitError(error)) {
@@ -170,7 +197,7 @@ export const runCultureScheduledEvent = async (
     if (job === 'snapshot') {
       const scheduledHour = new Date(event.scheduledTime).getUTCHours();
       const trigger = scheduledHour === RECOVERY_SYNC_UTC_HOUR ? 'cron-recovery' : 'cron';
-      await runScheduledSync(env, ctx, trigger, internalFetch);
+      await runScheduledSync(env, ctx, trigger);
       return;
     }
 

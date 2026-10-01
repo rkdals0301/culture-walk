@@ -2,6 +2,9 @@ export const SYNC_CRON = '10 0,1 * * *';
 export const DETAIL_REFRESH_CRON = '17 * * * *';
 export const RECOVERY_SYNC_UTC_HOUR = 1;
 export const RECOVERY_FRESHNESS_HOURS = 2;
+// Daily source sync remains the normal path. Hourly maintenance retries a
+// failed run, or a source older than the daily run plus its recovery window.
+export const MAINTENANCE_SYNC_MAX_AGE_HOURS = 26;
 
 export type CultureScheduledJob = 'snapshot' | 'detail-refresh' | 'unknown';
 
@@ -18,7 +21,10 @@ interface SyncHealthPayload {
   } | null;
 }
 
-export const shouldRunScheduledSync = (health: SyncHealthPayload | null) => {
+export const shouldRunScheduledSync = (
+  health: SyncHealthPayload | null,
+  maxAgeHours = RECOVERY_FRESHNESS_HOURS
+) => {
   const latestSync = health?.latestSync;
   if (!latestSync || latestSync.status !== 'success') {
     return true;
@@ -27,6 +33,7 @@ export const shouldRunScheduledSync = (health: SyncHealthPayload | null) => {
   return (
     typeof latestSync.ageHours !== 'number' ||
     !Number.isFinite(latestSync.ageHours) ||
-    latestSync.ageHours > RECOVERY_FRESHNESS_HOURS
+    latestSync.ageHours < 0 ||
+    latestSync.ageHours > maxAgeHours
   );
 };

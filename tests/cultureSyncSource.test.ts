@@ -3,6 +3,7 @@ import {
   fetchTourApiFestivalDetails,
   TourApiDeadlineExceededError,
 } from '@/services/cultureSyncSource';
+import { PAGE_SIZE } from '@/services/cultureSyncTypes';
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -283,6 +284,100 @@ test('TourAPI detail requests share one deadline across all four endpoints', asy
     );
     assert.equal(attempts, 4);
     assert.equal(aborted, 4);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('snapshot rejects overlapping pages even when the reported and received totals match', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async input => {
+    const url = new URL(String(input));
+    const items = url.searchParams.get('pageNo') === '1'
+      ? Array.from({ length: PAGE_SIZE }, (_, index) => ({ contentid: String(index + 1) }))
+      : [{ contentid: '1' }];
+    return Response.json({ response: {
+      header: { resultCode: '0000' },
+      body: { items: { item: items }, totalCount: PAGE_SIZE + 1 },
+    } });
+  }) as typeof fetch;
+  try {
+    await assert.rejects(
+      () => fetchCulturesFromTourApi({ baseUrl: 'https://tourapi.example', serviceKey: 'test' }),
+      /contentid.*중복/
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('snapshot accepts distinct pages and returns them in page order', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async input => {
+    const url = new URL(String(input));
+    const pageNo = Number(url.searchParams.get('pageNo'));
+    const items = pageNo === 1
+      ? Array.from({ length: PAGE_SIZE }, (_, index) => ({ contentid: String(index + 1) }))
+      : [{ contentid: String(PAGE_SIZE + 1) }];
+    return Response.json({ response: {
+      header: { resultCode: '0000' },
+      body: { items: { item: items }, totalCount: PAGE_SIZE + 1 },
+    } });
+  }) as typeof fetch;
+  try {
+    const rows = await fetchCulturesFromTourApi({ baseUrl: 'https://tourapi.example', serviceKey: 'test' });
+    assert.equal(rows.length, PAGE_SIZE + 1);
+    assert.equal(rows.at(-1)?.contentid, String(PAGE_SIZE + 1));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('empty mandatory detail responses are incomplete while optional images and info may be empty', async () => {
+  const originalFetch = globalThis.fetch;
+  let emptyPath = 'detailCommon2';
+  globalThis.fetch = (async input => {
+    const path = new URL(String(input)).pathname.split('/').at(-1);
+    const required = path === 'detailCommon2' || path === 'detailIntro2';
+    const items = required && path !== emptyPath ? [{ contentid: '123' }] : [];
+    return Response.json({ response: {
+      header: { resultCode: '0000' },
+      body: { items: { item: items }, totalCount: items.length },
+    } });
+  }) as typeof fetch;
+  try {
+    const config = { baseUrl: 'https://tourapi.example', serviceKey: 'test' };
+    assert.equal((await fetchTourApiFestivalDetails(config, '123')).complete, false);
+    emptyPath = 'detailIntro2';
+    assert.equal((await fetchTourApiFestivalDetails(config, '123')).complete, false);
+    emptyPath = '';
+    const complete = await fetchTourApiFestivalDetails(config, '123');
+    assert.equal(complete.complete, true);
+    assert.deepEqual(complete.images, []);
+    assert.deepEqual(complete.info, []);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('snapshot rejects truncated results and changing totals before reconciliation', async () => {
+  const originalFetch = globalThis.fetch;
+  let changingTotal = false;
+  globalThis.fetch = (async input => {
+    const pageNo = Number(new URL(String(input)).searchParams.get('pageNo'));
+    const items = pageNo === 1
+      ? Array.from({ length: PAGE_SIZE }, (_, index) => ({ contentid: String(index + 1) }))
+      : [];
+    return Response.json({ response: {
+      header: { resultCode: '0000' },
+      body: { items: { item: items }, totalCount: PAGE_SIZE + 1 + (changingTotal && pageNo === 2 ? 1 : 0) },
+    } });
+  }) as typeof fetch;
+  try {
+    const config = { baseUrl: 'https://tourapi.example', serviceKey: 'test' };
+    await assert.rejects(() => fetchCulturesFromTourApi(config), /전체 건수와 수집 건수가 다릅니다/);
+    changingTotal = true;
+    await assert.rejects(() => fetchCulturesFromTourApi(config), /전체 건수가 페이지 조회 중 변경/);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -5,6 +5,33 @@ const toRunId = (value: unknown) => {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+export interface CultureSyncRunState {
+  id: number;
+  status: string;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export const readLatestCultureSyncRun = async (d1: D1Binding): Promise<CultureSyncRunState | null> => {
+  const result = await d1.prepare(`
+    SELECT id, status,
+           strftime('%Y-%m-%dT%H:%M:%fZ', started_at) AS startedAt,
+           strftime('%Y-%m-%dT%H:%M:%fZ', completed_at) AS completedAt
+    FROM culture_sync_runs
+    ORDER BY id DESC
+    LIMIT 1
+  `).all();
+  const row = result.results?.[0];
+  const id = toRunId(row?.id);
+  if (!row || id === null || typeof row.status !== 'string') return null;
+  return {
+    id,
+    status: row.status,
+    startedAt: typeof row.startedAt === 'string' ? row.startedAt : null,
+    completedAt: typeof row.completedAt === 'string' ? row.completedAt : null,
+  };
+};
+
 export const createCultureSyncRun = async (d1: D1Binding, trigger: string) => {
   await d1
     .prepare(
