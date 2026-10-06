@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { performance } from 'node:perf_hooks';
+import { requestUntilCacheHit } from './smoke-cache-warmup.mjs';
 
 const DEFAULT_BASE_URL = 'https://culturewalk.gangmin.dev';
 const DEFAULT_OUTPUT_DIR = 'test-results/production-smoke';
@@ -188,10 +189,7 @@ const run = async () => {
   }
 
   const feedPath = '/api/cultures/feed?limit=5&category=all&region=all&free=0';
-  const feedAttempts = [];
-  for (let index = 1; index <= 3; index += 1) {
-    feedAttempts.push(await request(`feed-${index}`, feedPath));
-  }
+  const feedAttempts = await requestUntilCacheHit(request, 'feed', feedPath);
   feedAttempts.forEach((attempt, index) => validatePublicDataSource(attempt?.result, `feed-${index + 1}`));
   observeCacheWarmup(feedAttempts, 'feed');
   validateEdgeHitLatency(feedAttempts, 'feed');
@@ -204,10 +202,7 @@ const run = async () => {
 
   if (selectedCulture) {
     const detailPath = `/api/cultures/${selectedCulture.id}`;
-    const detailAttempts = [];
-    for (let index = 1; index <= 2; index += 1) {
-      detailAttempts.push(await request(`detail-${index}`, detailPath));
-    }
+    const detailAttempts = await requestUntilCacheHit(request, 'detail', detailPath);
     detailAttempts.forEach((attempt, index) => validatePublicDataSource(attempt?.result, `detail-${index + 1}`));
     observeCacheWarmup(detailAttempts, 'detail');
     validateEdgeHitLatency(detailAttempts, 'detail');

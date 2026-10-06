@@ -186,6 +186,7 @@ npm run dev
 | `npm run build` | 프로덕션 Next.js 빌드 (`next build --webpack`) |
 | `npm run start` | 빌드된 Next.js 서버 실행 |
 | `npm test` | 전체 테스트 스위트 실행 (`tsx --test tests/**/*.test.ts`) |
+| `npm run test:changed` | 변경과 연결된 단위 테스트만 실행. 공통 설정이나 추적할 수 없는 변경은 전체 테스트로 전환 |
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
 | `npm run test:e2e:run` | 격리된 로컬 D1/KV와 Playwright Chromium으로 모바일/데스크톱 브라우저 회귀 테스트 실행 |
@@ -198,7 +199,16 @@ npm run dev
 | `npm run cf:build` | 플랫폼 preflight 후 OpenNext를 이용한 Cloudflare Workers 빌드 |
 | `npm run preview` | OpenNext 빌드 후 Wrangler 로컬 에뮬레이터 실행 |
 | `npm run deploy` | 플랫폼 preflight 후 OpenNext 빌드 및 Cloudflare Workers 프로덕션 배포 |
+| `npm run deploy:verified` | CI/CD 전용: 성공한 CI에서 받은 동일 커밋의 Worker 빌드를 재빌드 없이 배포 |
 | `npm run cf:typegen` | Cloudflare Worker 환경변수/바인딩 타입 정의 갱신 |
+
+개발 중에는 `npm run test:changed`로 현재 작업 변경과 관련된 단위 테스트만 실행합니다.
+커밋 전에는 전체 테스트를 실행하며 CI에서도 항상 전체 테스트와 브라우저 검증을 유지합니다.
+검사 대상만 확인하려면 `npm run test:changed -- --list`, 다른 기준 커밋과 비교하려면
+`npm run test:changed -- --base origin/main`을 사용합니다. Windows PowerShell에서 옵션을
+전달할 때는 `npm.cmd run test:changed -- --list`처럼 `npm.cmd`를 사용합니다.
+CI는 테스트에 통과한 Worker 빌드를 커밋 SHA와 함께 저장하고, CD는 같은 CI 실행에서
+받은 빌드의 SHA를 확인한 뒤 재빌드 없이 배포합니다.
 
 새 D1 마이그레이션은 기존 마지막 번호 다음의 4자리 번호를 사용합니다. 과거에 이미
 운영에 적용된 `0001_add_source_key_and_upsert_index.sql`과 `0001_sync_tables.sql`은

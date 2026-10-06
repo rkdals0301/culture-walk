@@ -22,7 +22,7 @@ test('critical browser E2E covers Chromium/Firefox locally and WebKit on the dep
   assert.doesNotMatch(playwrightConfig, /browserName:\s*'webkit'/);
   assert.match(playwrightConfig, /testIgnore:\s*'\*\*\/production\/\*\*'/);
   assert.match(playwrightConfig, /testMatch:\s*'\*\*\/browser-compat\.spec\.ts'/);
-  assert.match(playwrightConfig, /workers:\s*isCI \? 1 : 4/);
+  assert.match(playwrightConfig, /workers:\s*isCI \? 2 : 4/);
   assert.match(playwrightConfig, /fullyParallel:\s*!isCI/);
   assert.match(compatSpec, /핵심 피드 화면/);
   assert.match(compatSpec, /핵심 지도 화면/);
