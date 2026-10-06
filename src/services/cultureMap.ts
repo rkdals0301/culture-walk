@@ -1,7 +1,6 @@
 import {
   type CultureFeedFilters,
-  filterCultureListItems,
-  getCultureRegionOptions,
+  buildCultureFeedResult,
   normalizeCultureFeedFilters,
 } from '@/services/cultureFeed';
 import type { CultureMapBounds, CultureMapResponse, CultureSearchableListItem } from '@/types/culture';
@@ -23,13 +22,12 @@ export const buildCultureMapResponseFromSnapshot = (
   }
 ): CultureMapResponse => {
   const filters = normalizeCultureFeedFilters(input.filters);
-  const filteredItems = filterCultureListItems(items, filters);
+  const { items: filteredItems, regionOptions } = buildCultureFeedResult(items, filters);
   const viewportItems = filteredItems.filter(culture =>
     isCoordinateWithinBounds(culture.lat, culture.lng, input.bounds)
   );
   const mode = getMapDataMode(input.level ?? 0);
   const clusterGridSize = getMapClusterGridSize(input.level ?? 0);
-  const regionOptions = getCultureRegionOptions(items);
 
   if (mode === 'items') {
     const visibleItems = filters.searchQuery

@@ -4,8 +4,6 @@ import {
   createCultureFeedCursor,
   createCultureFeedFilterKey,
   createCultureFeedSnapshotRevision,
-  filterCultureListItems,
-  getCultureRegionOptions,
   isFreeCultureListItem,
 } from '@/services/cultureFeed';
 import { filterCurrentCultureListItems } from '@/services/cultureList';
@@ -56,14 +54,14 @@ const items = [
 ];
 
 test('문화 피드 필터는 카테고리·지역·검색어·무료 조건을 함께 적용한다', () => {
-  const result = filterCultureListItems(items, {
+  const result = buildCultureFeedResult(items, {
     searchQuery: '콘서트',
     category: 'performance',
     region: '서울',
     freeOnly: true,
   });
 
-  assert.deepEqual(result.map(item => item.id), [1]);
+  assert.deepEqual(result.items.map(item => item.id), [1]);
 });
 
 test('문화 피드 검색은 상세 소개와 이용 대상이 포함된 search text를 사용한다', () => {
@@ -74,21 +72,21 @@ test('문화 피드 검색은 상세 소개와 이용 대상이 포함된 search
   });
 
   assert.deepEqual(
-    filterCultureListItems([searchable], {
+    buildCultureFeedResult([searchable], {
       searchQuery: '전통 공예',
       category: 'all',
       region: 'all',
       freeOnly: false,
-    }).map(item => item.id),
+    }).items.map(item => item.id),
     [4]
   );
   assert.deepEqual(
-    filterCultureListItems([searchable], {
+    buildCultureFeedResult([searchable], {
       searchQuery: '초등학생',
       category: 'all',
       region: 'all',
       freeOnly: false,
-    }).map(item => item.id),
+    }).items.map(item => item.id),
     [4]
   );
 });
@@ -103,12 +101,12 @@ test('문화 피드 검색은 여러 키워드가 서로 다른 필드에 있어
   });
 
   assert.deepEqual(
-    filterCultureListItems([searchable], {
+    buildCultureFeedResult([searchable], {
       searchQuery: '서울 콘서트',
       category: 'all',
       region: 'all',
       freeOnly: false,
-    }).map(item => item.id),
+    }).items.map(item => item.id),
     [5]
   );
 });
@@ -132,14 +130,14 @@ test('문화 피드 검색은 제목 정확 일치와 제목 포함을 일반 �
     }),
   ];
 
-  const result = filterCultureListItems(ranked, {
+  const result = buildCultureFeedResult(ranked, {
     searchQuery: '별빛 축제',
     category: 'all',
     region: 'all',
     freeOnly: false,
   });
 
-  assert.deepEqual(result.map(item => item.id), [12, 11, 10]);
+  assert.deepEqual(result.items.map(item => item.id), [12, 11, 10]);
 });
 
 test('거리순 검색에서는 검색 관련도보다 실제 거리를 우선한다', () => {
@@ -160,7 +158,7 @@ test('거리순 검색에서는 검색 관련도보다 실제 거리를 우선�
     }),
   ];
 
-  const result = filterCultureListItems(ranked, {
+  const result = buildCultureFeedResult(ranked, {
     searchQuery: '별빛',
     category: 'all',
     region: 'all',
@@ -170,7 +168,7 @@ test('거리순 검색에서는 검색 관련도보다 실제 거리를 우선�
     userLng: 127,
   });
 
-  assert.deepEqual(result.map(item => item.id), [21, 20]);
+  assert.deepEqual(result.items.map(item => item.id), [21, 20]);
 });
 
 test('문화 피드 무료 판정은 목록 요금 필드도 확인한다', () => {
@@ -184,12 +182,8 @@ test('무료 필터는 전액 무료만 포함하고 부분 무료는 분리한�
   const filters = { searchQuery: '', category: 'all' as const, region: 'all', freeOnly: true };
 
   assert.equal(isFreeCultureListItem(partial), false);
-  assert.deepEqual(filterCultureListItems([free, partial], filters).map(item => item.id), [31]);
+  assert.deepEqual(buildCultureFeedResult([free, partial], filters).items.map(item => item.id), [31]);
   assert.equal(buildCultureFeedResult([free, partial], { ...filters, freeOnly: false }).freeCount, 1);
-});
-
-test('문화 피드 지역 옵션은 중복 없이 한글 순서로 정렬한다', () => {
-  assert.deepEqual(getCultureRegionOptions(items), ['부산', '서울']);
 });
 
 test('문화 피드 결과는 필터 목록·무료 수·지역 옵션을 한 번에 계산한다', () => {
@@ -203,6 +197,21 @@ test('문화 피드 결과는 필터 목록·무료 수·지역 옵션을 한 �
   assert.deepEqual(result.items.map(item => item.id), [1, 2, 3]);
   assert.equal(result.freeCount, 1);
   assert.deepEqual(result.regionOptions, ['부산', '서울']);
+});
+
+test('검색 점수가 같은 행사는 입력 순서를 유지하고 원본 목록을 변경하지 않는다', () => {
+  const ranked = Object.freeze([
+    createCulture({ id: 42, title: '별빛 축제', searchText: '별빛 축제' }),
+    createCulture({ id: 41, title: '별빛 축제', searchText: '별빛 축제' }),
+    createCulture({ id: 43, title: '다른 행사', searchText: '별빛 축제 소개' }),
+  ]);
+  const result = buildCultureFeedResult(ranked, {
+    searchQuery: '별빛 축제', category: 'all', region: 'all', freeOnly: false,
+  });
+
+  assert.deepEqual(result.items.map(item => item.id), [42, 41, 43]);
+  assert.deepEqual(ranked.map(item => item.id), [42, 41, 43]);
+  assert.equal(result.items[0], ranked[0]);
 });
 
 test('문화 피드 캐시 키는 입력 공백과 과도한 검색어를 정규화한다', () => {

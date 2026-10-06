@@ -1,7 +1,7 @@
 import { CultureCategoryKey, matchesCultureCategory } from '@/utils/cultureCategory';
 import type { MapSortMode } from '@/utils/exploreState';
 import { getCulturePriceTone } from '@/utils/cultureDisplayUtils';
-import { calculateDistanceMeters } from '@/utils/geo';
+import { sortCulturesByDistance } from '@/utils/cultureSort';
 import { CultureListItem, CultureSearchableListItem } from '@/types/culture';
 
 export interface CultureFeedFilters {
@@ -25,11 +25,6 @@ const MAX_REGION_LENGTH = 40;
 
 const normalizeText = (value: string | null | undefined) =>
   value?.normalize('NFKC').trim().toLocaleLowerCase('ko-KR') ?? '';
-
-const tokenizeSearchQuery = (query: string) =>
-  normalizeText(query)
-    .split(/\s+/)
-    .filter(Boolean);
 
 const getCultureSearchText = (culture: CultureSearchableListItem) =>
   normalizeText(culture.searchText || [culture.title, culture.guName, culture.place].join(' '));
@@ -150,8 +145,9 @@ const matchesCultureFeedFilters = (
     return false;
   }
 
-  if (queryTokens.length > 0 && !queryTokens.every(token => getCultureSearchText(culture).includes(token))) {
-    return false;
+  if (queryTokens.length > 0) {
+    const searchText = getCultureSearchText(culture);
+    if (!queryTokens.every(token => searchText.includes(token))) return false;
   }
 
   return true;
@@ -163,7 +159,7 @@ export const buildCultureFeedResult = (
 ): CultureFeedResult => {
   const normalized = normalizeCultureFeedFilters(filters);
   const query = normalizeText(normalized.searchQuery);
-  const queryTokens = tokenizeSearchQuery(query);
+  const queryTokens = query.split(/\s+/).filter(Boolean);
   const regionSet = new Set<string>();
   const filteredItems: CultureListItem[] = [];
   let freeCount = 0;
@@ -184,31 +180,20 @@ export const buildCultureFeedResult = (
     }
   }
 
+  let sortedItems = filteredItems;
   if (normalized.sortMode === 'distance' && normalized.userLat != null && normalized.userLng != null) {
     const userPoint = { lat: normalized.userLat, lng: normalized.userLng };
-    filteredItems.sort((a, b) => {
-      const distA = calculateDistanceMeters(userPoint, { lat: a.lat, lng: a.lng });
-      const distB = calculateDistanceMeters(userPoint, { lat: b.lat, lng: b.lng });
-      return distA - distB;
-    });
+    sortedItems = sortCulturesByDistance(filteredItems, userPoint);
   } else if (query) {
-    filteredItems.sort(
-      (a, b) => getCultureSearchScore(b, query, queryTokens) - getCultureSearchScore(a, query, queryTokens)
-    );
+    sortedItems = filteredItems
+      .map(culture => ({ culture, score: getCultureSearchScore(culture, query, queryTokens) }))
+      .sort((left, right) => right.score - left.score)
+      .map(({ culture }) => culture);
   }
 
   return {
-    items: filteredItems,
+    items: sortedItems,
     freeCount,
     regionOptions: Array.from(regionSet).sort((a, b) => a.localeCompare(b, 'ko')),
   };
 };
-
-export const filterCultureListItems = (items: readonly CultureSearchableListItem[], filters: CultureFeedFilters) => {
-  return buildCultureFeedResult(items, filters).items;
-};
-
-export const getCultureRegionOptions = (items: readonly CultureSearchableListItem[]) =>
-  Array.from(new Set(items.map(culture => (culture.guName ?? '').split(/\s+/)[0]).filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b, 'ko')
-  );

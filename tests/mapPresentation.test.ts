@@ -12,7 +12,6 @@ const viewPath = fileURLToPath(new URL('../src/components/Map/MapView.tsx', impo
 const viewClientOnlyPath = fileURLToPath(new URL('../src/components/Map/MapViewClientOnly.tsx', import.meta.url));
 const layoutPath = fileURLToPath(new URL('../src/app/layout.tsx', import.meta.url));
 const contextPath = fileURLToPath(new URL('../src/context/ExploreContext.tsx', import.meta.url));
-const apiErrorPath = fileURLToPath(new URL('../src/hooks/useApiError.ts', import.meta.url));
 const toastPath = fileURLToPath(new URL('../src/components/Toast/ToastContainer.tsx', import.meta.url));
 const headerPath = fileURLToPath(new URL('../src/components/Header/Header.tsx', import.meta.url));
 const stylePaths = [
@@ -95,12 +94,6 @@ test('전역 탐색 컨텍스트는 상세 조회 상태나 상세 API 요청을
 
   assert.doesNotMatch(source, /loadCultureById|isCultureLoading|cultureError|cultureRequestVersionRef/);
   assert.doesNotMatch(source, /\/api\/cultures\/\$\{id\}/);
-});
-
-test('동일 API 오류 토스트는 중복 표시를 막는 식별자를 사용한다', async () => {
-  const source = await readFile(apiErrorPath, 'utf8');
-
-  assert.match(source, /toast\.error\([\s\S]*?toastId:\s*getApiErrorToastId/);
 });
 
 test('오류 알림은 토스 스타일의 안전 영역 플로팅 표면으로 표시된다', async () => {

@@ -82,6 +82,7 @@ test('KV read model 지도도 검색·지역·무료 필터를 동일하게 적�
 
   assert.deepEqual(response.items.map(culture => culture.id), [1]);
   assert.equal(response.totalCount, 1);
+  assert.deepEqual(response.regionOptions, ['부산', '서울']);
 });
 
 test('지도 목록 검색도 피드의 검색 관련도 순서를 유지한다', () => {

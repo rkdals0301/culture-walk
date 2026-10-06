@@ -10,7 +10,7 @@ import {
   setMapListScrollTop,
   shouldHideMapCameraInUrl,
 } from '@/utils/exploreNavigationMemory';
-import { calculateDistanceMeters } from '@/utils/geo';
+import { sortCulturesByDistance } from '@/utils/cultureSort';
 import { createMapExploreUrl, getMapDetailId } from '@/utils/mapRoute';
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
@@ -69,11 +69,7 @@ export const useMapDashboardController = ({
       return viewportCultures;
     }
 
-    return [...viewportCultures].sort(
-      (left, right) =>
-        calculateDistanceMeters(currentLocation, { lat: left.lat, lng: left.lng }) -
-        calculateDistanceMeters(currentLocation, { lat: right.lat, lng: right.lng })
-    );
+    return sortCulturesByDistance(viewportCultures, currentLocation);
   }, [currentLocation, mapSortMode, viewportCultures]);
 
   const hasActiveFilters = Boolean(searchQuery.trim()) || mapCategory !== 'all' || mapRegion !== 'all' || mapFreeOnly;

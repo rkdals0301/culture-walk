@@ -1,5 +1,3 @@
-import type { CultureDisplayFields, CultureListItem } from '@/types/culture';
-
 export type CultureCategoryKey = 'all' | 'education' | 'exhibition' | 'performance' | 'festival';
 export type CultureToneKey = Exclude<CultureCategoryKey, 'all'> | 'other';
 
@@ -30,8 +28,3 @@ export const getCultureTone = (classification?: string | null): CultureToneKey =
 
 export const matchesCultureCategory = (classification: string | null | undefined, category: CultureCategoryKey) =>
   category === 'all' || getCultureTone(classification) === category;
-
-export const isFreeCulture = (culture: Pick<CultureListItem & CultureDisplayFields, 'isFree' | 'displayPrice'>) => {
-  const value = `${culture.isFree} ${culture.displayPrice}`.toLowerCase();
-  return value.includes('free') || value.includes('무료');
-};

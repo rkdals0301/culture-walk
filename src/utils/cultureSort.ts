@@ -1,3 +1,5 @@
+import { calculateDistanceMeters, type GeoPoint } from '@/utils/geo';
+
 interface CultureSchedule {
   endDate: Date | string;
   id?: number;
@@ -10,36 +12,44 @@ const toTimestamp = (value: Date | string) => {
   return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
 };
 
-const getRelevantTimestamp = (culture: CultureSchedule, referenceTimestamp: number) => {
-  const startTimestamp = toTimestamp(culture.startDate);
-  const endTimestamp = toTimestamp(culture.endDate);
-
-  return startTimestamp <= referenceTimestamp ? endTimestamp : startTimestamp;
-};
-
 export const sortCulturesByRelevantDate = <T extends CultureSchedule>(
   cultures: readonly T[],
   referenceDate: Date | string = new Date()
 ) => {
   const referenceTimestamp = toTimestamp(referenceDate);
 
-  return [...cultures].sort((left, right) => {
-    const relevantDateDifference =
-      getRelevantTimestamp(left, referenceTimestamp) - getRelevantTimestamp(right, referenceTimestamp);
-    if (relevantDateDifference !== 0) {
-      return relevantDateDifference;
-    }
+  return cultures
+    .map(culture => {
+      const startTimestamp = toTimestamp(culture.startDate);
+      return {
+        culture,
+        startTimestamp,
+        relevantTimestamp: startTimestamp <= referenceTimestamp ? toTimestamp(culture.endDate) : startTimestamp,
+      };
+    })
+    .sort((left, right) => {
+      const relevantDateDifference = left.relevantTimestamp - right.relevantTimestamp;
+      if (relevantDateDifference !== 0) {
+        return relevantDateDifference;
+      }
 
-    const startDateDifference = toTimestamp(left.startDate) - toTimestamp(right.startDate);
-    if (startDateDifference !== 0) {
-      return startDateDifference;
-    }
+      const startDateDifference = left.startTimestamp - right.startTimestamp;
+      if (startDateDifference !== 0) {
+        return startDateDifference;
+      }
 
-    const titleDifference = (left.title ?? '').localeCompare(right.title ?? '', 'ko');
-    if (titleDifference !== 0) {
-      return titleDifference;
-    }
+      const titleDifference = (left.culture.title ?? '').localeCompare(right.culture.title ?? '', 'ko');
+      if (titleDifference !== 0) {
+        return titleDifference;
+      }
 
-    return (left.id ?? 0) - (right.id ?? 0);
-  });
+      return (left.culture.id ?? 0) - (right.culture.id ?? 0);
+    })
+    .map(({ culture }) => culture);
 };
+
+export const sortCulturesByDistance = <T extends GeoPoint>(cultures: readonly T[], currentLocation: GeoPoint): T[] =>
+  cultures
+    .map(culture => ({ culture, distance: calculateDistanceMeters(currentLocation, culture) }))
+    .sort((left, right) => left.distance - right.distance)
+    .map(({ culture }) => culture);
