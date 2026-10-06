@@ -186,6 +186,8 @@ npm run dev
 | `npm run build` | 프로덕션 Next.js 빌드 (`next build --webpack`) |
 | `npm run start` | 빌드된 Next.js 서버 실행 |
 | `npm test` | 전체 테스트 스위트 실행 (`tsx --test tests/**/*.test.ts`) |
+| `npm run security:audit` | 의존성 보안 검사. 검토된 개발 전용 예외를 제외한 중간 이상 취약점과 검사 실패는 CI/CD 차단 |
+| `npm run security:worker` | 검토 예외 패키지가 Worker 빌드에 포함되면 CI/CD 차단 |
 | `npm run test:changed` | 변경과 연결된 단위 테스트만 실행. 공통 설정이나 추적할 수 없는 변경은 전체 테스트로 전환 |
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
@@ -209,6 +211,11 @@ npm run dev
 전달할 때는 `npm.cmd run test:changed -- --list`처럼 `npm.cmd`를 사용합니다.
 CI는 테스트에 통과한 Worker 빌드를 커밋 SHA와 함께 저장하고, CD는 같은 CI 실행에서
 받은 빌드의 SHA를 확인한 뒤 재빌드 없이 배포합니다.
+
+보안 예외는 `security/dependency-audit-policy.json`에 보안 권고 URL, 패키지·버전,
+개발 전용 범위, 검토 사유와 만료일을 명시합니다. 현재 예외는 패치가 없는
+`braces@3.0.3` 한 건이며, 2026-11-06 한국 시간 0시부터 CI가 차단합니다.
+운영 의존성, 새 취약점, 예외 버전 변경, 위험도 상승은 이 예외로 통과할 수 없습니다.
 
 새 D1 마이그레이션은 기존 마지막 번호 다음의 4자리 번호를 사용합니다. 과거에 이미
 운영에 적용된 `0001_add_source_key_and_upsert_index.sql`과 `0001_sync_tables.sql`은

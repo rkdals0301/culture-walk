@@ -22,6 +22,8 @@
     "db:seed:local": "node scripts/seed-local-sample.mjs",
     "db:seed:local:from-production": "node scripts/seed-local-sample.mjs --from-production --reset-local",
     "test": "tsx --test tests/**/*.test.ts",
+    "security:audit": "node scripts/check-dependency-security.mjs",
+    "security:worker": "node scripts/check-dependency-security.mjs --worker",
     "test:changed": "node scripts/run-changed-tests.mjs",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:run": "node scripts/prepare-e2e.mjs && playwright test",
@@ -37,7 +39,7 @@
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^11.9.0",
     "lucide-react": "^1.26.0",
-    "next": "^16.3.3",
+    "next": "^16.3.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-toastify": "^10.0.5",
@@ -55,7 +57,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.3.3",
+    "eslint-config-next": "^16.3.6",
     "postcss": "^8.5.26",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
@@ -65,6 +67,9 @@
     "wrangler": "^4.130.0"
   },
   "overrides": {
+    "proxy-addr": "2.0.8",
+    "source-map-js": "1.2.2",
+    "postcss-selector-parser": "7.1.6",
     "sharp": "0.35.4",
     "next": {
       "postcss": "^8.5.26"
