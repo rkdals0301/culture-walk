@@ -192,6 +192,7 @@ npm run dev
 | `npm run typecheck` | TypeScript 정적 타입 검사 (`tsc --noEmit`) |
 | `npm run lint` | ESLint 코드 스타일 및 규칙 검사 |
 | `npm run test:e2e:run` | 격리된 로컬 D1/KV와 Playwright Chromium으로 모바일/데스크톱 브라우저 회귀 테스트 실행 |
+| `npm run test:e2e` | 앱·설정·의존성·환경이 같으면 기존 로컬 Worker 빌드를 재사용하고 격리된 D1/KV를 새로 준비해 E2E 실행 |
 | `npm run smoke:production` | 운영 도메인의 health/feed/detail/map/sitemap 및 Edge cache 응답 시간을 검증 |
 | `npm run db:migrate:local` | 로컬 Cloudflare D1 인스턴스에 마이그레이션 적용 |
 | `npm run db:migrations:check` | D1 마이그레이션 파일명·번호 중복·연속성을 검증 |
@@ -209,6 +210,14 @@ npm run dev
 검사 대상만 확인하려면 `npm run test:changed -- --list`, 다른 기준 커밋과 비교하려면
 `npm run test:changed -- --base origin/main`을 사용합니다. Windows PowerShell에서 옵션을
 전달할 때는 `npm.cmd run test:changed -- --list`처럼 `npm.cmd`를 사용합니다.
+
+E2E 목록 확인은 `npm.cmd run test:e2e -- --list`로 빌드·DB 준비 없이 실행할 수 있습니다.
+특정 검사만 실행하려면 `npm.cmd run test:e2e -- e2e/feed.spec.ts --project=mobile-chromium`을
+사용합니다. 선택 옵션은 Playwright에 그대로 전달됩니다. 빌드를 강제로 새로 만들려면
+`--force-build`를 추가합니다. `test:e2e:run`은 CI처럼 별도로 Worker를 빌드한 뒤 실행하는
+명령이며, 매번 로컬 D1/KV를 초기화합니다. API 응답 계약 3개는 브라우저를 열지 않는
+`api-contracts` 프로젝트에서 한 번씩 검사하고, 사용자 화면은 기존 브라우저·화면 크기별
+검사를 유지합니다.
 CI는 테스트에 통과한 Worker 빌드를 커밋 SHA와 함께 저장하고, CD는 같은 CI 실행에서
 받은 빌드의 SHA를 확인한 뒤 재빌드 없이 배포합니다.
 

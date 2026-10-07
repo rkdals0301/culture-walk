@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 const isUnitTest = file => /^tests\/.*\.test\.ts$/.test(file);
+const isE2ETest = file => /^e2e\/.*\.spec\.ts$/.test(file);
 const isDocumentation = file => /\.md$/.test(file) || file.startsWith('.impeccable/');
 const isGlobalInput = file =>
   /^(package(?:-lock)?\.json|tsconfig\.json|next\.config\.mjs|eslint\.config\.mjs|playwright.*\.ts)$/.test(file) ||
@@ -48,7 +49,7 @@ export const selectChangedTests = ({ files, changedFiles, sources }) => {
       }
       queue.push(...(importers.get(file) ?? []));
     }
-    if (!covered) return all(`No reliable test dependency was found for ${change}.`);
+    if (!covered && !isE2ETest(change)) return all(`No reliable test dependency was found for ${change}.`);
   }
   return { tests: [...selected].sort(), reason: 'Changed tests and their transitive dependants.', fullSuite: false };
 };

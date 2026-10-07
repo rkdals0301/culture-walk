@@ -44,7 +44,12 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'api-contracts',
+      testMatch: '**/api/**/*.spec.ts',
+    },
+    {
       name: 'mobile-chromium',
+      testIgnore: ['**/production/**', '**/api/**'],
       use: {
         ...devices['iPhone 13'],
         browserName: 'chromium',
@@ -53,6 +58,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-chromium',
+      testIgnore: ['**/production/**', '**/api/**'],
       use: {
         ...devices['Desktop Chrome'],
         browserName: 'chromium',

@@ -26,7 +26,7 @@
     "security:worker": "node scripts/check-dependency-security.mjs --worker",
     "test:changed": "node scripts/run-changed-tests.mjs",
     "test:e2e": "node scripts/run-e2e.mjs",
-    "test:e2e:run": "node scripts/prepare-e2e.mjs && playwright test",
+    "test:e2e:run": "node scripts/run-e2e.mjs --run-only",
     "smoke:production": "node scripts/production-smoke.mjs",
     "bundle:check": "node scripts/check-client-bundle-budget.mjs",
     "lint": "eslint .",
@@ -70,7 +70,7 @@
     "proxy-addr": "2.0.8",
     "source-map-js": "1.2.2",
     "postcss-selector-parser": "7.1.6",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "next": {
       "postcss": "^8.5.26"
     }

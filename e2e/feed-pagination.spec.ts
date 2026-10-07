@@ -1,27 +1,5 @@
 import { expect, gotoApp, test } from './support/test';
 
-const APP_ORIGIN = 'http://127.0.0.1:3005';
-
-test('행사 피드 cursor가 이전 read-model snapshot이면 새 목록 페이지를 거부한다', async ({ page }) => {
-  const firstResponse = await page.request.get(`${APP_ORIGIN}/api/cultures/feed?limit=1`);
-  expect(firstResponse.ok()).toBe(true);
-
-  const firstPage = (await firstResponse.json()) as { nextCursor: string | null };
-  expect(firstPage.nextCursor).not.toBeNull();
-
-  const cursor = JSON.parse(decodeURIComponent(firstPage.nextCursor!)) as Record<string, unknown>;
-  cursor.snapshot = 'stale-read-model-snapshot';
-  const url = new URL('/api/cultures/feed', APP_ORIGIN);
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('cursor', encodeURIComponent(JSON.stringify(cursor)));
-
-  const staleResponse = await page.request.get(url.toString());
-  expect(staleResponse.status()).toBe(409);
-  await expect(staleResponse.json()).resolves.toMatchObject({
-    error: expect.stringContaining('목록'),
-  });
-});
-
 test('stale cursor 응답을 받으면 피드는 최신 첫 페이지로 교체해 이어서 보여준다', async ({ page }) => {
   let firstPageRequests = 0;
 

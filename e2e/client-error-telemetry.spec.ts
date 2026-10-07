@@ -1,37 +1,5 @@
 import { expect, test } from './support/test';
 
-const APP_ORIGIN = 'http://127.0.0.1:3005';
-
-test('client error endpoint accepts bounded signals and rejects malformed or oversized bodies', async ({ page }) => {
-  const accepted = await page.request.post(`${APP_ORIGIN}/api/client-errors`, {
-    data: {
-      source: 'boundary',
-      scope: 'culture-detail',
-      errorType: 'TypeError',
-      pathname: '/cultures/12345',
-    },
-  });
-  expect(accepted.status()).toBe(204);
-  expect(accepted.headers()['cache-control']).toBe('no-store');
-
-  const malformed = await page.request.post(`${APP_ORIGIN}/api/client-errors`, {
-    data: '{',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  expect(malformed.status()).toBe(400);
-
-  const oversized = await page.request.post(`${APP_ORIGIN}/api/client-errors`, {
-    data: JSON.stringify({
-      source: 'boundary',
-      scope: 'app',
-      errorType: 'Error',
-      pathname: `/${'x'.repeat(1_500)}`,
-    }),
-    headers: { 'Content-Type': 'application/json' },
-  });
-  expect(oversized.status()).toBe(413);
-});
-
 test('pre-hydration window errors are sent as sanitized same-origin telemetry', async ({ page }) => {
   await page.goto('/');
 

@@ -41,3 +41,18 @@ test('deleted source references are still included in affected tests', () => {
   const remaining = files.filter(file => file !== 'src/utils/value.ts');
   assert.deepEqual(select(['src/utils/value.ts'], remaining).tests, ['tests/list.test.ts', 'tests/view.test.ts']);
 });
+
+test('unreferenced E2E test changes do not rerun unrelated unit tests', () => {
+  const result = select(['e2e/feed.spec.ts']);
+  assert.equal(result.fullSuite, false);
+  assert.deepEqual(result.tests, []);
+});
+
+test('E2E source-contract readers remain selected and mixed source changes remain covered', () => {
+  const linkedSources = new Map(sources);
+  linkedSources.set('tests/view.test.ts', "readProjectFile('../e2e/feed.spec.ts');");
+  const withE2e = [...files, 'e2e/feed.spec.ts'];
+  assert.deepEqual(select(['e2e/feed.spec.ts'], withE2e, linkedSources).tests, ['tests/view.test.ts']);
+  assert.deepEqual(select(['e2e/other.spec.ts', 'src/utils/value.ts']).tests, ['tests/list.test.ts', 'tests/view.test.ts']);
+  assert.equal(select(['e2e/support/test.ts']).fullSuite, true);
+});
