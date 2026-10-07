@@ -5,7 +5,9 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 
-test('production smoke checks the home document and stops warming after its first cache hit', async () => {
+for (const slowHome of [false, true]) {
+test(slowHome ? 'production smoke rejects slow complete HTML even when headers arrive immediately'
+  : 'production smoke checks the home document and stops warming after its first cache hit', async () => {
   const paths: string[] = [];
   const culture = { id: 42, title: '테스트 축제' };
   const server = createServer((request, response) => {
@@ -15,6 +17,11 @@ test('production smoke checks the home document and stops warming after its firs
     response.setHeader('x-culture-data-source', 'kv-read-model');
     response.setHeader('cache-control', pathname === '/api/health' ? 'no-store' : 'public, max-age=60');
     response.setHeader('content-type', pathname.startsWith('/api/') ? 'application/json' : 'text/html');
+    if (slowHome && pathname === '/') {
+      response.write('<html>');
+      setTimeout(() => response.end('<body>문화산책</body></html>'), 1200);
+      return;
+    }
     response.end(pathname === '/api/health'
       ? JSON.stringify({ ok: true, status: 'healthy', readModel: { available: true, itemCount: 1 } })
       : pathname === '/api/cultures/feed'
@@ -35,7 +42,7 @@ test('production smoke checks the home document and stops warming after its firs
         windowsHide: true,
         env: { ...process.env, SMOKE_BASE_URL: `http://127.0.0.1:${address.port}`,
           SMOKE_OUTPUT_DIR: output, SMOKE_REQUIRE_HEALTHY: 'true',
-          SMOKE_MAX_REQUEST_TTFB_MS: '', SMOKE_MAX_EDGE_HIT_TTFB_MS: '', SMOKE_MAX_READ_MODEL_BYTES: '' },
+          SMOKE_MAX_REQUEST_TTFB_MS: slowHome ? '1000' : '', SMOKE_MAX_EDGE_HIT_TTFB_MS: '', SMOKE_MAX_READ_MODEL_BYTES: '' },
         timeout: 20_000,
       });
       let log = '';
@@ -44,10 +51,16 @@ test('production smoke checks the home document and stops warming after its firs
       child.on('error', reject);
       child.on('close', code => { resolve({ code, log }); });
     });
-    assert.equal(outcome.code, 0, outcome.log);
+    assert.equal(outcome.code, slowHome ? 1 : 0, outcome.log);
     assert.equal(paths.filter(value => value === '/').length, 1);
     const report = JSON.parse(await readFile(path.join(output, 'report.json'), 'utf8'));
-    assert.equal(report.status, 'healthy');
+    assert.equal(report.status, slowHome ? 'failed' : 'healthy');
+    if (slowHome) {
+      assert.ok(report.failures.some((failure: string) => failure.includes('home-page') && failure.includes('HTML')));
+      const home = report.checks.find((check: { label: string }) => check.label.startsWith('home-page'));
+      assert.ok(home.ttfbMs < 1000);
+      assert.ok(home.totalMs >= 1000);
+    }
     assert.equal(report.checks.filter((check: { label: string }) => check.label.startsWith('home-page')).length, 1);
   } finally {
     server.closeAllConnections();
@@ -57,3 +70,4 @@ test('production smoke checks the home document and stops warming after its firs
     await rm(output, { recursive: true, force: true });
   }
 });
+}

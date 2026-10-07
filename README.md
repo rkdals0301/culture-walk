@@ -109,7 +109,7 @@ culture-walk/
 ### 1. 요구 사항
 - **Node.js**: `v20.0.0` 이상
 - **npm**: `v10.0.0` 이상
-- **Windows 개발자**: 일반 Next.js 개발/테스트는 Windows에서 지원합니다. OpenNext의 Cloudflare 번들링은 네이티브 Windows에서 best-effort이므로, 운영과 동일한 로컬 검증이 필요하면 WSL2를 사용합니다. 실제 CI/CD 빌드와 배포는 Ubuntu runner가 기준입니다.
+- **Windows 개발자**: 일반 Next.js 개발/테스트는 Windows에서 지원합니다. `cf:build`는 Docker의 Linux 엔진이 실행 중이면 전용 Linux 볼륨에서 의존성 설치와 빌드를 수행하고 검증된 Worker 결과만 가져옵니다. 의존성과 Next.js 빌드 캐시는 다음 빌드에 재사용합니다. Docker가 없으면 네이티브 Windows의 best-effort 경로를 사용하며, `CULTURE_BUILD_BACKEND=native` 또는 `docker`로 명시할 수도 있습니다. 실제 CI/CD는 기존 Ubuntu runner에서 직접 빌드합니다.
 
 ### 2. 의존성 설치
 ```bash
@@ -199,7 +199,7 @@ npm run dev
 | `npm run db:seed:local` | 저장된 로컬 샘플 스냅샷을 운영 접근 없이 로컬 D1에 적용 |
 | `npm run db:seed:local:from-production` | 운영 D1에서 샘플과 상세 데이터를 추출해 로컬 스냅샷 갱신 |
 | `npm run db:migrate:remote` | 원격 Cloudflare D1 프로덕션 DB에 마이그레이션 적용 |
-| `npm run cf:build` | 플랫폼 preflight 후 OpenNext를 이용한 Cloudflare Workers 빌드 |
+| `npm run cf:build` | Windows에서는 가능한 경우 Linux 볼륨으로, Linux CI에서는 직접 Cloudflare Workers 빌드 |
 | `npm run preview` | OpenNext 빌드 후 Wrangler 로컬 에뮬레이터 실행 |
 | `npm run deploy` | 플랫폼 preflight 후 OpenNext 빌드 및 Cloudflare Workers 프로덕션 배포 |
 | `npm run deploy:verified` | CI/CD 전용: 성공한 CI에서 받은 동일 커밋의 Worker 빌드를 재빌드 없이 배포 |

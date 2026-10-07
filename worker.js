@@ -8,10 +8,12 @@ import {
   withSitemapEdgeCache,
 } from './src/server/cultureEdgeCache';
 import { runCultureScheduledEvent } from './src/server/cultureScheduledJobs';
+import { withWorkerResponseTiming } from './src/server/serverTiming';
 
 const worker = {
   async fetch(request, env, ctx) {
-    const response = await openNextWorker.fetch(request, env, ctx);
+    const startedAt = performance.now();
+    const response = withWorkerResponseTiming(request, await openNextWorker.fetch(request, env, ctx), performance.now() - startedAt);
     const url = new URL(request.url);
 
     if (request.method === 'POST' && url.pathname === '/api/initialize' && response.ok) {

@@ -28,3 +28,14 @@ export const withServerTiming = <T extends Record<string, string>>(
   ...headers,
   'Server-Timing': createServerTimingHeader(metrics),
 });
+
+export const withWorkerResponseTiming = (request: Request, response: Response, durationMs: number) => {
+  if (!['GET', 'HEAD'].includes(request.method)) return response;
+  const pathname = new URL(request.url).pathname;
+  if (pathname.startsWith('/_next/') || pathname.startsWith('/assets/')) return response;
+  const headers = new Headers(response.headers);
+  const existing = headers.get('Server-Timing');
+  const worker = createServerTimingHeader([{ name: 'worker-response', durationMs }]);
+  headers.set('Server-Timing', existing ? `${existing}, ${worker}` : worker);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+};
