@@ -215,6 +215,12 @@ const run = async () => {
     await request('map-detail-page', `/map/${selectedCulture.id}`);
   }
 
+  const homeAttempts = await requestUntilCacheHit(request, 'home-page', '/');
+  observeCacheWarmup(homeAttempts, 'home-page');
+  validateEdgeHitLatency(homeAttempts, 'home-page');
+  if (homeAttempts[0] && !homeAttempts[0].body.includes('<html')) {
+    addFailure('home-page: HTML 문서를 찾지 못했습니다.');
+  }
   await request('map-page', '/map');
   const sitemap = await request('sitemap', '/sitemap.xml');
   if (sitemap && !sitemap.body.includes('<urlset')) {

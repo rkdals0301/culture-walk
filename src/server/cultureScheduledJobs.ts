@@ -125,7 +125,7 @@ const runScheduledDetailRefresh = async (env: RuntimeEnv, ctx: CultureEdgeCacheC
     const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: env.TOUR_API_BASE_URL || TOUR_API_BASE_URL, serviceKey },
       d1,
-      { beforeEach: () => heartbeat.renew(), cache: env.CULTURE_CACHE }
+      { beforeEach: () => heartbeat.renew() }
     );
     logEvent('info', 'culture.detail_refresh.completed', {
       refreshed: result.refreshed,

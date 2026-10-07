@@ -42,7 +42,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Validate Cloudflare credentials
         shell: bash
@@ -84,16 +84,13 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Validate Cloudflare credentials
         shell: bash
         run: |
           test -n "$CLOUDFLARE_ACCOUNT_ID"
           test -n "$CLOUDFLARE_API_TOKEN"
-
-      - name: Generate Cloudflare binding types
-        run: npm run cf:typegen
 
       - name: Download verified worker
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4

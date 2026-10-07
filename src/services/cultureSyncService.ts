@@ -87,8 +87,6 @@ export const syncCultures = async (
     try {
       const detailRefresh = await refreshStaleCachedTourApiDetails(config, d1, {
         beforeEach: options.beforeEach,
-        cache: listReadModelPublished ? options.cache : undefined,
-        readModelRevisions: listReadModelPublished ? listReadModelRevisions : undefined,
       });
       refreshedDetailCount = detailRefresh.refreshed;
     } catch (error) {
