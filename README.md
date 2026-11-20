@@ -107,7 +107,7 @@ culture-walk/
 ## 🚀 로컬 개발 환경 구축 (Getting Started)
 
 ### 1. 요구 사항
-- **Node.js**: `v20.0.0` 이상
+- **Node.js**: `v22.13.0` 이상의 22.x 또는 `v24.0.0` 이상
 - **npm**: `v10.0.0` 이상
 - **Windows 개발자**: 일반 Next.js 개발/테스트는 Windows에서 지원합니다. `cf:build`는 Docker의 Linux 엔진이 실행 중이면 전용 Linux 볼륨에서 의존성 설치와 빌드를 수행하고 검증된 Worker 결과만 가져옵니다. 의존성과 Next.js 빌드 캐시는 다음 빌드에 재사용합니다. Docker가 없으면 네이티브 Windows의 best-effort 경로를 사용하며, `CULTURE_BUILD_BACKEND=native` 또는 `docker`로 명시할 수도 있습니다. 실제 CI/CD는 기존 Ubuntu runner에서 직접 빌드합니다.
 
