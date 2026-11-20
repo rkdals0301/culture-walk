@@ -76,6 +76,9 @@
     },
     "@opennextjs/cloudflare": {
       "glob": "^14.0.2"
+    },
+    "@trivago/prettier-plugin-sort-imports": {
+      "minimatch": "^11.0.1"
     }
   }
 }
