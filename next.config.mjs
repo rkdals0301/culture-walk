@@ -1,6 +1,5 @@
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
-
-initOpenNextCloudflareForDev();
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js';
 
 const hasGoogleAnalytics = Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim());
 const hasGoogleAdsense = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim());
@@ -126,4 +125,8 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default phase => {
+  if (phase === PHASE_DEVELOPMENT_SERVER) initOpenNextCloudflareForDev();
+
+  return nextConfig;
+};
