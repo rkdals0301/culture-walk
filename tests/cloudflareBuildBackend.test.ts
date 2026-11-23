@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 const backendModule = import(new URL('../scripts/cloudflare-build-options.mjs', import.meta.url).href).catch(() => ({}));
 
 test('Windows uses the Linux filesystem when Docker is available; CI keeps native builds', async () => {
@@ -20,6 +22,19 @@ test('different checkouts have separate Linux build volumes', async () => {
   assert.match(first, /^culture-walk-build-[a-f0-9]{16}$/);
   assert.equal(options.createBuildVolumeName('C:/project/culture-walk'), first);
   assert.notEqual(options.createBuildVolumeName('C:/worktrees/other'), first);
+});
+
+test('build startup failures report the phase without logging environment values', () => {
+  const invalidBackend = 'unexpected-backend-value-for-test';
+  const script = fileURLToPath(new URL('../scripts/build-cloudflare.mjs', import.meta.url));
+  const result = spawnSync(process.execPath, [script], {
+    encoding: 'utf8',
+    env: { ...process.env, CULTURE_BUILD_BACKEND: invalidBackend },
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Cloudflare build failed while selecting a build backend/);
+  assert.doesNotMatch(result.stderr + result.stdout, new RegExp(invalidBackend));
 });
 
 test('source synchronization rejects escaping paths and dependency directories', async () => {

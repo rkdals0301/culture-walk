@@ -32,6 +32,10 @@ test('critical browser E2E covers Chromium/Firefox locally and WebKit on the dep
   assert.match(productionConfig, /browserName:\s*'webkit'/);
   assert.match(productionConfig, /https:\/\/culturewalk\.gangmin\.dev/);
   assert.match(productionWorkflow, /workflows:\s*\n\s*- CD/);
+  assert.match(productionWorkflow, /head_repository\.full_name == github\.repository/);
+  assert.match(productionWorkflow, /ref: refs\/heads\/main/);
+  assert.match(productionWorkflow, /git merge-base --is-ancestor "\$DEPLOYED_SHA" HEAD\s+git checkout --detach "\$DEPLOYED_SHA"/);
+  assert.match(productionWorkflow, /package-manager-cache: false/);
   assert.match(productionWorkflow, /playwright install --with-deps webkit/);
   assert.match(productionWorkflow, /playwright\.production\.config\.ts/);
   assert.match(productionSpec, /운영 WebKit에서 피드와 상세 탐색이 동작한다/);
