@@ -57,6 +57,7 @@ type CultureReadModelMemoryEntry = {
 };
 
 const cultureReadModelMemoryCache = new WeakMap<object, CultureReadModelMemoryEntry>();
+const cultureReadModelPendingReads = new WeakMap<object, Promise<CultureReadModel | null>>();
 const CULTURE_TEXT_FIELDS = [
   'classification',
   'date',
@@ -278,10 +279,8 @@ export const createCacheKey = (namespace: string, payload: object) => `${namespa
 
 export const getSerializedUtf8ByteLength = (value: unknown) => UTF8_ENCODER.encode(JSON.stringify(value)).byteLength;
 
-const getCultureCache = (cache?: CultureCacheBinding) => cache;
-
 export const readKvCache = async (key: string, cacheOverride?: CultureCacheBinding): Promise<unknown | null> => {
-  const cache = await getCultureCache(cacheOverride);
+  const cache = cacheOverride;
   if (!cache) return null;
 
   try {
@@ -292,23 +291,27 @@ export const readKvCache = async (key: string, cacheOverride?: CultureCacheBindi
   }
 };
 
-export const writeKvCache = async <T>(
+const writeKvPayload = async (
   key: string,
-  value: T,
+  serialize: () => string,
   ttlSeconds: number,
   cacheOverride?: CultureCacheBinding
 ) => {
-  const cache = await getCultureCache(cacheOverride);
+  const cache = cacheOverride;
   if (!cache) return false;
 
   try {
-    await cache.put(key, JSON.stringify(value), { expirationTtl: ttlSeconds });
+    await cache.put(key, serialize(), { expirationTtl: ttlSeconds });
     return true;
   } catch (error) {
     console.error('[kv] write failed', key, error);
     return false;
   }
 };
+
+export const writeKvCache = <T>(
+  key: string, value: T, ttlSeconds: number, cacheOverride?: CultureCacheBinding
+) => writeKvPayload(key, () => JSON.stringify(value), ttlSeconds, cacheOverride);
 
 export const getCultureDetailCacheKey = (id: number) => createCacheKey(CULTURE_DETAIL_CACHE_NAMESPACE, { id });
 
@@ -336,17 +339,7 @@ export const readCulturesListFallbackMetadata = async (cacheOverride?: CultureCa
   return parseCacheValue(CULTURE_LIST_FALLBACK_METADATA_KEY, value, parseCultureListFallbackMetadata);
 };
 
-export const readCultureReadModelCache = async (
-  cacheOverride?: CultureCacheBinding
-): Promise<CultureReadModel | null> => {
-  const cache = await getCultureCache(cacheOverride);
-  if (!cache) return null;
-
-  const memoryEntry = cultureReadModelMemoryCache.get(cache);
-  if (memoryEntry && memoryEntry.expiresAt > Date.now()) {
-    return memoryEntry.value;
-  }
-
+const loadCultureReadModel = async (cache: CultureCacheBinding): Promise<CultureReadModel | null> => {
   const current = await readKvCache(CULTURE_READ_MODEL_CACHE_KEY, cache);
   // An empty published read model is still authoritative. Treating it as a
   // cache miss would fall through to a stale legacy key and make every public
@@ -354,10 +347,6 @@ export const readCultureReadModelCache = async (
   if (current !== null) {
     const parsed = parseCacheValue(CULTURE_READ_MODEL_CACHE_KEY, current, parseCultureReadModel);
     if (!parsed) return null;
-    cultureReadModelMemoryCache.set(cache, {
-      value: parsed,
-      expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
-    });
     return parsed;
   }
 
@@ -375,11 +364,32 @@ export const readCultureReadModelCache = async (
     items: legacyItems,
     revisions: {},
   };
-  cultureReadModelMemoryCache.set(cache, {
-    value: legacyReadModel,
-    expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
-  });
   return legacyReadModel;
+};
+
+export const readCultureReadModelCache = async (
+  cache?: CultureCacheBinding
+): Promise<CultureReadModel | null> => {
+  if (!cache) return null;
+  const memoryEntry = cultureReadModelMemoryCache.get(cache);
+  if (memoryEntry && memoryEntry.expiresAt > Date.now()) return memoryEntry.value;
+  const pending = cultureReadModelPendingReads.get(cache);
+  if (pending) return pending;
+
+  const read = loadCultureReadModel(cache).then(value => {
+    // A sync may publish while the old KV read is in flight. Its newer local
+    // snapshot must win even when the remote read finishes last.
+    const latest = cultureReadModelMemoryCache.get(cache);
+    if (latest && latest !== memoryEntry) return latest.value;
+    if (value) {
+      cultureReadModelMemoryCache.set(cache, {
+        value, expiresAt: Date.now() + CULTURE_READ_MODEL_MEMORY_TTL_MS,
+      });
+    }
+    return value;
+  }).finally(() => { cultureReadModelPendingReads.delete(cache); });
+  cultureReadModelPendingReads.set(cache, read);
+  return read;
 };
 
 export const readCultureReadModelMetadataCache = async (cacheOverride?: CultureCacheBinding) => {
@@ -418,13 +428,14 @@ export const writeCultureReadModelCache = async (
     items: cultures,
     revisions,
   } satisfies CultureReadModel;
-  const serializedBytes = getSerializedUtf8ByteLength(readModel);
-  const cache = await getCultureCache(cacheOverride);
+  const serialized = JSON.stringify(readModel);
+  const serializedBytes = UTF8_ENCODER.encode(serialized).byteLength;
+  const cache = cacheOverride;
   if (!cache) return { ...readModel, published: false, metadataPublished: false, serializedBytes };
 
-  const published = await writeKvCache(
+  const published = await writeKvPayload(
     CULTURE_READ_MODEL_CACHE_KEY,
-    readModel,
+    () => serialized,
     CULTURE_READ_MODEL_TTL_SECONDS,
     cache
   );

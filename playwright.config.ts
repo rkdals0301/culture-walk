@@ -68,7 +68,7 @@ export default defineConfig({
     ...crossBrowserProjects,
   ],
   webServer: {
-    command: `npx wrangler dev --local --persist-to .wrangler/e2e --ip 127.0.0.1 --port ${PORT} --show-interactive-dev-session=false --log-level=warn`,
+    command: `npx wrangler dev e2e/support/worker.mjs --local --persist-to .wrangler/e2e --ip 127.0.0.1 --port ${PORT} --show-interactive-dev-session=false --log-level=warn`,
     url: baseURL,
     reuseExistingServer: false,
     timeout: 60_000,
