@@ -6,9 +6,9 @@ const buildInputs = [
   'src', 'public', 'db', 'package.json', 'package-lock.json', 'tsconfig.json',
   'next.config.mjs', 'open-next.config.ts', 'worker.js', 'wrangler.jsonc',
   'tailwind.config.ts', 'postcss.config.js', 'scripts/check-opennext-platform.mjs',
-  'scripts/prepare-opennext-output.mjs',
+  'scripts/build-cloudflare.mjs', 'scripts/build-cloudflare-container.mjs', 'scripts/cloudflare-build-options.mjs',
 ];
-const relevantEnv = /^(?:NEXT_PUBLIC_|NEXT_|OPEN_NEXT_|KAKAO_MAP_APP_KEY$|SITE_URL$|APP_BASE_URL$|TOUR_API_|SYNC_TOKEN$|GOOGLE_SITE_VERIFICATION$|NAVER_SITE_VERIFICATION$|NODE_ENV$|NODE_OPTIONS$)/;
+const relevantEnv = /^(?:NEXT_PUBLIC_|NEXT_|OPEN_NEXT_|CULTURE_BUILD_|KAKAO_MAP_APP_KEY$|SITE_URL$|APP_BASE_URL$|TOUR_API_|SYNC_TOKEN$|GOOGLE_SITE_VERIFICATION$|NAVER_SITE_VERIFICATION$|NODE_ENV$|NODE_OPTIONS$)/;
 
 export const createE2EBuildFingerprint = async (root, env = process.env) => {
   const hash = createHash('sha256');

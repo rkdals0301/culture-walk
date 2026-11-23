@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import {
   buildCultureFeedResult,
@@ -10,6 +11,7 @@ import { getRuntimeDeps } from '@/server/cloudflare';
 import { getCulturePublicListSnapshot } from '@/services/cultureList';
 import { toCultureListItemDtos } from '@/services/culturePublicDto';
 import FeedView from '@/components/Feed/FeedView';
+import FeedSkeleton from '@/components/Feed/FeedSkeleton';
 import { createPageSocialMetadata } from '@/utils/siteMetadata';
 import { createCultureFeedClientCacheKey, createCultureFeedClientFilters } from '@/utils/cultureFeedClientRequest';
 import type { CultureFeedPage } from '@/types/culture';
@@ -86,10 +88,20 @@ const getInitialFeedData = async (): Promise<CultureFeedPage | undefined> => {
   }
 };
 
-const HomePage = async () => {
+const InitialFeed = async () => {
   const initialData = await getInitialFeedData();
 
   return <FeedView initialData={initialData} initialDataFilterKey={INITIAL_FEED_FILTER_KEY} />;
 };
+
+const HomePage = () => (
+  <Suspense fallback={
+    <section role='status' className='mx-auto h-full w-full max-w-7xl overflow-y-auto bg-[var(--color-bg-primary)] px-4 py-5 sm:px-6 sm:py-6 lg:px-8'>
+      <FeedSkeleton count={INITIAL_FEED_LIMIT} />
+    </section>
+  }>
+    <InitialFeed />
+  </Suspense>
+);
 
 export default HomePage;

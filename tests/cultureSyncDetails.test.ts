@@ -85,7 +85,7 @@ test('partial detail responses preserve stored data and schedule a retry', async
   }
 });
 
-test('successful detail refresh publishes a rich KV detail read model', async () => {
+test('detail refresh and publication write each detail once with the final list revision', async () => {
   const originalFetch = globalThis.fetch;
   const writes: Array<{ key: string; value: string }> = [];
 
@@ -115,7 +115,20 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
               },
             ],
           }
-        : { results: [] },
+        : query.includes('json_extract(details.common_json')
+          ? { results: [{ id: 42, classification: '축제', endDate: '2099-09-12T00:00:00Z',
+              guName: '서울 중구', isFree: '무료', lat: 37.56, lng: 126.98, mainImage: '/event.jpg',
+              place: '서울광장', startDate: '2099-09-10T00:00:00Z', title: '테스트 축제', useFee: '무료',
+              overview: '갱신된 설명', sourceModifiedAt: staleRow.registrationDate }] }
+          : query.includes('detailSourceKey')
+            ? { results: [{ ...staleRow, classification: '축제', endDate: '2099-09-12T00:00:00Z',
+                guName: '서울 중구', isFree: '무료', lat: 37.56, lng: 126.98, mainImage: '/event.jpg',
+                place: '서울광장', startDate: '2099-09-10T00:00:00Z', title: '테스트 축제', useFee: '무료',
+                detailSourceKey: staleRow.sourceKey, detailSourceModifiedAt: staleRow.registrationDate,
+                detailCommonJson: JSON.stringify({ overview: '갱신된 설명' }), detailIntroJson: '{}',
+                detailInfoJson: '[]', detailImagesJson: '[]', detailIsComplete: 1,
+                detailSyncedAt: staleRow.updatedAt }] }
+            : { results: [] },
   });
   const d1: D1Binding = {
     prepare: query => createStatement(query),
@@ -161,16 +174,19 @@ test('successful detail refresh publishes a rich KV detail read model', async ()
   try {
     const result = await refreshStaleCachedTourApiDetails(
       { baseUrl: 'https://apis.data.go.kr/B551011/KorService2', serviceKey: 'key' },
-      d1,
-      { cache }
+      d1
     );
 
     assert.equal(result.refreshed, 1);
     assert.deepEqual(result.refreshedCultureIds, [42]);
-    const detailWrite = writes.find(write => write.key.startsWith('cultures:detail:last:v1'));
+    const publication = await refreshCulturePublicReadModelsAfterDetailRefresh(d1, cache);
+    assert.equal(publication.published, true);
+    const detailWrites = writes.filter(write => write.key.startsWith('cultures:detail:last:v1'));
+    assert.equal(detailWrites.length, 1);
+    const detailWrite = detailWrites[0];
     assert.ok(detailWrite);
     const stored = JSON.parse(detailWrite.value) as { cacheVersion: string; culture: { id: number; title: string } };
-    assert.equal(stored.cacheVersion, 'source-revision-42');
+    assert.equal(stored.cacheVersion, publication.revisions['42']);
     assert.equal(stored.culture.id, 42);
     assert.equal(stored.culture.title, '테스트 축제');
   } finally {

@@ -1,10 +1,8 @@
-import { readCultureReadModelCache, writeCultureDetailCache } from '@/cache/kv';
 import { logEvent } from '@/server/structuredLog';
 import type { CultureCacheBinding } from '@/server/runtimeTypes';
-import { mapCultureRowToCulture } from '@/services/cultureService';
 import { refreshCultureListSnapshotCache } from '@/services/cultureList';
 
-import { DETAIL_READ_MODEL_TTL_SECONDS, publishCurrentCultureDetailReadModels } from './cultureDetailReadModelPublisher';
+import { publishCurrentCultureDetailReadModels } from './cultureDetailReadModelPublisher';
 import { getTourApiContentId } from './cultureIdentity';
 import {
   hasStaleCachedTourApiDetails,
@@ -52,8 +50,6 @@ const refreshCachedDetail = async (
   d1: D1Binding,
   row: StaleDetailRow,
   beforeWrite?: () => Promise<boolean>,
-  cache?: CultureCacheBinding,
-  cacheVersion = 'detail-refresh',
   requestOptions: TourApiRequestOptions = {},
 ) => {
   const cultureId = Number(row.id);
@@ -77,13 +73,6 @@ const refreshCachedDetail = async (
   const syncedAt = new Date().toISOString();
   await persistCultureDetailRefreshSuccess(d1, row, details, syncedAt);
 
-  if (cache) {
-    const culture = mapCultureRowToCulture({ ...row, updatedAt: syncedAt }, details);
-    if (culture) {
-      await writeCultureDetailCache(cultureId, cacheVersion, culture, DETAIL_READ_MODEL_TTL_SECONDS, cache);
-    }
-  }
-
   return true;
 };
 
@@ -92,8 +81,6 @@ export const refreshStaleCachedTourApiDetails = async (
   d1: D1Binding,
   options: {
     beforeEach?: () => Promise<boolean>;
-    cache?: CultureCacheBinding;
-    readModelRevisions?: Record<string, string>;
     deadlineAt?: number;
     requestTimeoutMs?: number;
   } = {}
@@ -107,12 +94,6 @@ export const refreshStaleCachedTourApiDetails = async (
   }
 
   const rows = await readStaleCultureDetailRows(d1);
-  const readModel = options.readModelRevisions
-    ? null
-    : options.cache
-      ? await readCultureReadModelCache(options.cache)
-      : null;
-  const readModelRevisions = options.readModelRevisions ?? readModel?.revisions ?? {};
   let refreshed = 0;
   const refreshedCultureIds: number[] = [];
 
@@ -128,8 +109,6 @@ export const refreshStaleCachedTourApiDetails = async (
         d1,
         row,
         options.beforeEach,
-        options.cache,
-        readModelRevisions[String(row.id)] ?? 'legacy-read-model',
         requestOptions
       );
       if (didRefresh) {

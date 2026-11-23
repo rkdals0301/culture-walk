@@ -50,6 +50,7 @@ const readEdgeHeaders = response => {
     dataSource: response.headers.get('x-culture-data-source'),
     cacheControl: response.headers.get('cache-control'),
     contentType: response.headers.get('content-type'),
+    serverTiming: response.headers.get('server-timing'),
   };
 };
 
@@ -88,6 +89,11 @@ const request = async (label, pathname, { expectedStatus = 200 } = {}) => {
     }
     if (maxRequestTtfbMs !== null && result.ttfbMs > maxRequestTtfbMs) {
       addFailure(`${label}: TTFB ${result.ttfbMs}ms가 허용 기준 ${maxRequestTtfbMs}ms를 초과했습니다.`);
+    }
+    // Streaming may deliver headers early while the actual event cards are
+    // still pending. Keep the complete document under the same latency budget.
+    if (maxRequestTtfbMs !== null && result.contentType?.startsWith('text/html') && result.totalMs > maxRequestTtfbMs) {
+      addFailure(`${label}: HTML 전체 응답 ${result.totalMs}ms가 허용 기준 ${maxRequestTtfbMs}ms를 초과했습니다.`);
     }
 
     return { response, body, result };
@@ -215,6 +221,12 @@ const run = async () => {
     await request('map-detail-page', `/map/${selectedCulture.id}`);
   }
 
+  const homeAttempts = await requestUntilCacheHit(request, 'home-page', '/');
+  observeCacheWarmup(homeAttempts, 'home-page');
+  validateEdgeHitLatency(homeAttempts, 'home-page');
+  if (homeAttempts[0] && !homeAttempts[0].body.includes('<html')) {
+    addFailure('home-page: HTML 문서를 찾지 못했습니다.');
+  }
   await request('map-page', '/map');
   const sitemap = await request('sitemap', '/sitemap.xml');
   if (sitemap && !sitemap.body.includes('<urlset')) {
