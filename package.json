@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.17",
-    "@tanstack/react-virtual": "^3.10.8",
+    "@tanstack/react-virtual": "^3.14.26",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^11.9.0",
