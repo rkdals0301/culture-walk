@@ -8,6 +8,7 @@ const root = process.cwd();
 const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
 const requested = env.CULTURE_BUILD_BACKEND || 'auto';
 const startedAt = performance.now();
+let failureStage = 'selecting a build backend';
 const run = (command, args, { input, capturePhases = false } = {}) => new Promise((resolve, reject) => {
   const phases = [];
   let lines = '';
@@ -63,6 +64,7 @@ const main = async () => {
   }
   const backend = selectBuildBackend(process.platform, requested, dockerAvailable);
   if (backend === 'native') {
+    failureStage = 'running the native OpenNext build';
     if (process.platform === 'win32') await import('./check-opennext-platform.mjs');
     // OpenNext itself clears its generated output. A second recursive cleanup
     // before invoking the adapter repeats expensive Windows filesystem work.
@@ -75,6 +77,7 @@ const main = async () => {
     return;
   }
 
+  failureStage = 'preparing the Docker build';
   console.log('[build] using a Docker Linux volume for dependency installation and compilation');
   const name = `culture-walk-build-${randomUUID()}`;
   const volume = createBuildVolumeName(root);
@@ -87,8 +90,10 @@ const main = async () => {
   args.push(env.CULTURE_BUILD_IMAGE || BUILD_IMAGE, 'node', '/input/scripts/build-cloudflare-container.mjs');
   const temporary = await mkdtemp(path.join(root, '.tmp-worker-export-'));
   try {
+    failureStage = 'building the Worker in Docker';
     await run('docker', args, { input: JSON.stringify({ files: await sourceFiles(), args: process.argv.slice(2) }) });
     const buildDoneAt = performance.now();
+    failureStage = 'exporting the verified Worker';
     await run('docker', ['cp', `${name}:/workspace/project/.open-next/.`, temporary]);
     for (const file of ['worker.js', 'server-functions/default/handler.mjs']) {
       const info = await stat(path.join(temporary, file));
@@ -115,4 +120,7 @@ const main = async () => {
   }
 };
 
-main().catch(error => { console.error(`[build] ${error.message}`); process.exitCode = 1; });
+main().catch(() => {
+  console.error(`[build] Cloudflare build failed while ${failureStage}.`);
+  process.exitCode = 1;
+});
